@@ -1,37 +1,42 @@
 # QSGS-v2-Lua
 
-#### 介绍
-基于太阳神三国杀 QSanguosha-v2-20190208 编写的 Lua
+## 介绍
+这是基于太阳神三国杀 QSanguosha-v2-20190208 编写的武将，使用 Lua 作为开发语言，基于源码的限制，某些功能可能无法完全 Lua 化
 
-#### 软件架构
-软件架构说明
+## 文件目录
+### extensions
+这个目录下放有代码源文件，单个文件里包含有文本和代码（日后会分离）
 
+## 当前收录的包和角色
+### 群友包
+- 蒂蒂
+- 仙人掌
+- 浮华
+- 磷酸
+- SP 浮华
+- SP 仙人掌
+- 秋目
+- SP 磷酸
+- 暗暗
 
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+### 扩展武将包
+- 王元姬
+- 徐荣
+- 曹婴
+- 李傕
+- 曹纯
+- 马良
+- 贾逵
+- 界徐盛
+- 界马岱
+- 马钧
+- 伊籍
+- 李丰
+- 赵统赵广
+- 界颜良文丑
+- 界凌统
+- 审配
+- 杨彪
+- 骆统
+- 张翼
+- 界李儒
