@@ -3,12 +3,11 @@ extension = sgs.Package('ExpansionPackage')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true,
                            true)
-Wangyuanji = sgs.General(extension, 'Wangyuanji', 'wei', '3', false,
-                             true)
+Wangyuanji = sgs.General(extension, 'Wangyuanji', 'wei', '3', false, true)
 Xurong = sgs.General(extension, 'Xurong', 'qun', '4', true, true)
 Caoying = sgs.General(extension, 'Caoying', 'wei', '4', false, true)
 Lijue = sgs.General(extension, 'Lijue', 'qun', 6, true,
-                        sgs.GetConfig("hidden_ai", true), false, 4)
+                    sgs.GetConfig("hidden_ai", true), false, 4)
 Caochun = sgs.General(extension, 'Caochun', 'wei', '4', true, true)
 Maliang = sgs.General(extension, 'Maliang', 'shu', '3', true, true)
 Jiakui = sgs.General(extension, 'Jiakui', 'wei', '3', true, true)
@@ -23,11 +22,12 @@ JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4',
                                  true, true)
 JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true, true)
 Shenpei = sgs.General(extension, 'Shenpei', 'qun', 3, true,
-                          sgs.GetConfig("hidden_ai", true), false, 2)
+                      sgs.GetConfig("hidden_ai", true), false, 2)
 Yangbiao = sgs.General(extension, 'Yangbiao', 'qun', '3', true, true)
 Luotong = sgs.General(extension, 'Luotong', 'wu', '4', true, true)
 Zhangyi = sgs.General(extension, 'Zhangyi', 'shu', '4', true, true)
 JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
+Jiemanchong = sgs.General(extension, 'Jiemanchong', 'wei', '3', true, true)
 
 LuaQianchong = sgs.CreateTriggerSkill {
     name = 'LuaQianchong',
@@ -2760,6 +2760,82 @@ JieLiru:addSkill(LuaJuece)
 JieLiru:addSkill(LuaMieji)
 JieLiru:addSkill(LuaFencheng)
 
+LuaJunxingCard = sgs.CreateSkillCard {
+    name = 'LuaJunxingCard',
+    filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return to_select:objectName() ~= sgs.Self:objectName()
+        end
+        return false
+    end,
+    on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaJunxing')
+        local target = targets[1]
+        local len = self:getSubcards():length()
+        if room:askForDiscard(target, 'LuaJunxing', len, len, true, false,
+                              '@LuaJunxing:::' .. len) then
+            room:loseHp(target)
+        else
+            target:turnOver()
+            target:drawCards(len)
+        end
+    end
+}
+
+LuaJunxing = sgs.CreateViewAsSkill {
+    name = 'LuaJunxing',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        if #cards >= 1 then
+            local vs_card = LuaJunxingCard:clone()
+            for _, cd in ipairs(cards) do vs_card:addSubcard(cd) end
+            return vs_card
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaJunxingCard')
+    end
+}
+
+LuaYuce = sgs.CreateTriggerSkill {
+    name = 'LuaYuce',
+    events = {sgs.Damaged},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        local card = room:askForCard(player, '.', '@LuaYuce-show', data,
+                                     sgs.Card_MethodNone)
+        if card then
+            skill(self, room, player, true)
+            room:showCard(player, card:getEffectiveId())
+            if damage.from == nil or damage.from:isDead() then
+                return false
+            end
+            room:doAnimate(1, player:objectName(), damage.from:objectName())
+            local typeName = {'BasicCard', 'TrickCard', 'EquipCard'}
+            local toRemove = firstToUpper(replaceUnderline(card:getType())) ..
+                                 'Card'
+            table.removeOne(typeName, toRemove)
+            if not damage.from:canDiscard(damage.from, 'h') or
+                not room:askForCard(damage.from,
+                                    table.concat(typeName, ',') .. '|.|.|hand',
+                                    '@yuce-discard:' .. player:objectName() ..
+                                        '::' .. typeName[1] .. ':' ..
+                                        typeName[2], data) then
+                room:getThread():delay(1500)
+                room:recover(player, sgs.RecoverStruct(player, nil, 1))
+            end
+        end
+        return false
+    end
+}
+
+Jiemanchong:addSkill(LuaJunxing)
+Jiemanchong:addSkill(LuaYuce)
+
 -- 封装好的函数部分
 function LuaDoQiaosiShow(room, player, dummyCard)
     local choices = {
@@ -2916,6 +2992,22 @@ function getCardList(intlist)
     local ids = sgs.CardList()
     for _, id in sgs.qlist(intlist) do ids:append(sgs.Sanguosha:getCard(id)) end
     return ids
+end
+
+function skill(self, room, player, open, n)
+    local log = sgs.LogMessage()
+    log.type = "#InvokeSkill"
+    log.from = player
+    log.arg = self:objectName()
+    room:sendLog(log)
+    room:notifySkillInvoked(player, self:objectName())
+    if open then
+        if n then
+            room:broadcastSkillInvoke(self:objectName(), n)
+        else
+            room:broadcastSkillInvoke(self:objectName())
+        end
+    end
 end
 
 sgs.LoadTranslationTable {
@@ -3212,5 +3304,20 @@ sgs.LoadTranslationTable {
     [':LuaFencheng'] = '限定技，出牌阶段，你可以令所有其他角色依次选择一项：1. 弃置至少X张牌（若上一名进行选择的角色以此法弃置过牌，X为其以此法弃置的牌数+1，否则X为1）；2. 受到你造成的2点火焰伤害',
     ['luafencheng'] = '焚城',
     ['$LuaFencheng1'] = '我要这满城的人都来给你陪葬~',
-    ['$LuaFencheng2'] = '一把火烧他个精光吧！诶啊哈哈哈哈哈~'
+    ['$LuaFencheng2'] = '一把火烧他个精光吧！诶啊哈哈哈哈哈~',
+    ['Jiemanchong'] = '界满宠',
+    ['&Jiemanchong'] = '界满宠',
+    ['#Jiemanchong'] = '政法兵谋',
+    ['~Jiemanchong'] = '酷法峻刑，不得人心啊……',
+    ['LuaJunxing'] = '峻刑',
+    [':LuaJunxing'] = '出牌阶段限一次，你可以弃置任意张手牌并令一名其他角色选择一项：1.弃置等量的牌并失去1点体力；2.翻面，然后摸等量的牌',
+    ['$LuaJunxing1'] = '看你如何诡辩！',
+    ['$LuaJunxing2'] = '天子犯法，也与庶民同罪！',
+    ['luajunxing'] = '峻刑',
+    ['@LuaJunxing'] = '你可以弃置 %arg 张手牌并失去一点体力，或者点击“取消”翻面并摸取等量的牌',
+    ['LuaYuce'] = '御策',
+    [':LuaYuce'] = '当你受到伤害后，你可以展示一张手牌，然后除非伤害来源弃置与你展示的牌类别不同的一张手牌，否则你回复1点体力',
+    ["@LuaYuce-show"] = "你可以发动“御策”展示一张手牌",
+    ['$LuaYuce1'] = '亡羊补牢，为时未晚',
+    ['$LuaYuce2'] = '坚守城阙，以待援军'
 }
