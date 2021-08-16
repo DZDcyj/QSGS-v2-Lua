@@ -2836,6 +2836,18 @@ LuaYuce = sgs.CreateTriggerSkill {
 Jiemanchong:addSkill(LuaJunxing)
 Jiemanchong:addSkill(LuaYuce)
 
+function firstToUpper(str) return (str:gsub("^%l", string.upper)) end
+
+function replaceUnderline(str)
+    if string.find(str, "%p%l+") then
+        local first = string.sub(str, string.find(str, "%l+"))
+        local last = string.sub(str, string.find(str, "%p%l+"))
+        last = firstToUpper(string.sub(last, 2))
+        return first .. last
+    end
+    return str
+end
+
 -- 封装好的函数部分
 function LuaDoQiaosiShow(room, player, dummyCard)
     local choices = {
