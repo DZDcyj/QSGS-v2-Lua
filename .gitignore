@@ -1,0 +1,38 @@
+# 忽略可执行文件等
+*.exp
+*.lib
+*.qm
+*.qss
+*.ini
+*.exe
+*.dll
+
+# 忽略资源文件目录
+audio/
+bearer/
+diy/
+dmp/
+doc/
+etc/
+font/
+iconengines/
+image/
+imageformats/
+lang/
+listserver/
+lua/
+platforms/
+qml1tooling/
+qss/
+Qt/
+scenarios/
+skins/
+sqldrivers/
+translations/
+ui-script/
+
+# 忽略 extensions 下我们编写之外的文件
+extensions/hidden/*.lua
+extensions/hulaoguan.lua
+extensions/extra.lua
+extensions/extra-222.lua
