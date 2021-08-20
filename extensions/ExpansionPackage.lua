@@ -568,29 +568,35 @@ LuaZishu = sgs.CreateTriggerSkill {
     global = true,
     events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
     on_trigger = function(self, event, player, data, room)
-        local move = data:toMoveOneTime()
-        if event == sgs.CardsMoveOneTime and
-            not room:getTag("FirstRound"):toBool() and move.to and
-            move.to:objectName() == player:objectName() then
-            if player:getPhase() == sgs.Player_NotActive then
-                for _, id in sgs.qlist(move.card_ids) do
-                    if room:getCardOwner(id):objectName() == player:objectName() and
-                        room:getCardPlace(id) == sgs.Player_PlaceHand then
-                        room:addPlayerMark(player, self:objectName() .. id)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if not room:getTag("FirstRound"):toBool() and move.to and
+                move.to:objectName() == player:objectName() then
+                if player:getPhase() == sgs.Player_NotActive then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        if room:getCardOwner(id):objectName() ==
+                            player:objectName() and room:getCardPlace(id) ==
+                            sgs.Player_PlaceHand then
+                            room:addPlayerMark(player, self:objectName() .. id)
+                        end
                     end
-                end
-            elseif player:getPhase() ~= sgs.Player_NotActive and
-                move.reason.m_skillName ~= "LuaZishu" and RIGHT(self, player) then
-                for _, id in sgs.qlist(move.card_ids) do
-                    if room:getCardOwner(id):objectName() == player:objectName() and
-                        room:getCardPlace(id) == sgs.Player_PlaceHand then
-                        SendComLog(self, player, 1)
-                        room:addPlayerMark(player, self:objectName() .. "engine")
-                        if player:getMark(self:objectName() .. "engine") > 0 then
-                            player:drawCards(1, self:objectName())
-                            room:removePlayerMark(player,
-                                                  self:objectName() .. "engine")
-                            break
+                elseif player:getPhase() ~= sgs.Player_NotActive and
+                    move.reason.m_skillName ~= "LuaZishu" and
+                    RIGHT(self, player) then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        if room:getCardOwner(id):objectName() ==
+                            player:objectName() and room:getCardPlace(id) ==
+                            sgs.Player_PlaceHand then
+                            SendComLog(self, player, 1)
+                            room:addPlayerMark(player,
+                                               self:objectName() .. "engine")
+                            if player:getMark(self:objectName() .. "engine") > 0 then
+                                player:drawCards(1, self:objectName())
+                                room:removePlayerMark(player,
+                                                      self:objectName() ..
+                                                          "engine")
+                                break
+                            end
                         end
                     end
                 end
@@ -618,7 +624,15 @@ LuaZishu = sgs.CreateTriggerSkill {
                         room:removePlayerMark(p, self:objectName() .. "engine")
                     end
                     if player:getNextAlive():objectName() == p:objectName() then
-                        room:getThread():delay(500)
+                        room:getThread():delay(2500)
+                    end
+                end
+            end
+            -- 自书弃牌完毕后移除所有玩家的自书弃牌标记
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                for _, mark in sgs.list(p:getMarkNames()) do
+                    if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
+                        room:setPlayerMark(p, mark, 0)
                     end
                 end
             end
@@ -2797,7 +2811,8 @@ LuaJunxing = sgs.CreateViewAsSkill {
         return nil
     end,
     enabled_at_play = function(self, player)
-        return not player:hasUsed('#LuaJunxingCard')
+        return not player:hasUsed('#LuaJunxingCard') and
+                   not player:isKongcheng()
     end
 }
 
@@ -2806,6 +2821,7 @@ LuaYuce = sgs.CreateTriggerSkill {
     events = {sgs.Damaged},
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
+        if player:isKongcheng() then return false end
         local card = room:askForCard(player, '.', '@LuaYuce-show', data,
                                      sgs.Card_MethodNone)
         if card then
