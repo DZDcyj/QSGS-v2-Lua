@@ -3,31 +3,31 @@ extension = sgs.Package('ExpansionPackage')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true,
                            true)
-Wangyuanji = sgs.General(extension, 'Wangyuanji', 'wei', '3', false, true)
-Xurong = sgs.General(extension, 'Xurong', 'qun', '4', true, true)
-Caoying = sgs.General(extension, 'Caoying', 'wei', '4', false, true)
-Lijue = sgs.General(extension, 'Lijue', 'qun', 6, true,
+ExWangyuanji = sgs.General(extension, 'ExWangyuanji', 'wei', '3', false, true)
+ExXurong = sgs.General(extension, 'ExXurong', 'qun', '4', true, true)
+ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false, true)
+ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true,
                     sgs.GetConfig("hidden_ai", true), false, 4)
-Caochun = sgs.General(extension, 'Caochun', 'wei', '4', true, true)
-Maliang = sgs.General(extension, 'Maliang', 'shu', '3', true, true)
-Jiakui = sgs.General(extension, 'Jiakui', 'wei', '3', true, true)
+ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true, true)
+ExMaliang = sgs.General(extension, 'ExMaliang', 'shu', '3', true, true)
+ExJiakui = sgs.General(extension, 'ExJiakui', 'wei', '3', true, true)
 JieMadai = sgs.General(extension, 'JieMadai', 'shu', '4', true, true)
 JieXusheng = sgs.General(extension, 'JieXusheng', 'wu', '4', true, true)
-Majun = sgs.General(extension, 'Majun', 'wei', '3', true, true)
-Yiji = sgs.General(extension, 'Yiji', 'shu', '3', true, true)
-Lifeng = sgs.General(extension, 'Lifeng', 'shu', '3', true, true)
-ZhaotongZhaoguang = sgs.General(extension, 'ZhaotongZhaoguang', 'shu', '4',
+ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true, true)
+ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true, true)
+ExLifeng = sgs.General(extension, 'ExLifeng', 'shu', '3', true, true)
+ExZhaotongZhaoguang = sgs.General(extension, 'ExZhaotongZhaoguang', 'shu', '4',
                                 true, true)
 JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4',
                                  true, true)
 JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true, true)
-Shenpei = sgs.General(extension, 'Shenpei', 'qun', 3, true,
+ExShenpei = sgs.General(extension, 'ExShenpei', 'qun', 3, true,
                       sgs.GetConfig("hidden_ai", true), false, 2)
-Yangbiao = sgs.General(extension, 'Yangbiao', 'qun', '3', true, true)
-Luotong = sgs.General(extension, 'Luotong', 'wu', '4', true, true)
-Zhangyi = sgs.General(extension, 'Zhangyi', 'shu', '4', true, true)
+ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true, true)
+ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true, true)
+ExZhangyi = sgs.General(extension, 'ExZhangyi', 'shu', '4', true, true)
 JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
-Jiemanchong = sgs.General(extension, 'Jiemanchong', 'wei', '3', true, true)
+JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
 
 LuaQianchong = sgs.CreateTriggerSkill {
     name = 'LuaQianchong',
@@ -184,12 +184,12 @@ LuaShangjian = sgs.CreateTriggerSkill {
     can_trigger = function(self, target) return target end
 }
 
-Wangyuanji:addSkill(LuaQianchong)
+ExWangyuanji:addSkill(LuaQianchong)
 SkillAnjiang:addSkill(LuaQianchongTrickCardTargetMod)
 SkillAnjiang:addSkill(LuaQianchongBasicCardTargetMod)
-Wangyuanji:addSkill(LuaShangjian)
-Wangyuanji:addRelateSkill('weimu')
-Wangyuanji:addRelateSkill('mingzhe')
+ExWangyuanji:addSkill(LuaShangjian)
+ExWangyuanji:addRelateSkill('weimu')
+ExWangyuanji:addRelateSkill('mingzhe')
 
 LuaXionghuoCard = sgs.CreateSkillCard {
     name = 'LuaXionghuoCard',
@@ -335,8 +335,8 @@ LuaShajue = sgs.CreateTriggerSkill {
     can_trigger = function(self, target) return target end
 }
 
-Xurong:addSkill(LuaXionghuo)
-Xurong:addSkill(LuaShajue)
+ExXurong:addSkill(LuaXionghuo)
+ExXurong:addSkill(LuaShajue)
 SkillAnjiang:addSkill(LuaXionghuoMaxCards)
 SkillAnjiang:addSkill(LuaXionghuoProSlash)
 
@@ -472,10 +472,10 @@ LuaFujian = sgs.CreateTriggerSkill {
     end
 }
 
-Caoying:addSkill(LuaLingren)
-Caoying:addSkill(LuaFujian)
-Caoying:addRelateSkill('jianxiong')
-Caoying:addRelateSkill('xingshang')
+ExCaoying:addSkill(LuaLingren)
+ExCaoying:addSkill(LuaFujian)
+ExCaoying:addRelateSkill('jianxiong')
+ExCaoying:addRelateSkill('xingshang')
 
 LuaYisuan = sgs.CreateTriggerSkill {
     name = 'LuaYisuan',
@@ -559,8 +559,8 @@ LuaLangxi = sgs.CreateTriggerSkill {
     end
 }
 
-Lijue:addSkill(LuaYisuan)
-Lijue:addSkill(LuaLangxi)
+ExLijue:addSkill(LuaYisuan)
+ExLijue:addSkill(LuaLangxi)
 
 LuaZishu = sgs.CreateTriggerSkill {
     name = "LuaZishu",
@@ -703,8 +703,8 @@ LuaYingyuan = sgs.CreateTriggerSkill {
     end
 }
 
-Maliang:addSkill(LuaZishu)
-Maliang:addSkill(LuaYingyuan)
+ExMaliang:addSkill(LuaZishu)
+ExMaliang:addSkill(LuaYingyuan)
 
 LuaShanjiaCard = sgs.CreateSkillCard {
     name = 'LuaShanjiaCard',
@@ -806,7 +806,7 @@ LuaShanjia = sgs.CreateTriggerSkill {
     end
 }
 
-Caochun:addSkill(LuaShanjia)
+ExCaochun:addSkill(LuaShanjia)
 
 LuaZhongzuo = sgs.CreateTriggerSkill {
     name = 'LuaZhongzuo',
@@ -878,8 +878,8 @@ LuaWanlan = sgs.CreateTriggerSkill {
     end
 }
 
-Jiakui:addSkill(LuaZhongzuo)
-Jiakui:addSkill(LuaWanlan)
+ExJiakui:addSkill(LuaZhongzuo)
+ExJiakui:addSkill(LuaWanlan)
 
 function cardGoBack(event, player, data, skill)
     if event == sgs.EventPhaseStart then
@@ -1401,8 +1401,8 @@ LuaQiaosi = sgs.CreateViewAsSkill {
     end
 }
 
-Majun:addSkill(LuaJingxie)
-Majun:addSkill(LuaQiaosi)
+ExMajun:addSkill(LuaJingxie)
+ExMajun:addSkill(LuaQiaosi)
 
 LuaJijieCard = sgs.CreateSkillCard {
     name = 'LuaJijieCard',
@@ -1495,8 +1495,8 @@ LuaJiyuan = sgs.CreateTriggerSkill {
     end
 }
 
-Yiji:addSkill(LuaJijie)
-Yiji:addSkill(LuaJiyuan)
+ExYiji:addSkill(LuaJijie)
+ExYiji:addSkill(LuaJiyuan)
 
 LuaTunchuCard = sgs.CreateSkillCard {
     name = 'LuaTunchuCard',
@@ -1631,8 +1631,8 @@ LuaShuliang = sgs.CreateTriggerSkill {
     can_trigger = function(self, target) return target end
 }
 
-Lifeng:addSkill(LuaTunchu)
-Lifeng:addSkill(LuaShuliang)
+ExLifeng:addSkill(LuaTunchu)
+ExLifeng:addSkill(LuaShuliang)
 
 LuaYizanCard = sgs.CreateSkillCard {
     name = "LuaYizanCard",
@@ -1883,8 +1883,8 @@ LuaLongyuan = sgs.CreateTriggerSkill {
     end
 }
 
-ZhaotongZhaoguang:addSkill(LuaYizan)
-ZhaotongZhaoguang:addSkill(LuaLongyuan)
+ExZhaotongZhaoguang:addSkill(LuaYizan)
+ExZhaotongZhaoguang:addSkill(LuaLongyuan)
 
 LuaShuangxiongVS = sgs.CreateOneCardViewAsSkill {
     name = 'LuaShuangxiong',
@@ -2270,8 +2270,8 @@ LuaLiezhi = sgs.CreateTriggerSkill {
     end
 }
 
-Shenpei:addSkill(LuaShouye)
-Shenpei:addSkill(LuaLiezhi)
+ExShenpei:addSkill(LuaShouye)
+ExShenpei:addSkill(LuaLiezhi)
 
 LuaZhaohan = sgs.CreateTriggerSkill {
     name = 'LuaZhaohan',
@@ -2437,9 +2437,9 @@ LuaYizheng = sgs.CreateTriggerSkill {
     can_trigger = function(self, target) return target end
 }
 
-Yangbiao:addSkill(LuaZhaohan)
-Yangbiao:addSkill(LuaRangjie)
-Yangbiao:addSkill(LuaYizheng)
+ExYangbiao:addSkill(LuaZhaohan)
+ExYangbiao:addSkill(LuaRangjie)
+ExYangbiao:addSkill(LuaYizheng)
 
 LuaQinzheng = sgs.CreateTriggerSkill {
     name = 'LuaQinzheng',
@@ -2467,7 +2467,7 @@ LuaQinzheng = sgs.CreateTriggerSkill {
     end
 }
 
-Luotong:addSkill(LuaQinzheng)
+ExLuotong:addSkill(LuaQinzheng)
 
 LuaZhiyi = sgs.CreateTriggerSkill {
     name = 'LuaZhiyi',
@@ -2579,7 +2579,7 @@ LuaZhiyi = sgs.CreateTriggerSkill {
     can_trigger = function(self, target) return target end
 }
 
-Zhangyi:addSkill(LuaZhiyi)
+ExZhangyi:addSkill(LuaZhiyi)
 
 LuaJuece = sgs.CreateTriggerSkill {
     name = 'LuaJuece',
@@ -2849,8 +2849,8 @@ LuaYuce = sgs.CreateTriggerSkill {
     end
 }
 
-Jiemanchong:addSkill(LuaJunxing)
-Jiemanchong:addSkill(LuaYuce)
+JieManchong:addSkill(LuaJunxing)
+JieManchong:addSkill(LuaYuce)
 
 function firstToUpper(str) return (str:gsub("^%l", string.upper)) end
 
@@ -3040,18 +3040,18 @@ end
 
 sgs.LoadTranslationTable {
     ['ExpansionPackage'] = '扩展武将包',
-    ['Wangyuanji'] = '王元姬',
-    ['&Wangyuanji'] = '王元姬',
-    ['#Wangyuanji'] = '清雅抑华',
+    ['ExWangyuanji'] = '王元姬',
+    ['&ExWangyuanji'] = '王元姬',
+    ['#ExWangyuanji'] = '清雅抑华',
     ['LuaQianchong'] = '谦冲',
     [':LuaQianchong'] = '锁定技，若你的装备区所有牌为黑色，则你拥有“帷幕”；若你的装备区所有牌为红色，则你拥有“明哲”；出牌阶段开始时，若你不满足上述条件，则你选择一种类型的牌，本回合使用此类型的牌无次数和距离限制',
     ['#LuaQianchongChoice'] = '%from 选择了 %arg，本回合其使用 %arg 无距离次数限制',
     ['LuaShangjian'] = '尚俭',
     [':LuaShangjian'] = '锁定技，任意角色的结束阶段开始时，若你于本回合内失去的牌不大于体力值，你摸等量的牌',
-    ['Xurong'] = '徐荣',
-    ['&Xurong'] = '徐荣',
-    ['#Xurong'] = '玄菟战魔',
-    ['~Xurong'] = '此生无悔，心中……无愧',
+    ['ExXurong'] = '徐荣',
+    ['&ExXurong'] = '徐荣',
+    ['#ExXurong'] = '玄菟战魔',
+    ['~ExXurong'] = '此生无悔，心中……无愧',
     ['LuaXionghuo'] = '凶镬',
     [':LuaXionghuo'] = '游戏开始时，你获得3个“暴戾”标记。出牌阶段，你可以交给一名其他角色一个“暴戾”标记，你对有此标记的角色造成的伤害+1，且其出牌阶段开始时，移去“暴戾”标记并随机执行一项：1.受到1点火焰伤害且本回合不能对你使用【杀】；2.失去1点体力且本回合手牌上限-1；3.你获得其一张手牌和一张装备区里的牌',
     ['@baoli'] = '暴戾',
@@ -3062,9 +3062,9 @@ sgs.LoadTranslationTable {
     [':LuaShajue'] = '锁定技，其他角色进入濒死状态时，若其体力小于0，则你获得一个“暴戾”标记，并获得使其进入濒死状态的牌',
     ['$LuaShajue1'] = '杀伐决绝，不留后患！',
     ['$LuaShajue2'] = '吾既出，必绝之！',
-    ['Caoying'] = '曹婴',
-    ['&Caoying'] = '曹婴',
-    ['#Caoying'] = '龙城凤鸣',
+    ['ExCaoying'] = '曹婴',
+    ['&ExCaoying'] = '曹婴',
+    ['#ExCaoying'] = '龙城凤鸣',
     ['LuaLingren'] = '凌人',
     [':LuaLingren'] = '出牌阶段限一次，当你使用【杀】或伤害类锦囊牌指定目标后，你可以猜测其中一个目标的手牌是否有基本牌、锦囊牌或装备牌。至少猜对一项则此牌伤害+1；至少猜对两项则你摸两张牌；猜对三项则你获得“奸雄”和“行殇”直到你下回合开始',
     ['BasicCardGuess'] = '基本牌',
@@ -3075,9 +3075,9 @@ sgs.LoadTranslationTable {
     ['LuaLingren-choose'] = '你可以发动“凌人”<br/> <b>操作提示</b>: 选择一名角色→点击确定<br/>',
     ['LuaFujian'] = '伏间',
     [':LuaFujian'] = '锁定技，结束阶段开始时，你随机观看一名其他角色的手牌',
-    ['Lijue'] = '李傕',
-    ['&Lijue'] = '李傕',
-    ['#Lijue'] = '兵道诡谲',
+    ['ExLijue'] = '李傕',
+    ['&ExLijue'] = '李傕',
+    ['#ExLijue'] = '兵道诡谲',
     ['LuaYisuan'] = '亦算',
     [':LuaYisuan'] = '出牌阶段限一次，当你使用的锦囊牌进入弃牌堆时，你可以减一点体力上限，从弃牌堆获得之',
     ['$LuaYisuan1'] = '吾亦能善算谋划！',
@@ -3087,10 +3087,10 @@ sgs.LoadTranslationTable {
     ['LuaLangxi-choose'] = '你可以发动“狼袭”<br/> <b>操作提示</b>: 选择一名体力值不大于你的角色→点击确定<br/>',
     ['$LuaLangxi1'] = '袭夺之势，如狼噬骨！',
     ['$LuaLangxi2'] = '引吾至此，怎能不袭掠之？',
-    ['~Lijue'] = '若无内讧，也不至如此……',
-    ['Caochun'] = '曹纯',
-    ['&Caochun'] = '曹纯',
-    ['#Caochun'] = '虎豹骑首',
+    ['~ExLijue'] = '若无内讧，也不至如此……',
+    ['ExCaochun'] = '曹纯',
+    ['&ExCaochun'] = '曹纯',
+    ['#ExCaochun'] = '虎豹骑首',
     ['LuaShanjia'] = '缮甲',
     [':LuaShanjia'] = '出牌阶段开始时，你可以摸三张牌，然后弃置三张牌（本局游戏你每失去过一张装备区里的牌，便少弃置一张），若你本次没有弃置基本牌或锦囊牌，可视为使用一张【杀】（不计入次数限制）',
     ['luashanjia'] = '缮甲',
@@ -3099,9 +3099,9 @@ sgs.LoadTranslationTable {
     ['@luashanjia'] = '缮甲',
     ['$LuaShanjia1'] = '缮甲厉兵，伺机而行',
     ['$LuaShanjia2'] = '战，当取精锐之兵，而弃驽钝也',
-    ['Maliang'] = '马良',
-    ['&Maliang'] = '马良',
-    ['#Maliang'] = '白眉智士',
+    ['ExMaliang'] = '马良',
+    ['&ExMaliang'] = '马良',
+    ['#ExMaliang'] = '白眉智士',
     ['LuaZishu'] = '自书',
     [':LuaZishu'] = '锁定技，你的回合外，你获得的牌均会在当前回合结束后置入弃牌堆；你的回合内，当你不因此技能效果获得牌时，摸一张牌',
     ['$LuaZishu1'] = '两国修好，不动干戈',
@@ -3111,10 +3111,10 @@ sgs.LoadTranslationTable {
     ['$LuaYingyuan2'] = '汉室危亡，赖诸位大王助力！',
     [':LuaYingyuan'] = '<font color="green"><b>相同牌名的牌每回合限一次</b></font>，当你于回合内使用的牌置入弃牌堆后，你可以将之交给一名其他角色。',
     ['@LuaYingyuanTo'] = '你可以选择一名其他角色，将 %src 交给他',
-    ['~Maliang'] = '侍主尽忠，死亦无妨',
-    ['Jiakui'] = '贾逵',
-    ['&Jiakui'] = '贾逵',
-    ['#Jiakui'] = '肃齐万里',
+    ['~ExMaliang'] = '侍主尽忠，死亦无妨',
+    ['ExJiakui'] = '贾逵',
+    ['&ExJiakui'] = '贾逵',
+    ['#ExJiakui'] = '肃齐万里',
     ['LuaZhongzuo'] = '忠佐',
     [':LuaZhongzuo'] = '一名角色的回合结束时，若你于此回合内造成过或受到过伤害，则你可令一名角色摸两张牌。若你选择的角色已受伤，则你摸一张牌',
     ['@LuaZhongzuoChoose'] = '你可以选择一名角色发动“忠佐”，令其摸两张牌，若他已受伤，则你摸一张牌',
@@ -3125,7 +3125,7 @@ sgs.LoadTranslationTable {
     ['@LuaWanlan'] = '挽澜',
     ['$LuaWanlan1'] = '挽狂澜于既倒，扶大厦于将倾！',
     ['$LuaWanlan2'] = '深受国恩，今日便是报偿之时！',
-    ['~Jiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
+    ['~ExJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
     ['JieXusheng'] = '界徐盛',
     ['&JieXusheng'] = '界徐盛',
     ['#JieXusheng'] = '江东的铁壁',
@@ -3152,10 +3152,10 @@ sgs.LoadTranslationTable {
     ['LuaQianxiDraw'] = '潜袭摸牌',
     ['#LuaQianxiDrawAccept'] = '%from 同意让 %to 摸牌',
     ['#LuaQianxiDrawRefuse'] = '%from 拒绝让 %to 摸牌',
-    ['Majun'] = '马钧',
-    ['&Majun'] = '马钧',
-    ['#Majun'] = '没渊瑰璞',
-    ['~Majun'] = '衡石不用，美玉见诬啊……',
+    ['ExMajun'] = '马钧',
+    ['&ExMajun'] = '马钧',
+    ['#ExMajun'] = '没渊瑰璞',
+    ['~ExMajun'] = '衡石不用，美玉见诬啊……',
     ['luajingxie'] = '精械',
     ['LuaJingxie'] = '精械',
     [':LuaJingxie'] = '出牌阶段，你可以展示一张防具牌或是【诸葛连弩】，若其在你的手牌中，你使用之，然后根据其牌名，在该装备还在装备区时你获得以下效果：\
@@ -3182,10 +3182,10 @@ sgs.LoadTranslationTable {
     ['~LuaQiaosi'] = '选择对应数量手牌→选择一名其他角色（可不选）→点击确定',
     ['$LuaQiaosi1'] = '待我稍作思量，更议其巧',
     ['$LuaQiaosi2'] = '虚争空言，不如思而试之',
-    ['Yiji'] = '伊籍',
-    ['&Yiji'] = '伊籍',
-    ['#Yiji'] = '礼仁同渡',
-    ['~Yiji'] = '未能，救得刘公脱险……',
+    ['ExYiji'] = '伊籍',
+    ['&ExYiji'] = '伊籍',
+    ['#ExYiji'] = '礼仁同渡',
+    ['~ExYiji'] = '未能，救得刘公脱险……',
     ['LuaJijie'] = '机捷',
     [':LuaJijie'] = '出牌阶段限一次，你可以观看牌堆底的一张牌，然后将其交给任意角色',
     ['luajijie'] = '机捷',
@@ -3196,10 +3196,10 @@ sgs.LoadTranslationTable {
     [':LuaJiyuan'] = '当一名角色进入濒死状态或你交给一名其他角色牌时，你可令该角色摸一张牌',
     ['$LuaJiyuan1'] = '情势危急，还请速行！',
     ['$LuaJiyuan2'] = '公若此，必遭蔡瑁之害矣！',
-    ['Lifeng'] = '李丰',
-    ['&Lifeng'] = '李丰',
-    ['#Lifeng'] = '继父尽事',
-    ['~Lifeng'] = '马困人饥，我军休矣',
+    ['ExLifeng'] = '李丰',
+    ['&ExLifeng'] = '李丰',
+    ['#ExLifeng'] = '继父尽事',
+    ['~ExLifeng'] = '马困人饥，我军休矣',
     ['LuaTunchu'] = '屯储',
     [':LuaTunchu'] = '摸牌阶段，若你没有“粮”，你可以额外摸两张牌，若如此做，然后将任意张手牌置于你的武将牌上，称为“粮”，若你的武将牌上有“粮”，你不能使用【杀】',
     ['@LuaTunchu'] = '你可以发动“屯储”',
@@ -3215,10 +3215,10 @@ sgs.LoadTranslationTable {
     ['~LuaShuliang'] = '选择一张“粮”→点击确定',
     ['$LuaShuliang1'] = '承父之志，助丞相再伐中原！',
     ['$LuaShuliang2'] = '兵马未动，粮草先行！',
-    ['ZhaotongZhaoguang'] = '赵统赵广',
-    ['&ZhaotongZhaoguang'] = '赵统赵广',
-    ['#ZhaotongZhaoguang'] = '身继龙魂',
-    ['~ZhaotongZhaoguang'] = '皇上……丞相，统（广）愧矣……',
+    ['ExZhaotongZhaoguang'] = '赵统赵广',
+    ['&ExZhaotongZhaoguang'] = '赵统赵广',
+    ['#ExZhaotongZhaoguang'] = '身继龙魂',
+    ['~ExZhaotongZhaoguang'] = '皇上……丞相，统（广）愧矣……',
     ['LuaYizan'] = '翊赞',
     [':LuaYizan'] = '你可以将一张基本牌和其他一张牌当任意基本牌使用或打出',
     [':LuaYizan2'] = '你可以将一张基本牌当任意基本牌使用或打出',
@@ -3252,10 +3252,10 @@ sgs.LoadTranslationTable {
     ['$LuaXuanfeng1'] = '急军先行，斩将，夺城，再败军！',
     ['$LuaXuanfeng2'] = '短兵相接，教尔等片甲不留！',
     ['~JieLingtong'] = '公绩之犬子就托于主公了……',
-    ['Shenpei'] = '审配',
-    ['&Shenpei'] = '审配',
-    ['#Shenpei'] = '正南义北',
-    ['~Shenpei'] = '吾君在北，但求面北而亡……',
+    ['ExShenpei'] = '审配',
+    ['&ExShenpei'] = '审配',
+    ['#ExShenpei'] = '正南义北',
+    ['~ExShenpei'] = '吾君在北，但求面北而亡……',
     ['LuaLiezhi'] = '烈直',
     [':LuaLiezhi'] = '准备阶段，你可以选择至多两名其他角色，依次弃置其区域内的一张牌；若你受到伤害，则直至你的下个结束阶段时，此技能失效',
     ['lualiezhi'] = '烈直',
@@ -3273,10 +3273,10 @@ sgs.LoadTranslationTable {
     ['$LuaShouye2'] = '袁幽州不日便至，当行策建功以报之',
     ['#ShouyeSucceed'] = '%from 守邺 <font color="yellow"><b>成功</b></font>',
     ['#ShouyeFailed'] = '%from 守邺 <font color="yellow"><b>失败</b></font>',
-    ['Yangbiao'] = '杨彪',
-    ['#Yangbiao'] = '德彰海內',
-    ['&Yangbiao'] = '杨彪',
-    ['~Yangbiao'] = '未能效死佑汉，只因宗族之重……',
+    ['ExYangbiao'] = '杨彪',
+    ['#ExYangbiao'] = '德彰海內',
+    ['&ExYangbiao'] = '杨彪',
+    ['~ExYangbiao'] = '未能效死佑汉，只因宗族之重……',
     ['LuaZhaohan'] = '昭汉',
     [':LuaZhaohan'] = '锁定技，你的前四个准备阶段开始时加1点体力上限并回复1点体力，之后的三个准备阶段开始时减1点体力上限',
     ['$LuaZhaohan1'] = '天道昭昭，再兴如光武亦可期！',
@@ -3296,17 +3296,17 @@ sgs.LoadTranslationTable {
     ['$LuaYizheng1'] = '公既执掌权柄，又何必令君臣遭乱？',
     ['$LuaYizheng2'] = '公虽权倾朝野，亦当遵圣上之意',
     ['luayizheng'] = '义争',
-    ['Luotong'] = '骆统',
-    ['&Luotong'] = '骆统',
-    ['#Luotong'] = '辨明大义',
+    ['ExLuotong'] = '骆统',
+    ['&ExLuotong'] = '骆统',
+    ['#ExLuotong'] = '辨明大义',
     ['LuaQinzheng'] = '勤政',
     [':LuaQinzheng'] = '锁定技，你每使用或打出三张牌时，你随机获得一张【杀】或【闪】﹔每使用或打出五张牌时，你随机获得一张【桃】或【酒】﹔每使用或打出八张牌时，你随机获得一张【无中生有】或【决斗】',
     ['$LuaQinzheng1'] = '治疾及其未笃，除患贵其未深',
     ['$LuaQinzheng2'] = '夫国之有民，犹水之有舟，停则以安，扰则以危',
-    ['Zhangyi'] = '张翼',
-    ['&Zhangyi'] = '张翼',
-    ['#Zhangyi'] = '亢锐怀忠',
-    ['~Zhangyi'] = '惟愿百姓不受此乱所害……',
+    ['ExZhangyi'] = '张翼',
+    ['&ExZhangyi'] = '张翼',
+    ['#ExZhangyi'] = '亢锐怀忠',
+    ['~ExZhangyi'] = '惟愿百姓不受此乱所害……',
     ['LuaZhiyi'] = '执义',
     [':LuaZhiyi'] = '锁定技，若你于一个回合内使用或打出过基本牌，则本回合的结束阶段，你选择一项：1.视为你使用一张你本回合使用或打出过的基本牌；2.摸一张牌',
     ['$LuaZhiyi1'] = '岂可擅退而误国家之功！',
@@ -3333,10 +3333,10 @@ sgs.LoadTranslationTable {
     ['luafencheng'] = '焚城',
     ['$LuaFencheng1'] = '我要这满城的人都来给你陪葬~',
     ['$LuaFencheng2'] = '一把火烧他个精光吧！诶啊哈哈哈哈哈~',
-    ['Jiemanchong'] = '界满宠',
-    ['&Jiemanchong'] = '界满宠',
-    ['#Jiemanchong'] = '政法兵谋',
-    ['~Jiemanchong'] = '酷法峻刑，不得人心啊……',
+    ['JieManchong'] = '界满宠',
+    ['&JieManchong'] = '界满宠',
+    ['#JieManchong'] = '政法兵谋',
+    ['~JieManchong'] = '酷法峻刑，不得人心啊……',
     ['LuaJunxing'] = '峻刑',
     [':LuaJunxing'] = '出牌阶段限一次，你可以弃置任意张手牌并令一名其他角色选择一项：1.弃置等量的牌并失去1点体力；2.翻面，然后摸等量的牌',
     ['$LuaJunxing1'] = '看你如何诡辩！',

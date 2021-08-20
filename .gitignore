@@ -8,7 +8,10 @@
 *.dll
 
 # 忽略资源文件目录
-audio/
+audio/card
+audio/equip
+audio/system
+audio/**/[a-z]*.ogg
 bearer/
 diy/
 dmp/
@@ -16,7 +19,22 @@ doc/
 etc/
 font/
 iconengines/
-image/
+image/animate
+image/big-card
+image/compact
+image/equips
+image/gender
+image/heroskin
+image/hidden
+image/icon
+image/kingdom
+image/logo
+image/mark
+image/small-equips
+image/system
+image/**/*.lnk
+image/**/[^A-Z]*.[jJ][pP][gG]
+image/**/[^A-Z]*.[pP][nN][gG]
 imageformats/
 lang/
 listserver/
