@@ -2503,11 +2503,11 @@ LuaZhiyi = sgs.CreateTriggerSkill {
                                 end
                             end
                         end
-                        table.insert(cardTypes, 'linyindraw')
+                        table.insert(cardTypes, 'luazhiyidraw')
                         local choice = room:askForChoice(sp, self:objectName(),
                                                          table.concat(cardTypes,
                                                                       '+'))
-                        if choice == 'linyindraw' then
+                        if choice == 'luazhiyidraw' then
                             sp:drawCards(1)
                         elseif choice == 'peach' or choice == 'analeptic' then
                             local card =
@@ -3397,6 +3397,7 @@ sgs.LoadTranslationTable {
     ['$LuaZhiyi1'] = '岂可擅退而误国家之功！',
     ['$LuaZhiyi2'] = '统摄不懈，只为破敌！',
     ['LuaZhiyiSlashTo'] = '请选择一名角色作为【杀】的目标',
+    ['luazhiyidraw'] = '摸一张牌',
     ['JieLiru'] = '界李儒',
     ['&JieLiru'] = '界李儒',
     ['#JieLiru'] = '魔仕',
