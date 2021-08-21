@@ -7,7 +7,7 @@ ExWangyuanji = sgs.General(extension, 'ExWangyuanji', 'wei', '3', false, true)
 ExXurong = sgs.General(extension, 'ExXurong', 'qun', '4', true, true)
 ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false, true)
 ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true,
-                    sgs.GetConfig("hidden_ai", true), false, 4)
+                      sgs.GetConfig("hidden_ai", true), false, 4)
 ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true, true)
 ExMaliang = sgs.General(extension, 'ExMaliang', 'shu', '3', true, true)
 ExJiakui = sgs.General(extension, 'ExJiakui', 'wei', '3', true, true)
@@ -17,12 +17,12 @@ ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true, true)
 ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true, true)
 ExLifeng = sgs.General(extension, 'ExLifeng', 'shu', '3', true, true)
 ExZhaotongZhaoguang = sgs.General(extension, 'ExZhaotongZhaoguang', 'shu', '4',
-                                true, true)
+                                  true, true)
 JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4',
                                  true, true)
 JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true, true)
 ExShenpei = sgs.General(extension, 'ExShenpei', 'qun', 3, true,
-                      sgs.GetConfig("hidden_ai", true), false, 2)
+                        sgs.GetConfig("hidden_ai", true), false, 2)
 ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true, true)
 ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true, true)
 ExZhangyi = sgs.General(extension, 'ExZhangyi', 'shu', '4', true, true)
@@ -631,9 +631,8 @@ LuaZishu = sgs.CreateTriggerSkill {
             -- 自书弃牌完毕后移除所有玩家的自书弃牌标记
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 for _, mark in sgs.list(p:getMarkNames()) do
-                    if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
-                        room:setPlayerMark(p, mark, 0)
-                    end
+                    if string.find(mark, self:objectName()) and p:getMark(mark) >
+                        0 then room:setPlayerMark(p, mark, 0) end
                 end
             end
         end
@@ -2669,7 +2668,7 @@ LuaMiejiCard = sgs.CreateSkillCard {
             end
         end
 
-        if nonTrickNum < 2 and trickExists then pattern = 'TrickCard!' end
+        if nonTrickNum < 2 and trickExists then pattern = 'TrickCard' end
 
         local card = room:askForCard(target, pattern, '@LuaMiejiDiscard',
                                      sgs.QVariant(), sgs.Card_MethodNone)
@@ -3347,5 +3346,6 @@ sgs.LoadTranslationTable {
     [':LuaYuce'] = '当你受到伤害后，你可以展示一张手牌，然后除非伤害来源弃置与你展示的牌类别不同的一张手牌，否则你回复1点体力',
     ["@LuaYuce-show"] = "你可以发动“御策”展示一张手牌",
     ['$LuaYuce1'] = '亡羊补牢，为时未晚',
-    ['$LuaYuce2'] = '坚守城阙，以待援军'
+    ['$LuaYuce2'] = '坚守城阙，以待援军',
+    ['#addmaxhp'] = '%from 增加了 %arg 点体力上限'
 }
