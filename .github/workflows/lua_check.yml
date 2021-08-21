@@ -1,13 +1,6 @@
-name: LuaCheckTest
+name: LuaCheckTest-Push
 
-on: 
-  push:
-    branches-ignore:
-      - master
-  pull_request:
-    branches:
-      - master
-  
+on: push
 
 jobs:
   lua-check:
