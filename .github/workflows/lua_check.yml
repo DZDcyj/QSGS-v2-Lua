@@ -1,0 +1,19 @@
+name: LuaCheckTest
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: nebularg/actions-luacheck@v1
+      with:
+        args: -o 011
