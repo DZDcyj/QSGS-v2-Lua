@@ -1,4 +1,4 @@
-name: LuaCheckTest-Push
+name: LuaCheck-Push
 
 on: push
 
