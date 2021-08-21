@@ -2949,7 +2949,7 @@ function getCardFromDiscardPile(room, type)
     return nil
 end
 
--- 巧变封装函数
+-- 巧思封装函数
 function LuaDoQiaosiShow(room, player, dummyCard)
     local choices = {
         'king', 'merchant', 'artisan', 'farmer', 'scholar', 'general', 'cancel'
