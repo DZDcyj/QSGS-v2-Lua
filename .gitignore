@@ -38,7 +38,9 @@ image/**/[^A-Z]*.[pP][nN][gG]
 imageformats/
 lang/
 listserver/
-lua/
+lua/ai/[^A-Z]*.lua
+lua/lib
+lua/*.lua
 platforms/
 qml1tooling/
 qss/
