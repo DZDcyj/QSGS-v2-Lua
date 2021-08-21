@@ -11,7 +11,7 @@ TODO: 这个标志目前只显示 master 分支的状态，之后会更新状态
 如果你想一边配置一边直接在日神杀环境测试，可以采取如下方案：
 1. 在日神杀目录下（即 QSanguosha-v2-20190208）打开 Git Bash
 2. 执行命令 git init .
-3. git remote add origin git@gitee.com:cyjdtxz/QSGS-v2-Lua.git
+3. git remote add origin git@github.com:DZDcyj/QSGS-v2-Lua.git
 4. git pull origin master
 
 执行完毕后，将会拉取对应的 lua 文件到 extensions 目录下，便可在日神杀内使用了。
