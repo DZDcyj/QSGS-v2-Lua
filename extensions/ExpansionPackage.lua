@@ -2668,7 +2668,7 @@ LuaMiejiCard = sgs.CreateSkillCard {
             end
         end
 
-        if nonTrickNum < 2 and trickExists then pattern = 'TrickCard' end
+        if nonTrickNum < 2 and trickExists then pattern = 'TrickCard!' end
 
         local card = room:askForCard(target, pattern, '@LuaMiejiDiscard',
                                      sgs.QVariant(), sgs.Card_MethodNone)
