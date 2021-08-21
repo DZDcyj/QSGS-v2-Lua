@@ -28,6 +28,7 @@ ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true, true)
 ExZhangyi = sgs.General(extension, 'ExZhangyi', 'shu', '4', true, true)
 JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
 JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
+JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
 
 LuaQianchong = sgs.CreateTriggerSkill {
     name = 'LuaQianchong',
@@ -2851,8 +2852,84 @@ LuaYuce = sgs.CreateTriggerSkill {
 JieManchong:addSkill(LuaJunxing)
 JieManchong:addSkill(LuaYuce)
 
+LuaDangxian = sgs.CreateTriggerSkill {
+    name = 'LuaDangxian',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_RoundStart then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            local msg = sgs.LogMessage()
+            msg.type = '#LuaDangxianExtraPhase'
+            msg.from = player
+            room:sendLog(msg)
+            player:setPhase(sgs.Player_Play)
+            local card = getCardFromDiscardPile(room, 'Slash')
+            if card then player:obtainCard(card) end
+            room:broadcastProperty(player, 'phase')
+            local thread = room:getThread()
+            if not thread:trigger(sgs.EventPhaseStart, room, player) then
+                thread:trigger(sgs.EventPhaseProceeding, room, player)
+            end
+            thread:trigger(sgs.EventPhaseEnd, room, player)
+            player:setPhase(sgs.Player_RoundStart)
+            room:broadcastProperty(player, 'phase')
+        end
+        return false
+    end
+}
+
+LuaFuli = sgs.CreateTriggerSkill {
+    name = 'LuaFuli',
+    events = {sgs.AskForPeaches},
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@laoji',
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if dying.who:objectName() ~= player:objectName() then
+            return false
+        end
+        if room:askForSkillInvoke(player, self:objectName()) then
+            room:removePlayerMark(player, '@laoji')
+            local recover = sgs.RecoverStruct()
+            recover.recover =
+                math.min(getKingdomCount(room), player:getMaxHp()) -
+                    player:getHp()
+            room:recover(player, recover)
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                if p:getHp() >= player:getHp() then return false end
+            end
+            player:turnOver()
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return (target and target:isAlive() and
+                   target:hasSkill(self:objectName())) and
+                   (target:getMark("@laoji") > 0)
+    end
+}
+
+JieLiaohua:addSkill(LuaDangxian)
+JieLiaohua:addSkill(LuaFuli)
+
+-- 封装好的函数部分
+
+function getKingdomCount(room)
+    local kingdoms = {}
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        if not table.contains(kingdoms, p:getKingdom()) then
+            table.insert(kingdoms, p:getKingdom())
+        end
+    end
+    return #kingdoms
+end
+
+-- 将首字母换成大写
 function firstToUpper(str) return (str:gsub("^%l", string.upper)) end
 
+-- 将下划线换成大写
+-- 例如 abc_def -> abcDef
 function replaceUnderline(str)
     if string.find(str, "%p%l+") then
         local first = string.sub(str, string.find(str, "%l+"))
@@ -2863,7 +2940,16 @@ function replaceUnderline(str)
     return str
 end
 
--- 封装好的函数部分
+-- 从弃牌堆获取指定类型的一张牌
+function getCardFromDiscardPile(room, type)
+    for _, id in sgs.qlist(room:getDiscardPile()) do
+        local card = sgs.Sanguosha:getCard(id)
+        if card:isKindOf(type) then return card end
+    end
+    return nil
+end
+
+-- 巧思封装函数
 function LuaDoQiaosiShow(room, player, dummyCard)
     local choices = {
         'king', 'merchant', 'artisan', 'farmer', 'scholar', 'general', 'cancel'
@@ -3347,5 +3433,13 @@ sgs.LoadTranslationTable {
     ["@LuaYuce-show"] = "你可以发动“御策”展示一张手牌",
     ['$LuaYuce1'] = '亡羊补牢，为时未晚',
     ['$LuaYuce2'] = '坚守城阙，以待援军',
-    ['#addmaxhp'] = '%from 增加了 %arg 点体力上限'
+    ['#addmaxhp'] = '%from 增加了 %arg 点体力上限',
+    ['JieLiaohua'] = '界廖化',
+    ['&JieLiaohua'] = '界廖化',
+    ['#JieLiaohua'] = '历经沧桑',
+    ['LuaDangxian'] = '当先',
+    [':LuaDangxian'] = '锁定技，回合开始时，你从弃牌堆获得一张【杀】并执行一个额外的出牌阶段',
+    ['#LuaDangxianExtraPhase'] = '%from 将执行一个额外的出牌阶段',
+    ['LuaFuli'] = '伏枥',
+    [':LuaFuli'] = '限定技，当你处于濒死状态时，你可以将体力回复至X点（X为全场势力数）。然后若你的体力值全场唯一最大，你翻面'
 }
