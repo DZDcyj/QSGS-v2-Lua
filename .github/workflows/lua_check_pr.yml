@@ -1,0 +1,14 @@
+name: LuaCheckTest
+
+on: pull_request
+
+jobs:
+  lua-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: nebularg/actions-luacheck@v1
+      with:
+        args: -o 011
