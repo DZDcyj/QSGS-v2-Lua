@@ -1,0 +1,25 @@
+name: LuaCheckTest
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: leafo/gh-actions-lua@v8.0.0
+      with:
+        luaVersion: "5.1.5"
+
+    - uses: leafo/gh-actions-luarocks@v4.0.0
+
+    - name: test
+      run: |
+        busted -o utfTerminal
