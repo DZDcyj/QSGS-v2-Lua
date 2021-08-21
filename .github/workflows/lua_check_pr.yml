@@ -1,4 +1,4 @@
-name: LuaCheckTest
+name: LuaCheck-PullRequest
 
 on: pull_request
 
