@@ -29,6 +29,7 @@ ExZhangyi = sgs.General(extension, 'ExZhangyi', 'shu', '4', true, true)
 JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
 JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
 JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
+JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
 
 LuaQianchong = sgs.CreateTriggerSkill {
     name = 'LuaQianchong',
@@ -2913,6 +2914,54 @@ LuaFuli = sgs.CreateTriggerSkill {
 JieLiaohua:addSkill(LuaDangxian)
 JieLiaohua:addSkill(LuaFuli)
 
+LuaDanshou = sgs.CreateTriggerSkill {
+    name = 'LuaDanshou',
+    events = {sgs.TargetSpecified, sgs.EventPhaseStart},
+    frequency = sgs.Skill_Frequent,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.TargetSpecified then
+            local use = data:toCardUse()
+            if use.card:isKindOf('SkillCard') then return false end
+            for _, p in sgs.qlist(use.to) do
+                room:addPlayerMark(p, self:objectName())
+            end
+        elseif event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Finish then
+                for _, sp in sgs.qlist(room:findPlayersBySkillName(
+                                           self:objectName())) do
+                    if sp:objectName() ~= player:objectName() then
+                        local num = sp:getMark(self:objectName())
+                        if num == 0 then
+                            if room:askForSkillInvoke(sp, self:objectName()) then
+                                sp:drawCards(1, self:objectName())
+                            end
+                        else
+                            if room:askForDiscard(sp, 'LuaDanshou', num, num,
+                                                  true, true,
+                                                  '@LuaDanshou:::' .. num) then
+                                skill(self, room, sp, true)
+                                room:doAnimate(1, sp:objectName(), player:objectName())
+                                local theDamage = sgs.DamageStruct()
+                                theDamage.from = sp
+                                theDamage.to = player
+                                theDamage.damage = 1
+                                room:damage(theDamage)
+                            end
+                        end
+                    end
+                end
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, self:objectName(), 0)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target) return target end
+}
+
+JieZhuran:addSkill(LuaDanshou)
+
 -- 封装好的函数部分
 
 function getKingdomCount(room)
@@ -3442,5 +3491,11 @@ sgs.LoadTranslationTable {
     [':LuaDangxian'] = '锁定技，回合开始时，你从弃牌堆获得一张【杀】并执行一个额外的出牌阶段',
     ['#LuaDangxianExtraPhase'] = '%from 将执行一个额外的出牌阶段',
     ['LuaFuli'] = '伏枥',
-    [':LuaFuli'] = '限定技，当你处于濒死状态时，你可以将体力回复至X点（X为全场势力数）。然后若你的体力值全场唯一最大，你翻面'
+    [':LuaFuli'] = '限定技，当你处于濒死状态时，你可以将体力回复至X点（X为全场势力数）。然后若你的体力值全场唯一最大，你翻面',
+    ['JieZhuran'] = '界朱然',
+    ['&JieZhuran'] = '界朱然',
+    ['#JieZhuran'] = '胆略无双',
+    ['LuaDanshou'] = '胆守',
+    [':LuaDanshou'] = '其他角色的结束阶段，若你本回合未成为过其使用牌的目标，你摸一张牌；否则你可以弃置X张牌，对其造成1点伤害（X为你本回合成为其使用牌的目标的次数）',
+    ['@LuaDanshou'] = '你可以弃置 %arg 张牌对当前回合角色造成一点伤害'
 }
