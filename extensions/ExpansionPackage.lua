@@ -30,6 +30,7 @@ JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
 JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
 JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
 JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
+JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true, true)
 
 LuaQianchong = sgs.CreateTriggerSkill {
     name = 'LuaQianchong',
@@ -2941,7 +2942,8 @@ LuaDanshou = sgs.CreateTriggerSkill {
                                                   true, true,
                                                   '@LuaDanshou:::' .. num) then
                                 skill(self, room, sp, true)
-                                room:doAnimate(1, sp:objectName(), player:objectName())
+                                room:doAnimate(1, sp:objectName(),
+                                               player:objectName())
                                 local theDamage = sgs.DamageStruct()
                                 theDamage.from = sp
                                 theDamage.to = player
@@ -2962,8 +2964,87 @@ LuaDanshou = sgs.CreateTriggerSkill {
 
 JieZhuran:addSkill(LuaDanshou)
 
+LuaJieyueCard = sgs.CreateSkillCard {
+    name = 'LuaJieyueCard',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        target:obtainCard(card)
+        local data = sgs.QVariant()
+        data:setValue(target)
+        local choice = room:askForChoice(target, 'LuaJieyue',
+                                         'luajieyuediscard+luajieyuedraw', data)
+        if choice == 'luajieyuediscard' then
+            local hand_card_id
+            local equip_card_id
+            if target:canDiscard(target, 'h') then
+                hand_card_id = room:askForCardChosen(target, target, 'h',
+                                                     'LuaJieyue', false,
+                                                     sgs.Card_MethodNone)
+            end
+            if target:canDiscard(target, 'e') then
+                equip_card_id = room:askForCardChosen(target, target, 'e',
+                                                      'LuaJieyue', false,
+                                                      sgs.Card_MethodNone)
+            end
+            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            for _, cd in sgs.qlist(target:getCards('he')) do
+                local id = cd:getEffectiveId()
+                if id ~= hand_card_id and id ~= equip_card_id then
+                    dummy:addSubcard(cd)
+                end
+            end
+            room:throwCard(dummy, target)
+        else
+            room:doAnimate(1, target:objectName(), source:objectName())
+            source:drawCards(3, 'LuaJieyue')
+        end
+    end
+}
+
+LuaJieyueVS = sgs.CreateViewAsSkill {
+    name = 'LuaJieyue',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        return true
+    end,
+    view_as = function(self, cards)
+        if #cards == 1 then
+            local card = LuaJieyueCard:clone()
+            card:addSubcard(cards[1])
+            return card
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player) return false end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaJieyue'
+    end
+}
+
+LuaJieyue = sgs.CreateTriggerSkill {
+    name = 'LuaJieyue',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaJieyueVS,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Finish then
+            if not player:isNude() then
+                room:askForUseCard(player, '@@LuaJieyue', '@LuaJieyue')
+            end
+        end
+    end
+}
+
+JieYujin:addSkill(LuaJieyue)
+
 -- 封装好的函数部分
 
+-- 获取势力数
 function getKingdomCount(room)
     local kingdoms = {}
     for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -3497,5 +3578,13 @@ sgs.LoadTranslationTable {
     ['#JieZhuran'] = '不动之督',
     ['LuaDanshou'] = '胆守',
     [':LuaDanshou'] = '其他角色的结束阶段，若你本回合未成为过其使用牌的目标，你摸一张牌；否则你可以弃置X张牌，对其造成1点伤害（X为你本回合成为其使用牌的目标的次数）',
-    ['@LuaDanshou'] = '你可以弃置 %arg 张牌对当前回合角色造成一点伤害'
+    ['@LuaDanshou'] = '你可以弃置 %arg 张牌对当前回合角色造成一点伤害',
+    ['JieYujin'] = '界于禁',
+    ['&JieYujin'] = '界于禁',
+    ['#JieYujin'] = '弗克其终',
+    ['LuaJieyue'] = '节钺',
+    [':LuaJieyue'] = '结束阶段，你可将一张牌交给一名其他角色，令其选择一项：1.保留一张手牌和一张装备区内的牌，然后弃置其余的牌；2.令你摸三张牌',
+    ['luajieyue'] = '节钺',
+    ['@LuaJieyue'] = '你可以发动“节钺”，令一名其他角色选择弃牌或者让你摸牌',
+    ['~LuaJieyue'] = '选择一张牌→选择一名其他角色→点击确定',
 }
