@@ -2976,7 +2976,7 @@ LuaJieyueCard = sgs.CreateSkillCard {
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         target:obtainCard(card)
         local data = sgs.QVariant()
-        data:setValue(target)
+        data:setValue(source)
         local choice = room:askForChoice(target, 'LuaJieyue',
                                          'luajieyuediscard+luajieyuedraw', data)
         if choice == 'luajieyuediscard' then
