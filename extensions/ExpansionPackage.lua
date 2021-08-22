@@ -3010,9 +3010,7 @@ LuaJieyueCard = sgs.CreateSkillCard {
 LuaJieyueVS = sgs.CreateViewAsSkill {
     name = 'LuaJieyue',
     n = 1,
-    view_filter = function(self, selected, to_select)
-        return true
-    end,
+    view_filter = function(self, selected, to_select) return true end,
     view_as = function(self, cards)
         if #cards == 1 then
             local card = LuaJieyueCard:clone()
@@ -3586,5 +3584,5 @@ sgs.LoadTranslationTable {
     [':LuaJieyue'] = '结束阶段，你可将一张牌交给一名其他角色，令其选择一项：1.保留一张手牌和一张装备区内的牌，然后弃置其余的牌；2.令你摸三张牌',
     ['luajieyue'] = '节钺',
     ['@LuaJieyue'] = '你可以发动“节钺”，令一名其他角色选择弃牌或者让你摸牌',
-    ['~LuaJieyue'] = '选择一张牌→选择一名其他角色→点击确定',
+    ['~LuaJieyue'] = '选择一张牌→选择一名其他角色→点击确定'
 }
