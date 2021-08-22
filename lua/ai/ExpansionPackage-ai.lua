@@ -32,3 +32,36 @@ sgs.ai_skill_discard['LuaMieji']=function(self, discard_num, min_num, optional, 
     end
     return to_discard
 end
+
+sgs.ai_skill_choice['LuaJieyue'] = function(self, choices, data)
+    local items = choices:split("+")
+    if self:isFriend(data:toPlayer()) then return choices[2] end
+    if self.player:getCardCount(true) <= 3 then return choices[1] end
+    local count = 0
+    for _, card in sgs.qlist(self.player:getHandcards()) do
+        count = count + 1
+        if self:isValuableCard(card) then count = count + 0.5 end
+    end
+    local equip_val_table = { 2, 2.5, 1, 1.5, 2.2 }
+    for i = 0, 4, 1 do
+        if self.player:getEquip(i) then
+            if i == 1 and self:needToThrowArmor() then
+                count = count - 1
+            else
+                count = count + equip_val_table[i + 1]
+                if self.player:hasSkills(sgs.lose_equip_skill) then count = count + 0.5 end
+            end
+        end
+    end
+    if count < 4 then
+        return choices[1]
+    end
+    return choices[2]
+end
+
+sgs.ai_skill_cardchosen['LuaJieyue'] = function(self, who, flags)
+    local cards = self.player:getCards(flags)
+    cards = sgs.QList2Table(cards)
+    self:sortByKeepValue(cards, true)
+    return cards[1]
+end
