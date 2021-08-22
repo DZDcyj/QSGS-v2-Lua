@@ -35,8 +35,9 @@ end
 
 sgs.ai_skill_choice['LuaJieyue'] = function(self, choices, data)
     local items = choices:split("+")
-    if self:isFriend(data:toPlayer()) then return choices[2] end
-    if self.player:getCardCount(true) <= 3 then return choices[1] end
+    local target = data:toPlayer()
+    if self:isFriend(target) then return items[2] end
+    if self.player:getCardCount(true) <= 3 then return items[1] end
     local count = 0
     for _, card in sgs.qlist(self.player:getHandcards()) do
         count = count + 1
@@ -54,9 +55,9 @@ sgs.ai_skill_choice['LuaJieyue'] = function(self, choices, data)
         end
     end
     if count < 4 then
-        return choices[1]
+        return items[1]
     end
-    return choices[2]
+    return items[2]
 end
 
 sgs.ai_skill_cardchosen['LuaJieyue'] = function(self, who, flags)
