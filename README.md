@@ -8,7 +8,7 @@ TODO: 这个标志目前只显示 master 分支的状态，之后会更新状态
 这是基于太阳神三国杀 QSanguosha-v2-20190208 编写的武将，使用 Lua 作为开发语言，基于源码的限制，某些功能可能无法完全 Lua 化
 
 ## 配置方法
-如果你想一边配置一边直接在日神杀环境测试，可以采取如下方案：
+如果您想一边配置一边直接在日神杀环境测试，可以采取如下方案：
 1. 在日神杀目录下（即 QSanguosha-v2-20190208）打开 Git Bash
 2. 执行命令 git init .
 3. git remote add origin git@github.com:DZDcyj/QSGS-v2-Lua.git
@@ -16,10 +16,56 @@ TODO: 这个标志目前只显示 master 分支的状态，之后会更新状态
 
 执行完毕后，将会拉取对应的 lua 文件到 extensions 目录下，便可在日神杀内使用了。
 
-## 开发建议
-我个人建议在开发时自己新建对应分支，开发完毕后 push 到仓库，可以合并时选择创建 Pull Request。
+## 开发建议与指南
+在进行开发之前，请先在您的环境下配置 Git：
 
-**请注意，创建 Pull Request 后请等待审查和检查流程，通过后将由我来进行合并操作**
+Windows 环境下请在如下链接下载即可：
+
+[Git 官方网址](https://git-scm.com/)
+
+macOS 环境下请在 homebrew 里进行操作：
+```bash
+$ brew install git
+```
+
+如果您对 Git 的操作不够熟悉，可以参考如下指南：
+
+[Git 廖雪峰教程](https://www.liaoxuefeng.com/wiki/896043488029600)
+
+在 Windows 或者 macOS 环境下，可以使用`SourceTree`等可视化 Git Gui 工具来辅助进行操作。
+
+[SourceTree 官网](https://www.sourcetreeapp.com/)
+
+如果在 Git 操作上存在有问题，随时可以问我，我会尽快进行回复
+
+如果有新的想法、建议，抑或是发现当前存在的一些 bug，请在`Issue`里提出，我会尽快回复以推进进程。
+
+同时，本仓库启用了**保护分支**，因此任何对`master`分支的直接推送都是会被拒绝的，请在开发时新建相应的分支，开发完毕后 push 到仓库，在可以合并时创建 Pull Request。
+
+### 仓库设置
+本仓库的 Pull Request 有如下设定：
+- Require pull request reviews before merging（合并前必需拉取请求审查）
+    - Dismiss stale pull request approvals when new commits are pushed（推送新提交时忽略旧拉取请求批准）
+    - Require review from Code Owners（需要代码所有者审查）
+
+这意味着如果要进行合并，您的最后一次提交必须通过代码所有者的审查，并且通过或者拒绝的审查将会在下一次提交之后失效。
+
+- Require status checks to pass before merging（合并前必需状态检查通过）
+    - Require branches to be up to date before merging（要求分支在合并前保持最新）
+
+这意味着如果要进行合并，最新的分支需要通过状态检查，也即是内置的 Actions 里的 Lua-Check，不过不需要太担心，因为目前来讲只要能跑这个过程就会通过。
+
+- Require conversation resolution before merging（在合并前需要对话解决）
+
+这意味着如果要进行合并，您必须解决掉所有 Review 提出的问题。在 Review 的过程中，审查员可能会对您提交的代码的部分进行评论，要求做出对应的修改，请在解决对应问题之后，将对应的问题标记为已解决，以进行后续的合并检查。
+
+- Require signed commits（必需签名提交）
+
+这意味着如果要进行合并，您的这条分支上的所有提交必须经过签名认证。关于这一步，请在您`Account Settings`里的`SSH and GPG keys`里设置对应的 GPG 密钥，并在每次 commit 时进行签名。如果正常签名，在您的提交记录上将会显示出`Verified`的标志，任何一次没有签名的提交都会阻拦合并的流程。
+
+- Require linear history（必需线性历史记录）
+
+这意味着在进行合并时，我们使用了压缩提交的方式（Squash Merge），这意味着将会把该分支上的所有提交压缩为一次提交，并且提交将由合并人进行 commit，因此如果您想留下自己的记录，可以在没有冲突的情况下自行进行合并。合并完成之后，请务必删除源分支。
 
 ## 文件目录
 ### extensions
