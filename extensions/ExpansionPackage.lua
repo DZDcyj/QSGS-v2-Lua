@@ -3140,8 +3140,9 @@ LuaLiji = sgs.CreateTriggerSkill {
                                        move.card_ids:length())
                     local multiple = player:getMark(
                                          self:objectName() .. 'multiple')
-                    local markCount =
-                        math.modf(player:getMark(self:objectName()) / multiple)
+                    local markCount = math.modf(
+                                          player:getMark(self:objectName()) /
+                                              multiple)
                     if markCount > player:getMark('LuaLijiAvailableTimes') then
                         room:sendCompulsoryTriggerLog(player, self:objectName())
                         room:setPlayerMark(player, 'LuaLijiAvailableTimes',
