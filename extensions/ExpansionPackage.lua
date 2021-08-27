@@ -31,6 +31,8 @@ JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
 JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
 JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
 JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true, true)
+ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true,
+                              true)
 
 LuaQianchong = sgs.CreateTriggerSkill {
     name = 'LuaQianchong',
@@ -3040,6 +3042,132 @@ LuaJieyue = sgs.CreateTriggerSkill {
 
 JieYujin:addSkill(LuaJieyue)
 
+LuaFenyin = sgs.CreateTriggerSkill {
+    name = 'LuaFenyin',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if room:getCurrent():objectName() == player:objectName() and
+                player:hasSkill(self:objectName()) then
+                if move.to_place == sgs.Player_DiscardPile then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        local card = sgs.Sanguosha:getCard(id)
+                        if player:getMark(
+                            self:objectName() .. card:getSuitString()) == 0 then
+                            room:sendCompulsoryTriggerLog(player,
+                                                          self:objectName())
+                            room:addPlayerMark(player, self:objectName() ..
+                                                   card:getSuitString())
+                            player:drawCards(1)
+                        end
+                    end
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    for _, mark in sgs.list(p:getMarkNames()) do
+                        if string.find(mark, self:objectName()) and
+                            p:getMark(mark) > 0 then
+                            room:setPlayerMark(p, mark, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target) return target end
+}
+
+LuaLijiCard = sgs.CreateSkillCard {
+    name = 'LuaLijiCard',
+    target_fixed = false,
+    will_throw = true,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local target = effect.to
+        local room = source:getRoom()
+        room:damage(sgs.DamageStruct(self:objectName(), source, target))
+    end
+}
+
+LuaLijiVS = sgs.CreateViewAsSkill {
+    name = 'LuaLiji',
+    n = 1,
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:objectName() ~=
+                   sgs.Self:objectName()
+    end,
+    view_filter = function(self, selected, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        if #cards == 1 then
+            local card = LuaLijiCard:clone()
+            card:addSubcard(cards[1])
+            return card
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return not player:isKongcheng() and player:usedTimes('#LuaLijiCard') <
+                   player:getMark('LuaLijiAvailableTimes')
+    end
+}
+
+LuaLiji = sgs.CreateTriggerSkill {
+    name = 'LuaLiji',
+    events = {sgs.EventPhaseStart, sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    view_as_skill = LuaLijiVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Start and
+                player:hasSkill(self:objectName()) then
+                local count = room:alivePlayerCount()
+                local multiple = 8
+                if count < 5 then multiple = 4 end
+                room:setPlayerMark(player, self:objectName() .. 'multiple',
+                                   multiple)
+            end
+        elseif event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if room:getCurrent():objectName() == player:objectName() and
+                player:hasSkill(self:objectName()) then
+                if move.to_place == sgs.Player_DiscardPile then
+                    room:addPlayerMark(player, self:objectName(),
+                                       move.card_ids:length())
+                    local multiple = player:getMark(
+                                         self:objectName() .. 'multiple')
+                    local markCount =
+                        math.modf(player:getMark(self:objectName()) / multiple)
+                    if markCount > player:getMark('LuaLijiAvailableTimes') then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        room:setPlayerMark(player, 'LuaLijiAvailableTimes',
+                                           markCount)
+                    end
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    for _, mark in sgs.list(p:getMarkNames()) do
+                        if string.find(mark, self:objectName()) and
+                            p:getMark(mark) > 0 then
+                            room:setPlayerMark(p, mark, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target) return target end
+}
+
+ExTenYearLiuzan:addSkill(LuaFenyin)
+ExTenYearLiuzan:addSkill(LuaLiji)
+
 -- 封装好的函数部分
 
 -- 获取势力数
@@ -3584,5 +3712,13 @@ sgs.LoadTranslationTable {
     [':LuaJieyue'] = '结束阶段，你可将一张牌交给一名其他角色，令其选择一项：1.保留一张手牌和一张装备区内的牌，然后弃置其余的牌；2.令你摸三张牌',
     ['luajieyue'] = '节钺',
     ['@LuaJieyue'] = '你可以发动“节钺”，令一名其他角色选择弃牌或者让你摸牌',
-    ['~LuaJieyue'] = '选择一张牌→选择一名其他角色→点击确定'
+    ['~LuaJieyue'] = '选择一张牌→选择一名其他角色→点击确定',
+    ['ExTenYearLiuzan'] = '留赞-十周年',
+    ['&ExTenYearLiuzan'] = '留赞',
+    ['#ExTenYearLiuzan'] = '啸天亢声',
+    ['LuaFenyin'] = '奋音',
+    [':LuaFenyin'] = '锁定技，你的回合内，当一张牌进入弃牌堆后，若此回合内没有此花色的牌进入过弃牌堆，你摸一张牌',
+    ['LuaLiji'] = '力激',
+    [':LuaLiji'] = '<font color="green"><b>出牌阶段限零次</b></font>，你可以弃置一张牌，然后对一名其他角色造成1点伤害。你的回合内，本回合进入弃牌堆的牌每次达到“八”的倍数张时（全场角色小于5时改为“四”的倍数），此技能使用次数+1',
+    ['lualiji'] = '力激'
 }
