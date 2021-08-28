@@ -3571,15 +3571,6 @@ SkillAnjiang:addSkill(LuaXianghaiMaxCards)
 
 -- 封装好的函数部分
 
--- 发送测试用日志
--- 参数 arg 为想要发送的内容
-function sendTestLog(room, arg)
-    local msg = sgs.LogMessage()
-    msg.type = '#test'
-    msg.arg = arg
-    room:sendLog(msg)
-end
-
 -- 获取对应装备栏的卡牌类型
 function getEquipTypeStr(equip_index)
     local map = {
