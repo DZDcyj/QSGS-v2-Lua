@@ -28,6 +28,7 @@ JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
 JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true, true)
 ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true, true)
 ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
+ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -3421,7 +3422,166 @@ LuaShanxi =
 ExWangcan:addSkill(LuaQiai)
 ExWangcan:addSkill(LuaShanxi)
 
+LuaXianghai =
+    sgs.CreateFilterSkill {
+    name = 'LuaXianghai',
+    view_filter = function(self, to_select)
+        local room = sgs.Sanguosha:currentRoom()
+        if room:getCardPlace(to_select:getEffectiveId()) == sgs.Player_PlaceHand then
+            return to_select:isKindOf('EquipCard')
+        end
+        return false
+    end,
+    view_as = function(self, card)
+        local id = card:getId()
+        local suit = card:getSuit()
+        local number = card:getNumber()
+        local analeptic = sgs.Sanguosha:cloneCard('analeptic', suit, number)
+        analeptic:setSkillName('LuaXianghai')
+        local vs_card = sgs.Sanguosha:getWrappedCard(id)
+        vs_card:takeOver(analeptic)
+        return vs_card
+    end
+}
+
+LuaXianghaiMaxCards =
+    sgs.CreateMaxCardsSkill {
+    name = '#LuaXianghai',
+    extra_func = function(self, target)
+        local count = 0
+        for _, sib in sgs.qlist(target:getAliveSiblings()) do
+            if sib:hasSkill('LuaXianghai') then
+                count = count - 1
+            end
+        end
+        return count
+    end
+}
+
+LuaChuhaiCard =
+    sgs.CreateSkillCard {
+    name = 'LuaChuhaiCard',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, targets, to_select)
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName() and not to_select:isKongcheng()
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        source:drawCards(1)
+        if source:pindian(target, 'LuaChuhai', nil) then
+            room:addPlayerMark(target, 'LuaChuhai')
+            if target:isKongcheng() then
+                return
+            end
+            room:showAllCards(target, source)
+            local cardTypes = {}
+            for _, cd in sgs.qlist(target:getHandcards()) do
+                local typeStr = firstToUpper(replaceUnderline(cd:getType())) .. 'Card'
+                if not table.contains(cardTypes, typeStr) then
+                    table.insert(cardTypes, typeStr)
+                end
+            end
+            local params = {
+                ['findDiscardPile'] = true
+            }
+            for _, cardType in ipairs(cardTypes) do
+                params['type'] = cardType
+                local toObtain = obtainTargetedTypeCard(room, params)
+                if toObtain then
+                    room:obtainCard(source, toObtain)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target and target:hasSkill(self:objectName())
+    end
+}
+
+LuaChuhaiVS =
+    sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaChuhai',
+    view_as = function(self, cards)
+        return LuaChuhaiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaChuhaiCard')
+    end
+}
+
+LuaChuhai =
+    sgs.CreateTriggerSkill {
+    name = 'LuaChuhai',
+    events = {sgs.Damage, sgs.EventPhaseChanging},
+    view_as_skill = LuaChuhaiVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Damage then
+            local damage = data:toDamage()
+            if (not damage.from) or damage.from:objectName() ~= player:objectName() then
+                return false
+            end
+            if damage.to and damage.to:getMark(self:objectName()) > 0 then
+                local equip_index = -1
+                for i = 0, 4, 1 do
+                    if player:getEquip(i) == nil then
+                        equip_index = i
+                        break
+                    end
+                end
+                if equip_index ~= -1 then
+                    local type = getEquipTypeStr(equip_index)
+                    local params = {
+                        ['type'] = type,
+                        ['findDiscardPile'] = true
+                    }
+                    local equip = obtainTargetedTypeCard(room, params)
+                    if equip then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        room:moveCardTo(
+                            equip,
+                            nil,
+                            player,
+                            sgs.Player_PlaceEquip,
+                            sgs.CardMoveReason(
+                                sgs.CardMoveReason_S_REASON_TRANSFER,
+                                player:objectName(),
+                                self:objectName(),
+                                ''
+                            ),
+                            true
+                        )
+                    end
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, self:objectName(), 0)
+                end
+            end
+        end
+        return false
+    end
+}
+
+ExZhouchu:addSkill(LuaXianghai)
+ExZhouchu:addSkill(LuaChuhai)
+SkillAnjiang:addSkill(LuaXianghaiMaxCards)
+
 -- 封装好的函数部分
+
+-- 获取对应装备栏的卡牌类型
+function getEquipTypeStr(equip_index)
+    local map = {
+        [0] = 'Weapon',
+        [1] = 'Armor',
+        [2] = 'DefensiveHorse',
+        [3] = 'OffensiveHorse',
+        [4] = 'Treasure'
+    }
+    return map[equip_index]
+end
 
 -- 获取势力数
 function getKingdomCount(room)
@@ -4020,5 +4180,14 @@ sgs.LoadTranslationTable {
     ['LuaShanxi'] = '善檄',
     [':LuaShanxi'] = '出牌阶段开始时，你可以令一名其他角色获得“檄”标记（如场上已有标记则转移给该角色）。拥有“檄”的角色，其每次恢复体力后，若未处于濒死状态，则其需交给你两张牌，否则流失一点体力',
     ['LuaShanxi-give'] = '请交给 %src 两张牌，否则你将失去一点体力',
-    ['LuaShanxi-choose'] = '你可以选择一名其他角色，令其获得“檄”'
+    ['LuaShanxi-choose'] = '你可以选择一名其他角色，令其获得“檄”',
+    ['#test'] = '%arg',
+    ['ExZhouchu'] = '周处',
+    ['&ExZhouchu'] = '周处',
+    ['#ExZhouchu'] = '英情天逸',
+    ['LuaXianghai'] = '乡害',
+    [':LuaXianghai'] = '锁定技，场上所有其他角色的手牌上限-1，你手牌区所有装备牌均视为【酒】',
+    ['LuaChuhai'] = '除害',
+    ['luachuhai'] = '除害',
+    [':LuaChuhai'] = '出牌阶段限一次，你可以摸一张牌，然后与一名其他角色拼点，若你赢，你观看其手牌，然后从牌堆或弃牌堆中获得其从手牌中拥有的牌类型各一张，当你于此阶段对其造成伤害后，将牌堆或弃牌堆中一张空置装备栏对应类型的装备牌置入你的装备区'
 }
