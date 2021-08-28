@@ -3,7 +3,7 @@ sgs.ai_skill_discard['LuaMieji']=function(self, discard_num, min_num, optional, 
     local exchange = self.player:hasFlag("Global_AIDiscardExchanging")
     self:assignKeep(true)
 
-    local cards = self.player:getCards('h')
+    local cards = self.player:getCards('he')
     cards = sgs.QList2Table(cards)
     self:sortByKeepValue(cards)
     local to_discard, temp = {}, {}
