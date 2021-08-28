@@ -64,3 +64,13 @@ sgs.ai_skill_cardchosen['LuaJieyue'] = function(self, who, flags)
     self:sortByKeepValue(cards, true)
     return cards[1]
 end
+
+
+sgs.ai_skill_discard['LuaShanxi'] = function(self, discard_num, min_num, optional, include_equip)
+    -- 诈降
+    if not self:isWeak() and self.player:hasSkill('zhaxiang') then
+        return {}
+    end
+    -- 让 SmartAI 处理
+    return nil
+end
