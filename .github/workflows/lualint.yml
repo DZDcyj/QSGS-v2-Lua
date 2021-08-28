@@ -2,7 +2,7 @@ name: LuaLint-Checker
 on: [push, pull_request]
 jobs:
   Lua-lint:
-    name: Lint Lua Scripts
+    name: Lua Lint Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
