@@ -1,6 +1,6 @@
-name: LuaCheck-Push
+name: LuaCheck
 
-on: push
+on: [push, pull_request]
 
 jobs:
   lua-check:
