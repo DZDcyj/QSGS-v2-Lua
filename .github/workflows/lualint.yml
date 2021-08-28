@@ -1,0 +1,13 @@
+  
+name: LuaLintCheck
+
+on: [push, pull_request]
+
+jobs:
+  lua-lint-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: GoatG33k/fivem-lua-lint-action@v1
