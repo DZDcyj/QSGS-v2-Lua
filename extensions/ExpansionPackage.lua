@@ -27,6 +27,7 @@ JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
 JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
 JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true, true)
 ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true, true)
+ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -3311,6 +3312,115 @@ LuaLiji =
 ExTenYearLiuzan:addSkill(LuaFenyin)
 ExTenYearLiuzan:addSkill(LuaLiji)
 
+LuaQiaiCard =
+    sgs.CreateSkillCard {
+    name = 'LuaQiaiCard',
+    target_fixed = false,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        target:obtainCard(card)
+        local choices = 'letdraw2'
+        if source:isWounded() then
+            choices = choices .. '+letrecover'
+        end
+        local choice = room:askForChoice(target, 'LuaQiai', choices)
+        if choice == 'letdraw2' then
+            source:drawCards(2)
+        else
+            local theRecover = sgs.RecoverStruct()
+            theRecover.recover = 1
+            theRecover.who = target
+            room:recover(source, theRecover)
+        end
+    end
+}
+
+LuaQiai =
+    sgs.CreateViewAsSkill {
+    name = 'LuaQiai',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        return not to_select:isKindOf('BasicCard')
+    end,
+    view_as = function(self, cards)
+        if #cards == 1 then
+            local vs_card = LuaQiaiCard:clone()
+            vs_card:addSubcard(cards[1])
+            return vs_card
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaQiaiCard')
+    end
+}
+
+LuaShanxi =
+    sgs.CreateTriggerSkill {
+    name = 'LuaShanxi',
+    events = {sgs.EventPhaseStart, sgs.HpRecover},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Play and player:hasSkill(self:objectName()) then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, self:objectName() .. player:objectName(), 0)
+                end
+                local target =
+                    room:askForPlayerChosen(
+                    player,
+                    room:getOtherPlayers(player),
+                    self:objectName(),
+                    'LuaShanxi-choose',
+                    true,
+                    true
+                )
+                if target then
+                    room:addPlayerMark(target, self:objectName() .. player:objectName())
+                end
+            end
+        elseif event == sgs.HpRecover then
+            local splayers = room:findPlayersBySkillName(self:objectName())
+            for _, sp in sgs.qlist(splayers) do
+                if player:getMark(self:objectName() .. sp:objectName()) > 0 then
+                    if player:getHp() <= 0 then
+                        return false
+                    end
+                    local chooseLoseHp = true
+                    room:sendCompulsoryTriggerLog(sp, self:objectName())
+                    if player:getCardCount(true) >= 2 then
+                        local card =
+                            room:askForExchange(
+                            player,
+                            self:objectName(),
+                            2,
+                            2,
+                            true,
+                            'LuaShanxi-give:' .. sp:objectName(),
+                            true
+                        )
+                        if card then
+                            chooseLoseHp = false
+                            room:obtainCard(sp, card)
+                        end
+                    end
+                    if chooseLoseHp then
+                        room:loseHp(player)
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+ExWangcan:addSkill(LuaQiai)
+ExWangcan:addSkill(LuaShanxi)
+
 -- 封装好的函数部分
 
 -- 获取势力数
@@ -3898,5 +4008,17 @@ sgs.LoadTranslationTable {
     ['LuaLiji'] = '力激',
     [':LuaLiji'] = '<font color="green"><b>出牌阶段限零次</b></font>，你可以弃置一张牌，然后对一名其他角色造成1点伤害\
     你的回合内，本回合进入弃牌堆的牌每次达到“八”的倍数张时（全场角色小于5时改为“四”的倍数），此技能使用次数+1',
-    ['lualiji'] = '力激'
+    ['lualiji'] = '力激',
+    ['ExWangcan'] = '王粲',
+    ['&ExWangcan'] = '王粲',
+    ['#ExWangcan'] = '七子之冠',
+    ['LuaQiai'] = '七哀',
+    ['luaqiai'] = '七哀',
+    [':LuaQiai'] = '出牌阶段限一次，你可以将一张非基本牌交给一名其他角色，令其选择一项：1.你回复1点体力；2.你摸两张牌',
+    ['letdraw2'] = '令其摸两张牌',
+    ['letrecover'] = '令其回复一点体力',
+    ['LuaShanxi'] = '善檄',
+    [':LuaShanxi'] = '出牌阶段开始时，你可以令一名其他角色获得“檄”标记（如场上已有标记则转移给该角色）。拥有“檄”的角色，其每次恢复体力后，若未处于濒死状态，则其需交给你两张牌，否则流失一点体力',
+    ['LuaShanxi-give'] = '请交给 %src 两张牌，否则你将失去一点体力',
+    ['LuaShanxi-choose'] = '你可以选择一名其他角色，令其获得“檄”'
 }
