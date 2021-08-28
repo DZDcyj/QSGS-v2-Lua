@@ -1,0 +1,19 @@
+name: LuaLint-Checker
+on: [push, pull_request]
+jobs:
+  Lua-lint:
+    name: Lua Lint Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Lint
+        uses: GoatG33k/fivem-lua-lint-action@v1
+        with:
+          capture: "junit.xml"
+          args: "-d -t --ignore 112 113 143 212 --formatter JUnit"
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: "**/junit.xml"
+          fail_on_failure: 0

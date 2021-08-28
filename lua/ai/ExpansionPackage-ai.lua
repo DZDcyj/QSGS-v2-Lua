@@ -1,7 +1,6 @@
 sgs.ai_skill_discard['LuaMieji']=function(self, discard_num, min_num, optional, include_equip)
 	min_num = min_num or discard_num
     local exchange = self.player:hasFlag("Global_AIDiscardExchanging")
-    local callback = sgs.ai_skill_discard[reason]
     self:assignKeep(true)
 
     local cards = self.player:getCards('h')
@@ -15,7 +14,6 @@ sgs.ai_skill_discard['LuaMieji']=function(self, discard_num, min_num, optional, 
     end
     for _, card in ipairs(cards) do
         if exchange or not self.player:isJilei(card) and not card:isKindOf('TrickCard') then
-            place = self.room:getCardPlace(card:getEffectiveId())
             if self:getKeepValue(card) >= 4.1 then
                 table.insert(temp, card:getEffectiveId())
             else
