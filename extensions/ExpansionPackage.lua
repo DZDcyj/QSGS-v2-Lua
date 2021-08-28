@@ -1,4 +1,3 @@
-local sgs = sgs -- 处理 Lint 检查错误
 module('extensions.ExpansionPackage', package.seeall)
 extension = sgs.Package('ExpansionPackage')
 
