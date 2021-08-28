@@ -662,7 +662,7 @@ LuaSoutu =
             if rinsans:length() > 2 then
                 return false
             end
-            local players
+            local players = sgs.SPlayerList()
             if rinsans:isEmpty() then
                 players = room:getAlivePlayers()
             else
@@ -1416,7 +1416,8 @@ sgs.LoadTranslationTable {
     ☆攻击范围 = 武器范围（无武器时基础值为1）+ “精”标记数（因为日神杀 API 这样写的，我也没法，只能写死）',
     ['@LuaJing'] = '精',
     ['#LuaYangjingDamageUp'] = '%from 执行“<font color="yellow"><b>养精</b></font>”的效果，%card 的伤害值 + %arg',
-    ['#LuaYangjingDamageUpVirtualCard'] = '%from 执行“<font color="yellow"><b>养精</b></font>”的效果，<font color = "yellow"><b>杀[无色]</b></font> 的伤害值 + %arg',
+    ['#LuaYangjingDamageUpVirtualCard'] = '%from 执行“<font color="yellow"><b>养精</b></font>”的效果，\
+    <font color = "yellow"><b>杀[无色]</b></font> 的伤害值 + %arg',
     ['SPCactus'] = 'SP仙人掌',
     ['&SPCactus'] = '仙人掌',
     ['#SPCactus'] = '心狠手辣',

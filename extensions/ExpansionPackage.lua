@@ -1746,7 +1746,7 @@ LuaYizanCard =
             players:append(targets[i])
         end
         if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
-            local card = nil
+            local card
             if self:getUserString() and self:getUserString() ~= '' then
                 card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
                 return card and card:targetsFeasible(players, sgs.Self)
@@ -1805,7 +1805,7 @@ LuaYizanCard =
         local room = source:getRoom()
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         room:addPlayerMark(source, 'LuaYizanUse')
-        local to_use = ''
+        local to_use
         if self:getUserString() == 'peach+analeptic' then
             local use_list = {}
             table.insert(use_list, 'peach')
@@ -1829,7 +1829,7 @@ LuaYizanCard =
         else
             to_use = self:getUserString()
         end
-        local user_str = ''
+        local user_str
         if to_use == 'slash' then
             user_str = 'slash'
         elseif to_use == 'normal_slash' then
@@ -3567,7 +3567,10 @@ sgs.LoadTranslationTable {
     ['#ExXurong'] = '玄菟战魔',
     ['~ExXurong'] = '此生无悔，心中……无愧',
     ['LuaXionghuo'] = '凶镬',
-    [':LuaXionghuo'] = '游戏开始时，你获得3个“暴戾”标记。出牌阶段，你可以交给一名其他角色一个“暴戾”标记，你对有此标记的角色造成的伤害+1，且其出牌阶段开始时，移去“暴戾”标记并随机执行一项：1.受到1点火焰伤害且本回合不能对你使用【杀】；2.失去1点体力且本回合手牌上限-1；3.你获得其一张手牌和一张装备区里的牌',
+    [':LuaXionghuo'] = '游戏开始时，你获得3个“暴戾”标记。出牌阶段，你可以交给一名其他角色一个“暴戾”标记，你对有此标记的角色造成的伤害+1，且其出牌阶段开始时，移去“暴戾”标记并随机执行一项：\
+    1.受到1点火焰伤害且本回合不能对你使用【杀】\
+    2.失去1点体力且本回合手牌上限-1\
+    3.你获得其一张手牌和一张装备区里的牌',
     ['@baoli'] = '暴戾',
     ['$LuaXionghuo1'] = '此镬加之于你，定有所伤！',
     ['$LuaXionghuo2'] = '凶镬沿袭，怎会轻易无伤？',
@@ -3646,7 +3649,8 @@ sgs.LoadTranslationTable {
     ['LuaPojun'] = '破军',
     [':LuaPojun'] = '当你使用【杀】指定一个目标后，你可以将其至多X张牌扣置于该角色的武将牌旁（X为其体力值）；若如此做，当前回合结束阶段开始时，该角色获得这些牌。锁定技，你使用【杀】对手牌数与装备数均不大于你的角色造成伤害时，此伤害+1',
     ['#LuaPojunDamageUp'] = '%from 执行“<font color="yellow"><b>破军</b></font>”的效果，%card 的伤害值 + <font color = "yellow"><b>1</b></font>',
-    ['#LuaPojunDamageUpVirtualCard'] = '%from 执行“<font color="yellow"><b>破军</b></font>”的效果，<font color = "yellow"><b>杀[无色]</b></font> 的伤害值 + <font color = "yellow"><b>1</b></font>',
+    ['#LuaPojunDamageUpVirtualCard'] = '%from 执行“<font color="yellow"><b>破军</b></font>”的效果，\
+    <font color = "yellow"><b>杀[无色]</b></font> 的伤害值 + <font color = "yellow"><b>1</b></font>',
     ['$LuaPojun1'] = '江东铁壁，御敌于千里之外！',
     ['$LuaPojun2'] = '破军剑舞，正在此时！',
     ['~JieXusheng'] = '贼军连绵不绝，盛力已竭……',
@@ -3892,6 +3896,7 @@ sgs.LoadTranslationTable {
     ['LuaFenyin'] = '奋音',
     [':LuaFenyin'] = '锁定技，你的回合内，当一张牌进入弃牌堆后，若此回合内没有此花色的牌进入过弃牌堆，你摸一张牌',
     ['LuaLiji'] = '力激',
-    [':LuaLiji'] = '<font color="green"><b>出牌阶段限零次</b></font>，你可以弃置一张牌，然后对一名其他角色造成1点伤害。你的回合内，本回合进入弃牌堆的牌每次达到“八”的倍数张时（全场角色小于5时改为“四”的倍数），此技能使用次数+1',
+    [':LuaLiji'] = '<font color="green"><b>出牌阶段限零次</b></font>，你可以弃置一张牌，然后对一名其他角色造成1点伤害\
+    你的回合内，本回合进入弃牌堆的牌每次达到“八”的倍数张时（全场角色小于5时改为“四”的倍数），此技能使用次数+1',
     ['lualiji'] = '力激'
 }
