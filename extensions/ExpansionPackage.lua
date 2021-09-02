@@ -29,6 +29,7 @@ JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true, true)
 ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true, true)
 ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
+JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -3569,6 +3570,176 @@ ExZhouchu:addSkill(LuaXianghai)
 ExZhouchu:addSkill(LuaChuhai)
 SkillAnjiang:addSkill(LuaXianghaiMaxCards)
 
+LuaJiang =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJiang',
+    events = {sgs.TargetConfirmed, sgs.TargetSpecified},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, sunce, data)
+        local use = data:toCardUse()
+        if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(sunce)) then
+            if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
+                if sunce:askForSkillInvoke(self:objectName(), data) then
+                    sunce:drawCards(1, self:objectName())
+                    math.randomseed(os.time())
+                    sunce:getRoom():broadcastSkillInvoke(self:objectName(), math.random(1, 2))
+                end
+            end
+        end
+        return false
+    end
+}
+
+LuaYingzi =
+    sgs.CreateTriggerSkill {
+    name = 'LuaYingzi',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.DrawNCards},
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        if event == sgs.DrawNCards then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            local count = data:toInt() + 1
+            math.randomseed(os.time())
+            room:broadcastSkillInvoke(self:objectName())
+            room:addPlayerMark(player, 'drawed')
+            data:setValue(count)
+        end
+    end
+}
+
+LuaYingziMaxCard =
+    sgs.CreateMaxCardsSkill {
+    name = '#LuaYingzi',
+    fixed_func = function(self, target)
+        if target:hasSkill('LuaYingzi') then
+            return target:getMaxHp()
+        else
+            return -1
+        end
+    end
+}
+
+LuaYinghunCard =
+    sgs.CreateSkillCard {
+    name = 'LuaYinghunCard',
+    target_fixed = false,
+    will_throw = true,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local dest = effect.to
+        local x = source:getLostHp()
+        local room = source:getRoom()
+        local good = false
+if x > 1 then
+        local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
+        if choice == 'd1tx' then
+            room:broadcastSkillInvoke('LuaYinghun')
+            dest:drawCards(1)
+            x = math.min(x, dest:getCardCount(true))
+            room:askForDiscard(dest, self:objectName(), x, x, false, true)
+            good = false
+        elseif choice == 'dxt1' then
+            room:broadcastSkillInvoke('LuaYinghun')
+            dest:drawCards(x)
+            room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
+            good = true
+        end
+        if good then
+            room:setEmotion(dest, 'good')
+        else
+            room:setEmotion(dest, 'bad')
+        end
+else
+        room:broadcastSkillInvoke('LuaYinghun')
+        dest:drawCards(1)
+        room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
+        room:setEmotion(dest, 'good')
+end
+    end
+}
+
+LuaYinghunVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaYinghun',
+    n = 0,
+    view_as = function(self, cards)
+        return LuaYinghunCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaYinghun'
+    end
+}
+
+LuaYinghun =
+    sgs.CreateTriggerSkill {
+    name = 'LuaYinghun',
+    frequency = sgs.Skill_NotFrequent,
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaYinghunVS,
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        room:askForUseCard(player, '@@LuaYinghun', '@yinghun')
+        return false
+    end,
+    can_trigger = function(self, target)
+        if target then
+            if target:isAlive() and target:hasSkill(self:objectName()) then
+                if target:getPhase() == sgs.Player_Start then
+                    return target:isWounded()
+                end
+            end
+        end
+        return false
+    end
+}
+
+LuaHunzi =
+    sgs.CreateTriggerSkill {
+    name = 'LuaHunzi',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Wake,
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        room:addPlayerMark(player, 'LuaHunzi')
+        local msg = sgs.LogMessage()
+        msg.type = '#Hunzi'
+        msg.from = player
+        msg.arg = player:getHp()
+        room:sendLog(msg)
+        if room:changeMaxHpForAwakenSkill(player) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:getThread():delay(6500)
+            local theRecover = sgs.RecoverStruct()
+            theRecover.recover = 1
+            theRecover.who = player
+            room:recover(player, theRecover)
+            room:setEmotion(player, 'skill/hunzi')
+            room:handleAcquireDetachSkills(player, 'LuaYingzi|LuaYinghun')
+            room:addPlayerMark(player, 'hunzi')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return (target and target:isAlive() and target:hasSkill(self:objectName())) and
+            (target:getMark('LuaHunzi') == 0) and
+            (target:getPhase() == sgs.Player_Start) and
+            (target:getHp() <= 2)
+    end
+}
+
+SkillAnjiang:addSkill(LuaYingzi)
+SkillAnjiang:addSkill(LuaYinghun)
+SkillAnjiang:addSkill(LuaYingziMaxCard)
+JieSunce:addSkill(LuaJiang)
+JieSunce:addSkill(LuaHunzi)
+JieSunce:addSkill('zhiba')
+JieSunce:addRelateSkill('LuaYingzi')
+JieSunce:addRelateSkill('LuaYinghun')
+
 -- 封装好的函数部分
 
 -- 获取对应装备栏的卡牌类型
@@ -4189,5 +4360,32 @@ sgs.LoadTranslationTable {
     [':LuaXianghai'] = '锁定技，场上所有其他角色的手牌上限-1，你手牌区所有装备牌均视为【酒】',
     ['LuaChuhai'] = '除害',
     ['luachuhai'] = '除害',
-    [':LuaChuhai'] = '出牌阶段限一次，你可以摸一张牌，然后与一名其他角色拼点，若你赢，你观看其手牌，然后从牌堆或弃牌堆中获得其从手牌中拥有的牌类型各一张，当你于此阶段对其造成伤害后，将牌堆或弃牌堆中一张空置装备栏对应类型的装备牌置入你的装备区'
+    [':LuaChuhai'] = '出牌阶段限一次，你可以摸一张牌，然后与一名其他角色拼点，若你赢，你观看其手牌，然后从牌堆或弃牌堆中获得其从手牌中拥有的牌类型各一张，当你于此阶段对其造成伤害后，将牌堆或弃牌堆中一张空置装备栏对应类型的装备牌置入你的装备区',
+    ['JieSunce'] = '界孙策',
+    ['&JieSunce'] = '界孙策',
+    ['#JieSunce'] = '江东的小霸王',
+    ['LuaJiang'] = '激昂',
+    [':LuaJiang'] = '当你使用【决斗】或红色【杀】指定目标后，或成为【决斗】或红色【杀】的目标后，你可以摸一张牌',
+    ['$LuaJiang1'] = '我会把胜利带回江东！',
+    ['$LuaJiang2'] = '天下英雄，谁能与我一战？',
+    ['LuaHunzi'] = '魂姿',
+    [':LuaHunzi'] = '觉醒技，准备阶段，若你的体力值不大于2，你减1点体力上限，回复1点体力，然后获得“英姿”和“英魂”',
+    ['$LuaHunzi1'] = '小霸王之名响彻天下，何人不知？',
+    ['$LuaHunzi2'] = '江东已平，中原动荡，直取许昌！',
+    ['#Hunzi'] = '%from 的体力值为 %arg，触发“<font color="yellow"><b>魂姿</b></font>”觉醒',
+    ['LuaYinghun'] = '英魂',
+    [':LuaYinghun'] = '准备阶段，若你已受伤，你可以选择一名其他角色并选择一项：1.令其摸X张牌，然后弃置一张牌；2.令其摸一张牌，然后弃置X张牌（X为你已损失的体力值）',
+    ['LuaYingzi'] = '英姿',
+    [':LuaYingzi'] = '锁定技，摸牌阶段，你多摸一张牌；你的手牌上限为X（X为你的体力上限）',
+    ['$LuaYingzi1'] = '有公瑾助我，可平天下！',
+    ['$LuaYingzi2'] = '所到之处，战无不胜！',
+    ['luayinghun'] = '英魂',
+    ['@yinghun'] = '你可以发动“英魂”',
+    ['~LuaYinghun'] = '选择一名其他角色→点击确定',
+    ['d1tx'] = '令其摸1张牌，然后弃置X张牌',
+    ['dxt1'] = '令其摸X张牌，然后弃置1张牌',
+    ['LuaYinghunCard'] = '英魂',
+    ['$LuaYinghun1'] = '武烈之魂，助我扬名！',
+    ['$LuaYinghun2'] = '江东之主，众望所归！',
+    ['~JieSunce'] = '大业未就，中世尔殒……',
 }
