@@ -3578,7 +3578,7 @@ LuaJiang =
     on_trigger = function(self, event, sunce, data)
         local use = data:toCardUse()
         if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(sunce)) then
-            if use.card:isKindOf('Duel') or use.card:isKindOf('Slash') then
+            if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
                 if sunce:askForSkillInvoke(self:objectName(), data) then
                     sunce:drawCards(1, self:objectName())
                     math.randomseed(os.time())
@@ -3611,11 +3611,11 @@ LuaYingzi =
 LuaYingziMaxCard =
     sgs.CreateMaxCardsSkill {
     name = '#LuaYingzi',
-    extra_func = function(self, target)
+    fixed_func = function(self, target)
         if target:hasSkill('LuaYingzi') then
             return target:getMaxHp()
         else
-            return 0
+            return -1
         end
     end
 }
@@ -3631,6 +3631,7 @@ LuaYinghunCard =
         local x = source:getLostHp()
         local room = source:getRoom()
         local good = false
+if x > 1 then
         local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
         if choice == 'd1tx' then
             room:broadcastSkillInvoke('LuaYinghun')
@@ -3649,6 +3650,12 @@ LuaYinghunCard =
         else
             room:setEmotion(dest, 'bad')
         end
+else
+        room:broadcastSkillInvoke('LuaYinghun')
+        dest:drawCards(1)
+        room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
+        room:setEmotion(dest, 'good')
+end
     end
 }
 
@@ -4358,7 +4365,7 @@ sgs.LoadTranslationTable {
     ['&JieSunce'] = '界孙策',
     ['#JieSunce'] = '江东的小霸王',
     ['LuaJiang'] = '激昂',
-    [':LuaJiang'] = '每当你指定或成为【杀】或【决斗】的目标后，你可以摸一张牌',
+    [':LuaJiang'] = '当你使用【决斗】或红色【杀】指定目标后，或成为【决斗】或红色【杀】的目标后，你可以摸一张牌',
     ['$LuaJiang1'] = '我会把胜利带回江东！',
     ['$LuaJiang2'] = '天下英雄，谁能与我一战？',
     ['LuaHunzi'] = '魂姿',
