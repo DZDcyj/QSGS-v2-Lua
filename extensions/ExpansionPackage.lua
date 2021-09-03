@@ -3595,8 +3595,7 @@ LuaYingzi =
     name = 'LuaYingzi',
     frequency = sgs.Skill_Compulsory,
     events = {sgs.DrawNCards},
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         if event == sgs.DrawNCards then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             local count = data:toInt() + 1
@@ -3631,31 +3630,31 @@ LuaYinghunCard =
         local x = source:getLostHp()
         local room = source:getRoom()
         local good = false
-if x > 1 then
-        local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
-        if choice == 'd1tx' then
+        if x > 1 then
+            local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
+            if choice == 'd1tx' then
+                room:broadcastSkillInvoke('LuaYinghun')
+                dest:drawCards(1)
+                x = math.min(x, dest:getCardCount(true))
+                room:askForDiscard(dest, self:objectName(), x, x, false, true)
+                good = false
+            elseif choice == 'dxt1' then
+                room:broadcastSkillInvoke('LuaYinghun')
+                dest:drawCards(x)
+                room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
+                good = true
+            end
+            if good then
+                room:setEmotion(dest, 'good')
+            else
+                room:setEmotion(dest, 'bad')
+            end
+        else
             room:broadcastSkillInvoke('LuaYinghun')
             dest:drawCards(1)
-            x = math.min(x, dest:getCardCount(true))
-            room:askForDiscard(dest, self:objectName(), x, x, false, true)
-            good = false
-        elseif choice == 'dxt1' then
-            room:broadcastSkillInvoke('LuaYinghun')
-            dest:drawCards(x)
             room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
-            good = true
-        end
-        if good then
             room:setEmotion(dest, 'good')
-        else
-            room:setEmotion(dest, 'bad')
         end
-else
-        room:broadcastSkillInvoke('LuaYinghun')
-        dest:drawCards(1)
-        room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
-        room:setEmotion(dest, 'good')
-end
     end
 }
 
@@ -3680,8 +3679,7 @@ LuaYinghun =
     frequency = sgs.Skill_NotFrequent,
     events = {sgs.EventPhaseStart},
     view_as_skill = LuaYinghunVS,
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         room:askForUseCard(player, '@@LuaYinghun', '@yinghun')
         return false
     end,
@@ -3702,8 +3700,7 @@ LuaHunzi =
     name = 'LuaHunzi',
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Wake,
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         room:addPlayerMark(player, 'LuaHunzi')
         local msg = sgs.LogMessage()
         msg.type = '#Hunzi'
@@ -4387,5 +4384,5 @@ sgs.LoadTranslationTable {
     ['LuaYinghunCard'] = '英魂',
     ['$LuaYinghun1'] = '武烈之魂，助我扬名！',
     ['$LuaYinghun2'] = '江东之主，众望所归！',
-    ['~JieSunce'] = '大业未就，中世尔殒……',
+    ['~JieSunce'] = '大业未就，中世尔殒……'
 }
