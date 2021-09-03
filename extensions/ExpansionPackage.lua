@@ -3852,9 +3852,6 @@ LuaMiewuCard =
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         local user_str = to_use
         local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
-        if use_card == nil then
-            local use_card = sgs.Sanguosha:cloneCard('slash', card:getSuit(), card:getNumber())
-        end
         use_card:setSkillName('LuaMiewu')
         use_card:addSubcard(self:getSubcards():first())
         use_card:deleteLater()
