@@ -30,6 +30,7 @@ ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true, tru
 ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
 JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
+ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -2246,7 +2247,6 @@ LuaXuanfeng =
                 if targets:isEmpty() then
                     return false
                 end
-                -- player:setFlags("LuaXuanfengUsed") --这是源码Bug的地方
                 if player:getPhase() == sgs.Player_Discard then
                     player:setFlags('LuaXuanfengUsed')
                 end -- 修复源码Bug
@@ -3737,6 +3737,287 @@ JieSunce:addSkill('zhiba')
 JieSunce:addRelateSkill('LuaYingzi')
 JieSunce:addRelateSkill('LuaYinghun')
 
+LuaWuku =
+    sgs.CreateTriggerSkill {
+    name = 'LuaWuku',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.CardUsed},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('EquipCard') then
+            for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                if sp:getMark('@wuku') < 3 then
+                    room:sendCompulsoryTriggerLog(sp, self:objectName())
+                    sp:gainMark('@wuku')
+                end
+            end
+        end
+    end
+}
+
+LuaSanchen =
+    sgs.CreateTriggerSkill {
+    name = 'LuaSanchen',
+    frequency = sgs.Skill_Wake,
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        if room:changeMaxHpForAwakenSkill(player, 1) then
+            room:recover(player, sgs.RecoverStruct(player, nil, 1))
+            room:handleAcquireDetachSkills(player, 'LuaMiewu')
+            room:addPlayerMark(player, self:objectName())
+        end
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:hasSkill(self:objectName()) and
+            target:getMark(self:objectName()) == 0 and
+            target:getPhase() == sgs.Player_Finish and
+            target:getMark('@wuku') > 2
+    end
+}
+
+LuaMiewuCard =
+    sgs.CreateSkillCard {
+    name = 'LuaMiewuCard',
+    will_throw = false,
+    handling_method = sgs.Card_MethodNone,
+    filter = function(self, targets, to_select)
+        local players = sgs.PlayerList()
+        for i = 1, #targets do
+            players:append(targets[i])
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card
+            if self:getUserString() and self:getUserString() ~= '' then
+                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+                return card and card:targetFilter(players, to_select, sgs.Self) and
+                    not sgs.Self:isProhibited(to_select, card, players)
+            end
+        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+            return false
+        end
+        local _card = sgs.Self:getTag('LuaMiewu'):toCard()
+        if _card == nil then
+            return false
+        end
+        local card = sgs.Sanguosha:cloneCard(_card)
+        card:deleteLater()
+        return card and card:targetFilter(players, to_select, sgs.Self) and
+            not sgs.Self:isProhibited(to_select, card, players)
+    end,
+    feasible = function(self, targets)
+        local players = sgs.PlayerList()
+        for i = 1, #targets do
+            players:append(targets[i])
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card
+            if self:getUserString() and self:getUserString() ~= '' then
+                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+                return card and card:targetsFeasible(players, sgs.Self)
+            end
+        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+            return true
+        end
+        local _card = sgs.Self:getTag('LuaMiewu'):toCard()
+        if _card == nil then
+            return false
+        end
+        local card = sgs.Sanguosha:cloneCard(_card)
+        card:deleteLater()
+        return card and card:targetsFeasible(players, sgs.Self)
+    end,
+    on_validate = function(self, card_use)
+        local source = card_use.from
+        local room = source:getRoom()
+        local to_use = self:getUserString()
+        room:addPlayerMark(source, 'LuaMiewu')
+        source:loseMark('@wuku')
+        if
+            to_use == 'slash' and
+                sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+         then
+            local use_list = {}
+            table.insert(use_list, 'slash')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'normal_slash')
+                table.insert(use_list, 'thunder_slash')
+                table.insert(use_list, 'fire_slash')
+            end
+            to_use = room:askForChoice(source, 'miewu_slash', table.concat(use_list, '+'))
+            source:setTag('MiewuSlash', sgs.QVariant(to_use))
+        end
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local user_str = to_use
+        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+        if use_card == nil then
+            local use_card = sgs.Sanguosha:cloneCard('slash', card:getSuit(), card:getNumber())
+        end
+        use_card:setSkillName('LuaMiewu')
+        use_card:addSubcard(self:getSubcards():first())
+        use_card:deleteLater()
+        local tos = card_use.to
+        for _, to in sgs.qlist(tos) do
+            local skill = room:isProhibited(source, to, use_card)
+            if skill then
+                card_use.to:removeOne(to)
+            end
+        end
+        return use_card
+    end,
+    on_validate_in_response = function(self, source)
+        local room = source:getRoom()
+        local to_use
+        room:addPlayerMark(source, 'LuaMiewu')
+        source:loseMark('@wuku')
+        if self:getUserString() == 'peach+analeptic' then
+            local use_list = {}
+            table.insert(use_list, 'peach')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'analeptic')
+            end
+            to_use = room:askForChoice(source, 'miewu_saveself', table.concat(use_list, '+'))
+            source:setTag('MiewuSaveSelf', sgs.QVariant(to_use))
+        elseif self:getUserString() == 'slash' then
+            local use_list = {}
+            table.insert(use_list, 'slash')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'normal_slash')
+                table.insert(use_list, 'thunder_slash')
+                table.insert(use_list, 'fire_slash')
+            end
+            to_use = room:askForChoice(source, 'miewu_slash', table.concat(use_list, '+'))
+            source:setTag('MiewuSlash', sgs.QVariant(to_use))
+        else
+            to_use = self:getUserString()
+        end
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local user_str
+        if to_use == 'slash' then
+            user_str = 'slash'
+        elseif to_use == 'normal_slash' then
+            user_str = 'slash'
+        else
+            user_str = to_use
+        end
+        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+        use_card:setSkillName('LuaMiewu')
+        use_card:addSubcard(self)
+        use_card:deleteLater()
+        return use_card
+    end
+}
+
+LuaMiewuVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaMiewu',
+    filter_pattern = '.|.|.|.',
+    response_or_use = true,
+    enabled_at_response = function(self, player, pattern)
+        local current = false
+        local players = player:getAliveSiblings()
+        players:append(player)
+        for _, p in sgs.qlist(players) do
+            if p:getPhase() ~= sgs.Player_NotActive then
+                current = true
+                break
+            end
+        end
+        if not current then
+            return false
+        end
+        if
+            player:isNude() or string.sub(pattern, 1, 1) == '.' or player:getMark('@wuku') <= 0 or
+                string.sub(pattern, 1, 1) == '@' or
+                player:getMark('LuaMiewu') > 0
+         then
+            return false
+        end
+        if pattern == 'peach' and player:getMark('Global_PreventPeach') > 0 then
+            return false
+        end
+        if string.find(pattern, '[%u%d]') then
+            return false
+        end -- 这是个极其肮脏的黑客！！ 因此我们需要去阻止基本牌模式
+        return true
+    end,
+    enabled_at_play = function(self, player)
+        local current = false
+        local players = player:getAliveSiblings()
+        players:append(player)
+        for _, p in sgs.qlist(players) do
+            if p:getPhase() ~= sgs.Player_NotActive then
+                current = true
+                break
+            end
+        end
+        if not current then
+            return false
+        end
+        return not player:isNude() and player:getMark('LuaMiewu') == 0 and player:getMark('@wuku') > 0
+    end,
+    enabled_at_nullification = function(self, player)
+        return not player:isNude() and player:getMark('LuaMiewu') == 0 and player:getMark('@wuku') > 0
+    end,
+    view_as = function(self, cards)
+        if
+            sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or
+                sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+         then
+            local card = LuaMiewuCard:clone()
+            card:setUserString(sgs.Sanguosha:getCurrentCardUsePattern())
+            card:addSubcard(cards)
+            return card
+        end
+        local c = sgs.Self:getTag('LuaMiewu'):toCard()
+        if c then
+            local card = LuaMiewuCard:clone()
+            card:setUserString(c:objectName())
+            card:addSubcard(cards)
+            return card
+        else
+            return nil
+        end
+    end
+}
+LuaMiewu =
+    sgs.CreateTriggerSkill {
+    name = 'LuaMiewu',
+    events = {sgs.TurnStart, sgs.CardUsed, sgs.CardResponded},
+    view_as_skill = LuaMiewuVS,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.TurnStart then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasSkill('LuaMiewu') then
+                    room:setPlayerMark(p, 'LuaMiewu', 0)
+                end
+            end
+        else
+            local card
+            if event == sgs.CardUsed then
+                card = data:toCardUse().card
+            else
+                card = data:toCardResponse().m_card
+            end
+            if card and card:getSkillName() == self:objectName() and player:hasSkill(self:objectName()) then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:drawCards(1)
+            end
+        end
+    end
+}
+LuaMiewu:setGuhuoDialog('lrd')
+
+SkillAnjiang:addSkill(LuaMiewu)
+ExDuyu:addSkill(LuaWuku)
+ExDuyu:addSkill(LuaSanchen)
+ExDuyu:addRelateSkill('LuaMiewu')
+
 -- 封装好的函数部分
 
 -- 获取对应装备栏的卡牌类型
@@ -4384,5 +4665,16 @@ sgs.LoadTranslationTable {
     ['LuaYinghunCard'] = '英魂',
     ['$LuaYinghun1'] = '武烈之魂，助我扬名！',
     ['$LuaYinghun2'] = '江东之主，众望所归！',
-    ['~JieSunce'] = '大业未就，中世尔殒……'
+    ['~JieSunce'] = '大业未就，中世尔殒……',
+    ['ExDuyu'] = '杜预',
+    ['&ExDuyu'] = '杜预',
+    ['#ExDuyu'] = '文成武德',
+    ['LuaWuku'] = '武库',
+    [':LuaWuku'] = '锁定技，当一名角色使用装备牌时，若“武库”标记小于3，你获得1个“武库”标记',
+    ['@wuku'] = '武库',
+    ['LuaSanchen'] = '三陈',
+    [':LuaSanchen'] = '觉醒技，结束阶段，若“武库”数大于2，你加1点体力上限，回复1点体力，然后获得“灭吴”',
+    ['LuaMiewu'] = '灭吴',
+    ['luamiewu'] = '灭吴',
+    [':LuaMiewu'] = '<font color="green"><b>每回合限一次</b></font>，你可以弃1个“武库”，将一张牌当任意一张基本牌或锦囊牌使用或打出；若如此做，你摸一张牌'
 }
