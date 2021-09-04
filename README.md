@@ -1,7 +1,4 @@
 # QSGS-v2-Lua
-
-TODO: 这个标志目前只显示 master 分支的状态，之后会更新状态为单独的分支
-
 ![LuaCheck](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/lua_check.yml/badge.svg) ![LuaLint-Checker](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/lualint.yml/badge.svg)
 
 ## 介绍
