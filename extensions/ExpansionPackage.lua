@@ -31,7 +31,7 @@ ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
 JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
-ChenZhen = sgs.General(extension, 'ChenZhen', 'shu', '3', true, true)
+ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4016,8 +4016,9 @@ ExDuyu:addSkill(LuaWuku)
 ExDuyu:addSkill(LuaSanchen)
 ExDuyu:addRelateSkill('LuaMiewu')
 
-shamengCard = sgs.CreateSkillCard{
-    name = "shamengCard",
+LuaShamengCard =
+    sgs.CreateSkillCard {
+    name = 'LuaShamengCard',
     target_fixed = false,
     will_throw = true,
     filter = function(self, targets, to_select)
@@ -4031,8 +4032,9 @@ shamengCard = sgs.CreateSkillCard{
         room:drawCards(dest, 2)
     end
 }
-shameng =sgs.CreateViewAsSkill {
-    name = 'shameng',
+LuaShameng =
+    sgs.CreateViewAsSkill {
+    name = 'LuaShameng',
     n = 2,
     view_filter = function(self, selected, to_select)
         if to_select:isEquipped() then
@@ -4048,16 +4050,18 @@ shameng =sgs.CreateViewAsSkill {
     view_as = function(self, cards)
         if #cards < 2 then
             return nil
-    end
-    local vs_card = shamengCard:clone()
+        end
+        local vs_card = LuaShamengCard:clone()
         vs_card:addSubcard(cards[1])
         vs_card:addSubcard(cards[2])
         return vs_card
     end,
-    enabled_at_play = function(slef, player)
-        return not player:hasUsed('#shamengCard')
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaShamengCard')
     end
 }
+
+ExChenzhen:addSkill(LuaShameng)
 
 -- 封装好的函数部分
 
@@ -4718,9 +4722,10 @@ sgs.LoadTranslationTable {
     ['LuaMiewu'] = '灭吴',
     ['luamiewu'] = '灭吴',
     [':LuaMiewu'] = '<font color="green"><b>每回合限一次</b></font>，你可以弃1个“武库”，将一张牌当任意一张基本牌或锦囊牌使用或打出；若如此做，你摸一张牌',
-    ['ChenZhen'] = '陈震',
-    ['&ChenZhen'] = '陈震',
-    ['#ChenZhen'] = '歃盟使节',
-    ['shameng'] = '歃盟',
-    [':shameng'] = '出牌阶段限一次，你可以弃置两张颜色相同的手牌，令一名其他角色摸两张牌，然后你摸3张牌'
+    ['ExChenzhen'] = '陈震',
+    ['&ExChenzhen'] = '陈震',
+    ['#ExChenzhen'] = '歃盟使节',
+    ['LuaShameng'] = '歃盟',
+    [':LuaShameng'] = '出牌阶段限一次，你可以弃置两张颜色相同的手牌，令一名其他角色摸两张牌，然后你摸3张牌',
+    ['luashameng'] = '歃盟',
 }
