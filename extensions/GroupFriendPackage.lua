@@ -10,6 +10,7 @@ SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, true)
 Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true, true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
+Erenlei = sgs.General(extension, 'Erenlei', 'qun', '3', true, true)
 
 LuaChuntian =
     sgs.CreateTriggerSkill {
@@ -1329,6 +1330,74 @@ LuaZhazhi =
     end
 }
 
+LuaChutou =
+    sgs.CreateTriggerSkill {
+    name = 'LuaChutou',
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    events = {sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if room:getTag('FirstRound'):toBool() then
+            return false
+        end
+        -- 获得牌时结算
+        if move.to and move.to:objectName() == player:objectName() and player:hasSkill(self:objectName()) then
+            if move.from and move.from:objectName() == player:objectName() then
+                return false
+            end
+            for _, id in sgs.qlist(move.card_ids) do
+                if
+                    room:getCardOwner(id):objectName() == player:objectName() and
+                        (room:getCardPlace(id) == sgs.Player_PlaceHand or room:getCardPlace(id) == sgs.Player_PlaceEquip)
+                 then
+                    room:addPlayerMark(player, self:objectName() .. 'engine')
+                    if player:getMark(self:objectName() .. 'engine') > 0 then
+                        local isMax = true
+                        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                            if p:getHandcardNum() >= player:getHandcardNum() then
+                                isMax = false
+                                break
+                            end
+                        end
+                        if isMax then
+                            room:sendCompulsoryTriggerLog(player, self:objectName())
+                            room:addPlayerMark(player, self:objectName())
+                            room:askForDiscard(player, self:objectName(), 1, 1, false, true)
+                            room:removePlayerMark(player, self:objectName())
+                        end
+                        room:removePlayerMark(player, self:objectName() .. 'engine')
+                        break
+                    end
+                end
+            end
+        end
+        -- 弃牌时结算
+        if
+            (move.from and (move.from:objectName() == player:objectName()) and
+                (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))) and
+                not (move.to and
+                    (move.to:objectName() == player:objectName() and
+                        (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
+         then
+            if
+                move.reason and
+                    (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
+                        sgs.CardMoveReason_S_REASON_DISCARD) and
+                    player:getMark(self:objectName()) == 0 and
+                    player:hasSkill(self:objectName())
+             then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:drawCards(1)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
 Skadi:addSkill(LuaChuntian)
 Skadi:addSkill(LuaGaochao)
 Skadi:addRelateSkill('LuaPenshui')
@@ -1357,6 +1426,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
+Erenlei:addSkill(LuaChutou)
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
@@ -1458,5 +1528,8 @@ sgs.LoadTranslationTable {
     ['LuaZhazhi'] = '榨汁',
     [':LuaZhazhi'] = '一名其他角色的出牌阶段开始时，若你在其攻击范围内，你可以令其对你使用一张不计入使用次数限制的杀（无距离限制），若该杀未对你造成伤害，你摸一张牌并回复一点体力；否则该角色造成的伤害-1直到回合结束',
     ['#LuaZhazhi'] = '%from 的“<font color="yellow"><b>榨汁</b></font>”生效，伤害值由 %arg2 减为 %arg',
-    ['@LuaZhazhi-slash'] = '%src 对你发动“榨汁”，请对其使用一张【杀】，否则你本回合造成伤害-1'
+    ['@LuaZhazhi-slash'] = '%src 对你发动“榨汁”，请对其使用一张【杀】，否则你本回合造成伤害-1',
+    ['Erenlei'] = '饿人类',
+    ['LuaChutou'] = '出头',
+    [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌',
 }
