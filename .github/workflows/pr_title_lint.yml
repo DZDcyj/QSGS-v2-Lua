@@ -1,0 +1,17 @@
+name: Pull Request Title Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  Pull-Request-Title-Check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR Title Check
+        uses: amannn/action-semantic-pull-request@v3.4.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
