@@ -10,6 +10,7 @@ SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, true)
 Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true, true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
+Erenlei = sgs.General(extension, 'Erenlei', 'qun', '3', true, true)
 
 LuaChuntian =
     sgs.CreateTriggerSkill {
@@ -1329,6 +1330,74 @@ LuaZhazhi =
     end
 }
 
+LuaChutou =
+    sgs.CreateTriggerSkill {
+    name = 'LuaChutou',
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    events = {sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if room:getTag('FirstRound'):toBool() then
+            return false
+        end
+        -- 获得牌时结算
+        if move.to and move.to:objectName() == player:objectName() and player:hasSkill(self:objectName()) then
+            if move.from and move.from:objectName() == player:objectName() then
+                return false
+            end
+            for _, id in sgs.qlist(move.card_ids) do
+                if
+                    room:getCardOwner(id):objectName() == player:objectName() and
+                        (room:getCardPlace(id) == sgs.Player_PlaceHand or room:getCardPlace(id) == sgs.Player_PlaceEquip)
+                 then
+                    room:addPlayerMark(player, self:objectName() .. 'engine')
+                    if player:getMark(self:objectName() .. 'engine') > 0 then
+                        local isMax = true
+                        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                            if p:getHandcardNum() >= player:getHandcardNum() then
+                                isMax = false
+                                break
+                            end
+                        end
+                        if isMax then
+                            room:sendCompulsoryTriggerLog(player, self:objectName())
+                            room:addPlayerMark(player, self:objectName())
+                            room:askForDiscard(player, self:objectName(), 1, 1, false, true)
+                            room:removePlayerMark(player, self:objectName())
+                        end
+                        room:removePlayerMark(player, self:objectName() .. 'engine')
+                        break
+                    end
+                end
+            end
+        end
+        -- 弃牌时结算
+        if
+            (move.from and (move.from:objectName() == player:objectName()) and
+                (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))) and
+                not (move.to and
+                    (move.to:objectName() == player:objectName() and
+                        (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
+         then
+            if
+                move.reason and
+                    (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
+                        sgs.CardMoveReason_S_REASON_DISCARD) and
+                    player:getMark(self:objectName()) == 0 and
+                    player:hasSkill(self:objectName())
+             then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:drawCards(1)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
 Skadi:addSkill(LuaChuntian)
 Skadi:addSkill(LuaGaochao)
 Skadi:addRelateSkill('LuaPenshui')
@@ -1357,6 +1426,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
+Erenlei:addSkill(LuaChutou)
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
