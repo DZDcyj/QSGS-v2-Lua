@@ -31,6 +31,7 @@ ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
 JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
+ChenZhen = sgs.General(extension, 'ChenZhen', 'shu', '3', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4015,6 +4016,49 @@ ExDuyu:addSkill(LuaWuku)
 ExDuyu:addSkill(LuaSanchen)
 ExDuyu:addRelateSkill('LuaMiewu')
 
+shamengCard = sgs.CreateSkillCard{
+    name = "shamengCard",
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, targets, to_select)
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_effect = function(self, effect)
+        local sourse = effect.from
+        local dest = effect.to
+        local room = sourse:getRoom()
+        room:drawCards(sourse, 3)
+        room:drawCards(dest, 2)
+    end
+}
+shameng =sgs.CreateViewAsSkill {
+    name = 'shameng',
+    n = 2,
+    view_filter = function(self, selected, to_select)
+        if to_select:isEquipped() then
+            return false
+        end
+        if #selected == 0 then
+            return true
+        elseif #selected == 1 then
+            return selected[1]:sameColorWith(to_select)
+        end
+        return false
+    end,
+    view_as = function(self, cards)
+        if #cards < 2 then
+            return nil
+    end
+    local vs_card = shamengCard:clone()
+        vs_card:addSubcard(cards[1])
+        vs_card:addSubcard(cards[2])
+        return vs_card
+    end,
+    enabled_at_play = function(slef, player)
+        return not player:hasUsed('#shamengCard')
+    end
+}
+
 -- 封装好的函数部分
 
 -- 获取对应装备栏的卡牌类型
@@ -4673,5 +4717,10 @@ sgs.LoadTranslationTable {
     [':LuaSanchen'] = '觉醒技，结束阶段，若“武库”数大于2，你加1点体力上限，回复1点体力，然后获得“灭吴”',
     ['LuaMiewu'] = '灭吴',
     ['luamiewu'] = '灭吴',
-    [':LuaMiewu'] = '<font color="green"><b>每回合限一次</b></font>，你可以弃1个“武库”，将一张牌当任意一张基本牌或锦囊牌使用或打出；若如此做，你摸一张牌'
+    [':LuaMiewu'] = '<font color="green"><b>每回合限一次</b></font>，你可以弃1个“武库”，将一张牌当任意一张基本牌或锦囊牌使用或打出；若如此做，你摸一张牌',
+    ['ChenZhen'] = '陈震',
+    ['&ChenZhen'] = '陈震',
+    ['#ChenZhen'] = '歃盟使节',
+    ['shameng'] = '歃盟',
+    [':shameng'] = '出牌阶段限一次，你可以弃置两张颜色相同的手牌，令一名其他角色摸两张牌，然后你摸3张牌'
 }
