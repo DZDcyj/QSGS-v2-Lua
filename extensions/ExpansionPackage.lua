@@ -4726,6 +4726,6 @@ sgs.LoadTranslationTable {
     ['&ExChenzhen'] = '陈震',
     ['#ExChenzhen'] = '歃盟使节',
     ['LuaShameng'] = '歃盟',
-    [':LuaShameng'] = '出牌阶段限一次，你可以弃置两张颜色相同的手牌，令一名其他角色摸两张牌，然后你摸3张牌',
+    [':LuaShameng'] = '出牌阶段限一次，你可以弃置两张颜色相同的手牌，令一名其他角色摸两张牌，然后你摸三张牌',
     ['luashameng'] = '歃盟',
 }
