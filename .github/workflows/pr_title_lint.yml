@@ -8,7 +8,7 @@ on:
       - synchronize
 
 jobs:
-  Pull Request Title Check:
+  Pull-Request-Title-Check:
     runs-on: ubuntu-latest
     steps:
       - name: PR Title Check
