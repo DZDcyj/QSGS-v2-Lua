@@ -48,7 +48,7 @@ $ brew install git
     - Dismiss stale pull request approvals when new commits are pushed（推送新提交时忽略旧拉取请求批准）
     - Require review from Code Owners（需要代码所有者审查）
 
-这意味着如果要进行合并，您的最后一次提交必须通过代码所有者的审查，并且通过或者拒绝的审查将会在下一次提交之后失效。
+这意味着如果要进行合并，您的最后一次提交必须通过代码所有者的审查，并且通过的审查将会在下一次提交之后失效。
 
 - Require status checks to pass before merging（合并前必需状态检查通过）
     - Require branches to be up to date before merging（要求分支在合并前保持最新）
