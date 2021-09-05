@@ -10,7 +10,7 @@ SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, true)
 Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true, true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
-Erenlei = sgs.General(extension, 'Erenlei', 'qun', '3', true, true)
+Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 
 LuaChuntian =
     sgs.CreateTriggerSkill {
@@ -1349,7 +1349,10 @@ LuaChutou =
             for _, id in sgs.qlist(move.card_ids) do
                 if
                     room:getCardOwner(id):objectName() == player:objectName() and
-                        (room:getCardPlace(id) == sgs.Player_PlaceHand or room:getCardPlace(id) == sgs.Player_PlaceEquip)
+                        (room:getCardPlace(id) == sgs.Player_PlaceHand) and
+                        move.reason and
+                        (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
+                            sgs.CardMoveReason_S_REASON_DRAW)
                  then
                     room:addPlayerMark(player, self:objectName() .. 'engine')
                     if player:getMark(self:objectName() .. 'engine') > 0 then
@@ -1531,5 +1534,5 @@ sgs.LoadTranslationTable {
     ['@LuaZhazhi-slash'] = '%src 对你发动“榨汁”，请对其使用一张【杀】，否则你本回合造成伤害-1',
     ['Erenlei'] = '饿人类',
     ['LuaChutou'] = '出头',
-    [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌',
+    [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌'
 }
