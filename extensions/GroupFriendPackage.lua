@@ -10,6 +10,7 @@ SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, true)
 Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true, true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
+Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 
 LuaChuntian =
     sgs.CreateTriggerSkill {
@@ -1329,6 +1330,161 @@ LuaZhazhi =
     end
 }
 
+LuaShaikaCard =
+    sgs.CreateSkillCard {
+    name = 'LuaShaikaCard',
+    filter = function(self, targets, to_select)
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local len = self:getSubcards():length() + 1
+        if
+            not room:askForDiscard(
+                target,
+                'LuaShaika',
+                len,
+                len,
+                true,
+                false,
+                '@LuaShaika:' .. source:objectName() .. '::' .. len
+            )
+         then
+            local damage = sgs.DamageStruct()
+            damage.from = source
+            damage.to = target
+            damage.damage = 1
+            room:damage(damage)
+        end
+    end
+}
+
+LuaShaikaVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaShaika',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return sgs.Self:getMark('LuaShaika' .. to_select:objectName()) == 0
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local vs_card = LuaShaikaCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:isNude()
+    end
+}
+
+LuaShaika =
+    sgs.CreateTriggerSkill {
+    name = 'LuaShaika',
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    view_as_skill = LuaShaikaVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if room:getCurrent():objectName() == player:objectName() and player:hasSkill(self:objectName()) then
+                if move.to_place == sgs.Player_DiscardPile then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        local card = sgs.Sanguosha:getCard(id)
+                        room:addPlayerMark(player, self:objectName() .. card:objectName())
+                    end
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    for _, mark in sgs.list(p:getMarkNames()) do
+                        if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
+                            room:setPlayerMark(p, mark, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaChutou =
+    sgs.CreateTriggerSkill {
+    name = 'LuaChutou',
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    events = {sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if room:getTag('FirstRound'):toBool() then
+            return false
+        end
+        -- 获得牌时结算
+        if move.to and move.to:objectName() == player:objectName() and player:hasSkill(self:objectName()) then
+            if move.from and move.from:objectName() == player:objectName() then
+                return false
+            end
+            for _, id in sgs.qlist(move.card_ids) do
+                if
+                    room:getCardOwner(id):objectName() == player:objectName() and
+                        (room:getCardPlace(id) == sgs.Player_PlaceHand) and
+                        move.reason and
+                        (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
+                            sgs.CardMoveReason_S_REASON_DRAW)
+                 then
+                    room:addPlayerMark(player, self:objectName() .. 'engine')
+                    if player:getMark(self:objectName() .. 'engine') > 0 then
+                        local isMax = true
+                        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                            if p:getHandcardNum() >= player:getHandcardNum() then
+                                isMax = false
+                                break
+                            end
+                        end
+                        if isMax then
+                            room:sendCompulsoryTriggerLog(player, self:objectName())
+                            room:addPlayerMark(player, self:objectName())
+                            room:askForDiscard(player, self:objectName(), 1, 1, false, true)
+                            room:removePlayerMark(player, self:objectName())
+                        end
+                        room:removePlayerMark(player, self:objectName() .. 'engine')
+                        break
+                    end
+                end
+            end
+        end
+        -- 弃牌时结算
+        if
+            (move.from and (move.from:objectName() == player:objectName()) and
+                (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))) and
+                not (move.to and
+                    (move.to:objectName() == player:objectName() and
+                        (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
+         then
+            if
+                move.reason and
+                    (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
+                        sgs.CardMoveReason_S_REASON_DISCARD) and
+                    player:getMark(self:objectName()) == 0 and
+                    player:hasSkill(self:objectName())
+             then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:drawCards(1)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
 Skadi:addSkill(LuaChuntian)
 Skadi:addSkill(LuaGaochao)
 Skadi:addRelateSkill('LuaPenshui')
@@ -1357,6 +1513,8 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
+Erenlei:addSkill(LuaShaika)
+Erenlei:addSkill(LuaChutou)
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
@@ -1458,5 +1616,17 @@ sgs.LoadTranslationTable {
     ['LuaZhazhi'] = '榨汁',
     [':LuaZhazhi'] = '一名其他角色的出牌阶段开始时，若你在其攻击范围内，你可以令其对你使用一张不计入使用次数限制的杀（无距离限制），若该杀未对你造成伤害，你摸一张牌并回复一点体力；否则该角色造成的伤害-1直到回合结束',
     ['#LuaZhazhi'] = '%from 的“<font color="yellow"><b>榨汁</b></font>”生效，伤害值由 %arg2 减为 %arg',
-    ['@LuaZhazhi-slash'] = '%src 对你发动“榨汁”，请对其使用一张【杀】，否则你本回合造成伤害-1'
+    ['@LuaZhazhi-slash'] = '%src 对你发动“榨汁”，请对其使用一张【杀】，否则你本回合造成伤害-1',
+    ['Erenlei'] = '饿人类',
+    ['&Erenlei'] = '饿人类',
+    ['#Erenlei'] = '哔哔机',
+    ['LuaShaika'] = '晒卡',
+    ['luashaika'] = '晒卡',
+    [':LuaShaika'] = '出牌阶段，你可以弃置至少一张牌，然后你指定一名其他角色，该角色选择以下一项执行：\
+    1.弃置X+1张牌（X为你以此法弃置的牌数）\
+    2.受到你造成的一点伤害\
+    锁定技，当一张牌进入弃牌堆后，本回合内与此牌同名的卡牌不能以此法弃置',
+    ['@LuaShaika'] = '%src 对你发动了“晒卡”，你需要弃置 %arg 张牌，或者点击“取消”受到一点伤害',
+    ['LuaChutou'] = '出头',
+    [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌'
 }
