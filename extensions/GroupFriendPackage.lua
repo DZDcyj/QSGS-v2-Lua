@@ -1339,7 +1339,17 @@ LuaShaikaCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         local len = self:getSubcards():length() + 1
-        if not room:askForDiscard(target, 'LuaShaika', len, len, true, false, '@LuaShaika:'..source:objectName()..'::' .. len) then
+        if
+            not room:askForDiscard(
+                target,
+                'LuaShaika',
+                len,
+                len,
+                true,
+                false,
+                '@LuaShaika:' .. source:objectName() .. '::' .. len
+            )
+         then
             local damage = sgs.DamageStruct()
             damage.from = source
             damage.to = target
