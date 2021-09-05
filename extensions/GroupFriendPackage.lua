@@ -1330,6 +1330,80 @@ LuaZhazhi =
     end
 }
 
+LuaShaikaCard =
+    sgs.CreateSkillCard {
+    name = 'LuaShaikaCard',
+    filter = function(self, targets, to_select)
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local len = self:getSubcards():length() + 1
+        if not room:askForDiscard(target, 'LuaShaika', len, len, true, false, '@LuaShaika:'..source:objectName()..'::' .. len) then
+            local damage = sgs.DamageStruct()
+            damage.from = source
+            damage.to = target
+            damage.damage = 1
+            room:damage(damage)
+        end
+    end
+}
+
+LuaShaikaVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaShaika',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return sgs.Self:getMark('LuaShaika' .. to_select:objectName()) == 0
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local vs_card = LuaShaikaCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:isNude()
+    end
+}
+
+LuaShaika =
+    sgs.CreateTriggerSkill {
+    name = 'LuaShaika',
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    view_as_skill = LuaShaikaVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if room:getCurrent():objectName() == player:objectName() and player:hasSkill(self:objectName()) then
+                if move.to_place == sgs.Player_DiscardPile then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        local card = sgs.Sanguosha:getCard(id)
+                        room:addPlayerMark(player, self:objectName() .. card:objectName())
+                    end
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    for _, mark in sgs.list(p:getMarkNames()) do
+                        if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
+                            room:setPlayerMark(p, mark, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
 LuaChutou =
     sgs.CreateTriggerSkill {
     name = 'LuaChutou',
@@ -1429,6 +1503,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
+Erenlei:addSkill(LuaShaika)
 Erenlei:addSkill(LuaChutou)
 
 sgs.LoadTranslationTable {
@@ -1535,6 +1610,13 @@ sgs.LoadTranslationTable {
     ['Erenlei'] = '饿人类',
     ['&Erenlei'] = '饿人类',
     ['#Erenlei'] = '哔哔机',
+    ['LuaShaika'] = '晒卡',
+    ['luashaika'] = '晒卡',
+    [':LuaShaika'] = '出牌阶段，你可以弃置至少一张牌，然后你指定一名其他角色，该角色选择以下一项执行：\
+    1.弃置X+1张牌（X为你以此法弃置的牌数）\
+    2.受到你造成的一点伤害\
+    锁定技，当一张牌进入弃牌堆后，本回合内与此牌同名的卡牌不能以此法弃置',
+    ['@LuaShaika'] = '%src 对你发动了“晒卡”，你需要弃置 %arg 张牌，或者点击“取消”受到一点伤害',
     ['LuaChutou'] = '出头',
     [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌'
 }
