@@ -1533,6 +1533,8 @@ sgs.LoadTranslationTable {
     ['#LuaZhazhi'] = '%from 的“<font color="yellow"><b>榨汁</b></font>”生效，伤害值由 %arg2 减为 %arg',
     ['@LuaZhazhi-slash'] = '%src 对你发动“榨汁”，请对其使用一张【杀】，否则你本回合造成伤害-1',
     ['Erenlei'] = '饿人类',
+    ['&Erenlei'] = '饿人类',
+    ['#Erenlei'] = '哔哔机',
     ['LuaChutou'] = '出头',
     [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌'
 }
