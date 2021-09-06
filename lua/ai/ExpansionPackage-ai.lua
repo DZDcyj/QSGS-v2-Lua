@@ -85,7 +85,3 @@ sgs.ai_skill_discard['LuaShanxi'] = function(self, discard_num, min_num, optiona
     -- 让 SmartAI 处理
     return nil
 end
-
-sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optional, include_equip)
-    
-end
