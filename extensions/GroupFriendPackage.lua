@@ -1499,11 +1499,11 @@ LuaYingshi =
                 room:doAnimate(1, sp:objectName(), death.who:objectName())
                 local skillTable = {}
                 -- 添加主将技能
-                for _, skill in ipairs(getSkillList(death.who:getGeneral())) do
+                for _, skill in ipairs(getSkillTable(death.who:getGeneral())) do
                     table.insert(skillTable, skill)
                 end
                 -- 添加副将技能
-                for _, skill in ipairs(getSkillList(death.who:getGeneral2())) do
+                for _, skill in ipairs(getSkillTable(death.who:getGeneral2())) do
                     table.insert(skillTable, skill)
                 end
                 -- 移除已有技能
@@ -1553,7 +1553,7 @@ LuaWangming =
 }
 
 -- 添加武将技能（除去主公技、觉醒技、限定技）
-function getSkillList(general)
+function getSkillTable(general)
     if not general then
         return {}
     end
