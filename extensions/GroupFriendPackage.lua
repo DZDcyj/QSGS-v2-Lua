@@ -11,6 +11,7 @@ Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true, true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
+Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true, true)
 
 LuaChuntian =
     sgs.CreateTriggerSkill {
@@ -1485,6 +1486,89 @@ LuaChutou =
     end
 }
 
+LuaYingshi =
+    sgs.CreateTriggerSkill {
+    name = 'LuaYingshi',
+    events = {sgs.Death},
+    on_trigger = function(self, event, player, data, room)
+        local death = data:toDeath()
+        local data2 = sgs.QVariant()
+        data2:setValue(death.who)
+        for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if room:askForSkillInvoke(sp, self:objectName(), data2) then
+                room:doAnimate(1, sp:objectName(), death.who:objectName())
+                local skillTable = {}
+                -- 添加主将技能
+                for _, skill in ipairs(getSkillList(death.who:getGeneral())) do
+                    table.insert(skillTable, skill)
+                end
+                -- 添加副将技能
+                for _, skill in ipairs(getSkillList(death.who:getGeneral2())) do
+                    table.insert(skillTable, skill)
+                end
+                -- 移除已有技能
+                for _, skill in ipairs(skillTable) do
+                    if sp:hasSkill(skill) then
+                        table.removeOne(skillTable, skill)
+                    end
+                end
+                table.insert(skillTable, 'cancel')
+                while #skillTable > 1 do
+                    local choice = room:askForChoice(sp, self:objectName(), table.concat(skillTable, '+'))
+                    if choice ~= 'cancel' then
+                        table.removeOne(skillTable, choice)
+                        room:acquireSkill(sp, choice)
+                    else
+                        break
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:hasSkill(self:objectName())
+    end
+}
+
+LuaWangming =
+    sgs.CreateTriggerSkill {
+    name = 'LuaWangming',
+    events = {sgs.Dying},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if dying.damage and dying.damage.from and dying.damage.from:objectName() == player:objectName() then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            local damage = sgs.DamageStruct()
+            damage.from = player
+            room:killPlayer(dying.who, damage)
+            return true
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:hasSkill(self:objectName())
+    end
+}
+
+-- 添加武将技能（除去主公技、觉醒技、限定技）
+function getSkillList(general)
+    if not general then
+        return {}
+    end
+    local skill_list = {}
+    for _, skill in sgs.qlist(general:getSkillList()) do
+        if
+            skill:isVisible() and not skill:isLordSkill() and skill:getFrequency() ~= sgs.Skill_Wake and
+                skill:getFrequency() ~= sgs.Skill_Limited
+         then
+            table.insert(skill_list, skill:objectName())
+        end
+    end
+    return skill_list
+end
+
 Skadi:addSkill(LuaChuntian)
 Skadi:addSkill(LuaGaochao)
 Skadi:addRelateSkill('LuaPenshui')
@@ -1515,6 +1599,8 @@ SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
 Erenlei:addSkill(LuaShaika)
 Erenlei:addSkill(LuaChutou)
+Yaoyu:addSkill(LuaYingshi)
+Yaoyu:addSkill(LuaWangming)
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
@@ -1628,5 +1714,12 @@ sgs.LoadTranslationTable {
     锁定技，当一张牌进入弃牌堆后，本回合内与此牌同名的卡牌不能以此法弃置',
     ['@LuaShaika'] = '%src 对你发动了“晒卡”，你需要弃置 %arg 张牌，或者点击“取消”受到一点伤害',
     ['LuaChutou'] = '出头',
-    [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌'
+    [':LuaChutou'] = '锁定技，当你的牌不因此技能而弃置时，你摸一张牌。当你摸牌后手牌数为全场唯一最多时，你弃置一张牌',
+    ['Yaoyu'] = '西行寺妖羽',
+    ['&Yaoyu'] = '妖羽',
+    ['#Yaoyu'] = '孤星',
+    ['LuaYingshi'] = '影噬',
+    [':LuaYingshi'] = '其他角色阵亡时，你可以选择获得其任意个技能（限定技、觉醒技、主公技除外）',
+    ['LuaWangming'] = '亡命',
+    [':LuaWangming'] = '锁定技，当其他角色因你造成的伤害而进入濒死状态时，其直接死亡'
 }
