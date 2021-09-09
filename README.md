@@ -48,9 +48,10 @@ $ brew install git
 这意味着如果要进行合并，您的最后一次提交必须通过代码所有者的审查，并且通过的审查将会在下一次提交之后失效。
 
 - Require status checks to pass before merging（合并前必需状态检查通过）
-    - Require branches to be up to date before merging（要求分支在合并前保持最新）
 
-这意味着如果要进行合并，最新的分支需要通过状态检查，也即是内置的 Actions 里的 Lua-Check 和基于 luacheck 的代码规范检查。
+这意味着如果要进行合并，最新的提交需要通过状态检查，也即是内置的 Actions 里的 Lua-Check 和基于 luacheck 的代码规范检查。
+
+**注意，如果存在与主分支的冲突，请使用变基（rebase）而非合并（merge）的方式更新分支**
 
 - Require conversation resolution before merging（在合并前需要对话解决）
 
