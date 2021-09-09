@@ -1,6 +1,10 @@
 sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optional, include_equip)
+    -- 如果要弃置的牌大于总牌数，则不弃牌
+    if discard_num > self.player:getCardCount(true) then
+        return {}
+    end
+    -- 如果要弃置的牌数量大于总牌数的二分之一，并且当前状态良好，则直接选择不弃牌
     if discard_num > self.player:getCardCount(true) / 2 and not self.player:isWeak() then
-        -- 如果要弃置的牌数量大于手牌数的二分之一，并且当前状态良好，则直接选择不弃牌
         return {}
     end
     local room = self.player:getRoom()
@@ -17,6 +21,7 @@ sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optiona
     local to_discard, temp = {}, {}
     local cards = self.player:getCards('he')
     cards = sgs.QList2Table(cards)
+    -- 遍历手牌和装备区，将价值较低的牌先列入准备弃置的列表
     for _, card in ipairs(cards) do
         if not self.player:isJilei(card) then
             local place = self.room:getCardPlace(card:getEffectiveId())
@@ -28,14 +33,15 @@ sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optiona
                 table.insert(to_discard, card:getEffectiveId())
             end
         end
-        if (self.player:hasSkill('qinyin') and #to_discard >= min_num) or #to_discard >= discard_num then
-            break
+        -- 待弃牌数量足够，则直接弃牌
+        if #to_discard == discard_num then
+            return to_discard
         end
     end
+    -- 如果先前的列表不够弃置
     if #to_discard < discard_num then
         for _, id in ipairs(temp) do
             table.insert(to_discard, id)
-            if (self.player:hasSkill('qinyin') and #to_discard >= min_num) or #to_discard >= discard_num then break end
         end
     end
     return to_discard
