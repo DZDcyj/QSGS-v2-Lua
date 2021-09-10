@@ -42,6 +42,9 @@ sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optiona
     if #to_discard < discard_num then
         for _, id in ipairs(temp) do
             table.insert(to_discard, id)
+            if #to_discard == discard_num then
+                break
+            end
         end
     end
     return to_discard
