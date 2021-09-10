@@ -4093,10 +4093,10 @@ LuaTaomie =
                 data2:setValue(damage.to)
                 if room:askForSkillInvoke(player, self:objectName(), data2) then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
-                        room:setPlayerMark(p, '@'..self:objectName(), 0)
+                        room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
                     room:doAnimate(1, player:objectName(), damage.to:objectName())
-                    damage.to:gainMark('@'..self:objectName())
+                    damage.to:gainMark('@' .. self:objectName())
                 end
             end
         elseif event == sgs.Damaged then
@@ -4105,14 +4105,14 @@ LuaTaomie =
                 data2:setValue(damage.from)
                 if room:askForSkillInvoke(player, self:objectName(), data2) then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
-                        room:setPlayerMark(p, '@'..self:objectName(), 0)
+                        room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
                     room:doAnimate(1, player:objectName(), damage.from:objectName())
-                    damage.from:gainMark('@'..self:objectName())
+                    damage.from:gainMark('@' .. self:objectName())
                 end
             end
         elseif event == sgs.DamageCaused then
-            if damage.to and damage.to:getMark('@'..self:objectName()) > 0 then
+            if damage.to and damage.to:getMark('@' .. self:objectName()) > 0 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local choice = room:askForChoice(player, self:objectName(), 'addDamage+getOneCard+removeMark+cancel')
                 if choice == 'addDamage' then
@@ -4131,7 +4131,7 @@ LuaTaomie =
                         local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
                         player:obtainCard(sgs.Sanguosha:getCard(card_id))
                     end
-                    room:setPlayerMark(damage.to, '@'..self:objectName(), 0)
+                    room:setPlayerMark(damage.to, '@' .. self:objectName(), 0)
                 end
                 data:setValue(damage)
             end
@@ -4819,5 +4819,5 @@ sgs.LoadTranslationTable {
     当你对有标记的角色造成伤害时，选择一项: 1.此伤害+1; 2.你获得其区域内的一张牌并可将之交给另一名角色; 3.依次执行前两项并于伤害结算后弃置其“讨灭”标记',
     ['addDamage'] = '令此伤害+1',
     ['getOneCard'] = '获得其区域内的一张牌',
-    ['removeMark'] = '执行前两项并移除其讨灭标记',
+    ['removeMark'] = '执行前两项并移除其讨灭标记'
 }
