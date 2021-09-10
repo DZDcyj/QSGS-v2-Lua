@@ -32,6 +32,7 @@ ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
 JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true, true)
+ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4063,6 +4064,85 @@ LuaShameng =
 
 ExChenzhen:addSkill(LuaShameng)
 
+LuaJuliao =
+    sgs.CreateDistanceSkill {
+    name = 'LuaJuliao',
+    correct_func = function(self, from, to)
+        if to:hasSkill(self:objectName()) then
+            local kingdoms = {to:getKingdom()}
+            for _, sib in sgs.qlist(to:getAliveSiblings()) do
+                if not table.contains(kingdoms, sib:getKingdom()) then
+                    table.insert(kingdoms, sib:getKingdom())
+                end
+            end
+            return #kingdoms - 1
+        end
+        return 0
+    end
+}
+
+LuaTaomie =
+    sgs.CreateTriggerSkill {
+    name = 'LuaTaomie',
+    events = {sgs.Damage, sgs.Damaged, sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if event == sgs.Damage then
+            if damage.from then
+                local data2 = sgs.QVariant()
+                data2:setValue(damage.to)
+                if room:askForSkillInvoke(player, self:objectName(), data2) then
+                    for _, p in sgs.qlist(room:getAlivePlayers()) do
+                        room:setPlayerMark(p, '@' .. self:objectName(), 0)
+                    end
+                    room:doAnimate(1, player:objectName(), damage.to:objectName())
+                    damage.to:gainMark('@' .. self:objectName())
+                end
+            end
+        elseif event == sgs.Damaged then
+            if damage.from then
+                local data2 = sgs.QVariant()
+                data2:setValue(damage.from)
+                if room:askForSkillInvoke(player, self:objectName(), data2) then
+                    for _, p in sgs.qlist(room:getAlivePlayers()) do
+                        room:setPlayerMark(p, '@' .. self:objectName(), 0)
+                    end
+                    room:doAnimate(1, player:objectName(), damage.from:objectName())
+                    damage.from:gainMark('@' .. self:objectName())
+                end
+            end
+        elseif event == sgs.DamageCaused then
+            if damage.to and damage.to:getMark('@' .. self:objectName()) > 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                local choice = room:askForChoice(player, self:objectName(), 'addDamage+getOneCard+removeMark+cancel')
+                if choice == 'addDamage' then
+                    room:doAnimate(1, player:objectName(), damage.to:objectName())
+                    damage.damage = damage.damage + 1
+                elseif choice == 'getOneCard' then
+                    room:doAnimate(1, player:objectName(), damage.to:objectName())
+                    if not damage.to:isAllNude() then
+                        local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
+                        player:obtainCard(sgs.Sanguosha:getCard(card_id))
+                    end
+                elseif choice == 'removeMark' then
+                    damage.damage = damage.damage + 1
+                    room:doAnimate(1, player:objectName(), damage.to:objectName())
+                    if not damage.to:isAllNude() then
+                        local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
+                        player:obtainCard(sgs.Sanguosha:getCard(card_id))
+                    end
+                    room:setPlayerMark(damage.to, '@' .. self:objectName(), 0)
+                end
+                data:setValue(damage)
+            end
+        end
+        return false
+    end
+}
+
+ExGongsunkang:addSkill(LuaJuliao)
+ExGongsunkang:addSkill(LuaTaomie)
+
 -- 封装好的函数部分
 
 -- 获取对应装备栏的卡牌类型
@@ -4728,4 +4808,16 @@ sgs.LoadTranslationTable {
     ['LuaShameng'] = '歃盟',
     [':LuaShameng'] = '出牌阶段限一次，你可以弃置两张颜色相同的手牌，令一名其他角色摸两张牌，然后你摸三张牌',
     ['luashameng'] = '歃盟',
+    ['ExGongsunkang'] = '公孙康',
+    ['&ExGongsunkang'] = '公孙康',
+    ['#ExGongsunkang'] = '沸流腾蛟',
+    ['LuaJuliao'] = '据辽',
+    [':LuaJuliao'] = '锁定技，其他角色计算与你的距离始终+X（X为场上势力数-1）',
+    ['LuaTaomie'] = '讨灭',
+    ['@LuaTaomie'] = '讨灭',
+    [':LuaTaomie'] = '当你受到伤害后或你造成伤害后，你可以令伤害来源或受伤角色获得“讨灭”标记(如场上已有标记则转移给该角色);\
+    当你对有标记的角色造成伤害时，选择一项: 1.此伤害+1; 2.你获得其区域内的一张牌并可将之交给另一名角色; 3.依次执行前两项并于伤害结算后弃置其“讨灭”标记',
+    ['addDamage'] = '令此伤害+1',
+    ['getOneCard'] = '获得其区域内的一张牌',
+    ['removeMark'] = '执行前两项并移除其讨灭标记'
 }
