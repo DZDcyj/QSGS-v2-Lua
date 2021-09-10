@@ -119,6 +119,9 @@ sgs.ai_skill_discard['LuaJunxing'] = function(self, discard_num, min_num, option
     if #to_discard < discard_num then
         for _, id in ipairs(temp) do
             table.insert(to_discard, id)
+            if #to_discard == discard_num then
+                break
+            end
         end
     end
     return to_discard
