@@ -300,7 +300,7 @@ LuaXionghuo =
                                     sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, splayer:objectName())
                                 room:obtainCard(splayer, sgs.Sanguosha:getCard(card_id), reason, false)
                             end
-                            if player:getEquips():length() > 0 then
+                            if player:hasEquip() then
                                 local card_id2 = room:askForCardChosen(splayer, player, 'e', self:objectName())
                                 local reason2 =
                                     sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, splayer:objectName())
@@ -2310,7 +2310,7 @@ LuaYongjinCard =
             sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), self:objectName(), '')
         )
         room:addPlayerMark(source, 'LuaYongjin')
-        local use = room:askForUseCard(source, '@@LuaYongjin', '@LuaYongjin:::'..(3 - source:getMark('LuaYongjin')))
+        local use = room:askForUseCard(source, '@@LuaYongjin', '@LuaYongjin:::' .. (3 - source:getMark('LuaYongjin')))
         if not use then
             room:setPlayerMark(source, 'LuaYongjin', 0)
             source:loseMark('@luayongjin')
@@ -2338,7 +2338,7 @@ LuaYongjinVS =
         return false
     end,
     enabled_at_response = function(self, target, pattern)
-        return target:getMark('@luayongjin') > 0 and pattern == '@@LuaYongjin' and target:getMark('LuaYongjin') < 3
+        return pattern == '@@LuaYongjin' and target:getMark('@luayongjin') > 0 and target:getMark('LuaYongjin') < 3
     end
 }
 
@@ -2532,7 +2532,7 @@ LuaRangjie =
             if choice == 'moveOneCard' then
                 local fromPlayers = sgs.SPlayerList()
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    if p:getJudgingArea():length() > 0 or p:getEquips():length() > 0 then
+                    if p:getJudgingArea():length() > 0 or p:hasEquip() then
                         fromPlayers:append(p)
                     end
                 end
@@ -4423,7 +4423,7 @@ end
 
 function CanMoveCard(room)
     for _, p in sgs.qlist(room:getAlivePlayers()) do
-        if (p:getJudgingArea():length() > 0 or p:getEquips():length() > 0) then
+        if (p:getJudgingArea():length() > 0 or p:hasEquip()) then
             return true
         end
     end

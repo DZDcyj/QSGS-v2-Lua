@@ -1162,7 +1162,7 @@ LuaJiaoxie =
                     if room:askForSkillInvoke(player, self:objectName(), data2) then
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         room:doAnimate(1, player:objectName(), damage.from:objectName())
-                        if damage.from:getEquips():length() > 0 then
+                        if damage.from:hasEquip() then
                             for _, cd in sgs.qlist(damage.from:getEquips()) do
                                 dummy:addSubcard(cd)
                             end
