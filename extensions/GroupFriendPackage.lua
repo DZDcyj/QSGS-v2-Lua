@@ -1578,34 +1578,19 @@ LuaTianfa =
     sgs.CreateTriggerSkill {
     name = 'LuaTianfa',
     events = {sgs.EventPhaseChanging, sgs.Death},
+    global = true,
+    priority = -1,
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                local shayu = room:findPlayerBySkillName(self:objectName())
-                if shayu then
+                local shayus = room:findPlayersBySkillName(self:objectName())
+                for _, shayu in sgs.qlist(shayus) do
                     room:sendCompulsoryTriggerLog(shayu, self:objectName())
                     local drawPile = room:getDrawPile()
                     local len = drawPile:length()
                     local card_id = drawPile:at(math.random(0, len - 1))
                     local card = sgs.Sanguosha:getCard(card_id)
-
-                    local move =
-                        sgs.CardsMoveStruct(
-                        card_id,
-                        nil,
-                        shayu,
-                        sgs.Player_PlaceUnknown,
-                        sgs.Player_PlaceTable,
-                        sgs.CardMoveReason(
-                            sgs.CardMoveReason_S_REASON_TURNOVER,
-                            shayu:objectName(),
-                            self:objectName(),
-                            ''
-                        )
-                    )
-                    room:moveCardsAtomic(move, true)
-
                     room:throwCard(
                         card,
                         sgs.CardMoveReason(
@@ -1630,16 +1615,24 @@ LuaTianfa =
         elseif event == sgs.Death then
             local death = data:toDeath()
             if death.who:objectName() == player:objectName() and player:hasSkill(self:objectName()) then
-                local target =
-                    room:askForPlayerChosen(
-                    player,
-                    room:getAlivePlayers(),
-                    self:objectName(),
-                    '@LuaTianfa-choose',
-                    false,
-                    true
-                )
-                room:acquireSkill(target, self:objectName())
+                local availablePlayers = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if not p:hasSkill(self:objectName()) then
+                        availablePlayers:append(p)
+                    end
+                end
+                if not availablePlayers:isEmpty() then
+                    local target =
+                        room:askForPlayerChosen(
+                        player,
+                        availablePlayers,
+                        self:objectName(),
+                        '@LuaTianfa-choose',
+                        false,
+                        true
+                    )
+                    room:acquireSkill(target, self:objectName())
+                end
             end
         end
         return false
@@ -1716,7 +1709,7 @@ LuaZhixie =
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 if player:getMark(self:objectName()) > 0 then
-                    room:askForUseCard(player, '@@LuaZhixie', '@LuaZhixie')
+                    room:askForUseCard(player, '@@LuaZhixie', '@LuaZhixie:::'..player:getMark(self:objectName()))
                     room:setPlayerMark(player, self:objectName(), 0)
                 end
             end
@@ -1731,6 +1724,7 @@ LuaJixie =
     sgs.CreateTriggerSkill {
     name = 'LuaJixie',
     events = {sgs.DamageInflicted},
+    priority = 3,
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
@@ -1926,9 +1920,12 @@ sgs.LoadTranslationTable {
     ['#Shayu'] = '机屑人',
     ['LuaTianfa'] = '天罚',
     [':LuaTianfa'] = '锁定技，每名角色的回合结束后，你从牌堆中随机展示一张牌并将其置入弃牌堆。若这张牌为黑桃2～9，则该角色受到3点无伤害来源的雷属性伤害。当你死亡时，你令一名其他角色获得该技能',
+    ['LuaTianfa-choose'] = '请选择一名其他角色获得“天罚”',
     ['LuaZhixie'] = '智屑',
     ['luazhixie'] = '智屑',
     [':LuaZhixie'] = '你可以将锦囊牌当成铁索连环使用或重铸；结束阶段，你可以横置至多X名角色（X为你出牌阶段发动智屑的次数）',
+    ['@LuaZhixie'] = '你可以发动“智屑”，横置至多 %arg 名角色',
+    ['~LuaZhixie'] = '选择若干名角色→点击确定',
     ['LuaJixie'] = '机械',
     [':LuaJixie'] = '锁定技，当你受到雷属性伤害时，你摸一张牌，然后本次伤害-1'
 }
