@@ -1680,9 +1680,6 @@ LuaZhixieVS =
         end
         return nil
     end,
-    enabled_at_play = function(self, player)
-        return true
-    end,
     enabled_at_response = function(self, player, pattern)
         return pattern == '@@LuaZhixie'
     end
