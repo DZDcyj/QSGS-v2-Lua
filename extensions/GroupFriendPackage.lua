@@ -12,6 +12,14 @@ SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true, true)
+Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true, true)
+
+-- 额外设置其他信息，例如性别
+-- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
+-- Sexless, Male, Female, Neuter
+-- 枚举值使用时加上 sgs.General_ 前缀
+-- 例如 sgs.General_Sexless
+Shayu:setGender(sgs.General_Sexless)
 
 LuaChuntian =
     sgs.CreateTriggerSkill {
@@ -1566,6 +1574,170 @@ LuaWangming =
     end
 }
 
+LuaTianfa =
+    sgs.CreateTriggerSkill {
+    name = 'LuaTianfa',
+    events = {sgs.EventPhaseChanging, sgs.Death},
+    global = true,
+    priority = -1,
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                local shayus = room:findPlayersBySkillName(self:objectName())
+                for _, shayu in sgs.qlist(shayus) do
+                    room:sendCompulsoryTriggerLog(shayu, self:objectName())
+                    local drawPile = room:getDrawPile()
+                    local len = drawPile:length()
+                    local card_id = drawPile:at(math.random(0, len - 1))
+                    local card = sgs.Sanguosha:getCard(card_id)
+                    room:throwCard(
+                        card,
+                        sgs.CardMoveReason(
+                            sgs.CardMoveReason_S_REASON_NATURAL_ENTER,
+                            shayu:objectName(),
+                            self:objectName(),
+                            ''
+                        ),
+                        shayu
+                    )
+                    if card:getSuit() == sgs.Card_Spade then
+                        if card:getNumber() >= 2 and card:getNumber() <= 9 then
+                            local damage = sgs.DamageStruct()
+                            damage.to = player
+                            damage.damage = 3
+                            damage.nature = sgs.DamageStruct_Thunder
+                            room:damage(damage)
+                        end
+                    end
+                end
+            end
+        elseif event == sgs.Death then
+            local death = data:toDeath()
+            if death.who:objectName() == player:objectName() and player:hasSkill(self:objectName()) then
+                local availablePlayers = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if not p:hasSkill(self:objectName()) then
+                        availablePlayers:append(p)
+                    end
+                end
+                if not availablePlayers:isEmpty() then
+                    local target =
+                        room:askForPlayerChosen(
+                        player,
+                        availablePlayers,
+                        self:objectName(),
+                        '@LuaTianfa-choose',
+                        false,
+                        true
+                    )
+                    room:acquireSkill(target, self:objectName())
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaZhixieCard =
+    sgs.CreateSkillCard {
+    name = 'LuaZhixieCard',
+    filter = function(self, selected, to_select)
+        return #selected < sgs.Self:getMark('LuaZhixie')
+    end,
+    on_use = function(self, room, source, targets)
+        for _, target in ipairs(targets) do
+            target:setChained(true)
+            room:broadcastProperty(target, 'chained')
+            room:setEmotion(target, 'chain')
+            room:getThread():trigger(sgs.ChainStateChanged, room, target)
+        end
+    end
+}
+
+LuaZhixieVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaZhixie',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        if sgs.Self:getPhase() ~= sgs.Player_Play then
+            return false
+        end
+        return #selected == 0 and to_select:isKindOf('TrickCard')
+    end,
+    view_as = function(self, cards)
+        if sgs.Self:getPhase() ~= sgs.Player_Play then
+            return LuaZhixieCard:clone()
+        end
+        if #cards == 1 then
+            local chain = sgs.Sanguosha:cloneCard('iron_chain', cards[1]:getSuit(), cards[1]:getNumber())
+            chain:addSubcard(cards[1])
+            chain:setSkillName(self:objectName())
+            return chain
+        end
+        return nil
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaZhixie'
+    end
+}
+
+LuaZhixie =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhixie',
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    view_as_skill = LuaZhixieVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if
+                room:getCurrent():objectName() == player:objectName() and player:hasSkill(self:objectName()) and
+                    move.to_place == sgs.Player_DiscardPile
+             then
+                local reason = move.reason
+                local skillName = reason.m_skillName
+                if reason and skillName and skillName == self:objectName() then
+                    room:addPlayerMark(player, self:objectName())
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                if player:getMark(self:objectName()) > 0 then
+                    room:askForUseCard(player, '@@LuaZhixie', '@LuaZhixie:::'..player:getMark(self:objectName()))
+                    room:setPlayerMark(player, self:objectName(), 0)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaJixie =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJixie',
+    events = {sgs.DamageInflicted},
+    priority = 3,
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.nature == sgs.DamageStruct_Thunder then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            damage.damage = damage.damage - 1
+            player:drawCards(1)
+            if damage.damage == 0 then
+                return true
+            end
+            data:setValue(damage)
+        end
+        return false
+    end
+}
+
 -- 添加武将技能（除去主公技、觉醒技、限定技）
 function getSkillTable(general)
     if not general then
@@ -1615,6 +1787,9 @@ Erenlei:addSkill(LuaShaika)
 Erenlei:addSkill(LuaChutou)
 Yaoyu:addSkill(LuaYingshi)
 Yaoyu:addSkill(LuaWangming)
+Shayu:addSkill(LuaTianfa)
+Shayu:addSkill(LuaZhixie)
+Shayu:addSkill(LuaJixie)
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
@@ -1736,5 +1911,18 @@ sgs.LoadTranslationTable {
     ['LuaYingshi'] = '影噬',
     [':LuaYingshi'] = '其他角色阵亡时，你可以选择获得其任意个技能（限定技、觉醒技、主公技除外）',
     ['LuaWangming'] = '亡命',
-    [':LuaWangming'] = '锁定技，当其他角色因你造成的伤害而进入濒死状态时，其直接死亡'
+    [':LuaWangming'] = '锁定技，当其他角色因你造成的伤害而进入濒死状态时，其直接死亡',
+    ['Shayu'] = '纱羽',
+    ['&Shayu'] = '纱羽',
+    ['#Shayu'] = '机屑人',
+    ['LuaTianfa'] = '天罚',
+    [':LuaTianfa'] = '锁定技，每名角色的回合结束后，你从牌堆中随机展示一张牌并将其置入弃牌堆。若这张牌为黑桃2～9，则该角色受到3点无伤害来源的雷属性伤害。当你死亡时，你令一名其他角色获得该技能',
+    ['LuaTianfa-choose'] = '请选择一名其他角色获得“天罚”',
+    ['LuaZhixie'] = '智屑',
+    ['luazhixie'] = '智屑',
+    [':LuaZhixie'] = '你可以将锦囊牌当成铁索连环使用或重铸；结束阶段，你可以横置至多X名角色（X为你出牌阶段发动智屑的次数）',
+    ['@LuaZhixie'] = '你可以发动“智屑”，横置至多 %arg 名角色',
+    ['~LuaZhixie'] = '选择若干名角色→点击确定',
+    ['LuaJixie'] = '机械',
+    [':LuaJixie'] = '锁定技，当你受到雷属性伤害时，你摸一张牌，然后本次伤害-1'
 }
