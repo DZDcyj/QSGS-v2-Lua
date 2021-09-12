@@ -300,7 +300,7 @@ LuaXionghuo =
                                     sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, splayer:objectName())
                                 room:obtainCard(splayer, sgs.Sanguosha:getCard(card_id), reason, false)
                             end
-                            if player:getEquips():length() > 0 then
+                            if player:hasEquip() then
                                 local card_id2 = room:askForCardChosen(splayer, player, 'e', self:objectName())
                                 local reason2 =
                                     sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, splayer:objectName())
@@ -2259,8 +2259,101 @@ LuaXuanfeng =
     end
 }
 
+LuaYongjinCard =
+    sgs.CreateSkillCard {
+    name = 'LuaYongjinCard',
+    filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return to_select:hasEquip()
+        elseif #selected == 1 then
+            for i = 0, 4, 1 do
+                if selected[1]:getEquip(i) and not to_select:getEquip(i) then
+                    return true
+                end
+            end
+        end
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets == 2
+    end,
+    about_to_use = function(self, room, use)
+        local thread = room:getThread()
+        local data = sgs.QVariant()
+        data:setValue(use)
+        thread:trigger(sgs.PreCardUsed, room, use.from, data)
+        thread:trigger(sgs.CardUsed, room, use.from, data)
+        thread:trigger(sgs.CardFinished, room, use.from, data)
+    end,
+    on_use = function(self, room, source, targets)
+        local from = targets[1]
+        local to = targets[2]
+        local disabled_ids = sgs.IntList()
+        for _, equip in sgs.qlist(from:getEquips()) do
+            if equip and to:getEquip(equip:getRealCard():toEquipCard():location()) then
+                disabled_ids:append(equip:getId())
+            end
+        end
+        local log = sgs.LogMessage()
+        log.type = '#InvokeSkill'
+        log.from = source
+        log.arg = 'LuaYongjin'
+        room:sendLog(log)
+        room:notifySkillInvoked(source, self:objectName())
+        local card_id = room:askForCardChosen(source, from, 'e', 'LuaYongjin', false, sgs.Card_MethodNone, disabled_ids)
+        local card = sgs.Sanguosha:getCard(card_id)
+        room:moveCardTo(
+            card,
+            from,
+            to,
+            sgs.Player_PlaceEquip,
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), self:objectName(), '')
+        )
+        room:addPlayerMark(source, 'LuaYongjin')
+        local use = room:askForUseCard(source, '@@LuaYongjin', '@LuaYongjin:::' .. (3 - source:getMark('LuaYongjin')))
+        if not use then
+            room:setPlayerMark(source, 'LuaYongjin', 0)
+            source:loseMark('@luayongjin')
+        end
+    end
+}
+
+LuaYongjinVS =
+    sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaYongjin',
+    view_as = function(self, cards)
+        return LuaYongjinCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        if player:getMark('@luayongjin') > 0 then
+            if player:hasEquip() then
+                return true
+            end
+            for _, sib in sgs.qlist(player:getAliveSiblings()) do
+                if sib:hasEquip() then
+                    return true
+                end
+            end
+        end
+        return false
+    end,
+    enabled_at_response = function(self, target, pattern)
+        return pattern == '@@LuaYongjin' and target:getMark('@luayongjin') > 0 and target:getMark('LuaYongjin') < 3
+    end
+}
+
+LuaYongjin =
+    sgs.CreateTriggerSkill {
+    name = 'LuaYongjin',
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@luayongjin',
+    view_as_skill = LuaYongjinVS,
+    on_trigger = function()
+    end
+}
+
 JieLingtong:addSkill(LuaXuanfeng)
-JieLingtong:addSkill('yongjin')
+JieLingtong:addSkill(LuaYongjin)
 
 LuaShouye =
     sgs.CreateTriggerSkill {
@@ -2439,7 +2532,7 @@ LuaRangjie =
             if choice == 'moveOneCard' then
                 local fromPlayers = sgs.SPlayerList()
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    if p:getJudgingArea():length() > 0 or p:getEquips():length() > 0 then
+                    if p:getJudgingArea():length() > 0 or p:hasEquip() then
                         fromPlayers:append(p)
                     end
                 end
@@ -4330,7 +4423,7 @@ end
 
 function CanMoveCard(room)
     for _, p in sgs.qlist(room:getAlivePlayers()) do
-        if (p:getJudgingArea():length() > 0 or p:getEquips():length() > 0) then
+        if (p:getJudgingArea():length() > 0 or p:hasEquip()) then
             return true
         end
     end
@@ -4613,6 +4706,12 @@ sgs.LoadTranslationTable {
     ['throwtwo'] = '弃置该角色两张牌',
     ['$LuaXuanfeng1'] = '急军先行，斩将，夺城，再败军！',
     ['$LuaXuanfeng2'] = '短兵相接，教尔等片甲不留！',
+    ['LuaYongjin'] = '勇进',
+    [':LuaYongjin'] = '限定技，出牌阶段，你可以移动场上的至多三张装备牌',
+    ['@LuaYongjin'] = '你还可以发动至多 %arg 次“勇进”',
+    ['~LuaYongjin'] = '选择移动装备的来源角色→选择要移动到的角色→点击确定',
+    ['luayongjin'] = '勇进',
+    ['@luayongjin'] = '勇进',
     ['~JieLingtong'] = '公绩之犬子就托于主公了……',
     ['ExShenpei'] = '审配',
     ['&ExShenpei'] = '审配',
