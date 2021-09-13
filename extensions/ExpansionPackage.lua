@@ -33,6 +33,7 @@ JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true, true)
 ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
+ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -284,11 +285,7 @@ LuaXionghuo =
                         room:broadcastSkillInvoke(self:objectName())
                         local choice = math.random(1, 3)
                         if choice == 1 then
-                            local theDamage = sgs.DamageStruct()
-                            theDamage.to = player
-                            theDamage.damage = 1
-                            theDamage.nature = sgs.DamageStruct_Fire
-                            room:damage(theDamage)
+                            doDamage(room, nil, player, 1, sgs.DamageStruct_Fire)
                             room:addPlayerMark(player, 'XionghuoSlashPro')
                         elseif choice == 2 then
                             room:loseHp(player)
@@ -554,11 +551,7 @@ LuaLangxi =
                     if value == 0 then
                         return false
                     end
-                    local damage = sgs.DamageStruct()
-                    damage.from = player
-                    damage.to = target
-                    damage.damage = value
-                    room:damage(damage)
+                    doDamage(room, player, target, value)
                 end
             end
         end
@@ -2189,11 +2182,7 @@ LuaXuanfengCard =
             local target =
                 room:askForPlayerChosen(source, damageAvailable, 'LuaXuanfeng', 'LuaXuanfengDamage-choose', true, true)
             if target then
-                local damage = sgs.DamageStruct()
-                damage.from = source
-                damage.to = target
-                damage.damage = 1
-                room:damage(damage)
+                doDamage(room, source, target, 1)
                 room:broadcastSkillInvoke('LuaXuanfeng')
             end
         end
@@ -2966,12 +2955,7 @@ LuaFenchengCard =
                         not room:askForDiscard(p, 'fencheng', 10000, length, true, true, '@fencheng:::' .. length)
                  then
                     room:setTag('LuaFenchengDiscard', sgs.QVariant(0))
-                    local damage = sgs.DamageStruct()
-                    damage.from = source
-                    damage.to = p
-                    damage.damage = 2
-                    damage.nature = sgs.DamageStruct_Fire
-                    room:damage(damage)
+                    doDamage(room, source, p, 2, sgs.DamageStruct_Fire)
                 end
             end
         end
@@ -3188,11 +3172,7 @@ LuaDanshou =
                             if room:askForDiscard(sp, 'LuaDanshou', num, num, true, true, '@LuaDanshou:::' .. num) then
                                 skill(self, room, sp, true)
                                 room:doAnimate(1, sp:objectName(), player:objectName())
-                                local theDamage = sgs.DamageStruct()
-                                theDamage.from = sp
-                                theDamage.to = player
-                                theDamage.damage = 1
-                                room:damage(theDamage)
+                                doDamage(room, sp, player, 1)
                             end
                         end
                     end
@@ -4239,6 +4219,118 @@ LuaTaomie =
 ExGongsunkang:addSkill(LuaJuliao)
 ExGongsunkang:addSkill(LuaTaomie)
 
+LuaLvemingCard =
+    sgs.CreateSkillCard {
+    name = 'LuaLvemingCard',
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:getEquips():length() < sgs.Self:getEquips():length()
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local numbers = {}
+        for i = 1, 13 do
+            table.insert(numbers, tostring(i))
+        end
+        room:broadcastSkillInvoke('LuaLveming')
+        local chosenNum = room:askForChoice(target, 'LuaLveming', table.concat(numbers, '+'))
+
+        local msg = sgs.LogMessage()
+        msg.type = '#choose'
+        msg.from = target
+        msg.arg = chosenNum
+        room:sendLog(msg)
+
+        local judge = sgs.JudgeStruct()
+        judge.pattern = '.'
+        judge.play_animation = true
+        judge.reason = 'LuaLveming'
+        judge.who = source
+        room:judge(judge)
+        if judge.card:getNumber() == tonumber(chosenNum) then
+            doDamage(room, source, target, 2)
+        else
+            local cards = target:getCards('hej')
+            if not cards:isEmpty() then
+                local card = cards:at(math.random(0, cards:length() - 1))
+                if card then
+                    room:obtainCard(source, card)
+                end
+            end
+        end
+        room:addPlayerMark(source, 'LuaLveming')
+    end
+}
+
+LuaLveming =
+    sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaLveming',
+    view_as = function(self, cards)
+        return LuaLvemingCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaLvemingCard')
+    end
+}
+
+LuaTunjunCard =
+    sgs.CreateSkillCard {
+    name = 'LuaTunjunCard',
+    filter = function(self, selected, to_select)
+        return #selected == 0
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        room:broadcastSkillInvoke('LuaTunjun')
+        source:loseMark('@LuaTunjun')
+        local times = source:getMark('LuaLveming')
+        local i = 0
+        local params = {
+            ['type'] = 'EquipCard'
+        }
+        while i < times do
+            i = i + 1
+            local equipCard = obtainTargetedTypeCard(room, params)
+            if equipCard then
+                if target:getEquip(equipCard:getRealCard():toEquipCard():location()) then
+                    room:throwCard(equipCard, source)
+                else
+                    local card_use = sgs.CardUseStruct()
+                    card_use.from = source
+                    card_use.to:append(target)
+                    card_use.card = equipCard
+                    room:useCard(card_use, true)
+                end
+            else
+                break
+            end
+        end
+    end
+}
+
+LuaTunjunVS =
+    sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaTunjun',
+    view_as = function(self, cards)
+        return LuaTunjunCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('@LuaTunjun') > 0 and player:getMark('LuaLveming') > 0
+    end
+}
+
+LuaTunjun =
+    sgs.CreateTriggerSkill {
+    name = 'LuaTunjun',
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@LuaTunjun',
+    view_as_skill = LuaTunjunVS,
+    on_trigger = function()
+    end
+}
+
+ExZhangji:addSkill(LuaLveming)
+ExZhangji:addSkill(LuaTunjun)
+
 -- 封装好的函数部分
 
 -- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
@@ -4263,15 +4355,26 @@ function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
             self:objectName(),
             nil
         )
-        room:moveCardTo(
-            sgs.Sanguosha:getCard(card_id),
-            from,
-            togive,
-            sgs.Player_PlaceHand,
-            reason,
-            false
-        )
+        room:moveCardTo(sgs.Sanguosha:getCard(card_id), from, togive, sgs.Player_PlaceHand, reason, false)
     end
+end
+
+-- 造成伤害
+-- room 当前 room
+-- from 来源角色
+-- to 目标角色
+-- damage_value 伤害点数
+-- nature 伤害类型，默认为无属性
+function doDamage(room, from, to, damage_value, nature)
+    local theDamage = sgs.DamageStruct()
+    theDamage.from = from
+    theDamage.to = to
+    theDamage.damage = damage_value
+    if not nature then
+        nature = sgs.DamageStruct_Normal
+    end
+    theDamage.nature = nature
+    room:damage(theDamage)
 end
 
 -- 获取对应装备栏的卡牌类型
@@ -4481,9 +4584,6 @@ function obtainTargetedTypeCard(room, params)
         existedNames = {}
     end
     local findDiscardPile = params['findDiscardPile']
-    if findDiscardPile == nil then
-        findDiscardPile = false
-    end
     for _, id in sgs.qlist(room:getDrawPile()) do
         local card = sgs.Sanguosha:getCard(id)
         if card:isKindOf(type) and not table.contains(existedNames, card:objectName()) then
@@ -4955,5 +5055,21 @@ sgs.LoadTranslationTable {
     当你对有标记的角色造成伤害时，选择一项: 1.此伤害+1; 2.你获得其区域内的一张牌并可将之交给另一名角色; 3.依次执行前两项并于伤害结算后弃置其“讨灭”标记',
     ['addDamage'] = '令此伤害+1',
     ['getOneCard'] = '获得其区域内的一张牌',
-    ['removeMark'] = '执行前两项并移除其讨灭标记'
+    ['removeMark'] = '执行前两项并移除其讨灭标记',
+    ['#choose'] = '%from 选择了 %arg',
+    ['ExZhangji'] = '张济',
+    ['&ExZhangji'] = '张济',
+    ['#ExZhangji'] = '平阳侯',
+    ['~ExZhangji'] = '哪，哪里来的乱箭？',
+    ['LuaLveming'] = '掠命',
+    [':LuaLveming'] = '出牌阶段限一次，你可以令装备区里的牌少于你的一名角色选择一个点数，然后你进行判定：若点数相同，你对其造成2点伤害；不同，你随机获得其区域里的一张牌',
+    ['lualveming'] = '掠命',
+    ['$LuaLveming1'] = '劫命掠财，毫不费力',
+    ['$LuaLveming2'] = '人财，皆掠之，哈哈！',
+    ['LuaTunjun'] = '屯军',
+    [':LuaTunjun'] = '限定技，出牌阶段，你可以令一名角色随机使用牌堆中的X张类型不同的装备牌（不替换已有装备，X为你发动过“掠命”的次数）',
+    ['@LuaTunjun'] = '屯军',
+    ['luatunjun'] = '屯军',
+    ['$LuaTunjun1'] = '得封侯爵，屯军弘农',
+    ['$LuaTunjun2'] = '屯军弘农，养精蓄锐'
 }
