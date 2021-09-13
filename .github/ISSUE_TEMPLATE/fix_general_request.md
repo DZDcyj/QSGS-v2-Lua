@@ -1,9 +1,9 @@
 ---
 name: 武将调整
 about: 在这里可以提出你希望调整武将的请求
-title: "[FIX] XX武将调整"
+title: 武将调整
 labels: fix wanted
-assignees: DZDcyj, Rinkosanvsky
+assignees: DZDcyj
 
 ---
 
