@@ -285,11 +285,7 @@ LuaXionghuo =
                         room:broadcastSkillInvoke(self:objectName())
                         local choice = math.random(1, 3)
                         if choice == 1 then
-                            local theDamage = sgs.DamageStruct()
-                            theDamage.to = player
-                            theDamage.damage = 1
-                            theDamage.nature = sgs.DamageStruct_Fire
-                            room:damage(theDamage)
+                            doDamage(room, nil, player, 1, sgs.DamageStruct_Fire)
                             room:addPlayerMark(player, 'XionghuoSlashPro')
                         elseif choice == 2 then
                             room:loseHp(player)
@@ -555,11 +551,7 @@ LuaLangxi =
                     if value == 0 then
                         return false
                     end
-                    local damage = sgs.DamageStruct()
-                    damage.from = player
-                    damage.to = target
-                    damage.damage = value
-                    room:damage(damage)
+                    doDamage(room, player, target, value)
                 end
             end
         end
@@ -2190,11 +2182,7 @@ LuaXuanfengCard =
             local target =
                 room:askForPlayerChosen(source, damageAvailable, 'LuaXuanfeng', 'LuaXuanfengDamage-choose', true, true)
             if target then
-                local damage = sgs.DamageStruct()
-                damage.from = source
-                damage.to = target
-                damage.damage = 1
-                room:damage(damage)
+                doDamage(room, source, target, 1)
                 room:broadcastSkillInvoke('LuaXuanfeng')
             end
         end
@@ -2967,12 +2955,7 @@ LuaFenchengCard =
                         not room:askForDiscard(p, 'fencheng', 10000, length, true, true, '@fencheng:::' .. length)
                  then
                     room:setTag('LuaFenchengDiscard', sgs.QVariant(0))
-                    local damage = sgs.DamageStruct()
-                    damage.from = source
-                    damage.to = p
-                    damage.damage = 2
-                    damage.nature = sgs.DamageStruct_Fire
-                    room:damage(damage)
+                    doDamage(room, source, p, 2, sgs.DamageStruct_Fire)
                 end
             end
         end
@@ -3189,11 +3172,7 @@ LuaDanshou =
                             if room:askForDiscard(sp, 'LuaDanshou', num, num, true, true, '@LuaDanshou:::' .. num) then
                                 skill(self, room, sp, true)
                                 room:doAnimate(1, sp:objectName(), player:objectName())
-                                local theDamage = sgs.DamageStruct()
-                                theDamage.from = sp
-                                theDamage.to = player
-                                theDamage.damage = 1
-                                room:damage(theDamage)
+                                doDamage(room, sp, player, 1)
                             end
                         end
                     end
@@ -4264,15 +4243,11 @@ LuaLvemingCard =
         local judge = sgs.JudgeStruct()
         judge.pattern = '.'
         judge.play_animation = true
-        judge.reason = self:objectName()
+        judge.reason = 'LuaLveming'
         judge.who = source
         room:judge(judge)
         if judge.card:getNumber() == tonumber(chosenNum) then
-            local theDamage = sgs.DamageStruct()
-            theDamage.from = source
-            theDamage.to = target
-            theDamage.damage = 2
-            room:damage(theDamage)
+            doDamage(room, source, target, 2)
         else
             local cards = target:getCards('hej')
             if not cards:isEmpty() then
@@ -4293,12 +4268,7 @@ LuaLveming =
         return LuaLvemingCard:clone()
     end,
     enabled_at_play = function(self, player)
-        for _, sib in sgs.qlist(player:getAliveSiblings()) do
-            if player:getEquips():length() > sib:getEquips():length() then
-                return not player:hasUsed('#LuaLvemingCard')
-            end
-        end
-        return false
+        return not player:hasUsed('#LuaLvemingCard')
     end
 }
 
@@ -4385,15 +4355,26 @@ function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
             self:objectName(),
             nil
         )
-        room:moveCardTo(
-            sgs.Sanguosha:getCard(card_id),
-            from,
-            togive,
-            sgs.Player_PlaceHand,
-            reason,
-            false
-        )
+        room:moveCardTo(sgs.Sanguosha:getCard(card_id), from, togive, sgs.Player_PlaceHand, reason, false)
     end
+end
+
+-- 造成伤害
+-- room 当前 room
+-- from 来源角色
+-- to 目标角色
+-- damage_value 伤害点数
+-- nature 伤害类型，默认为无属性
+function doDamage(room, from, to, damage_value, nature)
+    local theDamage = sgs.DamageStruct()
+    theDamage.from = from
+    theDamage.to = to
+    theDamage.damage = damage_value
+    if not nature then
+        nature = sgs.DamageStruct_Normal
+    end
+    theDamage.nature = nature
+    room:damage(theDamage)
 end
 
 -- 获取对应装备栏的卡牌类型
