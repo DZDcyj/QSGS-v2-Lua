@@ -4181,7 +4181,7 @@ LuaTaomie =
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         if event == sgs.Damage then
-            if damage.from then
+            if player:getMark(self:objectName() .. 'Delay') == 0 then
                 local data2 = sgs.QVariant()
                 data2:setValue(damage.to)
                 if room:askForSkillInvoke(player, self:objectName(), data2) then
@@ -4190,6 +4190,11 @@ LuaTaomie =
                     end
                     room:doAnimate(1, player:objectName(), damage.to:objectName())
                     damage.to:gainMark('@' .. self:objectName())
+                end
+            elseif player:getMark(self:objectName() .. 'Delay') > 0 then
+                room:setPlayerMark(player, self:objectName() .. 'Delay', 0)
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, '@' .. self:objectName(), 0)
                 end
             end
         elseif event == sgs.Damaged then
@@ -4214,17 +4219,15 @@ LuaTaomie =
                 elseif choice == 'getOneCard' then
                     room:doAnimate(1, player:objectName(), damage.to:objectName())
                     if not damage.to:isAllNude() then
-                        local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
-                        player:obtainCard(sgs.Sanguosha:getCard(card_id))
+                        obtainOneCardAndGiveToOtherPlayer(self, room, player, damage.to)
                     end
                 elseif choice == 'removeMark' then
                     damage.damage = damage.damage + 1
                     room:doAnimate(1, player:objectName(), damage.to:objectName())
                     if not damage.to:isAllNude() then
-                        local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
-                        player:obtainCard(sgs.Sanguosha:getCard(card_id))
+                        obtainOneCardAndGiveToOtherPlayer(self, room, player, damage.to)
                     end
-                    room:setPlayerMark(damage.to, '@' .. self:objectName(), 0)
+                    room:addPlayerMark(player, self:objectName() .. 'Delay')
                 end
                 data:setValue(damage)
             end
@@ -4237,6 +4240,39 @@ ExGongsunkang:addSkill(LuaJuliao)
 ExGongsunkang:addSkill(LuaTaomie)
 
 -- 封装好的函数部分
+
+-- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
+function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
+    local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
+    from:obtainCard(sgs.Sanguosha:getCard(card_id))
+    local togive =
+        room:askForPlayerChosen(
+        from,
+        room:getOtherPlayers(card_source),
+        self:objectName(),
+        '@LuaTaomie-give:' .. card_source:objectName(),
+        true,
+        true
+    )
+    if togive then
+        local reason =
+            sgs.CardMoveReason(
+            sgs.CardMoveReason_S_REASON_GIVE,
+            from:objectName(),
+            togive:objectName(),
+            self:objectName(),
+            nil
+        )
+        room:moveCardTo(
+            sgs.Sanguosha:getCard(card_id),
+            from,
+            togive,
+            sgs.Player_PlaceHand,
+            reason,
+            false
+        )
+    end
+end
 
 -- 获取对应装备栏的卡牌类型
 function getEquipTypeStr(equip_index)
@@ -4914,6 +4950,7 @@ sgs.LoadTranslationTable {
     [':LuaJuliao'] = '锁定技，其他角色计算与你的距离始终+X（X为场上势力数-1）',
     ['LuaTaomie'] = '讨灭',
     ['@LuaTaomie'] = '讨灭',
+    ['@LuaTaomie-give'] = '你可以将这张牌交给除 %src 以外的角色',
     [':LuaTaomie'] = '当你受到伤害后或你造成伤害后，你可以令伤害来源或受伤角色获得“讨灭”标记(如场上已有标记则转移给该角色);\
     当你对有标记的角色造成伤害时，选择一项: 1.此伤害+1; 2.你获得其区域内的一张牌并可将之交给另一名角色; 3.依次执行前两项并于伤害结算后弃置其“讨灭”标记',
     ['addDamage'] = '令此伤害+1',
