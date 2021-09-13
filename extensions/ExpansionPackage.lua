@@ -4282,7 +4282,7 @@ LuaLvemingCard =
                 end
             end
         end
-        room:addPlayerMark(source,'LuaLveming')
+        room:addPlayerMark(source, 'LuaLveming')
     end
 }
 
@@ -4302,7 +4302,8 @@ LuaLveming =
     end
 }
 
-LuaTunjunCard = sgs.CreateSkillCard{
+LuaTunjunCard =
+    sgs.CreateSkillCard {
     name = 'LuaTunjunCard',
     filter = function(self, selected, to_select)
         return #selected == 0
@@ -4336,7 +4337,8 @@ LuaTunjunCard = sgs.CreateSkillCard{
     end
 }
 
-LuaTunjunVS = sgs.CreateZeroCardViewAsSkill{
+LuaTunjunVS =
+    sgs.CreateZeroCardViewAsSkill {
     name = 'LuaTunjun',
     view_as = function(self, cards)
         return LuaTunjunCard:clone()
@@ -4346,12 +4348,14 @@ LuaTunjunVS = sgs.CreateZeroCardViewAsSkill{
     end
 }
 
-LuaTunjun = sgs.CreateTriggerSkill{
+LuaTunjun =
+    sgs.CreateTriggerSkill {
     name = 'LuaTunjun',
     frequency = sgs.Skill_Limited,
     limit_mark = '@LuaTunjun',
     view_as_skill = LuaTunjunVS,
-    on_trigger = function()end
+    on_trigger = function()
+    end
 }
 
 ExZhangji:addSkill(LuaLveming)
@@ -5086,5 +5090,5 @@ sgs.LoadTranslationTable {
     ['@LuaTunjun'] = '屯军',
     ['luatunjun'] = '屯军',
     ['$LuaTunjun1'] = '得封侯爵，屯军弘农',
-    ['$LuaTunjun2'] = '屯军弘农，养精蓄锐',
+    ['$LuaTunjun2'] = '屯军弘农，养精蓄锐'
 }
