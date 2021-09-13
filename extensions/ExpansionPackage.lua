@@ -4181,22 +4181,20 @@ LuaTaomie =
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         if event == sgs.Damage then
-            if damage.from and damage.from:objectName() == player:objectName() then
-                if player:getMark(self:objectName() .. 'Delay') == 0 then
-                    local data2 = sgs.QVariant()
-                    data2:setValue(damage.to)
-                    if room:askForSkillInvoke(player, self:objectName(), data2) then
-                        for _, p in sgs.qlist(room:getAlivePlayers()) do
-                            room:setPlayerMark(p, '@' .. self:objectName(), 0)
-                        end
-                        room:doAnimate(1, player:objectName(), damage.to:objectName())
-                        damage.to:gainMark('@' .. self:objectName())
-                    end
-                elseif player:getMark(self:objectName() .. 'Delay') > 0 then
-                    room:setPlayerMark(player, self:objectName() .. 'Delay', 0)
+            if player:getMark(self:objectName() .. 'Delay') == 0 then
+                local data2 = sgs.QVariant()
+                data2:setValue(damage.to)
+                if room:askForSkillInvoke(player, self:objectName(), data2) then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
+                    room:doAnimate(1, player:objectName(), damage.to:objectName())
+                    damage.to:gainMark('@' .. self:objectName())
+                end
+            elseif player:getMark(self:objectName() .. 'Delay') > 0 then
+                room:setPlayerMark(player, self:objectName() .. 'Delay', 0)
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, '@' .. self:objectName(), 0)
                 end
             end
         elseif event == sgs.Damaged then
@@ -4221,69 +4219,13 @@ LuaTaomie =
                 elseif choice == 'getOneCard' then
                     room:doAnimate(1, player:objectName(), damage.to:objectName())
                     if not damage.to:isAllNude() then
-                        local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
-                        player:obtainCard(sgs.Sanguosha:getCard(card_id))
-                        local togive =
-                            room:askForPlayerChosen(
-                            player,
-                            room:getOtherPlayers(damage.to),
-                            self:objectName(),
-                            '@LuaTaomie-give:'..damage.to:objectName(),
-                            true,
-                            true
-                        )
-                        if togive then
-                            local reason =
-                                sgs.CardMoveReason(
-                                sgs.CardMoveReason_S_REASON_GIVE,
-                                source:objectName(),
-                                target:objectName(),
-                                'LuaJijie',
-                                nil
-                            )
-                            room:moveCardTo(
-                                sgs.Sanguosha:getCard(card_id),
-                                player,
-                                togive,
-                                sgs.Player_PlaceHand,
-                                reason,
-                                false
-                            )
-                        end
+                        obtainOneCardAndGiveToOtherPlayer(self, room, player, damage.to)
                     end
                 elseif choice == 'removeMark' then
                     damage.damage = damage.damage + 1
                     room:doAnimate(1, player:objectName(), damage.to:objectName())
                     if not damage.to:isAllNude() then
-                        local card_id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
-                        player:obtainCard(sgs.Sanguosha:getCard(card_id))
-                        local togive =
-                            room:askForPlayerChosen(
-                            player,
-                            room:getOtherPlayers(damage.to),
-                            self:objectName(),
-                            '@LuaTaomie-give:'.. damage.to:objectName(),
-                            true,
-                            true
-                        )
-                        if togive then
-                            local reason =
-                                sgs.CardMoveReason(
-                                sgs.CardMoveReason_S_REASON_GIVE,
-                                source:objectName(),
-                                target:objectName(),
-                                'LuaJijie',
-                                nil
-                            )
-                            room:moveCardTo(
-                                sgs.Sanguosha:getCard(card_id),
-                                player,
-                                togive,
-                                sgs.Player_PlaceHand,
-                                reason,
-                                false
-                            )
-                        end
+                        obtainOneCardAndGiveToOtherPlayer(self, room, player, damage.to)
                     end
                     room:addPlayerMark(player, self:objectName() .. 'Delay')
                 end
@@ -4298,6 +4240,39 @@ ExGongsunkang:addSkill(LuaJuliao)
 ExGongsunkang:addSkill(LuaTaomie)
 
 -- 封装好的函数部分
+
+-- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
+function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
+    local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
+    from:obtainCard(sgs.Sanguosha:getCard(card_id))
+    local togive =
+        room:askForPlayerChosen(
+        from,
+        room:getOtherPlayers(card_source),
+        self:objectName(),
+        '@LuaTaomie-give:' .. card_source:objectName(),
+        true,
+        true
+    )
+    if togive then
+        local reason =
+            sgs.CardMoveReason(
+            sgs.CardMoveReason_S_REASON_GIVE,
+            from:objectName(),
+            togive:objectName(),
+            self:objectName(),
+            nil
+        )
+        room:moveCardTo(
+            sgs.Sanguosha:getCard(card_id),
+            from,
+            togive,
+            sgs.Player_PlaceHand,
+            reason,
+            false
+        )
+    end
+end
 
 -- 获取对应装备栏的卡牌类型
 function getEquipTypeStr(equip_index)
