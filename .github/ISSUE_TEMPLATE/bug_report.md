@@ -1,9 +1,9 @@
 ---
 name: Bug 反馈
 about: 提交报告帮助我们做得更好
-title: "[BUG] Bug 标题"
+title: Bug 标题
 labels: bug
-assignees: DZDcyj, Rinkosanvsky
+assignees: DZDcyj
 
 ---
 
