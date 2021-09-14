@@ -34,6 +34,7 @@ ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true, true)
 ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
 ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
+ExTenYearDongcheng = sgs.General(extension, 'ExTenYearDongcheng', 'qun', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4331,7 +4332,155 @@ LuaTunjun =
 ExZhangji:addSkill(LuaLveming)
 ExZhangji:addSkill(LuaTunjun)
 
+LuaXuezhaoCard =
+    sgs.CreateSkillCard {
+    name = 'LuaXuezhaoCard',
+    filter = function(self, selected, to_select)
+        return #selected < sgs.Self:getHp() and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_use = function(self, room, source, targets)
+        for _, target in ipairs(targets) do
+            local card =
+                room:askForCard(
+                target,
+                '.',
+                '@LuaXuezhao-give:' .. source:objectName(),
+                sgs.QVariant(),
+                sgs.Card_MethodNone
+            )
+            if card then
+                target:drawCards(1)
+                room:addPlayerMark(source, 'LuaXuezhao-Slash')
+                source:obtainCard(card)
+            else
+                room:addPlayerMark(target, 'LuaXuezhao-Nogive')
+                room:addPlayerMark(source, 'LuaXuezhao-Force')
+            end
+        end
+    end
+}
+
+LuaXuezhaoVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaXuezhao',
+    view_filter = function(self, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, card)
+        local vs_card = LuaXuezhaoCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:isKongcheng() and not player:hasUsed('#LuaXuezhaoCard')
+    end
+}
+
+LuaXuezhao =
+    sgs.CreateTriggerSkill {
+    name = 'LuaXuezhao',
+    view_as_skill = LuaXuezhaoVS,
+    events = {
+        sgs.EventPhaseChanging,
+        sgs.CardUsed,
+        sgs.TargetConfirmed,
+        sgs.TrickCardCanceling,
+        sgs.CardFinished,
+        sgs.CardAsked
+    },
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, 'LuaXuezhao-Nogive', 0)
+                end
+                room:setPlayerMark(player, 'LuaXuezhao-Slash', 0)
+                room:setPlayerMark(player, 'LuaXuezhao-Force', 0)
+            end
+        elseif event == sgs.CardUsed then
+            local use = data:toCardUse()
+            local invoke = false
+            if
+                use.from and use.from:hasSkill(self:objectName()) and
+                    (use.card:isKindOf('Slash') or use.card:isNDTrick())
+             then
+                for _, p in sgs.qlist(use.to) do
+                    if p:getMark('LuaXuezhao-Nogive') > 0 then
+                        invoke = true
+                        room:addPlayerMark(p, '@LuaXuezhaoTarget')
+                    end
+                end
+                if invoke and use.from:hasSkill(self:objectName()) then
+                    room:sendCompulsoryTriggerLog(use.from, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:addPlayerMark(use.from, self:objectName() .. 'engine')
+                    if use.from:getMark(self:objectName() .. 'engine') > 0 then
+                        room:removePlayerMark(use.from, self:objectName() .. 'engine')
+                    end
+                end
+            end
+        elseif event == sgs.TargetConfirmed then
+            local use = data:toCardUse()
+            if use.card:isKindOf('Slash') then
+                use.from:setTag('XuezhaoSlash', sgs.QVariant(use.from:getTag('XuezhaoSlash'):toInt() + 1))
+                if RIGHT(self, use.from) and player:getMark('LuaXuezhao-Nogive') > 0 then
+                    local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
+                    jink_table[use.from:getTag('XuezhaoSlash'):toInt() - 1] = 0
+                    local jink_data = sgs.QVariant()
+                    jink_data:setValue(Table2IntList(jink_table))
+                    use.from:setTag('Jink_' .. use.card:toString(), jink_data)
+                end
+            end
+        elseif event == sgs.TrickCardCanceling then
+            local effect = data:toCardEffect()
+            if effect.from and RIGHT(self, effect.from) and player:getMark('LuaXuezhao-Nogive') > 0 then
+                return true
+            end
+        elseif event == sgs.CardAsked then
+            if player:getMark('@LuaXuezhaoTarget') > 0 then
+                room:provide(nil)
+                room:setPlayerMark(player, '@LuaXuezhaoTarget', 0)
+                return true
+            end
+        else
+            local use = data:toCardUse()
+            if use.card and use.card:isKindOf('Slash') then
+                player:setTag('XuezhaoSlash', sgs.QVariant(0))
+            end
+            for _, p in sgs.qlist(use.to) do
+                room:setPlayerMark(p, '@LuaXuezhaoTarget', 0)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaXuezhaoTargetMod =
+    sgs.CreateTargetModSkill {
+    name = '#LuaXuezhao',
+    frequency = sgs.Skill_Compulsory,
+    pattern = 'Slash',
+    residue_func = function(self, player)
+        if player:hasSkill('LuaXuezhao') then
+            return player:getMark('LuaXuezhao-Slash')
+        else
+            return 0
+        end
+    end
+}
+
+SkillAnjiang:addSkill(LuaXuezhaoTargetMod)
+ExTenYearDongcheng:addSkill(LuaXuezhao)
+
 -- 封装好的函数部分
+
+-- 系统封装好的 RIGHT 函数
+function RIGHT(self, player)
+    return player and player:isAlive() and player:hasSkill(self:objectName())
+end
 
 -- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
 function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
@@ -5071,5 +5220,12 @@ sgs.LoadTranslationTable {
     ['@LuaTunjun'] = '屯军',
     ['luatunjun'] = '屯军',
     ['$LuaTunjun1'] = '得封侯爵，屯军弘农',
-    ['$LuaTunjun2'] = '屯军弘农，养精蓄锐'
+    ['$LuaTunjun2'] = '屯军弘农，养精蓄锐',
+    ['ExTenYearDongcheng'] = '董承-十周年',
+    ['&ExTenYearDongcheng'] = '董承',
+    ['#ExTenYearDongcheng'] = '扬义誓诛',
+    ['LuaXuezhao'] = '血诏',
+    ['luaxuezhao'] = '血诏',
+    [':LuaXuezhao'] = '出牌阶段限一次，你可弃置一张手牌并选择至多x名其他角色（x为你的体力值）。这些角色依次选择是否交给你一张牌，若选择是，该角色摸一张牌且你本回合可多使用一张【杀】；若选择否，该角色本回合无法响应你使用的牌',
+    ['@LuaXuezhao-give'] = '%src 发动了“血诏”，请交给 %src 一张手牌，否则你本回合无法响应 %src 使用的牌'
 }
