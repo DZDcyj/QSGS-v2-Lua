@@ -4372,7 +4372,7 @@ LuaXuezhaoVS =
         return vs_card
     end,
     enabled_at_play = function(self, player)
-        return not player:hasUsed('#LuaXuezhaoCard')
+        return not player:isKongcheng() and not player:hasUsed('#LuaXuezhaoCard')
     end
 }
 
@@ -4479,11 +4479,7 @@ ExTenYearDongcheng:addSkill(LuaXuezhao)
 
 -- 系统封装好的 RIGHT 函数
 function RIGHT(self, player)
-    if player and player:isAlive() and player:hasSkill(self:objectName()) then
-        return true
-    else
-        return false
-    end
+    return player and player:isAlive() and player:hasSkill(self:objectName())
 end
 
 -- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
