@@ -1819,7 +1819,9 @@ LuaFumo =
                 end
                 if containsTrick then
                     for _, to in sgs.qlist(use.to) do
-                        if not to:isNude() then
+                        local i = 2
+                        while not to:isNude() and i > 0 do
+                            i = i - 1
                             local card_id =
                                 room:askForCardChosen(
                                 player,
@@ -1831,20 +1833,8 @@ LuaFumo =
                             )
                             if card_id then
                                 room:throwCard(card_id, to, player)
-                            end
-                            if not to:isNude() then
-                                card_id =
-                                    room:askForCardChosen(
-                                    player,
-                                    to,
-                                    'he',
-                                    self:objectName(),
-                                    false,
-                                    sgs.Card_MethodDiscard
-                                )
-                                if card_id then
-                                    room:throwCard(card_id, to, player)
-                                end
+                            else
+                                i = 0
                             end
                         end
                     end
@@ -1857,10 +1847,13 @@ LuaFumo =
                         _data:setValue(p)
                         jink_table[index] = 0
                         index = index + 1
+                        local msg = sgs.LogMessage()
+                        msg.type = '#NoJink'
+                        msg.from = p
+                        room:sendLog(msg)
                     end
                     local jink_data = sgs.QVariant()
                     jink_data:setValue(Table2IntList(jink_table))
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
                     player:setTag('Jink_' .. use.card:toString(), jink_data)
                 end
             end
