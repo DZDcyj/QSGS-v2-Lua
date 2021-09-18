@@ -1742,7 +1742,7 @@ LuaJixie =
 LuaFumoVS =
     sgs.CreateViewAsSkill {
     name = 'LuaFumo',
-    n = 2,
+    n = 999,
     response_or_use = false,
     view_filter = function(self, selected, to_select)
         if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
@@ -1751,87 +1751,16 @@ LuaFumoVS =
                 slash:addSubcard(cd)
             end
             slash:deleteLater()
-            return #selected < 2 and slash:isAvailable(sgs.Self)
+            return slash:isAvailable(sgs.Self)
         end
-        return #selected < 2
-    end,
-    on_validate = function(self, card_use)
-        local source = card_use.from
-        local room = source:getRoom()
-        local to_use = self:getUserString()
-        local containsSlash =
-            checkIfSubcardsContainType(
-            card_use.card,
-            function(card)
-                return card:isKindOf('Slash')
-            end
-        )
-        if containsSlash then
-            if
-                to_use == 'slash' and
-                    sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
-             then
-                local use_list = {}
-                table.insert(use_list, 'slash')
-                local sts = sgs.GetConfig('BanPackages', '')
-                if not string.find(sts, 'maneuvering') then
-                    table.insert(use_list, 'normal_slash')
-                    table.insert(use_list, 'thunder_slash')
-                    table.insert(use_list, 'fire_slash')
-                end
-                to_use = room:askForChoice(source, 'fumo_slash', table.concat(use_list, '+'))
-                source:setTag('FumoSlash', sgs.QVariant(to_use))
-            end
-            local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-            local user_str = to_use
-            local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
-            use_card:setSkillName(self:objectName())
-            use_card:addSubcard(self:getSubcards():first())
-            use_card:deleteLater()
-            local tos = card_use.to
-            for _, to in sgs.qlist(tos) do
-                local skill = room:isProhibited(source, to, use_card)
-                if skill then
-                    card_use.to:removeOne(to)
-                end
-            end
-            return use_card
-        end
-    end,
-    on_validate_in_response = function(self, source)
-        local room = source:getRoom()
-        if self:getUserString() == 'slash' then
-            local use_list = {}
-            table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
-                table.insert(use_list, 'normal_slash')
-                table.insert(use_list, 'thunder_slash')
-                table.insert(use_list, 'fire_slash')
-            end
-            to_use = room:askForChoice(source, 'fumo_slash', table.concat(use_list, '+'))
-            source:setTag('FumoSlash', sgs.QVariant(to_use))
-        end
-        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        local user_str
-        if to_use == 'slash' then
-            user_str = 'slash'
-        elseif to_use == 'normal_slash' then
-            user_str = 'slash'
-        else
-            user_str = to_use
-        end
-        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
-        use_card:setSkillName(self:objectName())
-        use_card:addSubcard(self)
-        use_card:deleteLater()
-        return use_card
+        return true
     end,
     view_as = function(self, cards)
-        if #cards == 2 then
+        if #cards >= 2 then
             local slash = sgs.Sanguosha:cloneCard('slash', cards[1]:getSuit(), cards[1]:getNumber())
-            slash:addSubcard(cards[1])
-            slash:addSubcard(cards[2])
+            for _, cd in ipairs(cards) do
+                slash:addSubcard(cd)
+            end
             slash:setSkillName(self:objectName())
             return slash
         end
@@ -1850,7 +1779,7 @@ LuaFumo =
     sgs.CreateTriggerSkill {
     name = 'LuaFumo',
     view_as_skill = LuaFumoVS,
-    events = {sgs.DamageCaused, sgs.TargetConfirmed},
+    events = {sgs.DamageCaused, sgs.TargetConfirmed, sgs.PreCardUsed},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.DamageCaused then
             local damage = data:toDamage()
@@ -1934,6 +1863,45 @@ LuaFumo =
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     player:setTag('Jink_' .. use.card:toString(), jink_data)
                 end
+            end
+        elseif event == sgs.PreCardUsed then
+            local use = data:toCardUse()
+            if use.card and use.card:getSkillName() == self:objectName() then
+                local available_targets = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if not use.to:contains(p) then
+                        if not (use.card:targetFixed()) then
+                            if (use.card:targetFilter(sgs.PlayerList(), p, player)) then
+                                available_targets:append(p)
+                            end
+                        end
+                    end
+                end
+                local slashCount = 0
+                for _, cd in sgs.qlist(use.card:getSubcards()) do
+                    if sgs.Sanguosha:getCard(cd):isKindOf('Slash') then
+                        slashCount = slashCount + 1
+                    end
+                end
+                while not available_targets:isEmpty() and slashCount > 0 do
+                    local extra =
+                        room:askForPlayerChosen(
+                        player,
+                        available_targets,
+                        self:objectName(),
+                        '@LuaFumo:::' .. slashCount,
+                        true,
+                        true
+                    )
+                    if extra then
+                        use.to:append(extra)
+                        available_targets:removeOne(extra)
+                        slashCount = slashCount - 1
+                    else
+                        break
+                    end
+                end
+                data:setValue(use)
             end
         end
         return false
@@ -2168,5 +2136,16 @@ sgs.LoadTranslationTable {
     ['@LuaZhixie'] = '你可以发动“智屑”，横置至多 %arg 名角色',
     ['~LuaZhixie'] = '选择若干名角色→点击确定',
     ['LuaJixie'] = '机械',
-    [':LuaJixie'] = '锁定技，当你受到雷属性伤害时，你摸一张牌，然后本次伤害-1'
+    [':LuaJixie'] = '锁定技，当你受到雷属性伤害时，你摸一张牌，然后本次伤害-1',
+    ['Yeniao'] = '夜鸟',
+    ['&Yeniao'] = '夜鸟',
+    ['#Yeniao'] = '魅魔酱',
+    ['LuaFumo'] = '附魔',
+    [':LuaFumo'] = '你可以将至少两张牌当作【杀】使用。若你使用的牌中包含有：\
+    1. 杀，则你可以额外选择X个目标（X为【杀】的数量）\
+    2. 有红色牌，则该杀无距离限制\
+    3. 有黑色牌，该杀伤害+1\
+    4. 有锦囊牌，你弃置目标2张牌\
+    5. 有装备牌，该【杀】无法使用【闪】响应',
+    ['@LuaFumo'] = '你可以发动“附魔”选择额外的目标，还可以选择至多 %arg 名角色'
 }
