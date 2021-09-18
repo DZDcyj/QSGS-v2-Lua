@@ -1949,8 +1949,8 @@ LuaFumoTargetMod =
             local containsRed =
                 checkIfSubcardsContainType(
                 card,
-                function(card)
-                    return card:isRed()
+                function(check_card)
+                    return check_card:isRed()
                 end
             )
             if containsRed then
