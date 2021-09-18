@@ -1923,9 +1923,6 @@ LuaFumoTargetMod =
     end
 }
 
-Yeniao:addSkill(LuaFumo)
-SkillAnjiang:addSkill(LuaFumoTargetMod)
-
 function checkIfSubcardsContainType(card, checkFunc)
     local containsType
     if type(checkFunc) ~= 'function' then
@@ -1995,6 +1992,8 @@ Yaoyu:addSkill(LuaWangming)
 Shayu:addSkill(LuaTianfa)
 Shayu:addSkill(LuaZhixie)
 Shayu:addSkill(LuaJixie)
+Yeniao:addSkill(LuaFumo)
+SkillAnjiang:addSkill(LuaFumoTargetMod)
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
