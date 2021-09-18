@@ -13,6 +13,7 @@ Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true, true)
 Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true, true)
+Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -1706,7 +1707,7 @@ LuaZhixie =
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 if player:getMark(self:objectName()) > 0 then
-                    room:askForUseCard(player, '@@LuaZhixie', '@LuaZhixie:::'..player:getMark(self:objectName()))
+                    room:askForUseCard(player, '@@LuaZhixie', '@LuaZhixie:::' .. player:getMark(self:objectName()))
                     room:setPlayerMark(player, self:objectName(), 0)
                 end
             end
@@ -1737,6 +1738,210 @@ LuaJixie =
         return false
     end
 }
+
+LuaFumoVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaFumo',
+    n = 999,
+    response_or_use = false,
+    view_filter = function(self, selected, to_select)
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_SuitToBeDecided, -1)
+            for _, cd in ipairs(selected) do
+                slash:addSubcard(cd)
+            end
+            slash:deleteLater()
+            return slash:isAvailable(sgs.Self)
+        end
+        return true
+    end,
+    view_as = function(self, cards)
+        if #cards >= 2 then
+            local slash = sgs.Sanguosha:cloneCard('slash', cards[1]:getSuit(), cards[1]:getNumber())
+            for _, cd in ipairs(cards) do
+                slash:addSubcard(cd)
+            end
+            slash:setSkillName(self:objectName())
+            return slash
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return sgs.Slash_IsAvailable(player)
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == 'slash' and
+            sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+    end
+}
+
+LuaFumo =
+    sgs.CreateTriggerSkill {
+    name = 'LuaFumo',
+    view_as_skill = LuaFumoVS,
+    events = {sgs.DamageCaused, sgs.TargetConfirmed, sgs.PreCardUsed},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            if damage.card and damage.card:getSkillName() == self:objectName() then
+                local containsBlack =
+                    checkIfSubcardsContainType(
+                    damage.card,
+                    function(card)
+                        return card:isBlack()
+                    end
+                )
+                if containsBlack then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    damage.damage = damage.damage + 1
+                    data:setValue(damage)
+                end
+            end
+        elseif event == sgs.TargetConfirmed then
+            local use = data:toCardUse()
+            if use.card and use.card:getSkillName() == self:objectName() then
+                local containsTrick =
+                    checkIfSubcardsContainType(
+                    use.card,
+                    function(card)
+                        return card:isKindOf('TrickCard')
+                    end
+                )
+                local containsEquip =
+                    checkIfSubcardsContainType(
+                    use.card,
+                    function(card)
+                        return card:isKindOf('EquipCard')
+                    end
+                )
+                if containsEquip or containsTrick then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                end
+                if containsTrick then
+                    for _, to in sgs.qlist(use.to) do
+                        local i = 2
+                        while not to:isNude() and i > 0 do
+                            i = i - 1
+                            local card_id =
+                                room:askForCardChosen(
+                                player,
+                                to,
+                                'he',
+                                self:objectName(),
+                                false,
+                                sgs.Card_MethodDiscard
+                            )
+                            if card_id then
+                                room:throwCard(card_id, to, player)
+                            else
+                                i = 0
+                            end
+                        end
+                    end
+                end
+                if containsEquip then
+                    local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
+                    local index = 1
+                    for _, p in sgs.qlist(use.to) do
+                        local _data = sgs.QVariant()
+                        _data:setValue(p)
+                        jink_table[index] = 0
+                        index = index + 1
+                        local msg = sgs.LogMessage()
+                        msg.type = '#NoJink'
+                        msg.from = p
+                        room:sendLog(msg)
+                    end
+                    local jink_data = sgs.QVariant()
+                    jink_data:setValue(Table2IntList(jink_table))
+                    player:setTag('Jink_' .. use.card:toString(), jink_data)
+                end
+            end
+        elseif event == sgs.PreCardUsed then
+            local use = data:toCardUse()
+            if use.card and use.card:getSkillName() == self:objectName() then
+                local available_targets = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if not use.to:contains(p) then
+                        if not (use.card:targetFixed()) then
+                            if (use.card:targetFilter(sgs.PlayerList(), p, player)) then
+                                available_targets:append(p)
+                            end
+                        end
+                    end
+                end
+                local slashCount = 0
+                for _, cd in sgs.qlist(use.card:getSubcards()) do
+                    if sgs.Sanguosha:getCard(cd):isKindOf('Slash') then
+                        slashCount = slashCount + 1
+                    end
+                end
+                while not available_targets:isEmpty() and slashCount > 0 do
+                    local extra =
+                        room:askForPlayerChosen(
+                        player,
+                        available_targets,
+                        self:objectName(),
+                        '@LuaFumo:::' .. slashCount,
+                        true,
+                        true
+                    )
+                    if extra then
+                        use.to:append(extra)
+                        available_targets:removeOne(extra)
+                        slashCount = slashCount - 1
+                    else
+                        break
+                    end
+                end
+                data:setValue(use)
+            end
+        end
+        return false
+    end
+}
+
+LuaFumoTargetMod =
+    sgs.CreateTargetModSkill {
+    name = 'LuaFumoTargetMod',
+    pattern = 'Slash',
+    distance_limit_func = function(self, from, card)
+        if from:hasSkill('LuaFumo') then
+            local containsRed =
+                checkIfSubcardsContainType(
+                card,
+                function(check_card)
+                    return check_card:isRed()
+                end
+            )
+            if containsRed then
+                return 1000
+            end
+            return 0
+        end
+        return 0
+    end
+}
+
+Yeniao:addSkill(LuaFumo)
+SkillAnjiang:addSkill(LuaFumoTargetMod)
+
+function checkIfSubcardsContainType(card, checkFunc)
+    local containsType
+    if type(checkFunc) ~= 'function' then
+        return nil
+    end
+    if not card then
+        return nil
+    end
+    for _, subcard in sgs.qlist(card:getSubcards()) do
+        if checkFunc(sgs.Sanguosha:getCard(subcard)) then
+            containsType = true
+            break
+        end
+    end
+    return containsType
+end
 
 -- 添加武将技能（除去主公技、觉醒技、限定技）
 function getSkillTable(general)
@@ -1924,5 +2129,16 @@ sgs.LoadTranslationTable {
     ['@LuaZhixie'] = '你可以发动“智屑”，横置至多 %arg 名角色',
     ['~LuaZhixie'] = '选择若干名角色→点击确定',
     ['LuaJixie'] = '机械',
-    [':LuaJixie'] = '锁定技，当你受到雷属性伤害时，你摸一张牌，然后本次伤害-1'
+    [':LuaJixie'] = '锁定技，当你受到雷属性伤害时，你摸一张牌，然后本次伤害-1',
+    ['Yeniao'] = '夜鸟',
+    ['&Yeniao'] = '夜鸟',
+    ['#Yeniao'] = '魅魔酱',
+    ['LuaFumo'] = '附魔',
+    [':LuaFumo'] = '你可以将至少两张牌当作【杀】使用。若你使用的牌中包含有：\
+    1. 杀，则你可以额外选择X个目标（X为【杀】的数量）\
+    2. 有红色牌，则该杀无距离限制\
+    3. 有黑色牌，该杀伤害+1\
+    4. 有锦囊牌，你弃置目标2张牌\
+    5. 有装备牌，该【杀】无法使用【闪】响应',
+    ['@LuaFumo'] = '你可以发动“附魔”选择额外的目标，还可以选择至多 %arg 名角色'
 }
