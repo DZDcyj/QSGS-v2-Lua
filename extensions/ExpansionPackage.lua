@@ -35,6 +35,7 @@ ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true, true)
 ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
 ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
 ExTenYearDongcheng = sgs.General(extension, 'ExTenYearDongcheng', 'qun', '4', true, true)
+ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4478,7 +4479,164 @@ LuaXuezhaoTargetMod =
 SkillAnjiang:addSkill(LuaXuezhaoTargetMod)
 ExTenYearDongcheng:addSkill(LuaXuezhao)
 
+LuaGusheCard =
+    sgs.CreateSkillCard {
+    name = 'LuaGusheCard',
+    filter = function(self, selected, to_select)
+        return #selected < 3 and sgs.Self:canPindian(to_select, self:objectName())
+    end,
+    on_use = function(self, room, source, targets)
+        local from_card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        room:broadcastSkillInvoke('LuaGushe')
+        for _, target in ipairs(targets) do
+            local discard_victim
+            if source:pindian(target, 'LuaGushe', from_card) then
+                discard_victim = target
+                room:addPlayerMark(source, 'LuaGusheWin')
+            else
+                discard_victim = source
+                source:gainMark('@LuaGushe')
+            end
+            if
+                not room:askForDiscard(
+                    discard_victim,
+                    'LuaGushe',
+                    1,
+                    1,
+                    true,
+                    true,
+                    '@LuaGusheDiscard:' .. source:objectName()
+                )
+             then
+                source:drawCards(1)
+            end
+        end
+    end
+}
+
+LuaGusheVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaGushe',
+    view_filter = function(self, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, card)
+        local vs_card = LuaGusheCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:isKongcheng() and player:getMark('LuaGusheWin') < 7 - player:getMark('@LuaGushe')
+    end
+}
+
+LuaGushe =
+    sgs.CreateTriggerSkill {
+    name = 'LuaGushe',
+    events = {sgs.MarkChanged, sgs.EventPhaseChanging},
+    view_as_skill = LuaGusheVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.MarkChanged then
+            local mark = data:toMark()
+            if mark.name == '@LuaGushe' then
+                if player:getMark(mark.name) >= 7 then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    room:killPlayer(player)
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                room:setPlayerMark(player, 'LuaGusheWin', 0)
+            end
+        end
+    end
+}
+
+LuaJici =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJici',
+    events = {sgs.PindianVerifying, sgs.Death},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.PindianVerifying then
+            local pindian = data:toPindian()
+            local obtained
+            if pindian.from:hasSkill(self:objectName()) then
+                if pindian.from_number < pindian.from:getMark('@LuaGushe') then
+                    room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    pindian.from_number = pindian.from_number + pindian.from:getMark('@LuaGushe')
+                    getBackPindianCardByJici(room, pindian, true)
+                    obtained = true
+                end
+            end
+            if pindian.to:hasSkill(self:objectName()) then
+                if pindian.to_number < pindian.to:getMark('@LuaGushe') then
+                    room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    pindian.to_number = pindian.to_number + pindian.to:getMark('@LuaGushe')
+                    if not obtained then
+                        getBackPindianCardByJici(room, pindian, false)
+                    end
+                end
+            end
+            data:setValue(pindian)
+        elseif event == sgs.Death then
+            local death = data:toDeath()
+            if death.who:objectName() ~= player:objectName() then
+                return false
+            end
+            if death.damage then
+                if death.damage.from then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:doAnimate(1, player:objectName(), death.damage.from:objectName())
+                    local x = 7 - player:getMark('@LuaGushe')
+                    x = math.min(death.damage.from:getCardCount(true), x)
+                    if x > 0 then
+                        room:askForDiscard(death.damage.from, self:objectName(), x, x, false, true)
+                    end
+                    room:loseHp(death.damage.from)
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:hasSkill(self:objectName())
+    end
+}
+
+ExTenYearWanglang:addSkill(LuaGushe)
+ExTenYearWanglang:addSkill(LuaJici)
+
 -- 封装好的函数部分
+
+-- 激词收回大点数牌
+function getBackPindianCardByJici(room, pindian, isFrom)
+    local player
+    if isFrom then
+        player = pindian.from
+    else
+        player = pindian.to
+    end
+    if pindian.from_number > pindian.to_number then
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+    elseif pindian.from_number < pindian.to_number then
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    else
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    end
+end
 
 -- 系统封装好的 RIGHT 函数
 function RIGHT(self, player)
@@ -5230,5 +5388,21 @@ sgs.LoadTranslationTable {
     ['LuaXuezhao'] = '血诏',
     ['luaxuezhao'] = '血诏',
     [':LuaXuezhao'] = '出牌阶段限一次，你可弃置一张手牌并选择至多x名其他角色（x为你的体力值）。这些角色依次选择是否交给你一张牌，若选择是，该角色摸一张牌且你本回合可多使用一张【杀】；若选择否，该角色本回合无法响应你使用的牌',
-    ['@LuaXuezhao-give'] = '%src 发动了“血诏”，请交给 %src 一张手牌，否则你本回合无法响应 %src 使用的牌'
+    ['@LuaXuezhao-give'] = '%src 发动了“血诏”，请交给 %src 一张手牌，否则你本回合无法响应 %src 使用的牌',
+    ['ExTenYearWanglang'] = '王朗-十周年',
+    ['&ExTenYearWanglang'] = '王朗',
+    ['#ExTenYearWanglang'] = '凤鹛',
+    ['~ExTenYearWanglang'] = '诸葛村夫，你竟如此……',
+    ['LuaGushe'] = '鼓舌',
+    ['luagushe'] = '鼓舌',
+    ['@LuaGushe'] = '饶舌',
+    ['@LuaGusheDiscard'] = '你需要弃置一张牌或者点击取消让 %src 摸一张牌',
+    [':LuaGushe'] = '出牌阶段，你可以用一张手牌与至多三名角色同时拼点，没赢的角色选择一项：1.弃置一张牌；2.令你摸一张牌。若你没赢，获得1个“饶舌”标记。当你一回合内累计7-X（X为鼓舌标记数）次拼点赢时，本回合此技能失效\
+    锁定技，当你的饶舌标记达到7时，你死亡',
+    ['$LuaGushe1'] = '不必强逞兵刃之利，一切不过是个理字',
+    ['$LuaGushe2'] = '天命加之大魏，汝何必顽抗',
+    ['LuaJici'] = '激词',
+    [':LuaJici'] = '锁定技，当你的拼点牌亮出后，若此牌点数小于等于X，则点数+X（X为“饶舌”标记的数量）且你获得本次拼点中点数最大的牌。当你死亡时，杀死你的角色弃置7-X张牌并失去1点体力',
+    ['$LuaJici1'] = '休要多言，只需听我一语',
+    ['$LuaJici2'] = '以我凤鹛之能，何惧所谓卧龙？'
 }
