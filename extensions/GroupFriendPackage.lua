@@ -1779,7 +1779,14 @@ LuaFumo =
     sgs.CreateTriggerSkill {
     name = 'LuaFumo',
     view_as_skill = LuaFumoVS,
-    events = {sgs.DamageCaused, sgs.TargetConfirmed, sgs.PreCardUsed},
+    events = {
+        sgs.DamageCaused,
+        sgs.TargetConfirmed,
+        sgs.PreCardUsed,
+        sgs.TargetSpecified,
+        sgs.EventPhaseChanging,
+        sgs.Death
+    },
     on_trigger = function(self, event, player, data, room)
         if event == sgs.DamageCaused then
             local damage = data:toDamage()
@@ -1895,6 +1902,47 @@ LuaFumo =
                     end
                 end
                 data:setValue(use)
+            end
+        elseif event == sgs.TargetSpecified then
+            local use = data:toCardUse()
+            if use.card and use.card:getSkillName() == self:objectName() then
+                if use.card:isKindOf('Slash') then
+                    local suits = {}
+                    for _, id in sgs.qlist(use.card:getSubcards()) do
+                        local subcard = sgs.Sanguosha:getCard(id)
+                        if not table.contains(suits, subcard:getSuit()) then
+                            table.insert(suits, subcard:getSuit())
+                        end
+                    end
+                    if #suits == 4 then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        for _, p in sgs.qlist(use.to) do
+                            room:addPlayerMark(p, '@skill_invalidity')
+                            room:addPlayerMark(p, self:objectName())
+                        end
+                    end
+                end
+            end
+        else
+            if event == sgs.EventPhaseChanging then
+                local change = data:toPhaseChange()
+                if change.to ~= sgs.Player_NotActive then
+                    return false
+                end
+            elseif event == sgs.Death then
+                local death = data:toDeath()
+                if
+                    death.who:objectName() ~= player:objectName() or
+                        player:objectName() ~= room:getCurrent():objectName()
+                 then
+                    return false
+                end
+            end
+            for _, p in sgs.qlist(room:getAllPlayers()) do
+                if p:getMark(self:objectName()) > 0 then
+                    room:removePlayerMark(p, '@skill_invalidity', p:getMark(self:objectName()))
+                    room:setPlayerMark(p, self:objectName(), 0)
+                end
             end
         end
         return false
@@ -2138,6 +2186,7 @@ sgs.LoadTranslationTable {
     2. 有红色牌，则该杀无距离限制\
     3. 有黑色牌，该杀伤害+1\
     4. 有锦囊牌，你弃置目标2张牌\
-    5. 有装备牌，该【杀】无法使用【闪】响应',
+    5. 有装备牌，该【杀】无法使用【闪】响应\
+    6. 包含四种花色，该【杀】指定的目标本回合内非锁定技失效',
     ['@LuaFumo'] = '你可以发动“附魔”选择额外的目标，还可以选择至多 %arg 名角色'
 }
