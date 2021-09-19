@@ -4165,6 +4165,9 @@ LuaTaomie =
             if player:getMark(self:objectName() .. 'Delay') == 0 then
                 local data2 = sgs.QVariant()
                 data2:setValue(damage.to)
+                if not damage.to:isAlive() then
+                    return false
+                end
                 if room:askForSkillInvoke(player, self:objectName(), data2) then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         room:setPlayerMark(p, '@' .. self:objectName(), 0)
