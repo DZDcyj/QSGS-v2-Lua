@@ -2508,13 +2508,12 @@ LuaRangjie =
     sgs.CreateTriggerSkill {
     name = 'LuaRangjie',
     events = {sgs.Damaged},
-    frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         local i = 0
         while i < damage.damage do
             i = i + 1
-            local choices = 'obtainBasic+obtainTrick+obtainEquip'
+            local choices = 'obtainBasic+obtainTrick+obtainEquip+cancel'
             if CanMoveCard(room) then
                 choices = 'moveOneCard+' .. choices
             end
@@ -2572,6 +2571,8 @@ LuaRangjie =
                         end
                     end
                 end
+            elseif choice == 'cancel' then
+                return false
             else
                 params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
                 local card = obtainTargetedTypeCard(room, params)
@@ -5189,7 +5190,7 @@ sgs.LoadTranslationTable {
     ['$LuaZhaohan1'] = '天道昭昭，再兴如光武亦可期！',
     ['$LuaZhaohan2'] = '汉祚将终，我又岂能无憾？',
     ['LuaRangjie'] = '让节',
-    [':LuaRangjie'] = '锁定技，当你受到1点伤害后，你选择一项：1.移动场上一张牌；2.从牌堆中获得一张你指定类型的牌。然后你摸一张牌',
+    [':LuaRangjie'] = '当你受到1点伤害后，你可以选择一项：1.移动场上一张牌；2.从牌堆中获得一张你指定类型的牌。然后你摸一张牌',
     ['$LuaRangjie1'] = '一人劫天子，一人质公卿，此可行耶？',
     ['$LuaRangjie2'] = '诸君举事，当上顺天心，奈何如是！',
     ['moveOneCard'] = '移动场上的一张牌',
