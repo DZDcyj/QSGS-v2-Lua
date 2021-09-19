@@ -2673,15 +2673,15 @@ LuaQinzheng =
         local markNum = player:getMark('@' .. self:objectName())
         local card1 = LuaQinzhengGetCard(room, markNum, 3, 'Slash', 'Jink')
         if card1 then
-            player:obtainCard(card1)
+            player:obtainCard(card1, false)
         end
         local card2 = LuaQinzhengGetCard(room, markNum, 5, 'Peach', 'Analeptic')
         if card2 then
-            player:obtainCard(card2)
+            player:obtainCard(card2, false)
         end
         local card3 = LuaQinzhengGetCard(room, markNum, 8, 'Duel', 'ExNihilo')
         if card3 then
-            player:obtainCard(card3)
+            player:obtainCard(card3, false)
         end
         return false
     end
