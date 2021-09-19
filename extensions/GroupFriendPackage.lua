@@ -582,7 +582,7 @@ function doSoutu(card, soutuer, rinsan, room, self)
         end
     end
     room:getThread():delay()
-    rinsan:obtainCard(dummy, true)
+    rinsan:obtainCard(dummy)
     room:clearAG()
     local to_goback =
         room:askForExchange(rinsan, self:objectName(), rinsan:getHandcardNum(), 1, false, 'LuaSoutuGoBack', true)
