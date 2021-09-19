@@ -2571,17 +2571,17 @@ LuaRangjie =
                         end
                     end
                 end
-            elseif choice ~= 'cancel' then
+            elseif choice == 'cancel' then
+                return false
+            else
                 params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
                 local card = obtainTargetedTypeCard(room, params)
                 if card then
                     player:obtainCard(card, false)
                 end
             end
-            if choice ~= 'cancel' then
-                player:drawCards(1)
-                room:broadcastSkillInvoke(self:objectName())
-            end
+            player:drawCards(1)
+            room:broadcastSkillInvoke(self:objectName())
         end
         return false
     end
