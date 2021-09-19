@@ -4563,7 +4563,7 @@ LuaJici =
             local pindian = data:toPindian()
             local obtained
             if pindian.from:hasSkill(self:objectName()) then
-                if pindian.from_number < pindian.from:getMark('@LuaGushe') then
+                if pindian.from_number <= pindian.from:getMark('@LuaGushe') then
                     room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.from_number = pindian.from_number + pindian.from:getMark('@LuaGushe')
@@ -4572,7 +4572,7 @@ LuaJici =
                 end
             end
             if pindian.to:hasSkill(self:objectName()) then
-                if pindian.to_number < pindian.to:getMark('@LuaGushe') then
+                if pindian.to_number <= pindian.to:getMark('@LuaGushe') then
                     room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.to_number = pindian.to_number + pindian.to:getMark('@LuaGushe')
