@@ -4526,21 +4526,27 @@ LuaGusheVS =
         return vs_card
     end,
     enabled_at_play = function(self, player)
-        return not player:isKongcheng() and player:usedTimes('#LuaGusheCard') < 7 - player:getMark('@LuaGushe')
+        return not player:isKongcheng() and player:getMark('LuaGusheWin') < 7 - player:getMark('@LuaGushe')
     end
 }
 
 LuaGushe =
     sgs.CreateTriggerSkill {
     name = 'LuaGushe',
-    events = {sgs.MarkChanged},
+    events = {sgs.MarkChanged, sgs.EventPhaseChanging},
     view_as_skill = LuaGusheVS,
     on_trigger = function(self, event, player, data, room)
-        local mark = data:toMark()
-        if mark.name == '@LuaGushe' then
-            if player:getMark(mark.name) >= 7 then
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                room:killPlayer(player)
+        if event == sgs.MarkChanged then
+            local mark = data:toMark()
+            if mark.name == '@LuaGushe' then
+                if player:getMark(mark.name) >= 7 then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    room:killPlayer(player)
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                room:setPlayerMark(player, 'LuaGusheWin', 0)
             end
         end
     end
@@ -4549,16 +4555,19 @@ LuaGushe =
 LuaJici =
     sgs.CreateTriggerSkill {
     name = 'LuaJici',
-    events = {sgs.PindianVerifying, sgs.Pindian, sgs.Death},
+    events = {sgs.PindianVerifying, sgs.Death},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
-        local pindian = data:toPindian()
         if event == sgs.PindianVerifying then
+            local pindian = data:toPindian()
+            local obtained
             if pindian.from:hasSkill(self:objectName()) then
                 if pindian.from_number < pindian.from:getMark('@LuaGushe') then
                     room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.from_number = pindian.from_number + pindian.from:getMark('@LuaGushe')
+                    getBackPindianCardByJici(room, pindian, true)
+                    obtained = true
                 end
             end
             if pindian.to:hasSkill(self:objectName()) then
@@ -4566,47 +4575,12 @@ LuaJici =
                     room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.to_number = pindian.to_number + pindian.to:getMark('@LuaGushe')
+                    if not obtained then
+                        getBackPindianCardByJici(room, pindian, false)
+                    end
                 end
             end
             data:setValue(pindian)
-        elseif event == sgs.Pindian then
-            if pindian.from:hasSkill(self:objectName()) then
-                if pindian.from_number > pindian.to_number then
-                    if room:getCardOwner(pindian.from_card:getId()):objectName() ~= pindian.from:objectName() then
-                        pindian.from:obtainCard(pindian.from_card)
-                    end
-                elseif pindian.from_number < pindian.to_number then
-                    if room:getCardOwner(pindian.to_card:getId()):objectName() ~= pindian.from:objectName() then
-                        pindian.from:obtainCard(pindian.to_card)
-                    end
-                else
-                    if room:getCardOwner(pindian.from_card:getId()):objectName() ~= pindian.from:objectName() then
-                        pindian.from:obtainCard(pindian.from_card)
-                    end
-                    if room:getCardOwner(pindian.to_card:getId()):objectName() ~= pindian.from:objectName() then
-                        pindian.from:obtainCard(pindian.to_card)
-                    end
-                end
-            else
-                if pindian.to:hasSkill(self:objectName()) then
-                    if pindian.from_number > pindian.to_number then
-                        if room:getCardOwner(pindian.from_card:getId()):objectName() ~= pindian.to:objectName() then
-                            pindian.to:obtainCard(pindian.from_card)
-                        end
-                    elseif pindian.from_number < pindian.to_number then
-                        if room:getCardOwner(pindian.to_card:getId()):objectName() ~= pindian.to:objectName() then
-                            pindian.to:obtainCard(pindian.to_card)
-                        end
-                    else
-                        if room:getCardOwner(pindian.from_card:getId()):objectName() ~= pindian.to:objectName() then
-                            pindian.to:obtainCard(pindian.from_card)
-                        end
-                        if room:getCardOwner(pindian.to_card:getId()):objectName() ~= pindian.to:objectName() then
-                            pindian.to:obtainCard(pindian.to_card)
-                        end
-                    end
-                end
-            end
         elseif event == sgs.Death then
             local death = data:toDeath()
             if death.who:objectName() ~= player:objectName() then
@@ -4637,6 +4611,32 @@ ExTenYearWanglang:addSkill(LuaGushe)
 ExTenYearWanglang:addSkill(LuaJici)
 
 -- 封装好的函数部分
+
+-- 激词收回大点数牌
+function getBackPindianCardByJici(room, pindian, isFrom)
+    local player
+    if isFrom then
+        player = pindian.from
+    else
+        player = pindian.to
+    end
+    if pindian.from_number > pindian.to_number then
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+    elseif pindian.from_number < pindian.to_number then
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    else
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    end
+end
 
 -- 系统封装好的 RIGHT 函数
 function RIGHT(self, player)
@@ -5404,5 +5404,5 @@ sgs.LoadTranslationTable {
     ['LuaJici'] = '激词',
     [':LuaJici'] = '锁定技，当你的拼点牌亮出后，若此牌点数小于等于X，则点数+X（X为“饶舌”标记的数量）且你获得本次拼点中点数最大的牌。当你死亡时，杀死你的角色弃置7-X张牌并失去1点体力',
     ['$LuaJici1'] = '休要多言，只需听我一语',
-    ['$LuaJici2'] = '以我凤鹛之能，何惧所谓卧龙？',
+    ['$LuaJici2'] = '以我凤鹛之能，何惧所谓卧龙？'
 }
