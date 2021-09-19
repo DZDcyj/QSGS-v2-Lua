@@ -2575,7 +2575,7 @@ LuaRangjie =
                 params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
                 local card = obtainTargetedTypeCard(room, params)
                 if card then
-                    player:obtainCard(card)
+                    player:obtainCard(card, false)
                 end
             end
             player:drawCards(1)
@@ -3097,7 +3097,7 @@ LuaDangxian =
             player:setPhase(sgs.Player_Play)
             local card = getCardFromDiscardPile(room, 'Slash')
             if card then
-                player:obtainCard(card)
+                player:obtainCard(card, false)
             end
             room:broadcastProperty(player, 'phase')
             local thread = room:getThread()
@@ -3202,7 +3202,7 @@ LuaJieyueCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        target:obtainCard(card)
+        target:obtainCard(card, false)
         local data = sgs.QVariant()
         data:setValue(source)
         local choice = room:askForChoice(target, 'LuaJieyue', 'luajieyuediscard+luajieyuedraw', data)
@@ -3398,7 +3398,7 @@ LuaQiaiCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        target:obtainCard(card)
+        target:obtainCard(card, false)
         local choices = 'letdraw2'
         if source:isWounded() then
             choices = choices .. '+letrecover'
@@ -3480,7 +3480,7 @@ LuaShanxi =
                         )
                         if card then
                             chooseLoseHp = false
-                            room:obtainCard(sp, card)
+                            room:obtainCard(sp, card, false)
                         end
                     end
                     if chooseLoseHp then
@@ -3566,7 +3566,7 @@ LuaChuhaiCard =
                 params['type'] = cardType
                 local toObtain = obtainTargetedTypeCard(room, params)
                 if toObtain then
-                    room:obtainCard(source, toObtain)
+                    room:obtainCard(source, toObtain, false)
                 end
             end
         end
@@ -4257,7 +4257,7 @@ LuaLvemingCard =
             if not cards:isEmpty() then
                 local card = cards:at(math.random(0, cards:length() - 1))
                 if card then
-                    room:obtainCard(source, card)
+                    room:obtainCard(source, card, false)
                 end
             end
         end
@@ -4354,7 +4354,7 @@ LuaXuezhaoCard =
             if card then
                 target:drawCards(1)
                 room:addPlayerMark(source, 'LuaXuezhao-Slash')
-                source:obtainCard(card)
+                source:obtainCard(card, false)
             else
                 room:addPlayerMark(target, 'LuaXuezhao-Nogive')
                 room:addPlayerMark(source, 'LuaXuezhao-Force')
@@ -4488,7 +4488,7 @@ end
 -- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
 function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
     local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
-    from:obtainCard(sgs.Sanguosha:getCard(card_id))
+    from:obtainCard(sgs.Sanguosha:getCard(card_id), false)
     local togive =
         room:askForPlayerChosen(
         from,
