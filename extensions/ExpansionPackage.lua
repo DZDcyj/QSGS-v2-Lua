@@ -4735,14 +4735,14 @@ LuaFuhan =
                             table.removeOne(shu_generals, general)
                         end
                     end
-                    local isNotMaxHp = true
+                    local hasMinHp = true
                     for _,p in sgs.qlist(room:getAlivePlayers()) do
-                        if p:getHp() > player:getHp() then
-                            isNotMaxHp = false
+                        if p:getHp() < player:getHp() then
+                            hasMinHp = false
                             break
                         end
                     end
-                    if isNotMaxHp and not player:isWounded() then
+                    if hasMinHp and player:isWounded() then
                         room:recover(player, sgs.RecoverStruct(nil, nil, 1))
                     end
                 end
