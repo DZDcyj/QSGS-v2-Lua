@@ -39,4 +39,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          filename: '../VERIFY_PR_COMMENT_TEMPLATE.md'
+          filename: '.github/VERIFY_PR_COMMENT_TEMPLATE.md'
