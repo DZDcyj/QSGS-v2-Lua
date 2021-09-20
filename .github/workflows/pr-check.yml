@@ -34,7 +34,9 @@ jobs:
     name: 'Pull Request Linked Issue Check'
     runs-on: ubuntu-latest
     steps:
-    - name: Verify Linked Issue
-      uses: hattan/verify-linked-issue-action@v1.1.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify Linked Issue
+        uses: hattan/verify-linked-issue-action@v1.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: '../VERIFY_PR_COMMENT_TEMPLATE.md'
