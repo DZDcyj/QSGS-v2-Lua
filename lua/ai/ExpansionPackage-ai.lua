@@ -126,3 +126,14 @@ sgs.ai_skill_discard['LuaJunxing'] = function(self, discard_num, min_num, option
     end
     return to_discard
 end
+
+sgs.ai_skill_invoke.LuaPojun = function(self,data)
+    local target = data:toPlayer()
+    if not self:isFriend(target) then return true end
+    return false
+end
+
+sgs.ai_skill_choice.LuaPojun = function(self, choices)
+	local items = choices:split("+")
+    return items[#items]
+end
