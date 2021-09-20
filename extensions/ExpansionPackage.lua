@@ -4737,7 +4737,7 @@ LuaFuhan =
                     end
                     local isNotMaxHp = true
                     for _,p in sgs.qlist(room:getAlivePlayers()) do
-                        if p:getHp() > player:getHp() then
+                        if p:getHp() < player:getHp() then
                             isNotMaxHp = false
                             break
                         end
