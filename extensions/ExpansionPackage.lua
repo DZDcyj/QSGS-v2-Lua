@@ -36,6 +36,7 @@ ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
 ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
 ExTenYearDongcheng = sgs.General(extension, 'ExTenYearDongcheng', 'qun', '4', true, true)
 ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true, true)
+ExTenYearZhaoxiang = sgs.General(extension, 'ExTenYearZhaoxiang', 'shu', '4', false, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -3653,14 +3654,14 @@ LuaJiang =
     name = 'LuaJiang',
     events = {sgs.TargetConfirmed, sgs.TargetSpecified},
     frequency = sgs.Skill_Frequent,
-    on_trigger = function(self, event, sunce, data)
+    on_trigger = function(self, event, sunce, data, room)
         local use = data:toCardUse()
         if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(sunce)) then
             if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
                 if sunce:askForSkillInvoke(self:objectName(), data) then
                     sunce:drawCards(1, self:objectName())
                     math.randomseed(os.time())
-                    sunce:getRoom():broadcastSkillInvoke(self:objectName(), math.random(1, 2))
+                    room:broadcastSkillInvoke(self:objectName(), math.random(1, 2))
                 end
             end
         end
@@ -4612,7 +4613,177 @@ LuaJici =
 ExTenYearWanglang:addSkill(LuaGushe)
 ExTenYearWanglang:addSkill(LuaJici)
 
+LuaFanghunVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaFanghun',
+    response_or_use = true,
+    view_filter = function(self, card)
+        local usereason = sgs.Sanguosha:getCurrentCardUseReason()
+        if usereason == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
+            return card:isKindOf('Jink')
+        elseif
+            (usereason == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE) or
+                (usereason == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE)
+         then
+            local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
+            if pattern == 'slash' then
+                return card:isKindOf('Jink')
+            else
+                return card:isKindOf('Slash')
+            end
+        end
+        return false
+    end,
+    view_as = function(self, card)
+        if card:isKindOf('Slash') then
+            local jink = sgs.Sanguosha:cloneCard('jink', card:getSuit(), card:getNumber())
+            jink:addSubcard(card)
+            jink:setSkillName(self:objectName())
+            return jink
+        elseif card:isKindOf('Jink') then
+            local slash = sgs.Sanguosha:cloneCard('slash', card:getSuit(), card:getNumber())
+            slash:addSubcard(card)
+            slash:setSkillName(self:objectName())
+            return slash
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('@LuaFanghun') > 0 and sgs.Slash_IsAvailable(player)
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return player:getMark('@LuaFanghun') > 0 and pattern == 'slash' or pattern == 'jink'
+    end
+}
+
+LuaFanghun =
+    sgs.CreateTriggerSkill {
+    name = 'LuaFanghun',
+    view_as_skill = LuaFanghunVS,
+    events = {sgs.TargetConfirmed, sgs.TargetSpecified, sgs.CardUsed, sgs.CardResponded},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(player)) then
+            if use.card and use.card:isKindOf('Slash') then
+                player:gainMark('@LuaFanghun')
+            end
+        else
+            local card
+            if event == sgs.CardUsed then
+                card = data:toCardUse().card
+            else
+                card = data:toCardResponse().m_card
+            end
+            if card and card:getSkillName() == self:objectName() then
+                player:loseMark('@LuaFanghun')
+                player:drawCards(1)
+            end
+        end
+    end
+}
+
+LuaFuhan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaFuhan',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@LuaFuhan',
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Start then
+            local x = player:getMark('@LuaFanghun')
+            if x > 0 then
+                if room:askForSkillInvoke(player, self:objectName(), data) then
+                    room:broadcastSkillInvoke(self:objectName())
+                    player:loseAllMarks('@LuaFanghun')
+                    player:loseMark('@LuaFuhan')
+                    player:drawCards(x)
+                    local shu_generals = getFuhanShuGenerals(room, math.max(4, room:alivePlayerCount()))
+                    local index = 0
+                    while index < 2 and #shu_generals > 0 and
+                        room:askForChoice(player, self:objectName(), 'LuaFuhan+cancel') ~= 'cancel' do
+                        index = index + 1
+                        local generals = table.concat(shu_generals, '+')
+                        local general = room:askForGeneral(player, generals)
+                        local target = sgs.Sanguosha:getGeneral(general)
+                        local skills = target:getVisibleSkillList()
+                        local skillnames = {}
+                        for _, skill in sgs.qlist(skills) do
+                            if
+                                not skill:inherits('SPConvertSkill') and not player:hasSkill(skill:objectName()) and
+                                    not skill:isLordSkill() and
+                                    skill:getFrequency() ~= sgs.Skill_Wake and
+                                    skill:getFrequency() ~= sgs.Skill_Limited
+                             then
+                                table.insert(skillnames, skill:objectName())
+                            end
+                        end
+                        local choices = table.concat(skillnames, '+')
+                        local skill = room:askForChoice(player, self:objectName(), choices)
+                        room:acquireSkill(player, skill, true)
+                        skillnames = {}
+                        for _, skill in sgs.qlist(skills) do
+                            if
+                                not skill:inherits('SPConvertSkill') and not player:hasSkill(skill:objectName()) and
+                                    not skill:isLordSkill() and
+                                    skill:getFrequency() ~= sgs.Skill_Wake and
+                                    skill:getFrequency() ~= sgs.Skill_Limited
+                             then
+                                table.insert(skillnames, skill:objectName())
+                            end
+                        end
+                        if #skillnames == 0 then
+                            table.removeOne(shu_generals, general)
+                        end
+                    end
+                    local isNotMaxHp = true
+                    for _,p in sgs.qlist(room:getAlivePlayers()) do
+                        if p:getHp() > player:getHp() then
+                            isNotMaxHp = false
+                            break
+                        end
+                    end
+                    if isNotMaxHp and not player:isWounded() then
+                        room:recover(player, sgs.RecoverStruct(nil, nil, 1))
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, player)
+        return player and player:isAlive() and player:hasSkill(self:objectName()) and player:getMark('@LuaFuhan') > 0
+    end
+}
+
+ExTenYearZhaoxiang:addSkill(LuaFanghun)
+ExTenYearZhaoxiang:addSkill(LuaFuhan)
+
 -- 封装好的函数部分
+
+-- 获取可扶汉的武将 Table
+-- 暂时没有排除已获得所有技能的武将
+function getFuhanShuGenerals(room, general_num)
+    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
+    local shu_generals = {}
+    for _, name in ipairs(general_names) do
+        local general = sgs.Sanguosha:getGeneral(name)
+        if general:getKingdom() == 'shu' then
+            if not table.contains(shu_generals, name) then
+                table.insert(shu_generals, name)
+            end
+        end
+    end
+    local available_generals = {}
+    local i = 0
+    while i < general_num do
+        i = i + 1
+        local index = math.random(1, #shu_generals)
+        local selected = shu_generals[index]
+        table.insert(available_generals, selected)
+        shu_generals[index] = nil
+    end
+    return available_generals
+end
 
 -- 激词收回大点数牌
 function getBackPindianCardByJici(room, pindian, isFrom)
@@ -5406,5 +5577,19 @@ sgs.LoadTranslationTable {
     ['LuaJici'] = '激词',
     [':LuaJici'] = '锁定技，当你的拼点牌亮出后，若此牌点数小于等于X，则点数+X（X为“饶舌”标记的数量）且你获得本次拼点中点数最大的牌。当你死亡时，杀死你的角色弃置7-X张牌并失去1点体力',
     ['$LuaJici1'] = '休要多言，只需听我一语',
-    ['$LuaJici2'] = '以我凤鹛之能，何惧所谓卧龙？'
+    ['$LuaJici2'] = '以我凤鹛之能，何惧所谓卧龙？',
+    ['ExTenYearZhaoxiang'] = '赵襄-十周年',
+    ['&ExTenYearZhaoxiang'] = '赵襄',
+    ['#ExTenYearZhaoxiang'] = '拾梅鹊影',
+    ['~ExTenYearZhaoxiang'] = '难道，真的都过去了吗？',
+    ['LuaFanghun'] = '芳魂',
+    [':LuaFanghun'] = '当你使用【杀】指定目标后或成为【杀】的目标后，你获得1个“梅影”标记；你可以移去1个“梅影”标记来发动“龙胆”并摸一张牌',
+    ['@LuaFanghun'] = '梅影',
+    ['$LuaFanghun1'] = '龙胆虎威，摄敌胆寒',
+    ['$LuaFanghun2'] = '父亲的教导铭记心上',
+    ['LuaFuhan'] = '扶汉',
+    ['@LuaFuhan'] = '扶汉',
+    [':LuaFuhan'] = '限定技，回合开始时，你可以移去所有“梅影”标记并摸等量的牌，然后从X张（X为存活角色数且至少为4）蜀势力武将牌中选择并获得至多两个技能（限定技、觉醒技、主公技除外）。若此时你是体力值最低的角色，你回复1点体力',
+    ['$LuaFuhan1'] = '我知道，你们一直都在我身边',
+    ['$LuaFuhan2'] = '我也不会输给先辈们'
 }
