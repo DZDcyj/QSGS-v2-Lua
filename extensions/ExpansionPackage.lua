@@ -4558,6 +4558,7 @@ LuaJici =
     name = 'LuaJici',
     events = {sgs.PindianVerifying, sgs.Death},
     frequency = sgs.Skill_Compulsory,
+    global = true,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.PindianVerifying then
             local pindian = data:toPindian()
@@ -4584,7 +4585,7 @@ LuaJici =
             data:setValue(pindian)
         elseif event == sgs.Death then
             local death = data:toDeath()
-            if death.who:objectName() ~= player:objectName() then
+            if death.who:objectName() ~= player:objectName() or not player:hasSkill(self:objectName()) then
                 return false
             end
             if death.damage then
@@ -4604,7 +4605,7 @@ LuaJici =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:hasSkill(self:objectName())
+        return target
     end
 }
 
