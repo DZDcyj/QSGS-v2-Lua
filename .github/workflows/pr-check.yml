@@ -1,0 +1,42 @@
+name: '拉取请求规范检查'
+
+on: 
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+      - edited
+
+jobs:
+  Pull-Request-Title-Check:
+    name: '拉取请求标题检查'
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR Title Check
+        uses: amannn/action-semantic-pull-request@v3.4.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Pull-Request-Label-Check:
+    name: '拉取请求标签检查'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          none_of: invalid,wontfix,duplicate,question
+          any_of: documentation,enhancement,bug,fix,ci
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  Pull-Request-Issue-Check:
+    name: '拉取请求关联议题检查'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Verify Linked Issue
+      uses: hattan/verify-linked-issue-action@v1.1.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        message: '拉取请求必须关联议题！'
