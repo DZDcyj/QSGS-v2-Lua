@@ -4721,14 +4721,14 @@ LuaFuhan =
                         local skill = room:askForChoice(player, self:objectName(), choices)
                         room:acquireSkill(player, skill, true)
                         skillnames = {}
-                        for _, skill in sgs.qlist(skills) do
+                        for _, left_skill in sgs.qlist(skills) do
                             if
-                                not skill:inherits('SPConvertSkill') and not player:hasSkill(skill:objectName()) and
-                                    not skill:isLordSkill() and
-                                    skill:getFrequency() ~= sgs.Skill_Wake and
-                                    skill:getFrequency() ~= sgs.Skill_Limited
+                                not left_skill:inherits('SPConvertSkill') and not player:hasSkill(left_skill:objectName()) and
+                                    not left_skill:isLordSkill() and
+                                    left_skill:getFrequency() ~= sgs.Skill_Wake and
+                                    left_skill:getFrequency() ~= sgs.Skill_Limited
                              then
-                                table.insert(skillnames, skill:objectName())
+                                table.insert(skillnames, left_skill:objectName())
                             end
                         end
                         if #skillnames == 0 then
