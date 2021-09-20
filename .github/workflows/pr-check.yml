@@ -38,5 +38,3 @@ jobs:
       uses: hattan/verify-linked-issue-action@v1.1.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        message: '拉取请求必须关联议题！'
