@@ -5740,8 +5740,6 @@ sgs.LoadTranslationTable {
     ['#JieZhonghui'] = '桀骜的野心家',
     ['LuaQuanji'] = '权计',
     [':LuaQuanji'] = '出牌阶段结束时，若你的手牌数大于体力值，或当你受到1点伤害后，你可以摸一张牌，然后将一张手牌置于武将牌上，称为权。锁定技，你的手牌上限+X（X为权的数量）',
-    ['$LuaQuanji1'] = '这仇，我记下了',
-    ['$LuaQuanji2'] = '先让你得意几天',
     ['$LuaQuanji1'] = '备兵驯马，以待战机',
     ['$LuaQuanji2'] = '避其锋芒，权且忍让',
     ['LuaZili'] = '自立',
