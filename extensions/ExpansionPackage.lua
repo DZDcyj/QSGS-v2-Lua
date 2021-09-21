@@ -457,7 +457,7 @@ LuaLingren =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:hasSkill(self:objectName()) and target:isAlive()
+        return RIGHT(self, target)
     end
 }
 
@@ -894,7 +894,7 @@ LuaWanlan =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName()) and target:getMark('@LuaWanlan') > 0
+        return RIGHT(self, target) and target:getMark('@LuaWanlan') > 0
     end
 }
 
@@ -1971,9 +1971,7 @@ LuaLongyuan =
         return false
     end,
     can_trigger = function(self, target)
-        return (target and target:isAlive() and target:hasSkill(self:objectName())) and
-            (target:getMark('LuaLongyuan') == 0) and
-            (target:getMark('LuaYizanUse') >= 3) and
+        return RIGHT(self, target) and (target:getMark('LuaLongyuan') == 0) and (target:getMark('LuaYizanUse') >= 3) and
             (target:getPhase() == sgs.Player_Start)
     end
 }
@@ -3142,7 +3140,7 @@ LuaFuli =
         return false
     end,
     can_trigger = function(self, target)
-        return (target and target:isAlive() and target:hasSkill(self:objectName())) and (target:getMark('@laoji') > 0)
+        return RIGHT(self, target) and target:getMark('@laoji') > 0
     end
 }
 
@@ -3764,11 +3762,9 @@ LuaYinghun =
         return false
     end,
     can_trigger = function(self, target)
-        if target then
-            if target:isAlive() and target:hasSkill(self:objectName()) then
-                if target:getPhase() == sgs.Player_Start then
-                    return target:isWounded()
-                end
+        if RIGHT(self, target) then
+            if target:getPhase() == sgs.Player_Start then
+                return target:isWounded()
             end
         end
         return false
@@ -3801,7 +3797,7 @@ LuaHunzi =
         return false
     end,
     can_trigger = function(self, target)
-        return (target and target:isAlive() and target:hasSkill(self:objectName())) and
+        return (RIGHT(self, target)) and
             (target:getMark('LuaHunzi') == 0) and
             (target:getPhase() == sgs.Player_Start) and
             (target:getHp() <= 2)
@@ -3850,9 +3846,7 @@ LuaSanchen =
         end
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName()) and
-            target:getMark(self:objectName()) == 0 and
-            target:getPhase() == sgs.Player_Finish and
+        return RIGHT(self, target) and target:getMark(self:objectName()) == 0 and target:getPhase() == sgs.Player_Finish and
             target:getMark('@wuku') > 2
     end
 }
@@ -4753,7 +4747,7 @@ LuaFuhan =
         return false
     end,
     can_trigger = function(self, player)
-        return player and player:isAlive() and player:hasSkill(self:objectName()) and player:getMark('@LuaFuhan') > 0
+        return RIGHT(self, player) and player:getMark('@LuaFuhan') > 0
     end
 }
 
@@ -4821,9 +4815,7 @@ LuaZili =
         end
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName()) and
-            target:getPhase() == sgs.Player_Start and
-            target:getMark(self:objectName()) == 0 and
+        return RIGHT(self, target) and target:getPhase() == sgs.Player_Start and target:getMark(self:objectName()) == 0 and
             target:getPile('power'):length() >= 3
     end
 }
