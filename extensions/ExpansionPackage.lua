@@ -37,6 +37,7 @@ ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
 ExTenYearDongcheng = sgs.General(extension, 'ExTenYearDongcheng', 'qun', '4', true, true)
 ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true, true)
 ExTenYearZhaoxiang = sgs.General(extension, 'ExTenYearZhaoxiang', 'shu', '4', false, true)
+JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -456,7 +457,7 @@ LuaLingren =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:hasSkill(self:objectName()) and target:isAlive()
+        return RIGHT(self, target)
     end
 }
 
@@ -893,7 +894,7 @@ LuaWanlan =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName()) and target:getMark('@LuaWanlan') > 0
+        return RIGHT(self, target) and target:getMark('@LuaWanlan') > 0
     end
 }
 
@@ -1970,9 +1971,7 @@ LuaLongyuan =
         return false
     end,
     can_trigger = function(self, target)
-        return (target and target:isAlive() and target:hasSkill(self:objectName())) and
-            (target:getMark('LuaLongyuan') == 0) and
-            (target:getMark('LuaYizanUse') >= 3) and
+        return RIGHT(self, target) and (target:getMark('LuaLongyuan') == 0) and (target:getMark('LuaYizanUse') >= 3) and
             (target:getPhase() == sgs.Player_Start)
     end
 }
@@ -3141,7 +3140,7 @@ LuaFuli =
         return false
     end,
     can_trigger = function(self, target)
-        return (target and target:isAlive() and target:hasSkill(self:objectName())) and (target:getMark('@laoji') > 0)
+        return RIGHT(self, target) and target:getMark('@laoji') > 0
     end
 }
 
@@ -3763,11 +3762,9 @@ LuaYinghun =
         return false
     end,
     can_trigger = function(self, target)
-        if target then
-            if target:isAlive() and target:hasSkill(self:objectName()) then
-                if target:getPhase() == sgs.Player_Start then
-                    return target:isWounded()
-                end
+        if RIGHT(self, target) then
+            if target:getPhase() == sgs.Player_Start then
+                return target:isWounded()
             end
         end
         return false
@@ -3800,7 +3797,7 @@ LuaHunzi =
         return false
     end,
     can_trigger = function(self, target)
-        return (target and target:isAlive() and target:hasSkill(self:objectName())) and
+        return (RIGHT(self, target)) and
             (target:getMark('LuaHunzi') == 0) and
             (target:getPhase() == sgs.Player_Start) and
             (target:getHp() <= 2)
@@ -3849,9 +3846,7 @@ LuaSanchen =
         end
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName()) and
-            target:getMark(self:objectName()) == 0 and
-            target:getPhase() == sgs.Player_Finish and
+        return RIGHT(self, target) and target:getMark(self:objectName()) == 0 and target:getPhase() == sgs.Player_Finish and
             target:getMark('@wuku') > 2
     end
 }
@@ -4723,7 +4718,8 @@ LuaFuhan =
                         skillnames = {}
                         for _, left_skill in sgs.qlist(skills) do
                             if
-                                not left_skill:inherits('SPConvertSkill') and not player:hasSkill(left_skill:objectName()) and
+                                not left_skill:inherits('SPConvertSkill') and
+                                    not player:hasSkill(left_skill:objectName()) and
                                     not left_skill:isLordSkill() and
                                     left_skill:getFrequency() ~= sgs.Skill_Wake and
                                     left_skill:getFrequency() ~= sgs.Skill_Limited
@@ -4736,7 +4732,7 @@ LuaFuhan =
                         end
                     end
                     local hasMinHp = true
-                    for _,p in sgs.qlist(room:getAlivePlayers()) do
+                    for _, p in sgs.qlist(room:getAlivePlayers()) do
                         if p:getHp() < player:getHp() then
                             hasMinHp = false
                             break
@@ -4751,14 +4747,153 @@ LuaFuhan =
         return false
     end,
     can_trigger = function(self, player)
-        return player and player:isAlive() and player:hasSkill(self:objectName()) and player:getMark('@LuaFuhan') > 0
+        return RIGHT(self, player) and player:getMark('@LuaFuhan') > 0
     end
 }
 
 ExTenYearZhaoxiang:addSkill(LuaFanghun)
 ExTenYearZhaoxiang:addSkill(LuaFuhan)
 
+LuaQuanji =
+    sgs.CreateTriggerSkill {
+    name = 'LuaQuanji',
+    frequency = sgs.Skill_Frequent,
+    events = {sgs.Damaged, sgs.EventPhaseEnd},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseEnd then
+            if player:getPhase() == sgs.Player_Play then
+                if player:getHp() < player:getHandcardNum() then
+                    doQuanji(self, player, room)
+                end
+            end
+        else
+            local x = data:toDamage().damage
+            local i = 0
+            while i < x do
+                i = i + 1
+                doQuanji(self, player, room)
+            end
+        end
+    end
+}
+
+LuaQuanjiKeep =
+    sgs.CreateMaxCardsSkill {
+    name = '#LuaQuanji-keep',
+    extra_func = function(self, target)
+        if target:hasSkill('LuaQuanji') then
+            return target:getPile('power'):length()
+        else
+            return 0
+        end
+    end
+}
+
+LuaZili =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZili',
+    frequency = sgs.Skill_Wake,
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        local msg = sgs.LogMessage()
+        msg.type = '#LuaZili'
+        msg.from = player
+        msg.arg = player:getPile('power'):length()
+        room:sendLog(msg)
+        if room:changeMaxHpForAwakenSkill(player) then
+            room:broadcastSkillInvoke(self:objectName())
+            if
+                player:isWounded() and
+                    room:askForChoice(player, self:objectName(), 'zilirecover+zilidraw') == 'zilirecover'
+             then
+                room:recover(player, sgs.RecoverStruct(player))
+            else
+                room:drawCards(player, 2)
+            end
+            room:addPlayerMark(player, self:objectName())
+            room:acquireSkill(player, 'LuaPaiyi')
+        end
+    end,
+    can_trigger = function(self, target)
+        return RIGHT(self, target) and target:getPhase() == sgs.Player_Start and target:getMark(self:objectName()) == 0 and
+            target:getPile('power'):length() >= 3
+    end
+}
+
+LuaPaiyiCard =
+    sgs.CreateSkillCard {
+    name = 'LuaPaiyiCard',
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:getMark('LuaPaiyiUsed') == 0
+    end,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local target = effect.to
+        local room = source:getRoom()
+        room:broadcastSkillInvoke('LuaPaiyi')
+        room:drawCards(target, 2, 'LuaPaiyi')
+        room:addPlayerMark(target, 'LuaPaiyiUsed')
+        if target:getHandcardNum() > source:getHandcardNum() then
+            doDamage(room, source, target, 1)
+        end
+    end
+}
+
+LuaPaiyiVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaPaiyi',
+    filter_pattern = '.|.|.|power',
+    expand_pile = 'power',
+    view_as = function(self, card)
+        local py = LuaPaiyiCard:clone()
+        py:addSubcard(card)
+        return py
+    end,
+    enabled_at_play = function(self, player)
+        return not player:getPile('power'):isEmpty()
+    end
+}
+
+LuaPaiyi =
+    sgs.CreateTriggerSkill {
+    name = 'LuaPaiyi',
+    events = {sgs.EventPhaseEnd},
+    view_as_skill = LuaPaiyiVS,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Play then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerMark(p, 'LuaPaiyiUsed', 0)
+            end
+        end
+    end
+}
+
+JieZhonghui:addSkill(LuaQuanji)
+JieZhonghui:addSkill(LuaZili)
+JieZhonghui:addRelateSkill('LuaPaiyi')
+SkillAnjiang:addSkill(LuaQuanjiKeep)
+SkillAnjiang:addSkill(LuaPaiyi)
+
 -- 封装好的函数部分
+
+-- 权计摸牌放牌
+function doQuanji(self, player, room)
+    if player:askForSkillInvoke(self:objectName()) then
+        room:drawCards(player, 1, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
+        if not player:isKongcheng() then
+            local card_id
+            if player:getHandcardNum() == 1 then
+                card_id = player:handCards():first()
+                room:getThread():delay()
+            else
+                card_id =
+                    room:askForExchange(player, self:objectName(), 1, 1, false, 'QuanjiPush'):getSubcards():first()
+            end
+            player:addToPile('power', card_id)
+        end
+    end
+end
 
 -- 获取可扶汉的武将 Table
 -- 暂时没有排除已获得所有技能的武将
@@ -5591,5 +5726,25 @@ sgs.LoadTranslationTable {
     ['@LuaFuhan'] = '扶汉',
     [':LuaFuhan'] = '限定技，回合开始时，你可以移去所有“梅影”标记并摸等量的牌，然后从X张（X为存活角色数且至少为4）蜀势力武将牌中选择并获得至多两个技能（限定技、觉醒技、主公技除外）。若此时你是体力值最低的角色，你回复1点体力',
     ['$LuaFuhan1'] = '我知道，你们一直都在我身边',
-    ['$LuaFuhan2'] = '我也不会输给先辈们'
+    ['$LuaFuhan2'] = '我也不会输给先辈们',
+    ['JieZhonghui'] = '界钟会',
+    ['&JieZhonghui'] = '界钟会',
+    ['#JieZhonghui'] = '桀骜的野心家',
+    ['LuaQuanji'] = '权计',
+    [':LuaQuanji'] = '出牌阶段结束时，若你的手牌数大于体力值，或当你受到1点伤害后，你可以摸一张牌，然后将一张手牌置于武将牌上，称为权。锁定技，你的手牌上限+X（X为权的数量）',
+    ['$LuaQuanji1'] = '备兵驯马，以待战机',
+    ['$LuaQuanji2'] = '避其锋芒，权且忍让',
+    ['LuaZili'] = '自立',
+    [':LuaZili'] = '觉醒技，准备阶段，若“权”的数量不小于3，你选择一项：1.回复1点体力；2.摸两张牌。然后减1点体力上限，获得“排异”',
+    ['$LuaZili1'] = '金鳞，岂是池中之物！',
+    ['$LuaZili2'] = '千载一时，鼎足而立！',
+    ['#LuaZili'] = '%from 的权数达到 %arg，触发“<font color="yellow"><b>自立</b></font>”觉醒',
+    ['zilirecover'] = '回复一点体力',
+    ['zilidraw'] = '摸两张牌',
+    ['LuaPaiyi'] = '排异',
+    ['luapaiyi'] = '排异',
+    [':LuaPaiyi'] = '<font color="green"><b>出牌阶段每名角色限一次</b></font>，你可以移去一张“权”，令一名角色摸两张牌。若该角色的手牌比你多，则你对其造成1点伤害',
+    ['$LuaPaiyi1'] = '爱命不尊，死有余辜！',
+    ['$LuaPaiyi2'] = '非我族类，其心必异！',
+    ['~JieZhonghui'] = '伯约，我已无力回天……'
 }
