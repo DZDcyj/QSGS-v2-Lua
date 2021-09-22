@@ -4055,6 +4055,7 @@ LuaMiewuVS =
         end
     end
 }
+
 LuaMiewu =
     sgs.CreateTriggerSkill {
     name = 'LuaMiewu',
@@ -4660,6 +4661,8 @@ LuaFanghun =
         local use = data:toCardUse()
         if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(player)) then
             if use.card and use.card:isKindOf('Slash') then
+                room:broadcastSkillInvoke(self:objectName())
+                room:sendCompulsoryTriggerLog(player, self:objectName())
                 player:gainMark('@LuaFanghun')
             end
         else
@@ -4915,7 +4918,7 @@ function getFuhanShuGenerals(room, general_num)
         local index = math.random(1, #shu_generals)
         local selected = shu_generals[index]
         table.insert(available_generals, selected)
-        shu_generals[index] = nil
+        table.removeOne(shu_generals, shu_generals[index])
     end
     return available_generals
 end
