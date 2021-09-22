@@ -4055,6 +4055,7 @@ LuaMiewuVS =
         end
     end
 }
+
 LuaMiewu =
     sgs.CreateTriggerSkill {
     name = 'LuaMiewu',
@@ -4660,6 +4661,8 @@ LuaFanghun =
         local use = data:toCardUse()
         if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(player)) then
             if use.card and use.card:isKindOf('Slash') then
+                room:broadcastSkillInvoke(self:objectName())
+                room:sendCompulsoryTriggerLog(player, self:objectName())
                 player:gainMark('@LuaFanghun')
             end
         else
