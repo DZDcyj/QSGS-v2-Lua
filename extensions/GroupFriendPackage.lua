@@ -1976,8 +1976,6 @@ LuaTaose =
     end
 }
 
-Linxi:addSkill(LuaTaose)
-
 -- 桃色获取卡牌
 function doTaoseGetCard(skill_name, room, source, flags, target)
     if target:getCards(flags):length() > 0 then
@@ -2058,6 +2056,8 @@ Shayu:addSkill(LuaZhixie)
 Shayu:addSkill(LuaJixie)
 Yeniao:addSkill(LuaFumo)
 SkillAnjiang:addSkill(LuaFumoTargetMod)
+Linxi:addSkill(LuaTaose)
+Linxi:addSkill('hongyan')
 
 sgs.LoadTranslationTable {
     ['GroupFriendPackage'] = '群友包',
@@ -2206,7 +2206,7 @@ sgs.LoadTranslationTable {
     ['@LuaFumo'] = '你可以发动“附魔”选择额外的目标，还可以选择至多 %arg 名角色',
     ['Linxi'] = '文爻林夕',
     ['&Linxi'] = '林夕',
-    ['#Linxi'] = '待定',
+    ['#Linxi'] = '安汐之镜',
     ['LuaTaose'] = '桃色',
     [':LuaTaose'] = '出牌阶段限一次，你可以将一张红桃牌交给一名其他角色，然后获得该角色每个区域各一张牌。若该角色为异性，则视为你对其使用一张【杀】，且此【杀】造成的伤害+1',
     ['luataose'] = '桃色'
