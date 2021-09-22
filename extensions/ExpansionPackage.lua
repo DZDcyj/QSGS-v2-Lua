@@ -4918,7 +4918,7 @@ function getFuhanShuGenerals(room, general_num)
         local index = math.random(1, #shu_generals)
         local selected = shu_generals[index]
         table.insert(available_generals, selected)
-        shu_generals[index] = nil
+        table.removeOne(shu_generals, shu_generals[index])
     end
     return available_generals
 end
