@@ -14,6 +14,7 @@ Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true, true)
 Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true, true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
+Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -1923,6 +1924,75 @@ LuaFumoTargetMod =
     end
 }
 
+LuaTaoseCard =
+    sgs.CreateSkillCard {
+    name = 'LuaTaoseCard',
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        room:obtainCard(target, card)
+        if target:getCards('h'):length() > 0 then
+            local card_id = room:askForCardChosen(source, target, 'h', 'LuaTaose', false, sgs.Card_MethodNone)
+            if card_id then
+                room:obtainCard(source, card_id)
+            end
+        end
+        if target:getCards('e'):length() > 0 then
+            local card_id = room:askForCardChosen(source, target, 'e', 'LuaTaose', false, sgs.Card_MethodNone)
+            if card_id then
+                room:obtainCard(source, card_id)
+            end
+        end
+        if target:getCards('j'):length() > 0 then
+            local card_id = room:askForCardChosen(source, target, 'j', 'LuaTaose', false, sgs.Card_MethodNone)
+            if card_id then
+                room:obtainCard(source, card_id)
+            end
+        end
+        if target:getGender() ~= source:getGender() then
+            local slash = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName('LuaTaose')
+            room:useCard(sgs.CardUseStruct(slash, source, target))
+        end
+    end
+}
+
+LuaTaoseVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaTaose',
+    filter_pattern = '.|heart|.|hand',
+    view_as = function(self, card)
+        local ts = LuaTaoseCard:clone()
+        ts:addSubcard(card)
+        return ts
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaTaoseCard')
+    end
+}
+
+LuaTaose =
+    sgs.CreateTriggerSkill {
+    name = 'LuaTaose',
+    view_as_skill = LuaTaoseVS,
+    events = {sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card and damage.card:isKindOf('Slash') and damage.card:getSkillName() == self:objectName() then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            damage.damage = damage.damage + 1
+            data:setValue(damage)
+        end
+    end
+}
+
+Linxi:addSkill(LuaTaose)
+
+-- 检查 card 的 subcards 中是否存在符合条件的卡牌
 function checkIfSubcardsContainType(card, checkFunc)
     local containsType
     if type(checkFunc) ~= 'function' then
@@ -2139,5 +2209,11 @@ sgs.LoadTranslationTable {
     3. 有黑色牌，该杀伤害+1\
     4. 有锦囊牌，你弃置目标2张牌\
     5. 有装备牌，该【杀】无法使用【闪】响应',
-    ['@LuaFumo'] = '你可以发动“附魔”选择额外的目标，还可以选择至多 %arg 名角色'
+    ['@LuaFumo'] = '你可以发动“附魔”选择额外的目标，还可以选择至多 %arg 名角色',
+    ['Linxi'] = '文爻林夕',
+    ['&Linxi'] = '林夕',
+    ['#Linxi'] = '待定',
+    ['LuaTaose'] = '桃色',
+    [':LuaTaose'] = '出牌阶段限一次，你可以将一张红桃牌交给一名其他角色，然后获得该角色每个区域各一张牌。若该角色为异性，则视为你对其使用一张【杀】，且此【杀】造成的伤害+1',
+    ['luataose'] = '桃色'
 }
