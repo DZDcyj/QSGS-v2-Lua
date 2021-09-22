@@ -1933,8 +1933,7 @@ LuaTaoseCard =
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
-        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        room:obtainCard(target, card)
+        room:obtainCard(target, self:getSubcards():first())
         doTaoseGetCard('LuaTaose', room, source, 'h', target)
         doTaoseGetCard('LuaTaose', room, source, 'e', target)
         doTaoseGetCard('LuaTaose', room, source, 'j', target)
