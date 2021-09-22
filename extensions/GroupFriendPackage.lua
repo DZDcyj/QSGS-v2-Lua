@@ -1935,27 +1935,13 @@ LuaTaoseCard =
         local target = targets[1]
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         room:obtainCard(target, card)
-        if target:getCards('h'):length() > 0 then
-            local card_id = room:askForCardChosen(source, target, 'h', 'LuaTaose', false, sgs.Card_MethodNone)
-            if card_id then
-                room:obtainCard(source, card_id)
-            end
-        end
-        if target:getCards('e'):length() > 0 then
-            local card_id = room:askForCardChosen(source, target, 'e', 'LuaTaose', false, sgs.Card_MethodNone)
-            if card_id then
-                room:obtainCard(source, card_id)
-            end
-        end
-        if target:getCards('j'):length() > 0 then
-            local card_id = room:askForCardChosen(source, target, 'j', 'LuaTaose', false, sgs.Card_MethodNone)
-            if card_id then
-                room:obtainCard(source, card_id)
-            end
-        end
+        doTaoseGetCard('LuaTaose', room, source, 'h', target)
+        doTaoseGetCard('LuaTaose', room, source, 'e', target)
+        doTaoseGetCard('LuaTaose', room, source, 'j', target)
         if target:getGender() ~= source:getGender() then
             local slash = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, 0)
             slash:setSkillName('LuaTaose')
+            room:setCardFlag(slash, 'LuaTaose')
             room:useCard(sgs.CardUseStruct(slash, source, target))
         end
     end
@@ -1982,7 +1968,7 @@ LuaTaose =
     events = {sgs.DamageCaused},
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
-        if damage.card and damage.card:isKindOf('Slash') and damage.card:getSkillName() == self:objectName() then
+        if damage.card and damage.card:isKindOf('Slash') and damage.card:hasFlag(self:objectName()) then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             damage.damage = damage.damage + 1
             data:setValue(damage)
@@ -1991,6 +1977,14 @@ LuaTaose =
 }
 
 Linxi:addSkill(LuaTaose)
+
+-- 桃色获取卡牌
+function doTaoseGetCard(skill_name, room, source, flags, target)
+    if target:getCards(flags):length() > 0 then
+        local card_id = room:askForCardChosen(source, target, flags, skill_name, false, sgs.Card_MethodNone)
+        room:obtainCard(source, card_id, false)
+    end
+end
 
 -- 检查 card 的 subcards 中是否存在符合条件的卡牌
 function checkIfSubcardsContainType(card, checkFunc)
