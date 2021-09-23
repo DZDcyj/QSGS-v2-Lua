@@ -186,6 +186,7 @@ LuaShangjian =
                         local x = p:getMark('@' .. self:objectName())
                         if x > 0 then
                             if x <= p:getHp() then
+                                room:sendCompulsoryTriggerLog(p, self:objectName())
                                 p:drawCards(x)
                             end
                             room:setPlayerMark(p, '@' .. self:objectName(), 0)
@@ -2817,14 +2818,14 @@ LuaJuece =
                         (move.to:objectName() == player:objectName() and
                             (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
              then
-                room:addPlayerMark(player, '@' .. self:objectName())
+                room:addPlayerMark(player, self:objectName())
             end
         elseif event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Finish then
                 if player:hasSkill(self:objectName()) then
                     local victims = sgs.SPlayerList()
                     for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                        if p:getMark('@' .. self:objectName()) > 0 then
+                        if p:getMark(self:objectName()) > 0 then
                             victims:append(p)
                         end
                     end
