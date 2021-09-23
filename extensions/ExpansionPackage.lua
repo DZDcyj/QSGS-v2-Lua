@@ -2840,7 +2840,7 @@ LuaJuece =
                     end
                 end
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    room:setPlayerMark(p, '@' .. self:objectName(), 0)
+                    room:setPlayerMark(p, self:objectName(), 0)
                 end
             end
         end
