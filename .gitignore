@@ -41,6 +41,7 @@ listserver/
 lua/ai/[^A-Z]*.lua
 lua/lib
 lua/*.lua
+!QSanguoshaLuaFunction.lua
 platforms/
 qml1tooling/
 qss/
