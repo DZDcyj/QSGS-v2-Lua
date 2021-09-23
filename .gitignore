@@ -29,12 +29,13 @@ image/hidden
 image/icon
 image/kingdom
 image/logo
-image/mark
+image/mark/**/*.ahu
+image/mark/**/*.psd
 image/small-equips
 image/system
-image/**/*.lnk
 image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
+!@Lua[A-Z]*.png
 imageformats/
 lang/zh_CN/*.lua
 lang/zh_CN/Audio/*.lua

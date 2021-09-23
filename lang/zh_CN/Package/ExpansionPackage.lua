@@ -167,6 +167,7 @@ return {
     ['LuaYongjin'] = '勇进',
     [':LuaYongjin'] = '限定技，出牌阶段，你可以移动场上的至多三张装备牌',
     ['@LuaYongjin'] = '你还可以发动至多 %arg 次“勇进”',
+    ['@LuaYongjinMark'] = '勇进',
     ['~LuaYongjin'] = '选择移动装备的来源角色→选择要移动到的角色→点击确定',
     ['luayongjin'] = '勇进',
     ['@luayongjin'] = '勇进',

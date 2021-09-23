@@ -186,6 +186,7 @@ LuaShangjian =
                         local x = p:getMark('@' .. self:objectName())
                         if x > 0 then
                             if x <= p:getHp() then
+                                room:sendCompulsoryTriggerLog(p, self:objectName())
                                 p:drawCards(x)
                             end
                             room:setPlayerMark(p, '@' .. self:objectName(), 0)
@@ -2839,7 +2840,7 @@ LuaJuece =
                     end
                 end
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    room:setPlayerMark(p, self:objectName(), 0)
+                    room:setPlayerMark(p, '@' .. self:objectName(), 0)
                 end
             end
         end
