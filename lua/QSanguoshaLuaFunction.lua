@@ -5,6 +5,10 @@ module('QSanguoshaLuaFunction', package.seeall)
 
 -- 封装好的函数部分
 
+
+-- 忽略本文件中未引用 global variable 的警告
+-- luacheck: push ignore 131
+
 -- 桃色获取卡牌
 function doTaoseGetCard(skill_name, room, source, flags, target)
     if target:getCards(flags):length() > 0 then
@@ -420,3 +424,5 @@ function getCardList(intlist)
     end
     return ids
 end
+
+-- luacheck: pop
