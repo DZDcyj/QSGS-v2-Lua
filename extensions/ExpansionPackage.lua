@@ -2817,14 +2817,14 @@ LuaJuece =
                         (move.to:objectName() == player:objectName() and
                             (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
              then
-                room:addPlayerMark(player, '@' .. self:objectName())
+                room:addPlayerMark(player, self:objectName())
             end
         elseif event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Finish then
                 if player:hasSkill(self:objectName()) then
                     local victims = sgs.SPlayerList()
                     for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                        if p:getMark('@' .. self:objectName()) > 0 then
+                        if p:getMark(self:objectName()) > 0 then
                             victims:append(p)
                         end
                     end
@@ -2839,7 +2839,7 @@ LuaJuece =
                     end
                 end
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    room:setPlayerMark(p, '@' .. self:objectName(), 0)
+                    room:setPlayerMark(p, self:objectName(), 0)
                 end
             end
         end
