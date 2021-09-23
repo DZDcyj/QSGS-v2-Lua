@@ -1,5 +1,12 @@
+-- 群友包
+-- Created by DZDcyj at 2020/10/9
+
 module('extensions.GroupFriendPackage', package.seeall)
 extension = sgs.Package('GroupFriendPackage')
+
+-- 引入封装函数包
+local rinsanFuncModule = require('QSanguoshaLuaFunction')
+
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 Skadi = sgs.General(extension, 'Skadi', 'god', '5', false, true)
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true, true)
@@ -1523,11 +1530,11 @@ LuaYingshi =
                 room:doAnimate(1, sp:objectName(), death.who:objectName())
                 local skillTable = {}
                 -- 添加主将技能
-                for _, skill in ipairs(getSkillTable(death.who:getGeneral())) do
+                for _, skill in ipairs(rinsanFuncModule.getSkillTable(death.who:getGeneral())) do
                     table.insert(skillTable, skill)
                 end
                 -- 添加副将技能
-                for _, skill in ipairs(getSkillTable(death.who:getGeneral2())) do
+                for _, skill in ipairs(rinsanFuncModule.getSkillTable(death.who:getGeneral2())) do
                     table.insert(skillTable, skill)
                 end
                 -- 移除已有技能
@@ -1786,7 +1793,7 @@ LuaFumo =
             local damage = data:toDamage()
             if damage.card and damage.card:getSkillName() == self:objectName() then
                 local containsBlack =
-                    checkIfSubcardsContainType(
+                    rinsanFuncModule.checkIfSubcardsContainType(
                     damage.card,
                     function(card)
                         return card:isBlack()
@@ -1802,14 +1809,14 @@ LuaFumo =
             local use = data:toCardUse()
             if use.card and use.card:getSkillName() == self:objectName() then
                 local containsTrick =
-                    checkIfSubcardsContainType(
+                    rinsanFuncModule.checkIfSubcardsContainType(
                     use.card,
                     function(card)
                         return card:isKindOf('TrickCard')
                     end
                 )
                 local containsEquip =
-                    checkIfSubcardsContainType(
+                    rinsanFuncModule.checkIfSubcardsContainType(
                     use.card,
                     function(card)
                         return card:isKindOf('EquipCard')
@@ -1909,7 +1916,7 @@ LuaFumoTargetMod =
     distance_limit_func = function(self, from, card)
         if from:hasSkill('LuaFumo') then
             local containsRed =
-                checkIfSubcardsContainType(
+                rinsanFuncModule.checkIfSubcardsContainType(
                 card,
                 function(check_card)
                     return check_card:isRed()
@@ -1934,9 +1941,9 @@ LuaTaoseCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         room:obtainCard(target, self:getSubcards():first())
-        doTaoseGetCard('LuaTaose', room, source, 'h', target)
-        doTaoseGetCard('LuaTaose', room, source, 'e', target)
-        doTaoseGetCard('LuaTaose', room, source, 'j', target)
+        rinsanFuncModule.doTaoseGetCard('LuaTaose', room, source, 'h', target)
+        rinsanFuncModule.doTaoseGetCard('LuaTaose', room, source, 'e', target)
+        rinsanFuncModule.doTaoseGetCard('LuaTaose', room, source, 'j', target)
         if target:getGender() ~= source:getGender() then
             local slash = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, 0)
             slash:setSkillName('LuaTaose')
@@ -1974,49 +1981,6 @@ LuaTaose =
         end
     end
 }
-
--- 桃色获取卡牌
-function doTaoseGetCard(skill_name, room, source, flags, target)
-    if target:getCards(flags):length() > 0 then
-        local card_id = room:askForCardChosen(source, target, flags, skill_name, false, sgs.Card_MethodNone)
-        room:obtainCard(source, card_id, false)
-    end
-end
-
--- 检查 card 的 subcards 中是否存在符合条件的卡牌
-function checkIfSubcardsContainType(card, checkFunc)
-    local containsType
-    if type(checkFunc) ~= 'function' then
-        return nil
-    end
-    if not card then
-        return nil
-    end
-    for _, subcard in sgs.qlist(card:getSubcards()) do
-        if checkFunc(sgs.Sanguosha:getCard(subcard)) then
-            containsType = true
-            break
-        end
-    end
-    return containsType
-end
-
--- 添加武将技能（除去主公技、觉醒技、限定技）
-function getSkillTable(general)
-    if not general then
-        return {}
-    end
-    local skill_list = {}
-    for _, skill in sgs.qlist(general:getSkillList()) do
-        if
-            skill:isVisible() and not skill:isLordSkill() and skill:getFrequency() ~= sgs.Skill_Wake and
-                skill:getFrequency() ~= sgs.Skill_Limited
-         then
-            table.insert(skill_list, skill:objectName())
-        end
-    end
-    return skill_list
-end
 
 Skadi:addSkill(LuaChuntian)
 Skadi:addSkill(LuaGaochao)
