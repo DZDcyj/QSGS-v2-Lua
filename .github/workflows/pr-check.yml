@@ -27,7 +27,7 @@ jobs:
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
           none_of: invalid,wontfix,duplicate,question
-          any_of: documentation,enhancement,bug,fix,ci
+          any_of: documentation,enhancement,bug,general fix,github issue
           repo_token: ${{ secrets.GITHUB_TOKEN }}
 
   Pull-Request-Issue-Check:
