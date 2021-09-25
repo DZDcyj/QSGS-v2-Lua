@@ -44,6 +44,7 @@ ExTenYearDongcheng = sgs.General(extension, 'ExTenYearDongcheng', 'qun', '4', tr
 ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true, true)
 ExTenYearZhaoxiang = sgs.General(extension, 'ExTenYearZhaoxiang', 'shu', '4', false, true)
 JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true, true)
+ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -1372,18 +1373,12 @@ LuaQiaosiCard =
         return #targets >= 0
     end,
     on_use = function(self, room, source, targets)
-        local targets_list = sgs.SPlayerList()
-        for _, target in ipairs(targets) do
-            if source:canSlash(target, nil, false) then
-                targets_list:append(target)
-            end
-        end
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         for _, cd in sgs.qlist(self:getSubcards()) do
             to_goback:addSubcard(cd)
         end
-        if targets_list:length() > 0 then
-            local target = targets[1]
+        local target = targets[1]
+        if target then
             local reason =
                 sgs.CardMoveReason(
                 sgs.CardMoveReason_S_REASON_GIVE,
@@ -4886,3 +4881,92 @@ JieZhonghui:addSkill(LuaZili)
 JieZhonghui:addRelateSkill('LuaPaiyi')
 SkillAnjiang:addSkill(LuaQuanjiKeep)
 SkillAnjiang:addSkill(LuaPaiyi)
+
+LuaZhiyanDrawCard =
+    sgs.CreateSkillCard {
+    name = 'LuaZhiyanDrawCard',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets == 0
+    end,
+    on_use = function(self, room, source, targets)
+        local x = source:getMaxHp() - source:getHandcardNum()
+        source:drawCards(x)
+    end
+}
+
+LuaZhiyanGiveCard =
+    sgs.CreateSkillCard {
+    name = 'LuaZhiyanGiveCard',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    on_use = function(self, room, source, targets)
+        local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        for _, cd in sgs.qlist(self:getSubcards()) do
+            to_goback:addSubcard(cd)
+        end
+        local target = targets[1]
+        local reason =
+            sgs.CardMoveReason(
+            sgs.CardMoveReason_S_REASON_GIVE,
+            source:objectName(),
+            target:objectName(),
+            'LuaZhiyan',
+            nil
+        )
+        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
+    end
+}
+
+LuaZhiyan =
+    sgs.CreateViewAsSkill {
+    name = 'LuaZhiyan',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        local y = sgs.Self:getHandcardNum() - sgs.Self:getHp()
+        return y > 0 and #selected < y
+    end,
+    view_as = function(self, cards)
+        local x = sgs.Self:getMaxHp() - sgs.Self:getHandcardNum()
+        local LuaZhiyanDrawAvailable = x > 0 and not sgs.Self:hasUsed('#LuaZhiyanDrawCard') and #cards == 0
+        if LuaZhiyanDrawAvailable then
+            return LuaZhiyanDrawCard:clone()
+        end
+        local y = sgs.Self:getHandcardNum() - sgs.Self:getHp()
+        local LuaZhiyanGiveAvailable = y > 0 and not sgs.Self:hasUsed('#LuaZhiyanGiveCard') and #cards == y
+        if LuaZhiyanGiveAvailable then
+            local luaZhiyanGiveCard = LuaZhiyanGiveCard:clone()
+            for _, cd in ipairs(cards) do
+                luaZhiyanGiveCard:addSubcard(cd)
+            end
+            return luaZhiyanGiveCard
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        local LuaZhiyanDrawAvailable =
+            not player:hasUsed('#LuaZhiyanDrawCard') and player:getMaxHp() > player:getHandcardNum()
+        local LuaZhiyanGiveAvailable =
+            not player:hasUsed('#LuaZhiyanGiveCard') and player:getHandcardNum() > player:getHp()
+        return LuaZhiyanDrawAvailable or LuaZhiyanGiveAvailable
+    end
+}
+
+LuaZhiyanMod =
+    sgs.CreateProhibitSkill {
+    name = '#LuaZhiyanMod',
+    is_prohibited = function(self, from, to, card)
+        return from:hasSkill('LuaZhiyan') and not card:isKindOf('SkillCard') and from:objectName() ~= to:objectName() and
+            from:hasUsed('#LuaZhiyanDrawCard')
+    end
+}
+
+ExStarXuhuang:addSkill(LuaZhiyan)
+SkillAnjiang:addSkill(LuaZhiyanMod)

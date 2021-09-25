@@ -390,5 +390,14 @@ return {
     ['zilidraw'] = '摸两张牌',
     ['LuaPaiyi'] = '排异',
     ['luapaiyi'] = '排异',
-    [':LuaPaiyi'] = '<font color="green"><b>出牌阶段每名角色限一次</b></font>，你可以移去一张“权”，令一名角色摸两张牌。若该角色的手牌比你多，则你对其造成1点伤害'
+    [':LuaPaiyi'] = '<font color="green"><b>出牌阶段每名角色限一次</b></font>，你可以移去一张“权”，令一名角色摸两张牌。若该角色的手牌比你多，则你对其造成1点伤害',
+    ['ExStarXuhuang'] = '星徐晃',
+    ['&ExStarXuhuang'] = '星徐晃',
+    ['#ExStarXuhuang'] = '沉详性严',
+    ['LuaZhiyan'] = '治严',
+    [':LuaZhiyan'] = '<font color="green"><b>出牌阶段各限一次</b></font>，你可以选择一项执行对应效果：\
+    1.你可以将手牌数摸至体力上限，然后本回合不能对其他角色使用牌\
+    2.你可以将X张手牌交给一名其他角色（X为你的手牌数减去体力值）',
+    ['luazhiyangive'] = '治严',
+    ['luazhiyandraw'] = '治严'
 }
