@@ -4964,11 +4964,13 @@ LuaZhiyan =
     end
 }
 
-LuaZhiyanMod = sgs.CreateProhibitSkill{
+LuaZhiyanMod =
+    sgs.CreateProhibitSkill {
     name = '#LuaZhiyanMod',
-	is_prohibited = function(self, from, to, card)
-		return from:hasSkill('LuaZhiyan') and not card:isKindOf("SkillCard") and from:objectName() ~= to:objectName() and from:hasUsed('#LuaZhiyanDrawCard')
-	end
+    is_prohibited = function(self, from, to, card)
+        return from:hasSkill('LuaZhiyan') and not card:isKindOf('SkillCard') and from:objectName() ~= to:objectName() and
+            from:hasUsed('#LuaZhiyanDrawCard')
+    end
 }
 
 ExStarXuhuang:addSkill(LuaZhiyan)
