@@ -4888,7 +4888,7 @@ LuaZhiyanDrawCard =
     target_fixed = false,
     will_throw = false,
     filter = function(self, selected, to_select)
-        return #selected < 0
+        return false
     end,
     feasible = function(self, targets)
         return #targets == 0
@@ -4931,36 +4931,31 @@ LuaZhiyan =
     n = 999,
     view_filter = function(self, selected, to_select)
         local y = sgs.Self:getHandcardNum() - sgs.Self:getHp()
-        return (y > 0 and #selected < y)
+        return y > 0 and #selected < y
     end,
     view_as = function(self, cards)
         local x = sgs.Self:getMaxHp() - sgs.Self:getHandcardNum()
-        if x > 0 and not sgs.Self:hasUsed('#LuaZhiyanDrawCard') then
-            if #cards == 0 then
-                return LuaZhiyanDrawCard:clone()
-            end
+        local LuaZhiyanDrawAvailable = x > 0 and not sgs.Self:hasUsed('#LuaZhiyanDrawCard') and #cards == 0
+        if LuaZhiyanDrawAvailable then
+            return LuaZhiyanDrawCard:clone()
         end
         local y = sgs.Self:getHandcardNum() - sgs.Self:getHp()
-        if y > 0 and not sgs.Self:hasUsed('#LuaZhiyanGiveCard') then
-            if #cards == y then
-                local zy_card = LuaZhiyanGiveCard:clone()
-                for _, cd in ipairs(cards) do
-                    zy_card:addSubcard(cd)
-                end
-                return zy_card
+        local LuaZhiyanGiveAvailable = y > 0 and not sgs.Self:hasUsed('#LuaZhiyanGiveCard') and #cards == y
+        if LuaZhiyanGiveAvailable then
+            local luaZhiyanGiveCard = LuaZhiyanGiveCard:clone()
+            for _, cd in ipairs(cards) do
+                luaZhiyanGiveCard:addSubcard(cd)
             end
+            return luaZhiyanGiveCard
         end
         return nil
     end,
     enabled_at_play = function(self, player)
-        local available = false
-        if not player:hasUsed('#LuaZhiyanDrawCard') and player:getMaxHp() > player:getHandcardNum() then
-            available = true
-        end
-        if not player:hasUsed('#LuaZhiyanGiveCard') and player:getHandcardNum() > player:getHp() then
-            available = true
-        end
-        return available
+        local LuaZhiyanDrawAvailable =
+            not player:hasUsed('#LuaZhiyanDrawCard') and player:getMaxHp() > player:getHandcardNum()
+        local LuaZhiyanGiveAvailable =
+            not player:hasUsed('#LuaZhiyanGiveCard') and player:getHandcardNum() > player:getHp()
+        return LuaZhiyanDrawAvailable or LuaZhiyanGiveAvailable
     end
 }
 
