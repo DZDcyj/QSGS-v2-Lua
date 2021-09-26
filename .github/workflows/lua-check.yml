@@ -3,7 +3,7 @@ name: LuaCheck
 on: [push, pull_request]
 
 jobs:
-  Lua Syntax Check:
+  Lua-Syntax-Check:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Branch
@@ -13,7 +13,7 @@ jobs:
       with:
         args: -o 011
   
-  Lua Format Check:
+  Lua-Format-Check:
     name: Lua Specification Check
     needs: Lua Syntax Check
     runs-on: ubuntu-latest
