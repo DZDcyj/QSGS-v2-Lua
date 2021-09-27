@@ -1,7 +1,5 @@
 # QSGS-v2-Lua
 ![LuaCheck](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/lua-check.yml/badge.svg)
-
-[![国内镜像流水线构建状态](https://rinkosanvsky.coding.net/badges/QSGS-v2-Lua/job/824702/build.svg)](https://rinkosanvsky.coding.net/p/QSGS-v2-Lua/ci/job)
 ## 介绍
 这是基于太阳神三国杀 QSanguosha-v2-20190208 编写的武将，使用 Lua 作为开发语言，基于源码的限制，某些功能可能无法完全 Lua 化
 
@@ -11,10 +9,6 @@
 目前采取的策略是国内镜像同步更新 Github master 分支，因此主要负责还是在 Github 侧
 
 有问题欢迎及时反馈
-
-国内镜像地址在这里：
-
-https://e.coding.net/rinkosanvsky/QSGS-v2-Lua/QSGS-v2-Lua.git
 
 ## 配置方法
 如果您想一边配置一边直接在日神杀环境测试，可以采取如下方案：

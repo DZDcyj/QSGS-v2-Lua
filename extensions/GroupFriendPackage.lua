@@ -1549,7 +1549,7 @@ LuaYingshi =
             if choice == 'LuaYingshiChoice1' then
                 -- 加一点体力上限，摸三张牌
                 room:setPlayerProperty(killer, 'maxhp', sgs.QVariant(killer:getMaxHp() + 1))
-                local msg = sgs.LogMessage()
+                msg = sgs.LogMessage()
                 msg.type = '#addmaxhp'
                 msg.arg = 1
                 msg.from = killer
