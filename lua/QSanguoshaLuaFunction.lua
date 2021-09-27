@@ -5,7 +5,6 @@ module('QSanguoshaLuaFunction', package.seeall)
 
 -- 封装好的函数部分
 
-
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
 
@@ -35,17 +34,16 @@ function checkIfSubcardsContainType(card, checkFunc)
     return containsType
 end
 
--- 添加武将技能（除去主公技、觉醒技、限定技）
-function getSkillTable(general)
+-- 添加武将技能
+-- general 为对应的武将卡
+-- skillChecker 为技能判断的方法，返回值为布尔类型
+function getSkillTable(general, skillChecker)
     if not general then
         return {}
     end
     local skill_list = {}
     for _, skill in sgs.qlist(general:getSkillList()) do
-        if
-            skill:isVisible() and not skill:isLordSkill() and skill:getFrequency() ~= sgs.Skill_Wake and
-                skill:getFrequency() ~= sgs.Skill_Limited
-         then
+        if skillChecker(skill) then
             table.insert(skill_list, skill:objectName())
         end
     end
@@ -423,6 +421,35 @@ function getCardList(intlist)
         ids:append(sgs.Sanguosha:getCard(id))
     end
     return ids
+end
+
+-- 发送消息
+-- type 为字符串型，必需
+-- params 为对应的参数，Table 类型
+function sendLogMessage(room, type, params)
+    local msg = sgs.LogMessage()
+    msg.type = type
+    local from = params['from']
+    if from then
+        msg.from = from
+    end
+    local to = params['to']
+    if to then
+        msg.to:append(to)
+    end
+    local arg = params['arg']
+    if arg then
+        msg.arg = arg
+    end
+    local arg2 = params['arg2']
+    if arg2 then
+        msg.arg2 = arg2
+    end
+    local card_str = params['card_str']
+    if card_str then
+        msg.card_str = card_str
+    end
+    room:sendLog(msg)
 end
 
 -- luacheck: pop

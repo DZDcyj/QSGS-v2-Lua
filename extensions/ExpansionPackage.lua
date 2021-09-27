@@ -59,11 +59,7 @@ LuaQianchong =
                 if player:getMark(self:objectName()) == 0 then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     local choice = room:askForChoice(player, self:objectName(), 'BasicCard+TrickCard+EquipCard')
-                    local msg = sgs.LogMessage()
-                    msg.type = '#LuaQianchongChoice'
-                    msg.from = player
-                    msg.arg = choice
-                    room:sendLog(msg)
+                    rinsanFuncModule.sendLogMessage(room, '#LuaQianchongChoice', {['from'] = player, ['arg'] = choice})
                     if choice == 'BasicCard' then
                         room:setPlayerMark(player, 'LuaQianchongCard', 1)
                     elseif choice == 'TrickCard' then
@@ -990,11 +986,11 @@ LuaPojun =
                     room:doAnimate(1, damage.from:objectName(), damage.to:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     room:notifySkillInvoked(player, self:objectName())
-                    local msg = sgs.LogMessage()
-                    msg.type = '#LuaPojunDamageUp'
-                    msg.from = damage.from
-                    msg.card_str = damage.card:toString()
-                    room:sendLog(msg)
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#LuaPojunDamageUp',
+                        {['from'] = damage.from, ['card_str'] = damage.card:toString()}
+                    )
                     data:setValue(damage)
                 end
             end
@@ -1095,17 +1091,20 @@ LuaQianxi =
                             -- sp:drawCards(1)
                             local userData = sgs.QVariant()
                             userData:setValue(sp)
-                            local msg = sgs.LogMessage()
-                            msg.from = room:getCurrent()
-                            msg.to:append(sp)
                             if room:askForSkillInvoke(room:getCurrent(), 'LuaQianxiDraw', userData) then
-                                msg.type = '#LuaQianxiDrawAccept'
-                                room:sendLog(msg)
+                                rinsanFuncModule.sendLogMessage(
+                                    room,
+                                    '#LuaQianxiDrawAccept',
+                                    {['from'] = room:getCurrent(), ['to'] = sp}
+                                )
                                 room:doAnimate(1, room:getCurrent():objectName(), sp:objectName())
                                 sp:drawCards(1)
                             else
-                                msg.type = '#LuaQianxiDrawRefuse'
-                                room:sendLog(msg)
+                                rinsanFuncModule.sendLogMessage(
+                                    room,
+                                    '#LuaQianxiDrawRefuse',
+                                    {['from'] = room:getCurrent(), ['to'] = sp}
+                                )
                             end
 
                             if not sp:isKongcheng() then
@@ -1152,11 +1151,11 @@ LuaQianxi =
                                             room:broadcastSkillInvoke(self:objectName())
                                             room:addPlayerMark(victim, '@qianxi_' .. color)
                                             room:setPlayerCardLimitation(victim, 'use, response', pattern, false)
-                                            local qianxiMsg = sgs.LogMessage()
-                                            qianxiMsg.type = '#Qianxi'
-                                            qianxiMsg.from = victim
-                                            qianxiMsg.arg = color
-                                            room:sendLog(qianxiMsg)
+                                            rinsanFuncModule.sendLogMessage(
+                                                room,
+                                                '#Qianxi',
+                                                {['from'] = victim, ['arg'] = color}
+                                            )
                                         end
                                     end
                                 end
@@ -1266,11 +1265,11 @@ LuaJingxie =
                             ''
                         )
                     )
-                    local log = sgs.LogMessage()
-                    log.type = '#UseCard_Recast'
-                    log.from = player
-                    log.card_str = card:getEffectiveId()
-                    room:sendLog(log)
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#UseCard_Recase',
+                        {['from'] = player, ['card_str'] = card:getEffectiveId()}
+                    )
                     room:broadcastSkillInvoke('@recast')
                     player:drawCards(1, 'recast')
                     room:recover(dying.who, sgs.RecoverStruct(player, nil, 1 - dying.who:getHp()))
@@ -1307,12 +1306,11 @@ LuaJingxie =
             end
             if card and card:isKindOf('Slash') then
                 if card:isBlack() or card:getSuit() == sgs.Card_Heart then
-                    local log = sgs.LogMessage()
-                    log.type = '#LuaJingxie-Renwang'
-                    log.from = player
-                    log.to:append(effect.from)
-                    log.arg = card:objectName()
-                    room:sendLog(log)
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#LuaJingxie-Renwang',
+                        {['from'] = player, ['to'] = effect.from, ['arg'] = card:objectName()}
+                    )
                     return true
                 end
             end
@@ -2288,11 +2286,7 @@ LuaYongjinCard =
                 disabled_ids:append(equip:getId())
             end
         end
-        local log = sgs.LogMessage()
-        log.type = '#InvokeSkill'
-        log.from = source
-        log.arg = 'LuaYongjin'
-        room:sendLog(log)
+        rinsanFuncModule.sendLogMessage(room, '#InvokeSkill', {['from'] = source, ['arg'] = 'LuaYongjin'})
         room:notifySkillInvoked(source, self:objectName())
         local card_id = room:askForCardChosen(source, from, 'e', 'LuaYongjin', false, sgs.Card_MethodNone, disabled_ids)
         local card = sgs.Sanguosha:getCard(card_id)
@@ -2373,10 +2367,7 @@ LuaShouye =
                         ChoiceLog(use.from, choice1, nil)
                         ChoiceLog(p, choice2, nil)
                         if (choice1 == 'syjg1' and choice2 == 'syfy1') or (choice1 == 'syjg2' and choice2 == 'syfy2') then
-                            local log = sgs.LogMessage()
-                            log.from = p
-                            log.type = '#ShouyeSucceed'
-                            room:sendLog(log)
+                            rinsanFuncModule.sendLogMessage(room, '#ShouyeSucceed', {['from'] = p})
                             local nullified_list = use.nullified_list
                             table.insert(nullified_list, p:objectName())
                             use.nullified_list = nullified_list
@@ -2392,10 +2383,7 @@ LuaShouye =
                             end
                             room:obtainCard(p, togain)
                         else
-                            local log = sgs.LogMessage()
-                            log.from = p
-                            log.type = '#ShouyeFailed'
-                            room:sendLog(log)
+                            rinsanFuncModule.sendLogMessage(room, '#ShouyeFailed', {['from'] = p})
                         end
                     end
                 end
@@ -2486,11 +2474,7 @@ LuaZhaohan =
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName(), 1)
                 room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
-                local msg = sgs.LogMessage()
-                msg.type = '#addmaxhp'
-                msg.arg = 1
-                msg.from = player
-                room:sendLog(msg)
+                rinsanFuncModule.sendLogMessage(room, '#addmaxhp', {['from'] = player, ['arg'] = 1})
                 local theRecover = sgs.RecoverStruct()
                 theRecover.recover = 1
                 theRecover.who = player
@@ -3095,10 +3079,7 @@ LuaDangxian =
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_RoundStart then
             room:sendCompulsoryTriggerLog(player, self:objectName())
-            local msg = sgs.LogMessage()
-            msg.type = '#LuaDangxianExtraPhase'
-            msg.from = player
-            room:sendLog(msg)
+            rinsanFuncModule.sendLogMessage(room, '#LuaDangxianExtraPhase', {['from'] = player})
             player:setPhase(sgs.Player_Play)
             local card = rinsanFuncModule.getCardFromDiscardPile(room, 'Slash')
             if card then
@@ -3781,11 +3762,7 @@ LuaHunzi =
     frequency = sgs.Skill_Wake,
     on_trigger = function(self, event, player, data, room)
         room:addPlayerMark(player, 'LuaHunzi')
-        local msg = sgs.LogMessage()
-        msg.type = '#Hunzi'
-        msg.from = player
-        msg.arg = player:getHp()
-        room:sendLog(msg)
+        rinsanFuncModule.sendLogMessage(room, '#Hunzi', {['from'] = player, ['arg'] = player:getHp()})
         if room:changeMaxHpForAwakenSkill(player) then
             room:broadcastSkillInvoke(self:objectName())
             room:getThread():delay(6500)
@@ -4240,11 +4217,7 @@ LuaLvemingCard =
         room:broadcastSkillInvoke('LuaLveming')
         local chosenNum = room:askForChoice(target, 'LuaLveming', table.concat(numbers, '+'))
 
-        local msg = sgs.LogMessage()
-        msg.type = '#choose'
-        msg.from = target
-        msg.arg = chosenNum
-        room:sendLog(msg)
+        rinsanFuncModule.sendLogMessage(room, '#choose', {['from'] = target, ['arg'] = chosenNum})
 
         local judge = sgs.JudgeStruct()
         judge.pattern = '.'
@@ -4802,11 +4775,11 @@ LuaZili =
     frequency = sgs.Skill_Wake,
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
-        local msg = sgs.LogMessage()
-        msg.type = '#LuaZili'
-        msg.from = player
-        msg.arg = player:getPile('power'):length()
-        room:sendLog(msg)
+        rinsanFuncModule.sendLogMessage(
+            room,
+            '#LuaZili',
+            {['from'] = player, ['arg'] = player:getPile('power'):length()}
+        )
         if room:changeMaxHpForAwakenSkill(player) then
             room:broadcastSkillInvoke(self:objectName())
             if
