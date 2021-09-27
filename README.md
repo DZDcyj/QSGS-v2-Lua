@@ -58,6 +58,8 @@ $ brew install git
 
 这意味着如果要进行合并，最新的提交需要通过状态检查，也即是内置的 Actions 里的 Lua-Check 和基于 luacheck 的代码规范检查。
 
+现在也引入了 Coding 侧的规范检查，可能的话，将会对代码的圈复杂度做出要求
+
 **注意，如果存在与主分支的冲突或者落后于主分支，请使用变基（rebase）而非合并（merge）的方式更新分支**
 
 - Require conversation resolution before merging（在合并前需要对话解决）
