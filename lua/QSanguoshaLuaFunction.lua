@@ -5,7 +5,6 @@ module('QSanguoshaLuaFunction', package.seeall)
 
 -- 封装好的函数部分
 
-
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
 
@@ -35,17 +34,16 @@ function checkIfSubcardsContainType(card, checkFunc)
     return containsType
 end
 
--- 添加武将技能（除去主公技、觉醒技、限定技）
-function getSkillTable(general)
+-- 添加武将技能
+-- general 为对应的武将卡
+-- skillChecker 为技能判断的方法，返回值为布尔类型
+function getSkillTable(general, skillChecker)
     if not general then
         return {}
     end
     local skill_list = {}
     for _, skill in sgs.qlist(general:getSkillList()) do
-        if
-            skill:isVisible() and not skill:isLordSkill() and skill:getFrequency() ~= sgs.Skill_Wake and
-                skill:getFrequency() ~= sgs.Skill_Limited
-         then
+        if skillChecker(skill) then
             table.insert(skill_list, skill:objectName())
         end
     end

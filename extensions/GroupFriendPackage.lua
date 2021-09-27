@@ -1521,38 +1521,63 @@ LuaYingshi =
     sgs.CreateTriggerSkill {
     name = 'LuaYingshi',
     events = {sgs.Death},
+    frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local death = data:toDeath()
         local data2 = sgs.QVariant()
         data2:setValue(death.who)
         for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-            if room:askForSkillInvoke(sp, self:objectName(), data2) then
-                room:doAnimate(1, sp:objectName(), death.who:objectName())
+            if sp:isWounded() then
+                -- 默认为无来源、无卡牌、恢复1点体力
+                room:sendCompulsoryTriggerLog(sp, self:objectName())
+                room:recover(sp, sgs.RecoverStruct())
+            end
+        end
+        -- 如果为伤害来源，则可以二选一
+        local killer
+        if death.damage then
+            killer = death.damage.from
+        end
+        if killer and killer:hasSkill(self:objectName()) then
+            room:sendCompulsoryTriggerLog(killer, self:objectName())
+            local choice = room:askForChoice(killer, self:objectName(),'LuaYingshiChoice1+LuaYingshiChoice2')
+            local msg = sgs.LogMessage()
+            msg.type = '#choose'
+            msg.from = killer
+            msg.arg = choice
+            room:sendLog(msg)
+            if choice == 'LuaYingshiChoice1' then
+                -- 加一点体力上限，摸三张牌
+                room:setPlayerProperty(killer, 'maxhp', sgs.QVariant(killer:getMaxHp() + 1))
+                local msg = sgs.LogMessage()
+                msg.type = '#addmaxhp'
+                msg.arg = 1
+                msg.from = killer
+                room:sendLog(msg)
+                killer:drawCards(3)
+            else
+                -- 选一个觉醒技外技能并失去一点体力上限
+                room:loseMaxHp(killer)
                 local skillTable = {}
-                -- 添加主将技能
-                for _, skill in ipairs(rinsanFuncModule.getSkillTable(death.who:getGeneral())) do
-                    table.insert(skillTable, skill)
+                local skillChecker = function(skill)
+                    return skill:isVisible() and skill:getFrequency() ~= sgs.Skill_Wake
                 end
-                -- 添加副将技能
-                for _, skill in ipairs(rinsanFuncModule.getSkillTable(death.who:getGeneral2())) do
-                    table.insert(skillTable, skill)
-                end
-                -- 移除已有技能
-                for _, skill in ipairs(skillTable) do
-                    if sp:hasSkill(skill) then
-                        table.removeOne(skillTable, skill)
+                -- 主将
+                for _, skill in ipairs(rinsanFuncModule.getSkillTable(death.who:getGeneral(), skillChecker)) do
+                    -- 移除已有
+                    if not killer:hasSkill(skill) and not table.contains(skillTable, skill) then
+                        table.insert(skillTable, skill)
                     end
                 end
-                table.insert(skillTable, 'cancel')
-                while #skillTable > 1 do
-                    local choice = room:askForChoice(sp, self:objectName(), table.concat(skillTable, '+'))
-                    if choice ~= 'cancel' then
-                        table.removeOne(skillTable, choice)
-                        room:acquireSkill(sp, choice)
-                    else
-                        break
+                -- 副将
+                for _, skill in ipairs(rinsanFuncModule.getSkillTable(death.who:getGeneral2(), skillChecker)) do
+                    -- 移除已有
+                    if not killer:hasSkill(skill) and not table.contains(skillTable, skill) then
+                        table.insert(skillTable, skill)
                     end
                 end
+                local skillChoice = room:askForChoice(killer, self:objectName(), table.concat(skillTable, '+'))
+                room:acquireSkill(killer, skillChoice)
             end
         end
         return false
