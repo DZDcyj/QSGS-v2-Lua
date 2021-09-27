@@ -1526,12 +1526,12 @@ LuaYingshi =
                 room:recover(sp, sgs.RecoverStruct())
             end
         end
-        -- 如果为伤害来源，则可以二选一
         local killer
         if death.damage then
             killer = death.damage.from
         end
         if killer and killer:hasSkill(self:objectName()) then
+            -- 如果为伤害来源，则可以二选一
             room:sendCompulsoryTriggerLog(killer, self:objectName())
             local choice = room:askForChoice(killer, self:objectName(), 'LuaYingshiChoice1+LuaYingshiChoice2')
             rinsanFuncModule.sendLogMessage(room, '#choose', {['from'] = killer, ['arg'] = choice})
