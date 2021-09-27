@@ -1,14 +1,20 @@
 # QSGS-v2-Lua
 ![LuaCheck](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/lua-check.yml/badge.svg)
+
+[![国内镜像流水线构建状态](https://rinkosanvsky.coding.net/badges/QSGS-v2-Lua/job/824702/build.svg)](https://rinkosanvsky.coding.net/p/QSGS-v2-Lua/ci/job)
 ## 介绍
 这是基于太阳神三国杀 QSanguosha-v2-20190208 编写的武将，使用 Lua 作为开发语言，基于源码的限制，某些功能可能无法完全 Lua 化
 
 ## 额外说明
 本仓库现已经同步到国内镜像，欢迎加入。
 
-同步 master 分支时请创建合并请求，因不会对 master 分支进行同步，请知悉
+目前采取的策略是国内镜像同步更新 Github master 分支，因此主要负责还是在 Github 侧
 
 有问题欢迎及时反馈
+
+国内镜像地址在这里：
+
+https://e.coding.net/rinkosanvsky/QSGS-v2-Lua/QSGS-v2-Lua.git
 
 ## 配置方法
 如果您想一边配置一边直接在日神杀环境测试，可以采取如下方案：
@@ -57,6 +63,14 @@ $ brew install git
     - Require branches to be up to date before merging（要求分支在合并前保持最新）
 
 这意味着如果要进行合并，最新的提交需要通过状态检查，也即是内置的 Actions 里的 Lua-Check 和基于 luacheck 的代码规范检查。
+
+现在也引入了新的规范检查，可能的话，将会对代码的圈复杂度做出要求，但目前并不影响流水线的通过
+
+新的规范检查相较于 Github Action，对规范的要求会更高，还请知悉
+
+**注意，如果 Tencent Lua Check 失败，需要重新提交代码进行刷新，还请知悉**
+
+**如果是流水线出了问题，请告知我，我可以进行重试操作**
 
 **注意，如果存在与主分支的冲突或者落后于主分支，请使用变基（rebase）而非合并（merge）的方式更新分支**
 
