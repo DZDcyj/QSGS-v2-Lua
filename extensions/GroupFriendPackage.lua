@@ -831,10 +831,7 @@ LuaTuci =
             end
             if p:isAlive() and p:distanceTo(player) < player:getAttackRange() + player:getMark('@LuaJing') then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                local msg = sgs.LogMessage()
-                msg.type = '#NoJink'
-                msg.from = p
-                room:sendLog(msg)
+                rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = p})
                 jink_table[index] = 0
             end
             index = index + 1
@@ -1050,11 +1047,11 @@ LuaYinyu =
                             self:objectName()
                         )
                         if card then
-                            local log = sgs.LogMessage()
-                            log.from = p
-                            log.type = '#InvokeSkill'
-                            log.arg = self:objectName()
-                            room:sendLog(log)
+                            rinsanFuncModule.sendLogMessage(
+                                room,
+                                '#InvokeSkill',
+                                {['from'] = p, ['arg'] = self:objectName()}
+                            )
                             room:showCard(p, card:getEffectiveId())
                             local reason =
                                 sgs.CardMoveReason(
@@ -1127,10 +1124,7 @@ LuaQingyu =
             if player:getHandcardNum() <= player:getHp() / 2 then
                 local effect = data:toSlashEffect()
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                local msg = sgs.LogMessage()
-                msg.type = '#NoJink'
-                msg.from = player
-                room:sendLog(msg)
+                rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = player})
                 room:slashResult(effect, nil)
                 return true
             end
@@ -1327,12 +1321,11 @@ LuaZhazhi =
                 if damageNum < 0 then
                     damageNum = 0
                 end
-                local loc = sgs.LogMessage()
-                loc.type = '#LuaZhazhi'
-                loc.arg = damageNum
-                loc.arg2 = damage.damage
-                loc.from = damage.from
-                room:sendLog(loc)
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaZhazhi',
+                    {['from'] = damage.from, ['arg'] = damageNum, ['arg2'] = damage.damage}
+                )
                 damage.damage = damageNum
                 if damageNum > 0 then
                     data:setValue(damage)
@@ -1540,20 +1533,12 @@ LuaYingshi =
         end
         if killer and killer:hasSkill(self:objectName()) then
             room:sendCompulsoryTriggerLog(killer, self:objectName())
-            local choice = room:askForChoice(killer, self:objectName(),'LuaYingshiChoice1+LuaYingshiChoice2')
-            local msg = sgs.LogMessage()
-            msg.type = '#choose'
-            msg.from = killer
-            msg.arg = choice
-            room:sendLog(msg)
+            local choice = room:askForChoice(killer, self:objectName(), 'LuaYingshiChoice1+LuaYingshiChoice2')
+            rinsanFuncModule.sendLogMessage(room, '#choose', {['from'] = killer, ['arg'] = choice})
             if choice == 'LuaYingshiChoice1' then
                 -- 加一点体力上限，摸三张牌
                 room:setPlayerProperty(killer, 'maxhp', sgs.QVariant(killer:getMaxHp() + 1))
-                msg = sgs.LogMessage()
-                msg.type = '#addmaxhp'
-                msg.arg = 1
-                msg.from = killer
-                room:sendLog(msg)
+                rinsanFuncModule.sendLogMessage(room, '#addmaxhp', {['from'] = killer, ['arg'] = 1})
                 killer:drawCards(3)
             else
                 -- 选一个觉醒技外技能并失去一点体力上限
@@ -1880,10 +1865,7 @@ LuaFumo =
                         _data:setValue(p)
                         jink_table[index] = 0
                         index = index + 1
-                        local msg = sgs.LogMessage()
-                        msg.type = '#NoJink'
-                        msg.from = p
-                        room:sendLog(msg)
+                        rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = p})
                     end
                     local jink_data = sgs.QVariant()
                     jink_data:setValue(Table2IntList(jink_table))

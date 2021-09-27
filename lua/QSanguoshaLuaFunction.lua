@@ -423,4 +423,33 @@ function getCardList(intlist)
     return ids
 end
 
+-- 发送消息
+-- type 为字符串型，必需
+-- params 为对应的参数，Table 类型
+function sendLogMessage(room, type, params)
+    local msg = sgs.LogMessage()
+    msg.type = type
+    local from = params['from']
+    if from then
+        msg.from = from
+    end
+    local to = params['to']
+    if to then
+        msg.to:append(to)
+    end
+    local arg = params['arg']
+    if arg then
+        msg.arg = arg
+    end
+    local arg2 = params['arg2']
+    if arg2 then
+        msg.arg2 = arg2
+    end
+    local card_str = params['card_str']
+    if card_str then
+        msg.card_str = card_str
+    end
+    room:sendLog(msg)
+end
+
 -- luacheck: pop
