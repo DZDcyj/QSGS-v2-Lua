@@ -1,5 +1,7 @@
 # QSGS-v2-Lua
 ![LuaCheck](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/lua-check.yml/badge.svg)
+
+[![构建状态](https://rinkosanvsky.coding.net/badges/QSGS-v2-Lua/job/824702/build.svg)](https://rinkosanvsky.coding.net/p/QSGS-v2-Lua/ci/job)
 ## 介绍
 这是基于太阳神三国杀 QSanguosha-v2-20190208 编写的武将，使用 Lua 作为开发语言，基于源码的限制，某些功能可能无法完全 Lua 化
 
