@@ -68,6 +68,8 @@ $ brew install git
 
 Coding 侧相较于 Github Action，对规范的要求会更高，还请知悉
 
+**注意，如果 Tencent Lua Check 失败，需要重新提交代码进行刷新，还请知悉**
+
 **注意，如果存在与主分支的冲突或者落后于主分支，请使用变基（rebase）而非合并（merge）的方式更新分支**
 
 - Require conversation resolution before merging（在合并前需要对话解决）
