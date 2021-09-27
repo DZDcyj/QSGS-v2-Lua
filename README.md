@@ -10,6 +10,10 @@
 
 有问题欢迎及时反馈
 
+国内镜像地址在这里：
+
+https://e.coding.net/rinkosanvsky/QSGS-v2-Lua/QSGS-v2-Lua.git
+
 ## 配置方法
 如果您想一边配置一边直接在日神杀环境测试，可以采取如下方案：
 1. 在日神杀目录下（即 QSanguosha-v2-20190208）打开 Git Bash
