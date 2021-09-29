@@ -4954,21 +4954,13 @@ LuaZhengnan =
         local dying = data:toDying()
         if dying.who:getMark(self:objectName() .. player:objectName()) == 0 then
             if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
                 room:addPlayerMark(dying.who, self:objectName() .. player:objectName())
                 if player:isWounded() then
                     room:recover(player, sgs.RecoverStruct())
                 end
                 player:drawCards(1)
-                local gainableSkills = {}
-                if not player:hasSkill('LuaDangxian') then
-                    table.insert(gainableSkills, 'LuaDangxian')
-                end
-                if not player:hasSkill('wusheng') then
-                    table.insert(gainableSkills, 'wusheng')
-                end
-                if not player:hasSkill('zhiman') then
-                    table.insert(gainableSkills, 'zhiman')
-                end
+                local gainableSkills = rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'zhiman'})
                 if #gainableSkills == 0 then
                     -- 摸三张牌
                     player:drawCards(3)

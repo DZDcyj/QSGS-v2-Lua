@@ -452,4 +452,17 @@ function sendLogMessage(room, type, params)
     room:sendLog(msg)
 end
 
+-- 获取可获得的技能列表
+-- skills 代表候选技能
+-- 返回 skills 除去 player 已有技能的 Table
+function getGainableSkillTable(player, skills)
+    local gainableTable = {}
+    for _, skill in ipairs(skills) do
+        if not player:hasSkill(skill) then
+            table.insert(gainableTable, skill)
+        end
+    end
+    return gainableTable
+end
+
 -- luacheck: pop
