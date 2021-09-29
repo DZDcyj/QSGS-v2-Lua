@@ -4962,8 +4962,8 @@ LuaZhengnan =
                 player:drawCards(1)
                 local gainableSkills =
                     rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
+                -- gianableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程    
                 if #gainableSkills == 0 then
-                    -- 摸三张牌
                     player:drawCards(3)
                 else
                     local choice = room:askForChoice(player, self:objectName(), table.concat(gainableSkills, '+'))
