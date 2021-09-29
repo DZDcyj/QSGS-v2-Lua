@@ -456,13 +456,13 @@ end
 -- skills 代表候选技能
 -- 返回 skills 除去 player 已有技能的 Table
 function getGainableSkillTable(player, skills)
-    local gainableTable = {}
+    local gainableSkillTable = {}
     for _, skill in ipairs(skills) do
         if not player:hasSkill(skill) then
-            table.insert(gainableTable, skill)
+            table.insert(gainableSkillTable, skill)
         end
     end
-    return gainableTable
+    return gainableSkillTable
 end
 
 -- luacheck: pop
