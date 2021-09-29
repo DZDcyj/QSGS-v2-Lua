@@ -45,6 +45,7 @@ ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true
 ExTenYearZhaoxiang = sgs.General(extension, 'ExTenYearZhaoxiang', 'shu', '4', false, true)
 JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true, true)
 ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
+ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4943,3 +4944,63 @@ LuaZhiyanMod =
 
 ExStarXuhuang:addSkill(LuaZhiyan)
 SkillAnjiang:addSkill(LuaZhiyanMod)
+
+LuaZhengnan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhengnan',
+    frequency = sgs.Skill_Frequent,
+    events = {sgs.Dying},
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if dying.who:getMark(self:objectName() .. player:objectName()) == 0 then
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                room:addPlayerMark(dying.who, self:objectName() .. player:objectName())
+                if player:isWounded() then
+                    room:recover(player, sgs.RecoverStruct())
+                end
+                player:drawCards(1)
+                local gainableSkills =
+                    rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
+                -- gianableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程    
+                if #gainableSkills == 0 then
+                    player:drawCards(3)
+                else
+                    local choice = room:askForChoice(player, self:objectName(), table.concat(gainableSkills, '+'))
+                    room:acquireSkill(player, choice)
+                end
+            end
+        end
+    end
+}
+
+LuaZhiman =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhiman',
+    events = {sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.to:objectName() == player:objectName() then
+            return false
+        end
+        local data2 = sgs.QVariant()
+        data2:setValue(damage.to)
+        if room:askForSkillInvoke(player, self:objectName(), data2) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:doAnimate(1, player:objectName(), damage.to:objectName())
+            if not damage.to:isAllNude() then
+                local id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
+                player:obtainCard(sgs.Sanguosha:getCard(id), false)
+            end
+            return true
+        end
+        return false
+    end
+}
+
+ExTenYearGuansuo:addSkill(LuaZhengnan)
+ExTenYearGuansuo:addSkill('xiefang')
+ExTenYearGuansuo:addRelateSkill('LuaDangxian')
+ExTenYearGuansuo:addRelateSkill('wusheng')
+ExTenYearGuansuo:addRelateSkill('LuaZhiman')
+SkillAnjiang:addSkill(LuaZhiman)
