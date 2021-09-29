@@ -4960,7 +4960,8 @@ LuaZhengnan =
                     room:recover(player, sgs.RecoverStruct())
                 end
                 player:drawCards(1)
-                local gainableSkills = rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'zhiman'})
+                local gainableSkills =
+                    rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
                 if #gainableSkills == 0 then
                     -- 摸三张牌
                     player:drawCards(3)
@@ -4973,8 +4974,33 @@ LuaZhengnan =
     end
 }
 
+LuaZhiman =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhiman',
+    events = {sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.to:objectName() == player:objectName() then
+            return false
+        end
+        local data2 = sgs.QVariant()
+        data2:setValue(damage.to)
+        if room:askForSkillInvoke(player, self:objectName(), data2) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:doAnimate(1, player:objectName(), damage.to:objectName())
+            if not damage.to:isAllNude() then
+                local id = room:askForCardChosen(player, damage.to, 'hej', self:objectName())
+                player:obtainCard(sgs.Sanguosha:getCard(id), false)
+            end
+            return true
+        end
+        return false
+    end
+}
+
 ExTenYearGuansuo:addSkill(LuaZhengnan)
 ExTenYearGuansuo:addSkill('xiefang')
 ExTenYearGuansuo:addRelateSkill('LuaDangxian')
 ExTenYearGuansuo:addRelateSkill('wusheng')
-ExTenYearGuansuo:addRelateSkill('zhiman')
+ExTenYearGuansuo:addRelateSkill('LuaZhiman')
+SkillAnjiang:addSkill(LuaZhiman)

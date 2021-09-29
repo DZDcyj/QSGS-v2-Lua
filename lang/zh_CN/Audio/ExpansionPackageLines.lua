@@ -142,5 +142,6 @@ return {
     ['~JieZhonghui'] = '伯约，我已无力回天……',
     -- 关索-十周年
     ['$LuaZhengnan'] = '先父大任，不敢忘怀！',
-    ['~ExTenYearGuansuo'] = '花开堪折直须折，莫待无花空折枝',
+    ['$LuaZhiman'] = '大汉仁义，且放尔等一条生路！',
+    ['~ExTenYearGuansuo'] = '花开堪折直须折，莫待无花空折枝……',
 }
