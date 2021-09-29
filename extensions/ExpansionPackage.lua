@@ -45,6 +45,7 @@ ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true
 ExTenYearZhaoxiang = sgs.General(extension, 'ExTenYearZhaoxiang', 'shu', '4', false, true)
 JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true, true)
 ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
+ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4943,3 +4944,45 @@ LuaZhiyanMod =
 
 ExStarXuhuang:addSkill(LuaZhiyan)
 SkillAnjiang:addSkill(LuaZhiyanMod)
+
+LuaZhengnan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhengnan',
+    frequency = sgs.Skill_Frequent,
+    events = {sgs.Dying},
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if dying.who:getMark(self:objectName() .. player:objectName()) == 0 then
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:addPlayerMark(dying.who, self:objectName() .. player:objectName())
+                if player:isWounded() then
+                    room:recover(player, sgs.RecoverStruct())
+                end
+                player:drawCards(1)
+                local gainableSkills = {}
+                if not player:hasSkill('LuaDangxian') then
+                    table.insert(gainableSkills, 'LuaDangxian')
+                end
+                if not player:hasSkill('wusheng') then
+                    table.insert(gainableSkills, 'wusheng')
+                end
+                if not player:hasSkill('zhiman') then
+                    table.insert(gainableSkills, 'zhiman')
+                end
+                if #gainableSkills == 0 then
+                    -- 摸三张牌
+                    player:drawCards(3)
+                else
+                    local choice = room:askForChoice(player, self:objectName(), table.concat(gainableSkills, '+'))
+                    room:acquireSkill(player, choice)
+                end
+            end
+        end
+    end
+}
+
+ExTenYearGuansuo:addSkill(LuaZhengnan)
+ExTenYearGuansuo:addSkill('xiefang')
+ExTenYearGuansuo:addRelateSkill('LuaDangxian')
+ExTenYearGuansuo:addRelateSkill('wusheng')
+ExTenYearGuansuo:addRelateSkill('zhiman')

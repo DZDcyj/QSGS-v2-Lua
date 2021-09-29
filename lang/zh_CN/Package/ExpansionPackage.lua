@@ -399,5 +399,12 @@ return {
     1.你可以将手牌数摸至体力上限，然后本回合不能对其他角色使用牌\
     2.你可以将X张手牌交给一名其他角色（X为你的手牌数减去体力值）',
     ['luazhiyangive'] = '治严',
-    ['luazhiyandraw'] = '治严'
+    ['luazhiyandraw'] = '治严',
+    ['ExTenYearGuansuo'] = '关索-十周年',
+    ['&ExTenYearGuansuo'] = '关索',
+    ['#ExTenYearGuansuo'] = '倜傥子侠',
+    ['LuaZhengnan'] = '征南',
+    [':LuaZhengnan'] = '<font color="green"><b>每名角色限一次</b></font>，当一名角色进入濒死状态时，你可以回复1点体力，然后摸一张牌并选择以下一项执行：\
+    1. 获得“武圣”、“当先”和“制蛮”中一个你未拥有的技能\
+    2. 摸三张牌'
 }
