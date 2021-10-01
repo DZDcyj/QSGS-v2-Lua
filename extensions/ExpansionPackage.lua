@@ -46,6 +46,7 @@ ExTenYearZhaoxiang = sgs.General(extension, 'ExTenYearZhaoxiang', 'shu', '4', fa
 JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true, true)
 ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
 ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, true)
+ExStarGanning = sgs.General(extension, 'ExStarGanning', 'qun', '4', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -4962,7 +4963,7 @@ LuaZhengnan =
                 player:drawCards(1)
                 local gainableSkills =
                     rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
-                -- gianableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程    
+                -- gainnableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程
                 if #gainableSkills == 0 then
                     player:drawCards(3)
                 else
@@ -5004,3 +5005,139 @@ ExTenYearGuansuo:addRelateSkill('LuaDangxian')
 ExTenYearGuansuo:addRelateSkill('wusheng')
 ExTenYearGuansuo:addRelateSkill('LuaZhiman')
 SkillAnjiang:addSkill(LuaZhiman)
+
+LuaJinfanCard =
+    sgs.CreateSkillCard {
+    name = 'LuaJinfanCard',
+    target_fixed = true,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        local to_pile = sgs.IntList()
+        for _, cd in sgs.qlist(self:getSubcards()) do
+            to_pile:append(cd)
+        end
+        source:addToPile('&luajinfanpile', to_pile, false)
+    end
+}
+
+LuaJinfanVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaJinfan',
+    n = 4,
+    view_filter = function(self, selected, to_select)
+        if to_select:isEquipped() then
+            return false
+        end
+        local suits = {}
+        for _, cd in sgs.qlist(sgs.Self:getPile('&luajinfanpile')) do
+            if not table.contains(suits, sgs.Sanguosha:getCard(cd):getSuit()) then
+                table.insert(suits, sgs.Sanguosha:getCard(cd):getSuit())
+            end
+        end
+        for _, cd in ipairs(selected) do
+            if not table.contains(suits, cd:getSuit()) then
+                table.insert(suits, cd:getSuit())
+            end
+        end
+        return not table.contains(suits, to_select:getSuit())
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local vs_card = LuaJinfanCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaJinfan'
+    end
+}
+
+LuaJinfan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJinfan',
+    view_as_skill = LuaJinfanVS,
+    events = {sgs.EventPhaseStart, sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Discard then
+            local canInvoke
+            local suits = {}
+            for _, cd in sgs.qlist(player:getPile('&luajinfanpile')) do
+                if not table.contains(suits, sgs.Sanguosha:getCard(cd):getSuit()) then
+                    table.insert(suits, sgs.Sanguosha:getCard(cd):getSuit())
+                end
+            end
+            for _, cd in sgs.qlist(player:getHandcards()) do
+                if not table.contains(suits, cd:getSuit()) then
+                    canInvoke = true
+                    break
+                end
+            end
+            if canInvoke then
+                room:askForUseCard(player, '@@LuaJinfan', '@LuaJinfan')
+            end
+        else
+            local move = data:toMoveOneTime()
+            if
+                move.from and move.from:objectName() == player:objectName() and
+                    move.from_places:contains(sgs.Player_PlaceSpecial)
+             then
+                for index, card_id in sgs.qlist(move.card_ids) do
+                    -- from_pile_names 为 Table，故 index 需要加一
+                    if move.from_pile_names[index + 1] == '&luajinfanpile' then
+                        local curr_card = sgs.Sanguosha:getCard(card_id)
+                        local togain =
+                            rinsanFuncModule.obtainSpecifiedCard(
+                            room,
+                            function(check)
+                                return check:getSuit() == curr_card:getSuit()
+                            end
+                        )
+                        if togain then
+                            player:obtainCard(togain, false)
+                        end
+                    end
+                end
+            end
+        end
+    end
+}
+
+LuaSheque =
+    sgs.CreateTriggerSkill {
+    name = 'LuaSheque',
+    events = {sgs.EventPhaseStart, sgs.PreCardUsed},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Start then
+                if player:hasEquip() then
+                    for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                            room:setPlayerFlag(sp, 'LuaSheque')
+                            room:askForUseSlashTo(sp, player, '@LuaSheque:' .. player:objectName(), false)
+                            room:setPlayerFlag(sp, '-LuaSheque')
+                    end
+                end
+            end
+        else
+            local use = data:toCardUse()
+            if use.from and use.from:hasFlag(self:objectName()) and use.card:isKindOf('Slash') then
+                for _, p in sgs.qlist(use.to) do
+                    p:addQinggangTag(use.card)
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+ExStarGanning:addSkill(LuaJinfan)
+ExStarGanning:addSkill(LuaSheque)
