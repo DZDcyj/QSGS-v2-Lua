@@ -5118,9 +5118,11 @@ LuaSheque =
             if player:getPhase() == sgs.Player_Start then
                 if player:hasEquip() then
                     for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                        if sp:objectName() ~= player:objectName() then
                             room:setPlayerFlag(sp, 'LuaSheque')
                             room:askForUseSlashTo(sp, player, '@LuaSheque:' .. player:objectName(), false)
                             room:setPlayerFlag(sp, '-LuaSheque')
+                        end
                     end
                 end
             end
