@@ -397,21 +397,15 @@ function obtainTargetedTypeCard(room, params)
         existedNames = {}
     end
     local findDiscardPile = params['findDiscardPile']
-    for _, id in sgs.qlist(room:getDrawPile()) do
-        local card = sgs.Sanguosha:getCard(id)
-        if card:isKindOf(type) and not table.contains(existedNames, card:objectName()) then
-            return card
-        end
+    local card
+    local checker = function(_card)
+        return _card:isKindOf(type) and not table.contains(existedNames, _card:objectName())
     end
-    if findDiscardPile then
-        for _, id in sgs.qlist(room:getDiscardPile()) do
-            local card = sgs.Sanguosha:getCard(id)
-            if card:isKindOf(type) and not table.contains(existedNames, card:objectName()) then
-                return card
-            end
-        end
+    card = obtainCardFromPile(checker, room:getDrawPile())
+    if not card and findDiscardPile then
+        card = obtainCardFromPile(checker, room:getDiscardPile())
     end
-    return nil
+    return card
 end
 
 -- 从卡牌 id 列表获得卡牌列表
@@ -469,18 +463,20 @@ end
 -- cardChecker 卡牌判断函数
 -- findDiscardPile 是否在弃牌堆寻找
 function obtainSpecifiedCard(room, cardChecker, findDiscardPile)
-    for _, id in sgs.qlist(room:getDrawPile()) do
-        local card = sgs.Sanguosha:getCard(id)
-        if cardChecker(card) then
-            return card
-        end
+    local card
+    card = obtainCardFromPile(cardChecker, room:getDrawPile())
+    if not card and findDiscardPile then
+        card = obtainCardFromPile(cardChecker, room:getDiscardPile())
     end
-    if findDiscardPile then
-        for _, id in sgs.qlist(room:getDiscardPile()) do
-            local card = sgs.Sanguosha:getCard(id)
-            if cardChecker(card) then
-                return card
-            end
+    return card
+end
+
+-- 从指定牌堆中获取对应卡牌
+function obtainCardFromPile(checker, pile)
+    for _, id in sgs.qlist(pile) do
+        local card = sgs.Sanguosha:getCard(id)
+        if checker(card) then
+            return card
         end
     end
     return nil

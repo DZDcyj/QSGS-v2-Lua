@@ -4963,7 +4963,7 @@ LuaZhengnan =
                 player:drawCards(1)
                 local gainableSkills =
                     rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
-                -- gianableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程
+                -- gainnableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程
                 if #gainableSkills == 0 then
                     player:drawCards(3)
                 else
@@ -5023,7 +5023,7 @@ LuaJinfanCard =
 LuaJinfanVS =
     sgs.CreateViewAsSkill {
     name = 'LuaJinfan',
-    n = 999,
+    n = 4,
     view_filter = function(self, selected, to_select)
         if to_select:isEquipped() then
             return false
@@ -5118,11 +5118,9 @@ LuaSheque =
             if player:getPhase() == sgs.Player_Start then
                 if player:hasEquip() then
                     for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-                        if sp:inMyAttackRange(player) then
                             room:setPlayerFlag(sp, 'LuaSheque')
-                            room:askForUseSlashTo(sp, player, '@LuaSheque:' .. player:objectName())
+                            room:askForUseSlashTo(sp, player, '@LuaSheque:' .. player:objectName(), false)
                             room:setPlayerFlag(sp, '-LuaSheque')
-                        end
                     end
                 end
             end
