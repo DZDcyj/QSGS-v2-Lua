@@ -465,4 +465,25 @@ function getGainableSkillTable(player, skills)
     return gainableSkillTable
 end
 
+-- 从牌堆获取特定的牌
+-- cardChecker 卡牌判断函数
+-- findDiscardPile 是否在弃牌堆寻找
+function obtainSpecifiedCard(room, cardChecker, findDiscardPile)
+    for _, id in sgs.qlist(room:getDrawPile()) do
+        local card = sgs.Sanguosha:getCard(id)
+        if cardChecker(card) then
+            return card
+        end
+    end
+    if findDiscardPile then
+        for _, id in sgs.qlist(room:getDiscardPile()) do
+            local card = sgs.Sanguosha:getCard(id)
+            if cardChecker(card) then
+                return card
+            end
+        end
+    end
+    return nil
+end
+
 -- luacheck: pop
