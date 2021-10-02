@@ -22,6 +22,7 @@ Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true, true)
 Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true, true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
+SPYeniao = sgs.General(extension, 'SPYeniao', 'shu', '4', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -2028,3 +2029,4 @@ Yeniao:addSkill(LuaFumo)
 SkillAnjiang:addSkill(LuaFumoTargetMod)
 Linxi:addSkill(LuaTaose)
 Linxi:addSkill('hongyan')
+SPYeniao:addSkill('LuaSheque')
