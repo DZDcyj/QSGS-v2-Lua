@@ -137,10 +137,14 @@ LuaBaipiao =
              then
                 if (move.to_place == sgs.Player_DiscardPile) then
                     if
-                        not ((bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
-                            sgs.CardMoveReason_S_REASON_USE) or
-                            (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
-                                sgs.CardMoveReason_S_REASON_RESPONSE) or
+                        not ((rinsanFuncModule.moveBasicReasonCompare(
+                            move.reason.m_reason,
+                            sgs.CardMoveReason_S_REASON_USE
+                        )) or
+                            (rinsanFuncModule.moveBasicReasonCompare(
+                                move.reason.m_reason,
+                                sgs.CardMoveReason_S_REASON_RESPONSE
+                            )) or
                             move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP)
                      then
                         local targets = sgs.SPlayerList()
@@ -1460,8 +1464,7 @@ LuaChutou =
                     room:getCardOwner(id):objectName() == player:objectName() and
                         (room:getCardPlace(id) == sgs.Player_PlaceHand) and
                         move.reason and
-                        (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
-                            sgs.CardMoveReason_S_REASON_DRAW)
+                        rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DRAW)
                  then
                     room:addPlayerMark(player, self:objectName() .. 'engine')
                     if player:getMark(self:objectName() .. 'engine') > 0 then
@@ -1494,8 +1497,7 @@ LuaChutou =
          then
             if
                 move.reason and
-                    (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
-                        sgs.CardMoveReason_S_REASON_DISCARD) and
+                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) and
                     player:getMark(self:objectName()) == 0 and
                     player:hasSkill(self:objectName())
              then

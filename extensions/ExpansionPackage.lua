@@ -2225,8 +2225,7 @@ LuaXuanfeng =
             end
             if
                 (move.to_place == sgs.Player_DiscardPile) and (player:getPhase() == sgs.Player_Discard) and
-                    (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
-                        sgs.CardMoveReason_S_REASON_DISCARD)
+                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD)
              then
                 player:setMark('LuaXuanfeng', player:getMark('LuaXuanfeng') + move.card_ids:length())
             end
@@ -5157,9 +5156,8 @@ LuaLuoying =
         end
         if
             (move.to_place == sgs.Player_DiscardPile) and
-                ((bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) ==
-                    sgs.CardMoveReason_S_REASON_DISCARD) or
-                    (move.reason.m_reason == sgs.CardMoveReason_S_REASON_JUDGEDONE))
+            rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) or
+                    (move.reason.m_reason == sgs.CardMoveReason_S_REASON_JUDGEDONE)
          then
             local card_ids = sgs.IntList()
             for index, card_id in sgs.qlist(move.card_ids) do
@@ -5247,22 +5245,14 @@ LuaJiushi =
             room:removeTag('PredamagedFace')
             if not (faceup or player:faceUp()) then
                 if player:askForSkillInvoke(self:objectName(), data) then
+                    room:setPlayerFlag(player, 'LuaJiushiTurnOver')
                     player:turnOver()
+                    room:setPlayerFlag(player, '-LuaJiushiTurnOver')
                     room:broadcastSkillInvoke(self:objectName())
-                    if player:getMark('LuaChengzhang') == 0 then
-                        local togain =
-                            rinsanFuncModule.obtainTargetedTypeCard(
-                            room,
-                            {['type'] = 'TrickCard', ['findDiscardPile'] = true}
-                        )
-                        if togain then
-                            player:obtainCard(togain, false)
-                        end
-                    end
                 end
             end
         elseif event == sgs.TurnedOver then
-            if player:getMark('LuaChengzhang') > 0 then
+            if player:getMark('LuaChengzhang') > 0 or player:hasFlag('LuaJiushiTurnOver') then
                 local togain =
                     rinsanFuncModule.obtainTargetedTypeCard(room, {['type'] = 'TrickCard', ['findDiscardPile'] = true})
                 if togain then
