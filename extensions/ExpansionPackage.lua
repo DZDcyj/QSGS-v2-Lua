@@ -5152,8 +5152,8 @@ LuaLuoying =
         end
         if
             (move.to_place == sgs.Player_DiscardPile) and
-            rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) or
-                    (move.reason.m_reason == sgs.CardMoveReason_S_REASON_JUDGEDONE)
+                rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) or
+                (move.reason.m_reason == sgs.CardMoveReason_S_REASON_JUDGEDONE)
          then
             local card_ids = sgs.IntList()
             for index, card_id in sgs.qlist(move.card_ids) do
