@@ -54,8 +54,7 @@ LuaQianchong =
     name = 'LuaQianchong',
     events = {sgs.CardsMoveOneTime, sgs.EventPhaseStart},
     frequency = sgs.Skill_Compulsory,
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Play then
                 room:setPlayerMark(player, 'LuaQianchongCard', 0)
@@ -163,8 +162,7 @@ LuaShangjian =
     name = 'LuaShangjian',
     frequency = sgs.Skill_Compulsory,
     events = {sgs.EventPhaseStart, sgs.CardsMoveOneTime},
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
             if player:hasSkill(self:objectName()) then
@@ -333,8 +331,7 @@ LuaShajue =
     name = 'LuaShajue',
     events = {sgs.EnterDying},
     frequency = sgs.Skill_Compulsory,
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         local dying = data:toDying()
         if dying.who:getHp() < 0 then
             local splayer = room:findPlayerBySkillName(self:objectName())
@@ -2215,7 +2212,7 @@ LuaXuanfeng =
     name = 'LuaXuanfeng',
     events = {sgs.CardsMoveOneTime, sgs.EventPhaseStart},
     view_as_skill = LuaXuanfengVS,
-    on_trigger = function(self, event, player, data)
+    on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
             player:setMark('LuaXuanfeng', 0)
         elseif event == sgs.CardsMoveOneTime then
@@ -2233,7 +2230,6 @@ LuaXuanfeng =
                 ((player:getMark('LuaXuanfeng') >= 2) and (not player:hasFlag('LuaXuanfengUsed'))) or
                     move.from_places:contains(sgs.Player_PlaceEquip)
              then
-                local room = player:getRoom()
                 local targets = sgs.SPlayerList()
                 for _, target in sgs.qlist(room:getOtherPlayers(player)) do
                     if player:canDiscard(target, 'he') then

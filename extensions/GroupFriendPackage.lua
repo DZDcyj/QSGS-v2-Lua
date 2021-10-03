@@ -455,8 +455,7 @@ LuaWanneng =
     events = {sgs.TurnStart},
     view_as_skill = LuaWannengVS,
     global = true,
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             if p:hasSkill('LuaWanneng') then
                 room:setPlayerMark(p, 'LuaWanneng', 0)
@@ -504,8 +503,7 @@ LuaMasochism =
     name = 'LuaMasochism',
     frequency = sgs.Skill_Compulsory,
     events = {sgs.CardEffected},
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
         local card = effect.card
         local hp = player:getHp()
@@ -628,7 +626,7 @@ LuaSoutuCard =
             room:setPlayerFlag(Rinsan, 'LuaSoutuInvoked')
             room:notifySkillInvoked(Rinsan, 'LuaSoutu')
             Rinsan:obtainCard(self)
-            doSoutu(sgs.Sanguosha:getCard(self:getSubcards():first()), source, Rinsan, Rinsan:getRoom(), self)
+            doSoutu(sgs.Sanguosha:getCard(self:getSubcards():first()), source, Rinsan, room, self)
             local Rinsans = room:getLieges('shu', Rinsan)
             if Rinsans:isEmpty() then
                 room:setPlayerFlag(source, 'ForbidSoutu')
@@ -662,8 +660,7 @@ LuaSoutu =
         sgs.EventAcquireSkill,
         sgs.EventLoseSkill
     },
-    on_trigger = function(self, triggerEvent, player, data)
-        local room = player:getRoom()
+    on_trigger = function(self, triggerEvent, player, data, room)
         local rinsans = room:findPlayersBySkillName(self:objectName())
         if
             (triggerEvent == sgs.TurnStart) or (triggerEvent == sgs.GameStart) or
