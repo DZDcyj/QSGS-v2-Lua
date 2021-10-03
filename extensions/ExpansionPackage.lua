@@ -5149,7 +5149,7 @@ LuaLuoying =
     sgs.CreateTriggerSkill {
     name = 'LuaLuoying',
     frequency = sgs.Skill_Frequent,
-    events = {sgs.CardsMoveOneTime},
+    events = {sgs.BeforeCardsMove},
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
         if move.from == nil or move.from:objectName() == player:objectName() then
@@ -5162,21 +5162,19 @@ LuaLuoying =
                     (move.reason.m_reason == sgs.CardMoveReason_S_REASON_JUDGEDONE))
          then
             local card_ids = sgs.IntList()
-            local i = 0
-            for _, card_id in sgs.qlist(move.card_ids) do
+            for index, card_id in sgs.qlist(move.card_ids) do
                 if
                     (sgs.Sanguosha:getCard(card_id):getSuit() == sgs.Card_Club) and
                         (((move.reason.m_reason == sgs.CardMoveReason_S_REASON_JUDGEDONE) and
-                            (move.from_places:at(i) == sgs.Player_PlaceJudge) and
+                            (move.from_places:at(index) == sgs.Player_PlaceJudge) and
                             (move.to_place == sgs.Player_DiscardPile)) or
                             ((move.reason.m_reason ~= sgs.CardMoveReason_S_REASON_JUDGEDONE) and
                                 (room:getCardOwner(card_id):objectName() == move.from:objectName()) and
-                                ((move.from_places:at(i) == sgs.Player_PlaceHand) or
-                                    (move.from_places:at(i) == sgs.Player_PlaceEquip))))
+                                ((move.from_places:at(index) == sgs.Player_PlaceHand) or
+                                    (move.from_places:at(index) == sgs.Player_PlaceEquip))))
                  then
                     card_ids:append(card_id)
                 end
-                i = i + 1
             end
             if card_ids:isEmpty() then
                 return false
@@ -5193,16 +5191,20 @@ LuaLuoying =
                     room:clearAG(player)
                 end
                 if not card_ids:isEmpty() then
+                    local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                     for _, id in sgs.qlist(card_ids) do
                         if move.card_ids:contains(id) then
                             move.from_places:removeAt(listIndexOf(move.card_ids, id))
                             move.card_ids:removeOne(id)
+                            dummy:addSubcard(id)
                             data:setValue(move)
                         end
-                        room:moveCardTo(sgs.Sanguosha:getCard(id), player, sgs.Player_PlaceHand, move.reason, true)
                         if not player:isAlive() then
-                            break
+                            return false
                         end
+                    end
+                    if player:isAlive() then
+                        room:moveCardTo(dummy, player, sgs.Player_PlaceHand, move.reason, true)
                     end
                 end
             end
@@ -5272,6 +5274,8 @@ LuaJiushi =
             local mark = data:toMark()
             if mark.name == 'LuaChengzhang' and mark.who:hasSkill(self:objectName()) then
                 ChangeSkill(self, room, player)
+                -- ChangeSkill 会加上一个显示标记②，在这里删掉
+                room:setPlayerMark(player, '@ChangeSkill2', 0)
             end
         end
         return false
@@ -5288,11 +5292,12 @@ LuaChengzhang =
             room:addPlayerMark(player, '@' .. self:objectName() .. 'damage', data:toDamage().damage)
         else
             if player:getPhase() == sgs.Player_Start and player:getMark('@' .. self:objectName() .. 'damage') >= 7 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
                 if room:changeMaxHpForAwakenSkill(player, 0) then
                     room:recover(player, sgs.RecoverStruct())
+                    room:setPlayerMark(player, '@' .. self:objectName() .. 'damage', 0)
                     player:drawCards(1)
                     room:addPlayerMark(player, self:objectName())
-                -- TODO: 修正酒诗
                 end
             end
         end
