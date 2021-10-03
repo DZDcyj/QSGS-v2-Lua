@@ -144,4 +144,10 @@ return {
     ['$LuaZhengnan'] = '先父大任，不敢忘怀！',
     ['$LuaZhiman'] = '大汉仁义，且放尔等一条生路！',
     ['~ExTenYearGuansuo'] = '花开堪折直须折，莫待无花空折枝……',
+    -- 界曹植
+    ['$LuaLuoying1'] = '落英何处去，随我诉衷肠',
+    ['$LuaLuoying2'] = '梅花尽落人尽散',
+    ['$LuaJiushi1'] = '疑有暗香来，几度梅花开',
+    ['$LuaJiushi2'] = '借君一壶酒，七步已成诗',
+    ['~JieCaozhi'] = '一醉不醒亦无恨……'
 }

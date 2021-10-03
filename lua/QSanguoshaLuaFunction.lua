@@ -482,4 +482,9 @@ function obtainCardFromPile(checker, pile)
     return nil
 end
 
+-- 判断卡牌移动时 reason 的基本类型是否匹配
+function moveBasicReasonCompare(source, dest)
+    return bit32.band(source, sgs.CardMoveReason_S_MASK_BASIC_REASON) == dest
+end
+
 -- luacheck: pop
