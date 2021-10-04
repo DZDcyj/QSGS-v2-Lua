@@ -155,5 +155,5 @@ return {
     ['$LuaDingpin2'] = '德以定阶，才乃论品',
     ['$LuaFaen1'] = '法为国制，恩典万民',
     ['$LuaFaen2'] = '恩威并重，方可治国',
-    ['~JieChenqun'] = '功成名就，勿念',
+    ['~JieChenqun'] = '功成名就，勿念'
 }
