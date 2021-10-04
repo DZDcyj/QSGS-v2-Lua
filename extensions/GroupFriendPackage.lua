@@ -1081,7 +1081,7 @@ LuaYinyu =
                         data2:setValue(player)
                         if room:askForSkillInvoke(p, self:objectName(), data2) then
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, p:objectName(), player:objectName())
-                            player:drawCards(1)
+                            player:drawCards(1, self:objectName())
                         end
                     end
                 end
@@ -1115,7 +1115,7 @@ LuaQingyu =
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     local choice = room:askForChoice(player, self:objectName(), choices)
                     if choice == 'draw1' then
-                        player:drawCards(1)
+                        player:drawCards(1, self:objectName())
                     else
                         break
                     end
@@ -1273,7 +1273,7 @@ LuaZhazhi =
                             else
                                 player:setFlags('-LuaZhazhiTarget')
                                 if not sp:hasFlag('LuaZhazhiDefenseFailed') then
-                                    sp:drawCards(1)
+                                    sp:drawCards(1, self:objectName())
                                     room:recover(sp, sgs.RecoverStruct(sp, nil, 1))
                                     sp:setFlags('-LuaZhazhiDefenseFailed')
                                 end
@@ -1499,7 +1499,7 @@ LuaChutou =
                     player:hasSkill(self:objectName())
              then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                player:drawCards(1)
+                player:drawCards(1, self:objectName())
             end
         end
         return false
@@ -1538,7 +1538,7 @@ LuaYingshi =
                 -- 加一点体力上限，摸三张牌
                 room:setPlayerProperty(killer, 'maxhp', sgs.QVariant(killer:getMaxHp() + 1))
                 rinsanFuncModule.sendLogMessage(room, '#addmaxhp', {['from'] = killer, ['arg'] = 1})
-                killer:drawCards(3)
+                killer:drawCards(3, self:objectName())
             else
                 -- 选一个觉醒技外技能并失去一点体力上限
                 room:loseMaxHp(killer)
@@ -1746,7 +1746,7 @@ LuaJixie =
         if damage.nature == sgs.DamageStruct_Thunder then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             damage.damage = damage.damage - 1
-            player:drawCards(1)
+            player:drawCards(1, self:objectName())
             if damage.damage == 0 then
                 return true
             end
