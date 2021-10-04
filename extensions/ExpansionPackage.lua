@@ -48,6 +48,7 @@ ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
 ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, true)
 ExStarGanning = sgs.General(extension, 'ExStarGanning', 'qun', '4', true, true)
 JieCaozhi = sgs.General(extension, 'JieCaozhi', 'wei', '3', true, true)
+JieChenqun = sgs.General(extension, 'JieChenqun', 'wei', '3', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -5296,3 +5297,92 @@ LuaChengzhang =
 JieCaozhi:addSkill(LuaLuoying)
 JieCaozhi:addSkill(LuaJiushi)
 JieCaozhi:addSkill(LuaChengzhang)
+
+LuaDingpinCard = sgs.CreateSkillCard{
+    name = 'LuaDingpinCard',
+    filter = function(self, selected, to_select)
+        return #selected == 0 and not to_select:hasFlag('LuaDingpinSucceed')
+    end,
+    on_use = function(self, room, source, targets)
+        local subcard = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local target = targets[1]
+        room:broadcastSkillInvoke('LuaDingpin')
+        local judge = sgs.JudgeStruct()
+        judge.pattern = '.'
+        judge.play_animation = true
+        judge.reason = 'LuaDingpin'
+        judge.who = target
+        room:judge(judge)
+        if judge.card:isBlack() then
+            target:drawCards(math.min(3, target:getHp()), 'LuaDingpin')
+            room:setPlayerFlag(target, 'LuaDingpinSucceed')
+        elseif judge.card:getSuit() == sgs.Card_Diamond then
+            source:turnOver()
+        end
+        if judge.card:getSuit() ~= sgs.Card_Heart then
+            room:setPlayerFlag(source, 'LuaDingpinCard'..subcard:getType())
+        end
+    end
+}
+
+LuaDingpin = sgs.CreateOneCardViewAsSkill{
+    name = 'LuaDingpin',
+    view_filter = function(self, to_select)
+        return not sgs.Self:hasFlag('LuaDingpinCard'..to_select:getType())
+    end,
+    view_as = function(self, card)
+        local vs_card = LuaDingpinCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        -- 判断有无可发动定品的目标
+        local targetAvailable = player:hasFlag('LuaDingpinSucceed')
+        for _, sib in sgs.qlist(player:getSiblings()) do
+            if targetAvailable then
+                break
+            end
+            if not sib:hasFlag('LuaDingpinSucceed') then
+                targetAvailable = true
+            end
+        end
+        -- 判断有无可定品的卡牌
+        for _, cd in sgs.qlist(player:getHandcards()) do
+            if not player:hasFlag('LuaDingpinCard'..cd:getType()) then
+                return true
+            end
+        end
+        for _, cd in sgs.qlist(player:getEquips()) do
+            if not player:hasFlag('LuaDingpinCard'..cd:getType()) then
+                return true
+            end
+        end
+        return false
+    end
+}
+
+LuaFaen =
+    sgs.CreateTriggerSkill {
+    name = 'LuaFaen',
+    events = {sgs.TurnedOver, sgs.ChainStateChanged},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.ChainStateChanged and not player:isChained() then
+            return false
+        end
+        local data2 = sgs.QVariant()
+        data2:setValue(player)
+        for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if room:askForSkillInvoke(sp, self:objectName(), data2) then
+                room:broadcastSkillInvoke(self:objectName())
+                room:doAnimate(1, player:objectName(), sp:objectName())
+                player:drawCards(1, self:objectName())
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+JieChenqun:addSkill(LuaDingpin)
+JieChenqun:addSkill(LuaFaen)

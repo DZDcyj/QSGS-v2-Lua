@@ -149,5 +149,11 @@ return {
     ['$LuaLuoying2'] = '梅花尽落人尽散',
     ['$LuaJiushi1'] = '疑有暗香来，几度梅花开',
     ['$LuaJiushi2'] = '借君一壶酒，七步已成诗',
-    ['~JieCaozhi'] = '一醉不醒亦无恨……'
+    ['~JieCaozhi'] = '一醉不醒亦无恨……',
+    -- 界陈群
+    ['$LuaDingpin1'] = '依才封级，以能定品',
+    ['$LuaDingpin2'] = '德以定阶，才乃论品',
+    ['$LuaFaen1'] = '法为国制，恩典万民',
+    ['$LuaFaen2'] = '恩威并重，方可治国',
+    ['~JieChenqun'] = '功成名就，勿念',
 }
