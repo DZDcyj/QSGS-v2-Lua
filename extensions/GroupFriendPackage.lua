@@ -605,7 +605,7 @@ function doSoutu(card, soutuer, rinsan, room, self)
         nil
     )
     if to_goback then
-        room:doAnimate(1, rinsan:objectName(), soutuer:objectName())
+        room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, rinsan:objectName(), soutuer:objectName())
         room:moveCardTo(to_goback, rinsan, soutuer, sgs.Player_PlaceHand, reason, true)
     end
 end
@@ -769,7 +769,7 @@ LuaYangjing =
                 local x = damage.to:getMark('LuaYangjingDamageUp')
                 damage.damage = damage.damage + x
                 room:setPlayerMark(damage.to, 'LuaYangjingDamageUp', 0)
-                room:doAnimate(1, damage.from:objectName(), damage.to:objectName())
+                room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, damage.from:objectName(), damage.to:objectName())
                 local msg = sgs.LogMessage()
                 msg.type = '#LuaYangjingDamageUp'
                 msg.from = player
@@ -795,7 +795,7 @@ LuaYangjing =
             room:sendCompulsoryTriggerLog(player, self:objectName())
             for _, p in sgs.qlist(use.to) do
                 room:addPlayerMark(p, 'LuaYangjingDamageUp', x)
-                room:doAnimate(1, player:objectName(), p:objectName())
+                room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), p:objectName())
             end
         end
     end
@@ -853,7 +853,7 @@ LuaNosJuesha =
         local data2 = sgs.QVariant()
         data2:setValue(dying.who)
         if player:getMark(self:objectName()) == 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
-            room:doAnimate(1, player:objectName(), dying.who:objectName())
+            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), dying.who:objectName())
             room:addPlayerMark(player, self:objectName())
             room:loseHp(dying.who)
             room:removePlayerMark(player, self:objectName())
@@ -877,7 +877,7 @@ LuaJuesha =
             local data2 = sgs.QVariant()
             data2:setValue(dying.who)
             if player:hasSkill(self:objectName()) and room:askForSkillInvoke(player, self:objectName(), data2) then
-                room:doAnimate(1, player:objectName(), dying.who:objectName())
+                room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), dying.who:objectName())
                 room:addPlayerMark(dying.who, self:objectName() .. player:objectName())
             end
         elseif event == sgs.CardUsed then
@@ -1015,7 +1015,7 @@ LuaPaoZhuan =
                     local data2 = sgs.QVariant()
                     data2:setValue(target)
                     if room:askForSkillInvoke(player, self:objectName(), data2) then
-                        room:doAnimate(1, player:objectName(), target:objectName())
+                        room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), target:objectName())
                         room:damage(sgs.DamageStruct(self:objectName(), player, target))
                     end
                 end
@@ -1062,7 +1062,7 @@ LuaYinyu =
                                 self:objectName(),
                                 nil
                             )
-                            room:doAnimate(1, p:objectName(), player:objectName())
+                            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, p:objectName(), player:objectName())
                             room:moveCardTo(card, p, player, sgs.Player_PlaceHand, reason, false)
                             room:addPlayerMark(player, self:objectName() .. p:objectName(), card:getTypeId())
                         end
@@ -1080,7 +1080,7 @@ LuaYinyu =
                         local data2 = sgs.QVariant()
                         data2:setValue(player)
                         if room:askForSkillInvoke(p, self:objectName(), data2) then
-                            room:doAnimate(1, p:objectName(), player:objectName())
+                            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, p:objectName(), player:objectName())
                             player:drawCards(1)
                         end
                     end
@@ -1173,7 +1173,7 @@ LuaJiaoxie =
                     data2:setValue(damage.from)
                     if room:askForSkillInvoke(player, self:objectName(), data2) then
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        room:doAnimate(1, player:objectName(), damage.from:objectName())
+                        room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.from:objectName())
                         if damage.from:hasEquip() then
                             for _, cd in sgs.qlist(damage.from:getEquips()) do
                                 dummy:addSubcard(cd)
@@ -1262,7 +1262,7 @@ LuaZhazhi =
                         local data2 = sgs.QVariant()
                         data2:setValue(player)
                         if room:askForSkillInvoke(sp, self:objectName(), data2) then
-                            room:doAnimate(1, sp:objectName(), player:objectName())
+                            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), player:objectName())
                             player:setFlags('LuaZhazhiTarget')
                             local slash =
                                 room:askForUseSlashTo(player, sp, '@LuaZhazhi-slash:' .. sp:objectName(), false, true)
