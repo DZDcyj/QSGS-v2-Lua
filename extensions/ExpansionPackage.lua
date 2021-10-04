@@ -186,7 +186,7 @@ LuaShangjian =
                         if x > 0 then
                             if x <= p:getHp() then
                                 room:sendCompulsoryTriggerLog(p, self:objectName())
-                                p:drawCards(x)
+                                p:drawCards(x, self:objectName())
                             end
                             room:setPlayerMark(p, '@' .. self:objectName(), 0)
                         end
@@ -427,7 +427,7 @@ LuaLingren =
                                 room:handleAcquireDetachSkills(player, 'jianxiong|xingshang')
                                 room:addPlayerMark(player, 'LuaLingrenSkills')
                             end
-                            player:drawCards(2)
+                            player:drawCards(2, self:objectName())
                         end
                         room:setCardFlag(use.card, 'LuaLingrenAddDamage')
                     end
@@ -800,7 +800,7 @@ LuaShanjia =
         if event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Play then
                 if room:askForSkillInvoke(player, self:objectName(), data) then
-                    player:drawCards(3)
+                    player:drawCards(3, self:objectName())
                     room:askForUseCard(player, '@@LuaShanjia!', 'LuaShanjia_throw', -1, sgs.Card_MethodNone)
                 end
             end
@@ -859,9 +859,9 @@ LuaZhongzuo =
                             )
                             if target then
                                 room:broadcastSkillInvoke(self:objectName())
-                                target:drawCards(2)
+                                target:drawCards(2, self:objectName())
                                 if target:isWounded() then
-                                    p:drawCards(1)
+                                    p:drawCards(1, self:objectName())
                                 end
                             end
                             room:setPlayerMark(p, '@LuaZhongzuoDamage', 0)
@@ -1089,7 +1089,6 @@ LuaQianxi =
                 for _, sp in sgs.qlist(room:getAlivePlayers()) do
                     if sp:distanceTo(player) <= 1 and sp:hasSkill(self:objectName()) then
                         if room:askForSkillInvoke(sp, self:objectName()) then
-                            -- sp:drawCards(1)
                             local userData = sgs.QVariant()
                             userData:setValue(sp)
                             if room:askForSkillInvoke(room:getCurrent(), 'LuaQianxiDraw', userData) then
@@ -1099,7 +1098,7 @@ LuaQianxi =
                                     {['from'] = room:getCurrent(), ['to'] = sp}
                                 )
                                 room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, room:getCurrent():objectName(), sp:objectName())
-                                sp:drawCards(1)
+                                sp:drawCards(1, self:objectName())
                             else
                                 rinsanFuncModule.sendLogMessage(
                                     room,
@@ -1292,7 +1291,7 @@ LuaJingxie =
                                 room:removePlayerMark(player, card:objectName())
                                 if card:objectName() == 'silver_lion' then
                                     room:sendCompulsoryTriggerLog(player, self:objectName())
-                                    player:drawCards(2)
+                                    player:drawCards(2, self:objectName())
                                 end
                             end
                         end
@@ -1527,7 +1526,7 @@ LuaJiyuan =
                 math.randomseed(os.time())
                 room:broadcastSkillInvoke(self:objectName(), math.random(1, 2))
                 room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), dying.who:objectName())
-                dying.who:drawCards(1)
+                dying.who:drawCards(1, self:objectName())
             end
         elseif event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
@@ -1547,7 +1546,7 @@ LuaJiyuan =
                         if room:askForSkillInvoke(player, self:objectName(), data2) then
                             room:broadcastSkillInvoke(self:objectName())
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), target:objectName())
-                            target:drawCards(1)
+                            target:drawCards(1, self:objectName())
                         end
                     end
                 end
@@ -1670,7 +1669,7 @@ LuaShuliangCard =
         room:broadcastSkillInvoke('LuaShuliang')
         local current = room:getCurrent()
         room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, source:objectName(), current:objectName())
-        current:drawCards(2)
+        current:drawCards(2, 'LuaShuliang')
     end
 }
 
@@ -2566,7 +2565,7 @@ LuaRangjie =
                     player:obtainCard(card, false)
                 end
             end
-            player:drawCards(1)
+            player:drawCards(1, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
         end
         return false
@@ -2711,7 +2710,7 @@ LuaZhiyi =
                         table.insert(cardTypes, 'luazhiyidraw')
                         local choice = room:askForChoice(sp, self:objectName(), table.concat(cardTypes, '+'))
                         if choice == 'luazhiyidraw' then
-                            sp:drawCards(1)
+                            sp:drawCards(1, self:objectName())
                         elseif choice == 'peach' or choice == 'analeptic' then
                             local card = sgs.Sanguosha:cloneCard(choice, sgs.Card_NoSuit, 0)
                             card:setSkillName(self:objectName())
@@ -3003,7 +3002,7 @@ LuaJunxingCard =
             room:loseHp(target)
         else
             target:turnOver()
-            target:drawCards(len)
+            target:drawCards(len, 'LuaJunxing')
         end
     end
 }
@@ -3269,7 +3268,7 @@ LuaFenyin =
                         if player:getMark(self:objectName() .. card:getSuitString()) == 0 then
                             room:sendCompulsoryTriggerLog(player, self:objectName())
                             room:addPlayerMark(player, self:objectName() .. card:getSuitString())
-                            player:drawCards(1)
+                            player:drawCards(1, self:objectName())
                         end
                     end
                 end
@@ -3390,7 +3389,7 @@ LuaQiaiCard =
         end
         local choice = room:askForChoice(target, 'LuaQiai', choices)
         if choice == 'letdraw2' then
-            source:drawCards(2)
+            source:drawCards(2, 'LuaQiai')
         else
             local theRecover = sgs.RecoverStruct()
             theRecover.recover = 1
@@ -3530,7 +3529,7 @@ LuaChuhaiCard =
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
-        source:drawCards(1)
+        source:drawCards(1, 'LuaChuhai')
         if source:pindian(target, 'LuaChuhai', nil) then
             room:addPlayerMark(target, 'LuaChuhai')
             if target:isKongcheng() then
@@ -3695,13 +3694,13 @@ LuaYinghunCard =
             local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
             if choice == 'd1tx' then
                 room:broadcastSkillInvoke('LuaYinghun')
-                dest:drawCards(1)
+                dest:drawCards(1, 'LuaYinghun')
                 x = math.min(x, dest:getCardCount(true))
                 room:askForDiscard(dest, self:objectName(), x, x, false, true)
                 good = false
             elseif choice == 'dxt1' then
                 room:broadcastSkillInvoke('LuaYinghun')
-                dest:drawCards(x)
+                dest:drawCards(x, 'LuaYinghun')
                 room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
                 good = true
             end
@@ -3712,7 +3711,7 @@ LuaYinghunCard =
             end
         else
             room:broadcastSkillInvoke('LuaYinghun')
-            dest:drawCards(1)
+            dest:drawCards(1, 'LuaYinghun')
             room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
             room:setEmotion(dest, 'good')
         end
@@ -4057,7 +4056,7 @@ LuaMiewu =
             end
             if card and card:getSkillName() == self:objectName() and player:hasSkill(self:objectName()) then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                player:drawCards(1)
+                player:drawCards(1, self:objectName())
             end
         end
     end
@@ -4081,8 +4080,8 @@ LuaShamengCard =
         local sourse = effect.from
         local dest = effect.to
         local room = sourse:getRoom()
-        room:drawCards(sourse, 3)
-        room:drawCards(dest, 2)
+        room:drawCards(sourse, 3, 'LuaShameng')
+        room:drawCards(dest, 2, 'LuaShameng')
     end
 }
 LuaShameng =
@@ -4329,7 +4328,7 @@ LuaXuezhaoCard =
                 sgs.Card_MethodNone
             )
             if card then
-                target:drawCards(1)
+                target:drawCards(1, 'LuaXuezhao')
                 room:addPlayerMark(source, 'LuaXuezhao-Slash')
                 source:obtainCard(card, false)
             else
@@ -4484,7 +4483,7 @@ LuaGusheCard =
                     '@LuaGusheDiscard:' .. source:objectName()
                 )
              then
-                source:drawCards(1)
+                source:drawCards(1, 'LuaGushe')
             end
         end
     end
@@ -4652,7 +4651,7 @@ LuaFanghun =
             end
             if card and card:getSkillName() == self:objectName() then
                 player:loseMark('@LuaFanghun')
-                player:drawCards(1)
+                player:drawCards(1, self:objectName())
             end
         end
     end
@@ -4672,7 +4671,7 @@ LuaFuhan =
                     room:broadcastSkillInvoke(self:objectName())
                     player:loseAllMarks('@LuaFanghun')
                     player:loseMark('@LuaFuhan')
-                    player:drawCards(x)
+                    player:drawCards(x, self:objectName())
                     local shu_generals =
                         rinsanFuncModule.getFuhanShuGenerals(room, math.max(4, room:alivePlayerCount()))
                     local index = 0
@@ -4790,7 +4789,7 @@ LuaZili =
              then
                 room:recover(player, sgs.RecoverStruct(player))
             else
-                room:drawCards(player, 2)
+                room:drawCards(player, 2, self:objectName())
             end
             room:addPlayerMark(player, self:objectName())
             room:acquireSkill(player, 'LuaPaiyi')
@@ -4870,7 +4869,7 @@ LuaZhiyanDrawCard =
     end,
     on_use = function(self, room, source, targets)
         local x = source:getMaxHp() - source:getHandcardNum()
-        source:drawCards(x)
+        source:drawCards(x, 'LuaZhiyan')
     end
 }
 
@@ -4960,12 +4959,12 @@ LuaZhengnan =
                 if player:isWounded() then
                     room:recover(player, sgs.RecoverStruct())
                 end
-                player:drawCards(1)
+                player:drawCards(1, self:objectName())
                 local gainableSkills =
                     rinsanFuncModule.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
                 -- gainnableSkills 代表可以获得的剩余技能，若为0，则代表已经获取了三个技能，走摸牌流程
                 if #gainableSkills == 0 then
-                    player:drawCards(3)
+                    player:drawCards(3, self:objectName())
                 else
                     local choice = room:askForChoice(player, self:objectName(), table.concat(gainableSkills, '+'))
                     room:acquireSkill(player, choice)
@@ -5286,7 +5285,7 @@ LuaChengzhang =
                 if room:changeMaxHpForAwakenSkill(player, 0) then
                     room:recover(player, sgs.RecoverStruct())
                     room:setPlayerMark(player, '@' .. self:objectName() .. 'damage', 0)
-                    player:drawCards(1)
+                    player:drawCards(1, self:objectName())
                     room:addPlayerMark(player, self:objectName())
                 end
             end
