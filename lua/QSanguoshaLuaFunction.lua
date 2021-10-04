@@ -487,4 +487,47 @@ function moveBasicReasonCompare(source, dest)
     return bit32.band(source, sgs.CardMoveReason_S_MASK_BASIC_REASON) == dest
 end
 
+-- 创建 JudgeStruct
+-- params 参数 Table
+function createJudgeStruct(params)
+    local judge = sgs.JudgeStruct()
+
+    judge.who = params['who']
+
+    if params['good'] ~= nil then
+        judge.good = params['good']
+    else
+        judge.good = true
+    end
+
+    if params['pattern'] then
+        judge.pattern = params['pattern']
+    else
+        judge.pattern = '.'
+    end
+
+    if params['reason'] then
+        judge.reason = params['reason']
+    else
+        judge.reason = ''
+    end
+
+    if params['play_animation'] ~= nil then
+        judge.play_animation = params['play_animation']
+    else
+        judge.play_animation = false
+    end
+
+    return judge
+end
+
+-- Animate 参数，用于 doAnimate 方法
+ANIMATE_NULL = 0 -- 空
+ANIMATE_INDICATE = 1 -- 指示线
+ANIMATE_LIGHTBOX = 2 -- 与 LightBox 有关
+ANIMATE_NULLIFICATION = 3 -- 无懈可击石狮子
+ANIMATE_HUASHEN = 4 -- 化身用，表现为一张武将牌从牌堆移动到武将上
+ANIMATE_FIRE = 5 -- 火焰效果
+ANIMATE_LIGHTING = 6 -- 闪电效果
+
 -- luacheck: pop
