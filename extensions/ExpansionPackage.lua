@@ -49,6 +49,7 @@ ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, 
 ExStarGanning = sgs.General(extension, 'ExStarGanning', 'qun', '4', true, true)
 JieCaozhi = sgs.General(extension, 'JieCaozhi', 'wei', '3', true, true)
 JieChenqun = sgs.General(extension, 'JieChenqun', 'wei', '3', true, true)
+JieXunyu = sgs.General(extension, 'JieXunyu', 'wei', '3', true, true)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -1097,7 +1098,11 @@ LuaQianxi =
                                     '#LuaQianxiDrawAccept',
                                     {['from'] = room:getCurrent(), ['to'] = sp}
                                 )
-                                room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, room:getCurrent():objectName(), sp:objectName())
+                                room:doAnimate(
+                                    rinsanFuncModule.ANIMATE_INDICATE,
+                                    room:getCurrent():objectName(),
+                                    sp:objectName()
+                                )
                                 sp:drawCards(1, self:objectName())
                             else
                                 rinsanFuncModule.sendLogMessage(
@@ -1147,7 +1152,11 @@ LuaQianxi =
                                             if player:getMark('@qianxi_black') > 0 and color == 'red' then
                                                 pattern = '.|' .. '.' .. '|.|hand'
                                             end
-                                            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), victim:objectName())
+                                            room:doAnimate(
+                                                rinsanFuncModule.ANIMATE_INDICATE,
+                                                sp:objectName(),
+                                                victim:objectName()
+                                            )
                                             room:broadcastSkillInvoke(self:objectName())
                                             room:addPlayerMark(victim, '@qianxi_' .. color)
                                             room:setPlayerCardLimitation(victim, 'use, response', pattern, false)
@@ -4566,7 +4575,11 @@ LuaJici =
                 if death.damage.from then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
-                    room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), death.damage.from:objectName())
+                    room:doAnimate(
+                        rinsanFuncModule.ANIMATE_INDICATE,
+                        player:objectName(),
+                        death.damage.from:objectName()
+                    )
                     local x = 7 - player:getMark('@LuaGushe')
                     x = math.min(death.damage.from:getCardCount(true), x)
                     if x > 0 then
@@ -5393,3 +5406,72 @@ LuaFaen =
 
 JieChenqun:addSkill(LuaDingpin)
 JieChenqun:addSkill(LuaFaen)
+
+LuaQuhuCard =
+    sgs.CreateSkillCard {
+    name = 'LuaQuhuCard',
+    filter = function(self, selected, to_select)
+        -- 使用 canPindian 进行判断
+        return #selected == 0 and to_select:getHp() > sgs.Self:getHp() and sgs.Self:canPindian(to_select, 'LuaQuhu')
+    end,
+    on_use = function(self, room, source, targets)
+        -- 驱虎吞狼，被驱的自然是 tiger
+        local tiger = targets[1]
+        room:broadcastSkillInvoke('LuaQuhu')
+        if source:pindian(tiger, 'LuaQuhu', nil) then
+            -- 要被吞的狼
+            local wolves = sgs.SPlayerList()
+            for _, p in sgs.qlist(room:getOtherPlayers(tiger)) do
+                if tiger:inMyAttackRange(p) then
+                    wolves:append(p)
+                end
+            end
+            -- 如果没有被吞的狼，结束结算
+            if wolves:isEmpty() then
+                return
+            end
+            local wolf = room:askForPlayerChosen(source, wolves, 'LuaQuhu', '@quhu-damage:' .. tiger:objectName())
+            rinsanFuncModule.doDamage(room, tiger, wolf, 1)
+        else
+            rinsanFuncModule.doDamage(room, tiger, source, 1)
+        end
+    end
+}
+
+LuaQuhu =
+    sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaQuhu',
+    view_as = function(self)
+        return LuaQuhuCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaQuhuCard') and not player:isKongcheng()
+    end
+}
+
+LuaJieming =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJieming',
+    events = {sgs.Damaged},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        local i = 0
+        while i < damage.damage do
+            i = i + 1
+            local target =
+                room:askForPlayerChosen(player, room:getAlivePlayers(), self:objectName(), 'jieming-invoke', true, true)
+            if target then
+                room:broadcastSkillInvoke(self:objectName())
+                target:drawCards(2, self:objectName())
+                if target:getHandcardNum() < target:getMaxHp() then
+                    player:drawCards(1, self:objectName())
+                end
+            else
+                break
+            end
+        end
+    end
+}
+
+JieXunyu:addSkill(LuaQuhu)
+JieXunyu:addSkill(LuaJieming)
