@@ -87,6 +87,10 @@ sgs.ai_skill_discard['LuaShanxi'] = function(self, discard_num, min_num, optiona
 end
 
 sgs.ai_skill_discard['LuaJunxing'] = function(self, discard_num, min_num, optional, include_equip)
+    -- 如果当前背面朝上，则不弃牌
+    if not self.player:faceUp() then
+        return {}
+    end
     -- 如果要弃置的牌大于总牌数，则不弃牌
     if discard_num > self.player:getCardCount(true) then
         return {}
