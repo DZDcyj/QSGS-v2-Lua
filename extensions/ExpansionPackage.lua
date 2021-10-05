@@ -2594,7 +2594,7 @@ LuaYizhengCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         room:broadcastSkillInvoke('LuaYizheng')
-        if source:pindian(target, 'LuaYizheng', nil) then
+        if source:pindian(target, 'LuaYizheng') then
             room:addPlayerMark(target, 'LuaYizhengSkipDrawPhase')
         else
             room:loseMaxHp(source)
@@ -3539,7 +3539,7 @@ LuaChuhaiCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         source:drawCards(1, 'LuaChuhai')
-        if source:pindian(target, 'LuaChuhai', nil) then
+        if source:pindian(target, 'LuaChuhai') then
             room:addPlayerMark(target, 'LuaChuhai')
             if target:isKongcheng() then
                 return
@@ -5418,7 +5418,7 @@ LuaQuhuCard =
         -- 驱虎吞狼，被驱的自然是 tiger
         local tiger = targets[1]
         room:broadcastSkillInvoke('LuaQuhu')
-        if source:pindian(tiger, 'LuaQuhu', nil) then
+        if source:pindian(tiger, 'LuaQuhu') then
             -- 要被吞的狼
             local wolves = sgs.SPlayerList()
             for _, p in sgs.qlist(room:getOtherPlayers(tiger)) do
