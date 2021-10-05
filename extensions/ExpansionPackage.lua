@@ -2586,7 +2586,7 @@ LuaYizhengCard =
     name = 'LuaYizhengCard',
     filter = function(self, selected, to_select)
         if #selected < 1 then
-            return to_select:getHp() <= sgs.Self:getHp() and (not to_select:isKongcheng()) and
+            return to_select:getHp() <= sgs.Self:getHp() and sgs.Self:canPindian(to_select, 'LuaYizheng') and
                 to_select:objectName() ~= sgs.Self:objectName()
         end
         return false
@@ -3534,7 +3534,7 @@ LuaChuhaiCard =
     target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName() and not to_select:isKongcheng()
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName() and sgs.Self:canPindian(to_select, 'LuaChuhai')
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
