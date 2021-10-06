@@ -2704,9 +2704,9 @@ LuaZhiyi =
                                 local type = string.gsub(mark, self:objectName(), '')
                                 if type == 'peach' and sp:isWounded() then
                                     table.insert(cardTypes, type)
-                                elseif type == 'analeptic' then
+                                elseif type == 'analeptic' and sgs.Analeptic_IsAvailable(sp) then
                                     table.insert(cardTypes, type)
-                                elseif type ~= 'jink' then
+                                elseif string.find(type, 'slash') then
                                     for _, p in sgs.qlist(room:getOtherPlayers(sp)) do
                                         if sp:inMyAttackRange(p) then
                                             table.insert(cardTypes, type)
@@ -3534,7 +3534,8 @@ LuaChuhaiCard =
     target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName() and sgs.Self:canPindian(to_select, 'LuaChuhai')
+        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName() and
+            sgs.Self:canPindian(to_select, 'LuaChuhai')
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
