@@ -1,6 +1,13 @@
 -- lines for Expansion Package
 
 return {
+    -- 王元姬
+    ['$LuaQianchong'] = '细行策划，只盼能助夫君一臂之力',
+    ['$LuaShangjian1'] = '如今乱世，当秉俭行之节',
+    ['$LuaShangjian2'] = '百姓尚处寒饥之困，吾等，不可奢费财力',
+    ['$LuaWeimu'] = '宫闱之内，何必擅涉外事！',
+    ['$LuaMingzhe'] = '谦瑾行事，方能多吉少恙',
+    ['~ExWangyuanji'] = '世事浮沉，非是一人可逆啊........',
     -- 徐荣
     ['$LuaXionghuo1'] = '此镬加之于你，定有所伤！',
     ['$LuaXionghuo2'] = '凶镬沿袭，怎会轻易无伤？',
