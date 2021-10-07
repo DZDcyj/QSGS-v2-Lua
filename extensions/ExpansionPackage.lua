@@ -542,7 +542,7 @@ LuaJianxiong =
     on_damaged = function(self, player, damage)
         local room = player:getRoom()
         local data = sgs.QVariant()
-		data:setValue(damage)
+        data:setValue(damage)
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
             player:drawCards(1, self:objectName())
