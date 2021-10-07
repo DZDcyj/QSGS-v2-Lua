@@ -373,7 +373,7 @@ function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
 end
 
 -- 判断是否可以移动场上卡牌
-function CanMoveCard(room)
+function canMoveCard(room)
     for _, p in sgs.qlist(room:getAlivePlayers()) do
         if (p:getJudgingArea():length() > 0 or p:hasEquip()) then
             return true

@@ -2294,7 +2294,7 @@ LuaYongjinCard =
             end
         end
         rinsanFuncModule.sendLogMessage(room, '#InvokeSkill', {['from'] = source, ['arg'] = 'LuaYongjin'})
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaYongjin')
         local card_id = room:askForCardChosen(source, from, 'e', 'LuaYongjin', false, sgs.Card_MethodNone, disabled_ids)
         local card = sgs.Sanguosha:getCard(card_id)
         room:moveCardTo(
@@ -2302,7 +2302,7 @@ LuaYongjinCard =
             from,
             to,
             sgs.Player_PlaceEquip,
-            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), self:objectName(), '')
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), 'LuaYongjin', '')
         )
         room:addPlayerMark(source, 'LuaYongjin')
         local use = room:askForUseCard(source, '@@LuaYongjin', '@LuaYongjin:::' .. (3 - source:getMark('LuaYongjin')))
@@ -2498,82 +2498,119 @@ LuaZhaohan =
     end
 }
 
+LuaRangjieCard =
+    sgs.CreateSkillCard {
+    name = 'LuaRangjieCard',
+    filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return to_select:hasEquip() or to_select:getJudgingArea():length() > 0
+        elseif #selected == 1 then
+            if selected[1]:getJudgingArea():length() > 0 then
+                local judgeCards = {}
+                for _, jcd in sgs.qlist(to_select:getJudgingArea()) do
+                    table.insert(judgeCards, jcd:objectName())
+                end
+                for _, jcd in sgs.qlist(selected[1]:getJudgingArea()) do
+                    if not table.contains(judgeCards, jcd:objectName()) then
+                        return true
+                    end
+                end
+            end
+            for i = 0, 4, 1 do
+                if selected[1]:getEquip(i) and not to_select:getEquip(i) then
+                    return true
+                end
+            end
+        end
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets == 2
+    end,
+    about_to_use = function(self, room, use)
+        local thread = room:getThread()
+        local data = sgs.QVariant()
+        data:setValue(use)
+        thread:trigger(sgs.PreCardUsed, room, use.from, data)
+        thread:trigger(sgs.CardUsed, room, use.from, data)
+        thread:trigger(sgs.CardFinished, room, use.from, data)
+    end,
+    on_use = function(self, room, source, targets)
+        local from = targets[1]
+        local to = targets[2]
+        local disabled_ids = sgs.IntList()
+        for _, equip in sgs.qlist(from:getEquips()) do
+            if equip and to:getEquip(equip:getRealCard():toEquipCard():location()) then
+                disabled_ids:append(equip:getId())
+            end
+        end
+        local judgeCards = {}
+        for _, jcd in sgs.qlist(to:getJudgingArea()) do
+            table.insert(judgeCards, jcd:objectName())
+        end
+        for _, jcd in sgs.qlist(from:getJudgingArea()) do
+            if table.contains(judgeCards, jcd:objectName()) then
+                disabled_ids:append(jcd:getId())
+            end
+        end
+        rinsanFuncModule.sendLogMessage(room, '#InvokeSkill', {['from'] = source, ['arg'] = 'LuaRangjie'})
+        room:notifySkillInvoked(source, 'LuaRangjie')
+        local card_id =
+            room:askForCardChosen(source, from, 'ej', 'LuaRangjie', false, sgs.Card_MethodNone, disabled_ids)
+        local card = sgs.Sanguosha:getCard(card_id)
+        room:moveCardTo(
+            card,
+            from,
+            to,
+            room:getCardPlace(card_id),
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), 'LuaRangjie', '')
+        )
+    end
+}
+
+LuaRangjieVS =
+    sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaRangjie',
+    view_as = function(self)
+        return LuaRangjieCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaRangjie'
+    end
+}
+
 LuaRangjie =
     sgs.CreateTriggerSkill {
     name = 'LuaRangjie',
     events = {sgs.Damaged},
+    view_as_skill = LuaRangjieVS,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         local i = 0
         while i < damage.damage do
             i = i + 1
-            local choices = 'obtainBasic+obtainTrick+obtainEquip+cancel'
-            if rinsanFuncModule.CanMoveCard(room) then
-                choices = 'moveOneCard+' .. choices
+            local move
+            if rinsanFuncModule.canMoveCard(room) then
+                move = room:askForUseCard(player, '@@LuaRangjie', '@LuaRangjie')
             end
-            local choice = room:askForChoice(player, self:objectName(), choices)
-            local params = {['existed'] = {}, ['findDiscardPile'] = true}
-            if choice == 'moveOneCard' then
-                local fromPlayers = sgs.SPlayerList()
-                for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    if p:getJudgingArea():length() > 0 or p:hasEquip() then
-                        fromPlayers:append(p)
-                    end
-                end
-                if fromPlayers:isEmpty() then
+            if not move then
+                local choice =
+                    room:askForChoice(player, self:objectName(), 'obtainBasic+obtainTrick+obtainEquip+cancel')
+                local params = {['existed'] = {}, ['findDiscardPile'] = true}
+                if choice == 'cancel' then
                     return false
-                end
-                local from =
-                    room:askForPlayerChosen(player, fromPlayers, self:objectName(), '@LuaRangjieMoveFrom', false, true)
-                if from then
-                    local card_id = room:askForCardChosen(player, from, 'ej', self:objectName())
-                    local card = sgs.Sanguosha:getCard(card_id)
-                    local place = room:getCardPlace(card_id)
-                    local equip_index = -1
-                    if place == sgs.Player_PlaceEquip then
-                        local equip = card:getRealCard():toEquipCard()
-                        equip_index = equip:location()
+                else
+                    params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
+                    local card = rinsanFuncModule.obtainTargetedTypeCard(room, params)
+                    if card then
+                        player:obtainCard(card, false)
                     end
-                    local tos = sgs.SPlayerList()
-                    for _, p in sgs.qlist(room:getAlivePlayers()) do
-                        if equip_index ~= -1 then
-                            if not p:getEquip(equip_index) then
-                                tos:append(p)
-                            end
-                        else
-                            if not player:isProhibited(p, card) and not p:containsTrick(card:objectName()) then
-                                tos:append(p)
-                            end
-                        end
-                    end
-                    if not tos:isEmpty() then
-                        local to =
-                            room:askForPlayerChosen(player, tos, self:objectName(), '@LuaRangjieMoveTo', false, true)
-                        if to then
-                            room:moveCardTo(
-                                card,
-                                from,
-                                to,
-                                place,
-                                sgs.CardMoveReason(
-                                    sgs.CardMoveReason_S_REASON_TRANSFER,
-                                    player:objectName(),
-                                    self:objectName(),
-                                    ''
-                                )
-                            )
-                        end
-                    end
-                end
-            elseif choice == 'cancel' then
-                return false
-            else
-                params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
-                local card = rinsanFuncModule.obtainTargetedTypeCard(room, params)
-                if card then
-                    player:obtainCard(card, false)
                 end
             end
+            -- 只要发动了“让节”，就会摸牌，因为选择“取消”时已经跳出循环了，因此不需要冗余的判断
             player:drawCards(1, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
         end
