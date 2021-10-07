@@ -2503,8 +2503,19 @@ LuaRangjieCard =
     name = 'LuaRangjieCard',
     filter = function(self, selected, to_select)
         if #selected == 0 then
-            return to_select:hasEquip()
+            return to_select:hasEquip() or to_select:getJudgingArea():length() > 0
         elseif #selected == 1 then
+            if selected[1]:getJudgingArea():length() > 0 then
+                local judgeCards = {}
+                for _, jcd in sgs.qlist(to_select:getJudgingArea()) do
+                    table.insert(judgeCards, jcd:objectName())
+                end
+                for _, jcd in sgs.qlist(selected[1]:getJudgingArea()) do
+                    if not table.contains(judgeCards, jcd:objectName()) then
+                        return true
+                    end
+                end
+            end
             for i = 0, 4, 1 do
                 if selected[1]:getEquip(i) and not to_select:getEquip(i) then
                     return true
@@ -2533,15 +2544,25 @@ LuaRangjieCard =
                 disabled_ids:append(equip:getId())
             end
         end
+        local judgeCards = {}
+        for _, jcd in sgs.qlist(to:getJudgingArea()) do
+            table.insert(judgeCards, jcd:objectName())
+        end
+        for _, jcd in sgs.qlist(from:getJudgingArea()) do
+            if table.contains(judgeCards, jcd:objectName()) then
+                disabled_ids:append(jcd:getId())
+            end
+        end
         rinsanFuncModule.sendLogMessage(room, '#InvokeSkill', {['from'] = source, ['arg'] = 'LuaRangjie'})
         room:notifySkillInvoked(source, 'LuaRangjie')
-        local card_id = room:askForCardChosen(source, from, 'e', 'LuaRangjie', false, sgs.Card_MethodNone, disabled_ids)
+        local card_id =
+            room:askForCardChosen(source, from, 'ej', 'LuaRangjie', false, sgs.Card_MethodNone, disabled_ids)
         local card = sgs.Sanguosha:getCard(card_id)
         room:moveCardTo(
             card,
             from,
             to,
-            sgs.Player_PlaceEquip,
+            room:getCardPlace(card_id),
             sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), 'LuaRangjie', '')
         )
     end
@@ -2572,7 +2593,7 @@ LuaRangjie =
         while i < damage.damage do
             i = i + 1
             local move
-            if rinsanFuncModule.CanMoveCard(room) then
+            if rinsanFuncModule.canMoveCard(room) then
                 move = room:askForUseCard(player, '@@LuaRangjie', '@LuaRangjie')
             end
             if not move then
