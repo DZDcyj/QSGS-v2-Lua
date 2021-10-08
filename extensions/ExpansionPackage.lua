@@ -3566,6 +3566,7 @@ LuaQiaiCard =
         local target = targets[1]
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         target:obtainCard(card, false)
+        room:broadcastSkillInvoke('LuaQiai')
         local choices = 'letdraw2'
         if source:isWounded() then
             choices = choices .. '+letrecover'
@@ -3622,6 +3623,7 @@ LuaShanxi =
                     true
                 )
                 if target then
+                    room:broadcastSkillInvoke(self:objectName())
                     room:addPlayerMark(target, self:objectName() .. player:objectName())
                 end
             end
@@ -3633,6 +3635,7 @@ LuaShanxi =
                         return false
                     end
                     local chooseLoseHp = true
+                    room:broadcastSkillInvoke(self:objectName())
                     room:sendCompulsoryTriggerLog(sp, self:objectName())
                     if player:getCardCount(true) >= 2 then
                         local card =
