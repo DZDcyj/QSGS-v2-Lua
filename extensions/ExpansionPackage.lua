@@ -4335,7 +4335,10 @@ LuaTaomie =
                 if not damage.to:isAlive() then
                     return false
                 end
-                if damage.to:getMark('@'..self:objectName()) == 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
+                if
+                    damage.to:getMark('@' .. self:objectName()) == 0 and
+                        room:askForSkillInvoke(player, self:objectName(), data2)
+                 then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
@@ -4353,7 +4356,10 @@ LuaTaomie =
             if damage.from then
                 local data2 = sgs.QVariant()
                 data2:setValue(damage.from)
-                if damage.from:getMark('@'..self:objectName()) == 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
+                if
+                    damage.from:getMark('@' .. self:objectName()) == 0 and
+                        room:askForSkillInvoke(player, self:objectName(), data2)
+                 then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
