@@ -4335,10 +4335,11 @@ LuaTaomie =
                 if not damage.to:isAlive() then
                     return false
                 end
-                if room:askForSkillInvoke(player, self:objectName(), data2) then
+                if damage.to:getMark('@'..self:objectName()) == 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
+                    room:broadcastSkillInvoke(self:objectName(), 1)
                     room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
                     damage.to:gainMark('@' .. self:objectName())
                 end
@@ -4352,10 +4353,11 @@ LuaTaomie =
             if damage.from then
                 local data2 = sgs.QVariant()
                 data2:setValue(damage.from)
-                if room:askForSkillInvoke(player, self:objectName(), data2) then
+                if damage.from:getMark('@'..self:objectName()) == 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         room:setPlayerMark(p, '@' .. self:objectName(), 0)
                     end
+                    room:broadcastSkillInvoke(self:objectName(), 1)
                     room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.from:objectName())
                     damage.from:gainMark('@' .. self:objectName())
                 end
@@ -4364,6 +4366,9 @@ LuaTaomie =
             if damage.to and damage.to:getMark('@' .. self:objectName()) > 0 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local choice = room:askForChoice(player, self:objectName(), 'addDamage+getOneCard+removeMark+cancel')
+                if choice ~= 'cancel' then
+                    room:broadcastSkillInvoke(self:objectName(), math.random(2, 3))
+                end
                 if choice == 'addDamage' then
                     room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
                     damage.damage = damage.damage + 1

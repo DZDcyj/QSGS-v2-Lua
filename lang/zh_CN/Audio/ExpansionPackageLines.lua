@@ -170,6 +170,11 @@ return {
     ['$LuaShameng1'] = '歃血盟誓，以告神明',
     ['$LuaShameng2'] = '戮力一心，共讨魏贼！',
     ['~ExChenzhen'] = '震，不负丞相所托…',
+    -- 公孙康
+    ['$LuaTaomie1'] = '犯我辽东疆界，必遭后报！',
+    ['$LuaTaomie2'] = '韩濊之乱，再无可生之机！',
+    ['$LuaTaomie3'] = '颅且远行万里，要席何用？',
+    ['~ExGongsunkang'] = '枭雄一世，何有所憾……',
     -- 张济
     ['$LuaLveming1'] = '劫命掠财，毫不费力',
     ['$LuaLveming2'] = '人财，皆掠之，哈哈！',
