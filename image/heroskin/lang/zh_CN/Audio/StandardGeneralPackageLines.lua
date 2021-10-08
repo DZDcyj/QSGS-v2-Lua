@@ -64,5 +64,13 @@ return {
 	-- 界徐盛
     ['$LuaPojun1-JieXusheng_1'] = '以攻为守，破敌卫疆！',
     ['$LuaPojun2-JieXusheng_1'] = '这长江天险后，便是江东铁壁！',
-    ['~JieXusheng-JieXusheng_1'] = '望吾死后，江东依然无人敢犯……'
+    ['~JieXusheng-JieXusheng_1'] = '望吾死后，江东依然无人敢犯……',
+    -- 杨彪
+    ['$LuaZhaohan1-ExYangbiao_1'] = '兴复汉室，文先自当尽力而为',
+    ['$LuaZhaohan2-ExYangbiao_1'] = '风雨飘摇，徒增忠臣嗟叹',
+    ['$LuaYizheng1-ExYangbiao_1'] = '国祚尚为汉，天子尚姓刘，岂有妄为之理？',
+    ['$LuaYizheng2-ExYangbiao_1'] = '仗势欺君，实在是天地不容！',
+    ['$LuaRangjie1-ExYangbiao_1'] = '百般忍让，只求皇上不受波及',
+    ['$LuaRangjie2-ExYangbiao_1'] = '天下动之至易，安之甚难，惟明公虑焉',
+    ['~ExYangbiao-ExYangbiao_1'] = '朝代更迭，难道真是天意难改……',
 }
