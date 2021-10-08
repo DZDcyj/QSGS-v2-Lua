@@ -5067,6 +5067,7 @@ LuaZhiyanDrawCard =
         return #targets == 0
     end,
     on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaZhiyan')
         local x = source:getMaxHp() - source:getHandcardNum()
         source:drawCards(x, 'LuaZhiyan')
     end
@@ -5094,6 +5095,7 @@ LuaZhiyanGiveCard =
             'LuaZhiyan',
             nil
         )
+        room:broadcastSkillInvoke('LuaZhiyan')
         room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
     end
 }
@@ -5214,6 +5216,7 @@ LuaJinfanCard =
         for _, cd in sgs.qlist(self:getSubcards()) do
             to_pile:append(cd)
         end
+        room:broadcastSkillInvoke('LuaJinfan')
         source:addToPile('&luajinfanpile', to_pile, false)
     end
 }
@@ -5298,6 +5301,7 @@ LuaJinfan =
                             end
                         )
                         if togain then
+                            room:broadcastSkillInvoke(self:objectName())
                             player:obtainCard(togain, false)
                         end
                     end
@@ -5327,6 +5331,7 @@ LuaSheque =
         else
             local use = data:toCardUse()
             if use.from and use.from:hasFlag(self:objectName()) and use.card:isKindOf('Slash') then
+                room:broadcastSkillInvoke(self:objectName())
                 for _, p in sgs.qlist(use.to) do
                     p:addQinggangTag(use.card)
                 end
