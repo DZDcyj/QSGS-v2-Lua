@@ -2420,6 +2420,7 @@ LuaYongjinCard =
         end
         rinsanFuncModule.sendLogMessage(room, '#InvokeSkill', {['from'] = source, ['arg'] = 'LuaYongjin'})
         room:notifySkillInvoked(source, 'LuaYongjin')
+        room:broadcastSkillInvoke('LuaYongjin')
         local card_id = room:askForCardChosen(source, from, 'e', 'LuaYongjin', false, sgs.Card_MethodNone, disabled_ids)
         local card = sgs.Sanguosha:getCard(card_id)
         room:moveCardTo(
