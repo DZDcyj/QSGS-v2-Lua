@@ -24,7 +24,9 @@ image/big-card
 image/compact
 image/equips
 image/gender
-image/heroskin
+image/heroskin/audio/[^A-Z]*
+image/heroskin/fullskin/generals/full/[^A-Z]*
+image/heroskin/generals/card/[^A-Z]*
 image/hidden
 image/icon
 image/kingdom
