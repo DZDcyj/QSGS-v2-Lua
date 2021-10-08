@@ -3988,6 +3988,7 @@ LuaWuku =
         if use.card and use.card:isKindOf('EquipCard') then
             for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
                 if sp:getMark('@wuku') < 3 then
+                    room:broadcastSkillInvoke(self:objectName())
                     room:sendCompulsoryTriggerLog(sp, self:objectName())
                     sp:gainMark('@wuku')
                 end
@@ -4004,6 +4005,7 @@ LuaSanchen =
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
         if room:changeMaxHpForAwakenSkill(player, 1) then
+            room:broadcastSkillInvoke(self:objectName())
             room:recover(player, sgs.RecoverStruct(player, nil, 1))
             room:handleAcquireDetachSkills(player, 'LuaMiewu')
             room:addPlayerMark(player, self:objectName())
