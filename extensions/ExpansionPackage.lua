@@ -4269,6 +4269,7 @@ LuaShamengCard =
         local sourse = effect.from
         local dest = effect.to
         local room = sourse:getRoom()
+        room:broadcastSkillInvoke('LuaShameng')
         room:drawCards(sourse, 3, 'LuaShameng')
         room:drawCards(dest, 2, 'LuaShameng')
     end
