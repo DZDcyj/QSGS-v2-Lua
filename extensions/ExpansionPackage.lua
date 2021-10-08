@@ -3249,6 +3249,12 @@ LuaDangxian =
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_RoundStart then
             room:sendCompulsoryTriggerLog(player, self:objectName())
+            -- 关索征南单独处理
+            if player:hasSkill('LuaZhengnan') then
+                room:broadcastSkillInvoke(self:objectName(), 3)
+            else
+                room:broadcastSkillInvoke(self:objectName(), math.random(1, 2))
+            end
             rinsanFuncModule.sendLogMessage(room, '#LuaDangxianExtraPhase', {['from'] = player})
             player:setPhase(sgs.Player_Play)
             local card = rinsanFuncModule.getCardFromDiscardPile(room, 'Slash')
@@ -3280,6 +3286,7 @@ LuaFuli =
             return false
         end
         if room:askForSkillInvoke(player, self:objectName()) then
+            room:broadcastSkillInvoke(self:objectName())
             room:removePlayerMark(player, '@laoji')
             local recover = sgs.RecoverStruct()
             recover.recover = math.min(rinsanFuncModule.getKingdomCount(room), player:getMaxHp()) - player:getHp()
