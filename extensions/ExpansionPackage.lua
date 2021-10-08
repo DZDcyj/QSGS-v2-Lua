@@ -3330,6 +3330,7 @@ LuaDanshou =
                         local num = sp:getMark(self:objectName())
                         if num == 0 then
                             if room:askForSkillInvoke(sp, self:objectName()) then
+                                room:broadcastSkillInvoke(self:objectName())
                                 sp:drawCards(1, self:objectName())
                             end
                         else
