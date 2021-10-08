@@ -3448,6 +3448,7 @@ LuaFenyin =
                         local card = sgs.Sanguosha:getCard(id)
                         if player:getMark(self:objectName() .. card:getSuitString()) == 0 then
                             room:sendCompulsoryTriggerLog(player, self:objectName())
+                            room:broadcastSkillInvoke(self:objectName())
                             room:addPlayerMark(player, self:objectName() .. card:getSuitString())
                             player:drawCards(1, self:objectName())
                         end
@@ -3480,6 +3481,7 @@ LuaLijiCard =
         local source = effect.from
         local target = effect.to
         local room = source:getRoom()
+        room:broadcastSkillInvoke('LuaLiji')
         room:damage(sgs.DamageStruct(self:objectName(), source, target))
     end
 }
