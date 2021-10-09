@@ -45,6 +45,7 @@ lang/zh_CN/Package/*.lua
 !ExpansionPackageLines.lua
 !ExpansionPackage.lua
 !GroupFriendPackage.lua
+!LandlordsPackage.lua
 listserver/
 lua/ai/[^A-Z]*.lua
 lua/lib
