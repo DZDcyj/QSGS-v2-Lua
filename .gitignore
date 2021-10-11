@@ -38,6 +38,7 @@ image/system
 image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
 !@Lua[A-Z]*.png
+!shenganning_1*
 imageformats/
 lang/zh_CN/*.lua
 lang/zh_CN/Audio/*.lua
@@ -45,6 +46,7 @@ lang/zh_CN/Package/*.lua
 !ExpansionPackageLines.lua
 !ExpansionPackage.lua
 !GroupFriendPackage.lua
+!LandlordsPackage.lua
 listserver/
 lua/ai/[^A-Z]*.lua
 lua/lib
