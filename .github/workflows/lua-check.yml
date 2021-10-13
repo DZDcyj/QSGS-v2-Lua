@@ -1,22 +1,16 @@
 name: LuaCheck
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  Lua-Syntax-Check:
-    name: Lua Syntax Check
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Branch
-      uses: actions/checkout@v2
-    - name: Luacheck
-      uses: nebularg/actions-luacheck@v1
-      with:
-        args: -o 011
-  
   Lua-Format-Check:
     name: Lua Specification Check
-    needs: Lua-Syntax-Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Branch
@@ -27,7 +21,7 @@ jobs:
           capture: "junit.xml"
           args: "-d -t --ignore 112 113 143 212 --formatter JUnit"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v2.5.0
         with:
           report_paths: "**/junit.xml"
           fail_on_failure: 0
