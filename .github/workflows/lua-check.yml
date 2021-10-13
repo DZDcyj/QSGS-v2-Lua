@@ -11,7 +11,6 @@ on:
 jobs:
   Lua-Format-Check:
     name: Lua Specification Check
-    needs: Lua-Syntax-Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Branch
