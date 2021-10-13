@@ -521,6 +521,16 @@ function createJudgeStruct(params)
     return judge
 end
 
+-- 将移出游戏的卡牌放回原位时机判断
+function cardGoBack(event, player, data, skill)
+    if event == sgs.EventPhaseStart then
+        return player:getPhase() == sgs.Player_Finish
+    elseif event == sgs.Death then
+        return data:toDeath().who:hasSkill(skill)
+    end
+    return false
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
