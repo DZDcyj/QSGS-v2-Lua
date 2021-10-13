@@ -9,6 +9,8 @@ on:
       - labeled
       - unlabeled
       - edited
+    branches:
+      - master
 
 jobs:
   Pull-Request-Title-Check:
