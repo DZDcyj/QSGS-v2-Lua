@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v2
-      - name: Lint
+      - name: Lua Lint
         uses: GoatG33k/fivem-lua-lint-action@v1
         with:
           capture: "junit.xml"
@@ -25,3 +25,4 @@ jobs:
         with:
           report_paths: "**/junit.xml"
           fail_on_failure: 0
+          check_name: JUnit Report
