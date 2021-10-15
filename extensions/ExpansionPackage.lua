@@ -5635,6 +5635,7 @@ LuaFaen =
 
 JieChenqun:addSkill(LuaDingpin)
 JieChenqun:addSkill(LuaFaen)
+
 JieXunyu = sgs.General(extension, 'JieXunyu', 'wei', '3', true, true)
 
 LuaQuhuCard =
@@ -5705,3 +5706,119 @@ LuaJieming =
 
 JieXunyu:addSkill(LuaQuhu)
 JieXunyu:addSkill(LuaJieming)
+
+ExSufei = sgs.General(extension, 'ExSufei', 'qun', '4', true, true)
+
+LuaZhengjian =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhengjian',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.EventPhaseStart, sgs.CardUsed, sgs.CardResponded},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Start and player:hasSkill(self:objectName()) then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if p:getMark(self:objectName() .. player:objectName()) > 0 then
+                        local x = p:getMark('LuaZhengjianCard' .. player:objectName())
+                        if x > 0 then
+                            room:sendCompulsoryTriggerLog(player, self:objectName())
+                            room:broadcastSkillInvoke(self:objectName())
+                            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), p:objectName())
+                            p:drawCards(x, self:objectName())
+                        end
+                        room:setPlayerMark(p, 'LuaZhengjianCard' .. player:objectName(), 0)
+                        room:setPlayerMark(p, self:objectName() .. player:objectName(), 0)
+                    end
+                end
+            elseif player:getPhase() == sgs.Player_Finish then
+                if player:hasSkill(self:objectName()) then
+                    local target =
+                        room:askForPlayerChosen(
+                        player,
+                        room:getAlivePlayers(),
+                        self:objectName(),
+                        '@LuaZhengjian-choose',
+                        false,
+                        true
+                    )
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:addPlayerMark(target, self:objectName() .. player:objectName())
+                end
+            end
+        else
+            local card
+            if event == sgs.CardUsed then
+                card = data:toCardUse().card
+            else
+                card = data:toCardResponse().m_card
+            end
+            if card:isKindOf('SkillCard') then
+                return false
+            end
+            local x = math.min(player:getMaxHp(), 5)
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if player:getMark(self:objectName() .. p:objectName()) > 0 then
+                    if player:getMark('LuaZhengjianCard' .. p:objectName()) < x then
+                        room:sendCompulsoryTriggerLog(p, self:objectName())
+                        room:broadcastSkillInvoke(self:objectName())
+                        room:addPlayerMark(player, 'LuaZhengjianCard' .. p:objectName())
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaGaoyuan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaGaoyuan',
+    events = {sgs.TargetConfirming},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) and player:canDiscard(player, 'he') then
+            if
+                use.from:getMark('LuaZhengjian' .. player:objectName()) == 0 and
+                    player:getMark('LuaZhengjian' .. player:objectName()) == 0
+             then
+                local target
+                for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                    if p:getMark('LuaZhengjian' .. player:objectName()) > 0 then
+                        target = p
+                        break
+                    end
+                end
+                if
+                    target and not use.to:contains(target) and
+                        room:askForCard(
+                            player,
+                            '.|.|.|.',
+                            '@LuaGaoyuan:' .. target:objectName(),
+                            data,
+                            sgs.Card_MethodDiscard,
+                            target,
+                            false,
+                            self:objectName()
+                        )
+                 then
+                    room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), target:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    use.to:removeOne(player)
+                    use.to:append(target)
+                    room:sortByActionOrder(use.to)
+                    data:setValue(use)
+                    -- 需要让 target 触发一次该时机，以触发享乐等技能
+                    room:getThread():trigger(sgs.TargetConfirming, room, target, data)
+                end
+            end
+        end
+        return false
+    end
+}
+
+ExSufei:addSkill(LuaZhengjian)
+ExSufei:addSkill(LuaGaoyuan)
