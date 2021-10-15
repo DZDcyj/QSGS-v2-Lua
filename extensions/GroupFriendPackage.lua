@@ -993,7 +993,7 @@ LuaChuanyi =
     end
 }
 
-LuaPaoZhuan =
+LuaPaozhuan =
     sgs.CreateTriggerSkill {
     name = 'LuaPaozhuan',
     events = {sgs.CardsMoveOneTime},
@@ -2008,7 +2008,7 @@ SPFuhua:addSkill(LuaTuci)
 SPCactus:addSkill(LuaJuesha)
 SPCactus:addSkill(LuaMouhai)
 SPCactus:addSkill(LuaChuanyi)
-Qiumu:addSkill(LuaPaoZhuan)
+Qiumu:addSkill(LuaPaozhuan)
 Qiumu:addSkill(LuaYinyu)
 SPRinsan:addSkill(LuaQingyu)
 SkillAnjiang:addSkill(LuaQingyuTargetMod)
