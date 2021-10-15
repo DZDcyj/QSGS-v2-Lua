@@ -76,12 +76,7 @@ sgs.ai_skill_use_func['#LuaSoutuCard'] = function(card, use, self)
         local cards = self.player:getHandcards()
         cards = sgs.QList2Table(cards)
         self:sortByUseValue(cards, true)
-        local card = nil
-        for _, card1 in ipairs(cards) do
-            card = card1
-            break
-        end
-        local card_str = string.format('#LuaSoutuCard:%s:', card:getEffectiveId())
+        local card_str = string.format('#LuaSoutuCard:%s:', cards[1]:getEffectiveId())
         local acard = sgs.Card_Parse(card_str)
         assert(acard)
         use.card = acard
