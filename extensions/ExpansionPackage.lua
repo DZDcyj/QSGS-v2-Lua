@@ -5806,11 +5806,13 @@ LuaGaoyuan =
                         )
                  then
                     room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), target:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
                     use.to:removeOne(player)
                     use.to:append(target)
                     room:sortByActionOrder(use.to)
                     data:setValue(use)
-                    room:getThread():trigger(sgs.TargetConfirming, room, p, data)
+                    -- 需要让 target 触发一次该时机，以触发享乐等技能
+                    room:getThread():trigger(sgs.TargetConfirming, room, target, data)
                 end
             end
         end
