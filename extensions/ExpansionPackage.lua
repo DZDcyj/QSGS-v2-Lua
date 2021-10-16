@@ -4383,7 +4383,13 @@ LuaTaomie =
         elseif event == sgs.DamageCaused then
             if damage.to and damage.to:getMark('@' .. self:objectName()) > 0 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                local choice = room:askForChoice(player, self:objectName(), 'addDamage+getOneCard+removeMark+cancel')
+                local choices = {'addDamage'}
+                if not damage.to:isAllNude() then
+                    table.insert(choices, 'getOneCard')
+                    table.insert(choices, 'removeMark')
+                end
+                table.insert(choices, 'cancel')
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
                 if choice ~= 'cancel' then
                     room:broadcastSkillInvoke(self:objectName(), math.random(2, 3))
                 end
