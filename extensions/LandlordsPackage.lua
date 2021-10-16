@@ -4,9 +4,6 @@
 module('extensions.LandlordsPackage', package.seeall)
 extension = sgs.Package('LandlordsPackage')
 
--- 引入封装函数包
-local rinsanFuncModule = require('QSanguoshaLuaFunction')
-
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
 LuaBahu =
