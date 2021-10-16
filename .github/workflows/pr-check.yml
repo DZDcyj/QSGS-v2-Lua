@@ -15,7 +15,7 @@ on:
 jobs:
   Pull-Request-Title-Check:
     name: 'Pull Request Title Check'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: 'Pull Request Title Check'
         uses: amannn/action-semantic-pull-request@v3.4.2
@@ -24,7 +24,7 @@ jobs:
 
   Pull-Request-Label-Check:
     name: 'Pull Request Label Check'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
@@ -34,7 +34,7 @@ jobs:
 
   Pull-Request-Issue-Check:
     name: 'Pull Request Linked Issue Check'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Verify Linked Issue
         uses: hattan/verify-linked-issue-action@v1.1.1
