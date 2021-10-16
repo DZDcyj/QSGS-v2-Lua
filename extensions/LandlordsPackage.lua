@@ -35,11 +35,50 @@ LuaBahuSlash =
     end
 }
 
+LuaFeiyangCard =
+    sgs.CreateSkillCard {
+    name = 'LuaFeiyangCard',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        room:throwCard(
+            room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
+            source
+        )
+    end
+}
+
+LuaFeiyangVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaFeiyang',
+    n = 2,
+    view_filter = function(self, selected, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        if #cards == 2 then
+            local vs_card = LuaFeiyangCard:clone()
+            for _, cd in ipairs(cards)do
+                vs_card:addSubcard(cd)
+            end
+            return vs_card
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaFeiyang'
+    end
+}
+
 LuaFeiyang =
     sgs.CreateTriggerSkill {
     name = 'LuaFeiyang',
     events = {sgs.TurnStart, sgs.EventPhaseStart},
     frequency = sgs.Skill_Compulsory,
+    view_as_skill = LuaFeiyangVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.TurnStart and player:getMark(self:objectName()) == 0 then
             room:sendCompulsoryTriggerLog(player, self:objectName())
@@ -58,14 +97,9 @@ LuaFeiyang =
             if player:getPhase() == sgs.Player_Start then
                 if
                     player:getJudgingArea():length() > 0 and player:canDiscard(player, 'h') and
-                        player:getHandcardNum() >= 2 and
-                        room:askForDiscard(player, self:objectName(), 2, 2, true, false, '@LuaFeiyang')
+                        player:getHandcardNum() >= 2
                  then
-                    rinsanFuncModule.skill(self, room, player)
-                    room:throwCard(
-                        room:askForCardChosen(player, player, 'j', self:objectName(), true, sgs.Card_MethodDiscard),
-                        player
-                    )
+                    room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
                 end
             end
         end
