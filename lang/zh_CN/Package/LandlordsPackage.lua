@@ -1,7 +1,7 @@
 -- translation for LandlordsPackage
 
 return {
-    ['LandLordsPackage'] = '斗地主包',
+    ['LandlordsPackage'] = '斗地主包',
     ['LuaBahu'] = '跋扈',
     [':LuaBahu'] = '锁定技，准备阶段开始时，你摸一张牌；锁定技，你使用【杀】的上限+1',
     ['LuaFeiyang'] = '飞扬',
