@@ -157,13 +157,15 @@ end
 
 -- 应援选择目标
 sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
-    self:sort(self.friends_noself)
-    for _, friend in ipairs(self.friends) do
+    targets = sgs.QList2Table(targets)
+    self:sort(targets)
+    for _, target in ipairs(targets) do
         if
-            not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
-                not self:needKongcheng(friend, true)
+            self:isFriend(target) and not target:hasSkill('zishu') and not target:hasSkill('manjuan') and
+                not target:hasSkill('LuaZishu') and
+                not self:needKongcheng(target, true)
          then
-            return friend
+            return target
         end
     end
 end
@@ -346,10 +348,10 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
             return
         end
     end
-    -- 随便找一个倒霉敌人
+    -- 随机选择一名敌人作为目标
     use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
     if use.to then
-        use.to:append(self.enemies[1])
+        use.to:append(self.enemies[math.random(1, #self.enemies)])
     end
 end
 
@@ -361,7 +363,7 @@ sgs.ai_skill_cardask['@LuaYuce-show'] = function(self, data)
         return '.'
     end
     if self:isFriend(damage.from) then
-        return '$' .. self.player:handCards():first()
+        return self.player:handCards():first()
     end
     local flag = string.format('%s_%s_%s', 'visible', self.player:objectName(), damage.from:objectName())
     local types = {sgs.Card_TypeBasic, sgs.Card_TypeEquip, sgs.Card_TypeTrick}
@@ -393,7 +395,6 @@ sgs.ai_skill_invoke.LuaYisuan = function(self, data)
 end
 
 -- 狼袭
-
 sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
     self:updatePlayers()
     targets = sgs.QList2Table(targets)
