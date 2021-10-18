@@ -1,3 +1,5 @@
+-- 扩展包 AI
+-- Created by DZDcyj at 2021/8/21
 sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional, include_equip)
     min_num = min_num or discard_num
     local exchange = self.player:hasFlag('Global_AIDiscardExchanging')
