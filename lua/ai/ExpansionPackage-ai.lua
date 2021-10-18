@@ -275,14 +275,13 @@ sgs.ai_skill_choice['LuaQiaosi'] = function(self, choices)
     return items[1]
 end
 
+-- 巧思给牌
 sgs.ai_skill_use['@@LuaQiaosi!'] = function(self, prompt, method)
     local target
-    self:sort(self.friends)
-    for _, friend in ipairs(self.friends) do
+    self:sort(self.friends_noself)
+    for _, friend in ipairs(self.friends_noself) do
         if
-            friend:objectName() ~= self.player:objectName() and not friend:hasSkill('zishu') and
-                not friend:hasSkill('manjuan') and
-                not friend:hasSkill('LuaZishu') and
+            not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
                 not self:needKongcheng(friend, true)
          then
             target = friend
