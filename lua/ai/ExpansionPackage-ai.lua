@@ -1,5 +1,7 @@
 -- 扩展包 AI
 -- Created by DZDcyj at 2021/8/21
+
+-- 灭计弃牌
 sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional, include_equip)
     min_num = min_num or discard_num
     local exchange = self.player:hasFlag('Global_AIDiscardExchanging')
@@ -37,6 +39,7 @@ sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional
     return to_discard
 end
 
+-- 节钺选择
 sgs.ai_skill_choice['LuaJieyue'] = function(self, choices, data)
     local items = choices:split('+')
     local target = data:toPlayer()
@@ -72,6 +75,7 @@ sgs.ai_skill_choice['LuaJieyue'] = function(self, choices, data)
     return items[2]
 end
 
+-- 节钺选择保留的牌
 sgs.ai_skill_cardchosen['LuaJieyue'] = function(self, who, flags)
     local cards = self.player:getCards(flags)
     cards = sgs.QList2Table(cards)
@@ -79,6 +83,7 @@ sgs.ai_skill_cardchosen['LuaJieyue'] = function(self, who, flags)
     return cards[1]
 end
 
+-- 善檄选择交的牌
 sgs.ai_skill_discard['LuaShanxi'] = function(self, discard_num, min_num, optional, include_equip)
     -- 诈降
     if not self:isWeak() and self.player:hasSkill('zhaxiang') then
@@ -88,6 +93,7 @@ sgs.ai_skill_discard['LuaShanxi'] = function(self, discard_num, min_num, optiona
     return nil
 end
 
+-- 峻刑弃牌
 sgs.ai_skill_discard['LuaJunxing'] = function(self, discard_num, min_num, optional, include_equip)
     -- 如果当前背面朝上，则不弃牌
     if not self.player:faceUp() then
@@ -133,13 +139,31 @@ sgs.ai_skill_discard['LuaJunxing'] = function(self, discard_num, min_num, option
     return to_discard
 end
 
-sgs.ai_skill_invoke.LuaPojun = function(self,data)
+-- 是否发动破军
+sgs.ai_skill_invoke.LuaPojun = function(self, data)
     local target = data:toPlayer()
-    if not self:isFriend(target) then return true end
+    if not self:isFriend(target) then
+        return true
+    end
     return false
 end
 
+-- 破军扣的牌数
 sgs.ai_skill_choice.LuaPojun = function(self, choices)
-	local items = choices:split("+")
+    local items = choices:split('+')
+    -- 选择扣置最大的牌数
     return items[#items]
+end
+
+-- 应援选择目标
+sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
+    self:sort(self.friends)
+    for _, friend in ipairs(self.friends) do
+        if
+            not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
+                not self:needKongcheng(friend, true)
+         then
+            return friend
+        end
+    end
 end

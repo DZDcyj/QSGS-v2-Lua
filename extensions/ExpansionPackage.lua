@@ -665,7 +665,7 @@ LuaLangxi =
 ExLijue:addSkill(LuaYisuan)
 ExLijue:addSkill(LuaLangxi)
 
-ExMaliang = sgs.General(extension, 'ExMaliang', 'shu', '3', true, true)
+ExMaliang = sgs.General(extension, 'ExMaliang', 'shu', '3', true)
 
 LuaZishu =
     sgs.CreateTriggerSkill {
@@ -1006,7 +1006,7 @@ LuaWanlan =
 ExJiakui:addSkill(LuaZhongzuo)
 ExJiakui:addSkill(LuaWanlan)
 
-JieXusheng = sgs.General(extension, 'JieXusheng', 'wu', '4', true, true)
+JieXusheng = sgs.General(extension, 'JieXusheng', 'wu', '4', true)
 
 LuaPojun =
     sgs.CreateTriggerSkill {
@@ -2795,7 +2795,7 @@ ExYangbiao:addSkill(LuaZhaohan)
 ExYangbiao:addSkill(LuaRangjie)
 ExYangbiao:addSkill(LuaYizheng)
 
-ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true, true)
+ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true)
 
 LuaQinzheng =
     sgs.CreateTriggerSkill {
