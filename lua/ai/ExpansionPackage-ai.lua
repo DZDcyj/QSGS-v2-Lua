@@ -221,3 +221,86 @@ sgs.ai_skill_choice['LuaZhengnan'] = function(self, choices)
     end
     return items[1]
 end
+
+-- 马钧暂时不考虑使用【精械】
+-- 巧思
+sgs.ai_use_value['LuaQiaosiStartCard'] = 100
+sgs.ai_use_priority['LuaQiaosiStartCard'] = 10
+
+local LuaQiaosi_skill = {}
+LuaQiaosi_skill.name = 'LuaQiaosi'
+
+table.insert(sgs.ai_skills, LuaQiaosi_skill)
+
+-- 是否发动过“巧思”，如果没有，进行选择
+LuaQiaosi_skill.getTurnUseCard = function(self, inclusive)
+    if not self.player:hasUsed('#LuaQiaosiStartCard') then
+        return sgs.Card_Parse('#LuaQiaosiStartCard:.:')
+    end
+end
+
+sgs.ai_skill_use_func['#LuaQiaosiStartCard'] = function(card, use, self)
+    local card_str = '#LuaQiaosiStartCard:.:'
+    local acard = sgs.Card_Parse(card_str)
+    assert(acard)
+    use.card = acard
+end
+
+-- 马钧转一转
+-- 主要转法：
+-- 126：2锦囊+2装备+酒/杀
+-- 136：2锦囊+2装备+杀/酒
+-- 146：2锦囊+2装备+闪/桃
+-- 156：2锦囊+2装备+桃/闪
+-- 236：酒杀/杀杀/酒酒+2装备
+-- 145：闪桃/闪闪/桃桃+2锦囊
+sgs.ai_skill_choice['LuaQiaosi'] = function(self, choices)
+    local items = choices:split('+')
+    -- 目前考虑默认转126，自身较弱时转156
+    if table.contains(items, 'king') then
+        return 'king'
+    elseif table.contains(items, 'general') then
+        return 'general'
+    else
+        if self:isWeak() then
+            if table.contains(items, 'scholar') then
+                return 'scholar'
+            end
+        else
+            if table.contains(items, 'merchant') then
+                return 'merchant'
+            end
+        end
+    end
+    return items[1]
+end
+
+sgs.ai_skill_use['@@LuaQiaosi!'] = function(self, prompt, method)
+    local target
+    self:sort(self.friends)
+    for _, friend in ipairs(self.friends) do
+        if
+            friend:objectName() ~= self.player:objectName() and not friend:hasSkill('zishu') and
+                not friend:hasSkill('manjuan') and
+                not friend:hasSkill('LuaZishu') and
+                not self:needKongcheng(friend, true)
+         then
+            target = friend
+            break
+        end
+    end
+    local x = self.player:getMark('LuaQiaosiCardsNum')
+    local cards = self.player:getCards('he')
+    cards = sgs.QList2Table(cards)
+    self:sortByUseValue(cards, true)
+    local to_give = {}
+    local index = 0
+    while index < x do
+        index = index + 1
+        table.insert(to_give, cards[index]:getEffectiveId())
+    end
+    if target then
+        return '#LuaQiaosiCard:' .. table.concat(to_give, '+') .. ':->' .. target:objectName()
+    end
+    return '#LuaQiaosiCard:' .. table.concat(to_give, '+') .. ':.'
+end

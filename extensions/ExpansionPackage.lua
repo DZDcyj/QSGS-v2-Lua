@@ -1297,7 +1297,7 @@ SkillAnjiang:addSkill(LuaMashuDistance)
 JieMadai:addSkill(LuaMashu)
 JieMadai:addSkill(LuaQianxi)
 
-ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true, true)
+ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true)
 
 LuaJingxieCard =
     sgs.CreateSkillCard {
@@ -1500,7 +1500,8 @@ LuaQiaosiStartCard =
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
-        room:broadcastSkillInvoke('LuaQiaosi', math.random(1, 2))
+        room:broadcastSkillInvoke('LuaQiaosi')
+        room:notifySkillInvoked(source, 'LuaQiaosi')
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         local marks = rinsanFuncModule.LuaDoQiaosiShow(room, source, dummy)
         if marks > 0 then
