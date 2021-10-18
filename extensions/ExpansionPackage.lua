@@ -585,7 +585,7 @@ SkillAnjiang:addSkill(LuaXingshang)
 ExCaoying:addRelateSkill('LuaJianxiong')
 ExCaoying:addRelateSkill('LuaXingshang')
 
-ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, true, false, 4)
+ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, false, false, 4)
 
 LuaYisuan =
     sgs.CreateTriggerSkill {

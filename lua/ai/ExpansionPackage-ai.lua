@@ -157,7 +157,7 @@ end
 
 -- 应援选择目标
 sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
-    self:sort(self.friends)
+    self:sort(self.friends_noself)
     for _, friend in ipairs(self.friends) do
         if
             not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
@@ -384,4 +384,23 @@ sgs.ai_skill_cardask['@LuaYuce-show'] = function(self, data)
         end
     end
     return self.player:getHandcards():first()
+end
+
+-- 李傕
+-- 李傕暂不考虑【亦算】
+sgs.ai_skill_invoke.LuaYisuan = function(self, data)
+    return false
+end
+
+-- 狼袭
+
+sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
+    self:updatePlayers()
+    targets = sgs.QList2Table(targets)
+    if #targets == 0 then
+        return nil
+    end
+    self:sort(targets, 'hp')
+    targets = sgs.reverse(targets)
+    return targets[1]
 end
