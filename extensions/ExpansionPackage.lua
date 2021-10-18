@@ -5183,7 +5183,7 @@ LuaZhiyanMod =
 ExStarXuhuang:addSkill(LuaZhiyan)
 SkillAnjiang:addSkill(LuaZhiyanMod)
 
-ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, true)
+ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true)
 
 LuaZhengnan =
     sgs.CreateTriggerSkill {
@@ -5223,9 +5223,7 @@ LuaZhiman =
         if damage.to:objectName() == player:objectName() then
             return false
         end
-        local data2 = sgs.QVariant()
-        data2:setValue(damage.to)
-        if room:askForSkillInvoke(player, self:objectName(), data2) then
+        if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
             if not damage.to:isAllNude() then
