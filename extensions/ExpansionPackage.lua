@@ -3148,7 +3148,7 @@ JieLiru:addSkill(LuaJuece)
 JieLiru:addSkill(LuaMieji)
 JieLiru:addSkill(LuaFencheng)
 
-JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
+JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true)
 
 LuaJunxingCard =
     sgs.CreateSkillCard {

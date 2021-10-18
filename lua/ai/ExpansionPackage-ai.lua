@@ -303,3 +303,85 @@ sgs.ai_skill_use['@@LuaQiaosi!'] = function(self, prompt, method)
     end
     return '#LuaQiaosiCard:' .. table.concat(to_give, '+') .. ':.'
 end
+
+-- 界满宠
+-- 峻刑
+sgs.ai_use_value['LuaJunxingCard'] = 10
+sgs.ai_use_priority['LuaJunxingCard'] = 1.2
+
+local LuaJunxing_skill = {}
+LuaJunxing_skill.name = 'LuaJunxing'
+
+table.insert(sgs.ai_skills, LuaJunxing_skill)
+
+-- 是否发动过“峻刑”，如果没有，进行选择
+LuaJunxing_skill.getTurnUseCard = function(self, inclusive)
+    if not self.player:isKongcheng() and not self.player:hasUsed('#LuaJunxingCard') then
+        return sgs.Card_Parse('#LuaJunxingCard:.:')
+    end
+end
+
+sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
+    -- 简单处理，丢最不值钱的一张手牌
+    local cards = sgs.QList2Table(self.player:getHandcards())
+    self:sortByKeepValue(cards)
+    -- 如果有队友翻面，翻队友
+    for _, friend in ipairs(self.friends_noself) do
+        if not friend:faceUp() then
+            use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
+            if use.to then
+                use.to:append(friend)
+            end
+            return
+        end
+    end
+    -- 选敌人血最少的
+    self:sort(self.enemies, 'hp')
+    for _, enemy in ipairs(self.enemies) do
+        if self:isWeak(enemy) then
+            use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
+            if use.to then
+                use.to:append(enemy)
+            end
+            return
+        end
+    end
+    -- 随便找一个倒霉敌人
+    use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
+    if use.to then
+        use.to:append(self.enemies[1])
+    end
+end
+
+-- 御策弃牌部分援引满宠，不作额外的处理
+-- 御策展示部分
+sgs.ai_skill_cardask['@LuaYuce-show'] = function(self, data)
+    local damage = self.room:getTag('CurrentDamageStruct'):toDamage()
+    if not damage.from or damage.from:isDead() then
+        return '.'
+    end
+    if self:isFriend(damage.from) then
+        return '$' .. self.player:handCards():first()
+    end
+    local flag = string.format('%s_%s_%s', 'visible', self.player:objectName(), damage.from:objectName())
+    local types = {sgs.Card_TypeBasic, sgs.Card_TypeEquip, sgs.Card_TypeTrick}
+    for _, card in sgs.qlist(damage.from:getHandcards()) do
+        if card:hasFlag('visible') or card:hasFlag(flag) then
+            table.removeOne(types, card:getTypeId())
+        end
+        if #types == 0 then
+            break
+        end
+    end
+    if #types == 0 then
+        types = {sgs.Card_TypeBasic}
+    end
+    for _, card in sgs.qlist(self.player:getHandcards()) do
+        for _, cardtype in ipairs(types) do
+            if card:getTypeId() == cardtype then
+                return card
+            end
+        end
+    end
+    return self.player:getHandcards():first()
+end
