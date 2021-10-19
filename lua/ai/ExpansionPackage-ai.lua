@@ -337,10 +337,10 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
             return
         end
     end
-    -- 选敌人血最少的
-    self:sort(self.enemies, 'hp')
+    -- 选敌人防御最低且未被翻面的
+    self:sort(self.enemies, 'defense')
     for _, enemy in ipairs(self.enemies) do
-        if self:isWeak(enemy) then
+        if self:isWeak(enemy) and enemy:faceUp() and not enemy:hasSkill('zhaxiang') then
             use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
             if use.to then
                 use.to:append(enemy)
@@ -348,10 +348,16 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
             return
         end
     end
-    -- 随机选择一名敌人作为目标
+    -- 随机选择一名正面朝上敌人作为目标
+    local face_up_enemies = {}
+    for _, enemy in ipairs(self.enemies) do
+        if enemy:faceUp() and not enemy:hasSkill('zhaxiang') then
+            table.insert(face_up_enemies, enemy)
+        end
+    end
     use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
     if use.to then
-        use.to:append(self.enemies[math.random(1, #self.enemies)])
+        use.to:append(face_up_enemies[math.random(1, #face_up_enemies)])
     end
 end
 
