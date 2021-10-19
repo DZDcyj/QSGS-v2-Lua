@@ -38,10 +38,12 @@ LuaFeiyangCard =
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
-        room:throwCard(
-            room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
-            source
-        )
+        if source:getJudgingArea():length() > 0 then
+            room:throwCard(
+                room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
+                source
+            )
+        end
     end
 }
 
@@ -55,7 +57,7 @@ LuaFeiyangVS =
     view_as = function(self, cards)
         if #cards == 2 then
             local vs_card = LuaFeiyangCard:clone()
-            for _, cd in ipairs(cards)do
+            for _, cd in ipairs(cards) do
                 vs_card:addSubcard(cd)
             end
             return vs_card
