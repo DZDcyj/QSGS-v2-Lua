@@ -9,7 +9,7 @@ local rinsanFuncModule = require('QSanguoshaLuaFunction')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 Skadi = sgs.General(extension, 'Skadi', 'god', '5', false, true)
-Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true, true)
+Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
 Rinsan = sgs.General(extension, 'Rinsan', 'shu', '3', true, true)
 SPFuhua = sgs.General(extension, 'SPFuhua', 'qun', '4', true, true)

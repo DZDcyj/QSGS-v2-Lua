@@ -204,3 +204,33 @@ sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
     end
     return not self:isWeak()
 end
+
+-- 白嫖
+sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
+    local targets = sgs.QList2Table(targetlist)
+    self:sort(targets)
+    local friends, enemies = {}, {}
+    for _, target in ipairs(targets) do
+        -- 如果队友头上有兵/乐，则拿走
+        if self:isFriend(target) and (target:containsTrick('indulgence') or target:containsTrick('supply_shortage')) then
+            table.insert(friends, target)
+        end
+
+        -- 如果敌人有牌，则考虑纳入
+        if not self:isFriend(target) and not target:isNude() then
+            table.insert(enemies, target)
+        end
+    end
+    if #friends > 0 then
+        self:sort(friends, 'defense')
+        return friends[1]
+    end
+    if #enemies > 0 then
+        self:sort(enemies, 'defense')
+        return enemies[1]
+    end
+    if not self.player:isAllNude() then
+        return self.player
+    end
+    return nil
+end
