@@ -404,6 +404,11 @@ end
 sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
     self:updatePlayers()
     targets = sgs.QList2Table(targets)
+    for _, p in ipairs(targets) do
+        if self:isFriend(p) then
+            table.removeOne(targets, p)
+        end
+    end
     if #targets == 0 then
         return nil
     end
