@@ -1,5 +1,7 @@
 -- 群友包 AI
 -- Created by DZDcyj at 2021/9/10
+
+-- 晒卡弃牌/掉血
 sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optional, include_equip)
     -- 如果要弃置的牌大于总牌数，则不弃牌
     if discard_num > self.player:getCardCount(true) then
@@ -52,6 +54,7 @@ sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optiona
     return to_discard
 end
 
+-- 搜图送牌
 local LuaSoutu_skill = {}
 LuaSoutu_skill.name = 'LuaSoutuVS'
 
@@ -91,6 +94,7 @@ end
 sgs.ai_use_value['LuaSoutuCard'] = 100
 sgs.ai_use_priority['LuaSoutuCard'] = 10
 
+-- 谋害
 sgs.ai_skill_playerchosen.LuaMouhai = function(self, targetlist)
     local targets = sgs.QList2Table(targetlist)
     self:sort(targets)
@@ -117,6 +121,7 @@ sgs.ai_skill_playerchosen.LuaMouhai = function(self, targetlist)
     return nil
 end
 
+-- 绝杀
 sgs.ai_skill_invoke.LuaJuesha = function(self, data)
     local target = data:toPlayer()
     if not self:isFriend(target) then
@@ -130,6 +135,7 @@ sgs.ai_skill_playerchosen.LuaChuanyi = function(self, targetlist)
     return nil
 end
 
+-- 引玉给牌
 sgs.ai_skill_cardask['@LuaYinyu-show'] = function(self, data)
     local target = data:toPlayer()
     if target:objectName() == self.player:objectName() then
@@ -153,6 +159,7 @@ sgs.ai_skill_cardask['@LuaYinyu-show'] = function(self, data)
     return cards[1]
 end
 
+-- 引玉
 sgs.ai_skill_invoke.LuaYinyu = function(self, data)
     local target = data:toPlayer()
     if self:isFriend(target) then
@@ -161,6 +168,7 @@ sgs.ai_skill_invoke.LuaYinyu = function(self, data)
     return false
 end
 
+-- 抛砖
 sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     local target = data:toPlayer()
     if self:isFriend(target) then
@@ -169,6 +177,7 @@ sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     return true
 end
 
+-- 榨汁
 sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
     local target = data:toPlayer()
     if self:isFriend(target) then
