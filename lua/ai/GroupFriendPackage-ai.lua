@@ -234,3 +234,11 @@ sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
     end
     return nil
 end
+
+-- 缴械
+sgs.ai_skill_invoke.LuaJiaoxie = function(self,data)
+    local target = data:toPlayer()
+    if not self:isFriend(target) then return true end
+    return false
+end
+
