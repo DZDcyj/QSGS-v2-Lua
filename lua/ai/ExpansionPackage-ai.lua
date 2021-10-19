@@ -413,6 +413,5 @@ sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
         return nil
     end
     self:sort(targets, 'hp')
-    targets = sgs.reverse(targets)
     return targets[1]
 end
