@@ -266,3 +266,9 @@ sgs.ai_skill_use['@@LuaPenshui'] = function(self, prompt, method)
     end
     return '.'
 end
+
+-- 影噬
+sgs.ai_skill_choice['LuaYingshi'] = function(self, choices)
+    -- AI 只选择加血
+    return choices[1]
+end
