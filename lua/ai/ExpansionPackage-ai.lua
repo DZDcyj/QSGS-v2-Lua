@@ -437,3 +437,199 @@ sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
     self:sort(targets, 'hp')
     return targets[1]
 end
+
+-- 绝策
+sgs.ai_skill_playerchosen['LuaJuece'] = function(self, targets)
+    self:updatePlayers()
+    targets = sgs.QList2Table(targets)
+    for _, p in ipairs(targets) do
+        if self:isFriend(p) then
+            table.removeOne(targets, p)
+        end
+    end
+    if #targets == 0 then
+        return nil
+    end
+    self:sort(targets, 'hp')
+    return targets[1]
+end
+
+-- 灭计
+local LuaMieji_skill = {}
+LuaMieji_skill.name = 'LuaMieji'
+table.insert(sgs.ai_skills, LuaMieji_skill)
+LuaMieji_skill.getTurnUseCard = function(self)
+    if self.player:hasUsed('#LuaMiejiCard') or self.player:isKongcheng() then
+        return
+    end
+    return sgs.Card_Parse('#LuaMiejiCard:.:')
+end
+
+sgs.ai_skill_use_func['#LuaMiejiCard'] = function(_card, use, self)
+    local room = self.room
+    local nextAlive = self.player:getNextAlive()
+    local hasLightning, hasIndulgence, hasSupplyShortage
+    local tricks = nextAlive:getJudgingArea()
+    if not tricks:isEmpty() and not nextAlive:containsTrick('YanxiaoCard') and not nextAlive:hasSkill('qianxi') then
+        local trick = tricks:at(tricks:length() - 1)
+        if self:hasTrickEffective(trick, nextAlive) then
+            if trick:isKindOf('Lightning') then
+                hasLightning = true
+            elseif trick:isKindOf('Indulgence') then
+                hasIndulgence = true
+            elseif trick:isKindOf('SupplyShortage') then
+                hasSupplyShortage = true
+            end
+        end
+    end
+
+    local putcard = nil
+    local cards = self.player:getCards('h')
+    cards = sgs.QList2Table(cards)
+    self:sortByUseValue(cards, true)
+    for _, card in ipairs(cards) do
+        if card:isBlack() and card:isKindOf('TrickCard') then
+            if hasLightning and card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 then
+                if self:isEnemy(nextAlive) then
+                    putcard = card
+                    break
+                else
+                    goto continue_point
+                end
+            end
+            if hasSupplyShortage and card:getSuit() == sgs.Card_Club then
+                if self:isFriend(nextAlive) then
+                    putcard = card
+                    break
+                else
+                    goto continue_point
+                end
+            end
+            if hasIndulgence then
+                if sgs.Sanguosha:getCard(room:drawCard()):getSuit() == sgs.Card_Heart and self:isFriend(nextAlive) then
+                    return
+                end
+                if self:isFriend(nextAlive) then
+                    putcard = card
+                    break
+                else
+                    goto continue_point
+                end
+            end
+            if not putcard then
+                putcard = card
+                break
+            end
+            ::continue_point::
+        end
+    end
+
+    local target
+    for _, enemy in ipairs(self.enemies) do
+        if self:needKongcheng(enemy) and enemy:getHandcardNum() <= 2 then
+            goto continue_point
+        end
+        if not enemy:isNude() then
+            target = enemy
+            break
+        end
+        ::continue_point::
+    end
+    if not target then
+        for _, friend in ipairs(self.friends_noself) do
+            if self:needKongcheng(friend) and friend:getHandcardNum() < 2 and not friend:isKongcheng() then
+                target = friend
+                break
+            end
+        end
+    end
+
+    if putcard and target then
+        use.card = sgs.Card_Parse('#LuaMiejiCard:' .. putcard:getEffectiveId() .. ':')
+        if use.to then
+            use.to:append(target)
+        end
+        return
+    end
+end
+
+sgs.ai_use_priority['LuaMiejiCard'] = sgs.ai_use_priority.Dismantlement + 1
+
+sgs.ai_card_intention.LuaMiejiCard = function(self, card, from, tos)
+    for _, to in ipairs(tos) do
+        if self:needKongcheng(to) and to:getHandcardNum() <= 2 then
+            goto continue_point
+        end
+        sgs.updateIntention(from, to, 10)
+        ::continue_point::
+    end
+end
+
+-- 焚城
+local LuaFencheng_skill = {}
+LuaFencheng_skill.name = 'LuaFencheng'
+table.insert(sgs.ai_skills, LuaFencheng_skill)
+LuaFencheng_skill.getTurnUseCard = function(self)
+    if self.player:getMark('@burn') == 0 then
+        return false
+    end
+    return sgs.Card_Parse('#LuaFenchengCard:.:')
+end
+
+sgs.ai_skill_use_func['#LuaFenchengCard'] = function(card, use, self)
+    local value = 0
+    local neutral = 0
+    local damage = {from = self.player, damage = 2, nature = sgs.DamageStruct_Fire}
+    local lastPlayer = self.player
+    for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+        damage.to = p
+        if self:damageIsEffective_(damage) then
+            if sgs.evaluatePlayerRole(p, self.player) == 'neutral' then
+                neutral = neutral + 1
+            end
+            local v = 4
+            if
+                (self:getDamagedEffects(p, self.player) or self:needToLoseHp(p, self.player)) and
+                    self:getCardsNum('Peach', p, self.player) + p:getHp() > 2
+             then
+                v = v - 6
+            elseif
+                lastPlayer:objectName() ~= self.player:objectName() and
+                    lastPlayer:getCardCount(true) < p:getCardCount(true)
+             then
+                v = v - 4
+            elseif lastPlayer:objectName() == self.player:objectName() and not p:isNude() then
+                v = v - 4
+            end
+            if self:isFriend(p) then
+                value = value - v - p:getHp() + 2
+            elseif self:isEnemy(p) then
+                value = value + v + p:getLostHp() - 1
+            end
+            if
+                p:isLord() and p:getHp() <= 2 and
+                    (self:isEnemy(p, lastPlayer) and p:getCardCount(true) <= lastPlayer:getCardCount(true) or
+                        lastPlayer:objectName() == self.player:objectName() and
+                            (not p:canDiscard(p, 'he') or p:isNude()))
+             then
+                if not self:isEnemy(p) then
+                    if self:getCardsNum('Peach') + self:getCardsNum('Peach', p, self.player) + p:getHp() <= 2 then
+                        return
+                    end
+                else
+                    use.card = card
+                    return
+                end
+            end
+        end
+    end
+
+    if neutral > self.player:aliveCount() / 2 then
+        return
+    end
+    if value > 0 then
+        use.card = card
+    end
+end
+
+sgs.ai_use_priority['LuaFenchengCard'] = 9.1

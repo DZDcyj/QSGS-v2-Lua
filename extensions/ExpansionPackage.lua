@@ -2937,7 +2937,7 @@ LuaZhiyi =
 
 ExZhangyi:addSkill(LuaZhiyi)
 
-JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
+JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true)
 
 LuaJuece =
     sgs.CreateTriggerSkill {
