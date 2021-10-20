@@ -272,3 +272,75 @@ sgs.ai_skill_choice['LuaYingshi'] = function(self, choices)
     -- AI 只选择加血
     return choices[1]
 end
+
+-- 智屑
+-- 将锦囊牌当作连环使用
+local LuaZhixie_skill = {}
+LuaZhixie_skill.name = 'LuaZhixie'
+table.insert(sgs.ai_skills, LuaZhixie_skill)
+LuaZhixie_skill.getTurnUseCard = function(self)
+    local cards = self.player:getCards('h')
+    cards = sgs.QList2Table(cards)
+
+    local card
+    self:sortByUseValue(cards, true)
+    local slash = self:getCard('FireSlash') or self:getCard('ThunderSlash') or self:getCard('Slash')
+    if slash then
+        local dummy_use = {isDummy = true}
+        self:useBasicCard(slash, dummy_use)
+        if not dummy_use.card then
+            slash = nil
+        end
+    end
+
+    for _, acard in ipairs(cards) do
+        if acard:getTypeId() == sgs.Card_TypeTrick then
+            local shouldUse = true
+            if self:getUseValue(acard) > sgs.ai_use_value.IronChain then
+                local dummy_use = {isDummy = true}
+                self:useTrickCard(acard, dummy_use)
+                if dummy_use.card then
+                    shouldUse = false
+                end
+            end
+            if shouldUse and (not slash or slash:getEffectiveId() ~= acard:getEffectiveId()) then
+                card = acard
+                break
+            end
+        end
+    end
+
+    if not card then
+        return nil
+    end
+
+    local number = card:getNumberString()
+    local card_id = card:getEffectiveId()
+    local card_str = ('iron_chain:LuaZhixie[club:%s]=%d'):format(number, card_id)
+    local skillcard = sgs.Card_Parse(card_str)
+    assert(skillcard)
+    return skillcard
+end
+
+sgs.ai_cardneed.LuaZhixie = function(to, card)
+	return card:getTypeId() == sgs.Card_TypeTrick and to:getHandcardNum() <= 2
+end
+
+-- 智屑
+-- 回合结束选择角色横置
+sgs.ai_skill_use['@@LuaZhixie'] = function(self, prompt, method)
+    local x = self.player:getMark('LuaZhixie')
+    local targets = {}
+    for _, enemy in ipairs(self.enemies) do
+        if not enemy:isChained() then
+            table.insert(targets, enemy:objectName())
+        end
+        if #targets >= x then
+            break
+        end
+    end
+    if #targets > 0 then
+        return '#LuaZhixieCard:.:->' .. table.concat(targets, '+')
+    end
+    return '.'
+end

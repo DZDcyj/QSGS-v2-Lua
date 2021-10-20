@@ -19,7 +19,7 @@ SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true)
 Anan = sgs.General(extension, 'Anan', 'qun', '4', false)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true)
-Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true, true)
+Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 
