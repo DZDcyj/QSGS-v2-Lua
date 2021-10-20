@@ -224,7 +224,29 @@ sgs.ai_skill_choice['LuaZhengnan'] = function(self, choices)
     return items[1]
 end
 
--- 马钧暂时不考虑使用【精械】
+-- 精械
+-- 暂不考虑加强防具
+sgs.ai_skill_cardask['LuaJingxie-Invoke'] = function(self, data, pattern)
+    local dying = data:toDying()
+    local peaches = 1 - dying.who:getHp()
+    local armors = {}
+    if self:getCardsNum('Peach') + self:getCardsNum('Analeptic') < peaches then
+        for _, acard in sgs.qlist(self.player:getCards('h')) do
+            if acard:isKindOf('Armor') then
+                table.insert(armors, acard)
+            end
+        end
+        if #armors > 0 then
+            self:sortByKeepValue(armors, true)
+            return armors[1]
+        end
+        if self.player:getArmor() then
+            return '$' .. self.player:getArmor():getEffectiveId()
+        end
+    end
+    return nil
+end
+
 -- 巧思
 sgs.ai_use_value['LuaQiaosiStartCard'] = 100
 sgs.ai_use_priority['LuaQiaosiStartCard'] = 10
