@@ -8,7 +8,7 @@ extension = sgs.Package('GroupFriendPackage')
 local rinsanFuncModule = require('QSanguoshaLuaFunction')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-Skadi = sgs.General(extension, 'Skadi', 'god', '5', false, true)
+Skadi = sgs.General(extension, 'Skadi', 'god', '5', false)
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
 Rinsan = sgs.General(extension, 'Rinsan', 'shu', '3', true, true)
@@ -56,7 +56,7 @@ LuaChuntian =
 
 LuaPenshuiCard =
     sgs.CreateSkillCard {
-    name = 'LuaPenshui',
+    name = 'LuaPenshuiCard',
     filter = function(self, targets, to_select)
         return #targets < sgs.Self:getMark('@Faqing') and to_select:objectName() ~= sgs.Self:objectName()
     end,

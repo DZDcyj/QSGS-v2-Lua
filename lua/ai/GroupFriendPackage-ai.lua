@@ -248,3 +248,21 @@ end
 sgs.ai_skill_choice['LuaQingyu'] = function(self, choices)
     return 'draw1'
 end
+
+-- 喷水
+sgs.ai_skill_use['@@LuaPenshui'] = function(self, prompt, method)
+    local x = self.player:getMark('@Faqing')
+    local targets = {}
+    for _, enemy in ipairs(self.enemies) do
+        if enemy:getHp() == 1 or enemy:getDefensiveHorse() or enemy:getArmor() or enemy:getEquips():length() >= 2 then
+            table.insert(targets, enemy:objectName())
+        end
+        if #targets >= x then
+            break
+        end
+    end
+    if #targets > 0 then
+        return '#LuaPenshuiCard:.:->' .. table.concat(targets, '+')
+    end
+    return '.'
+end
