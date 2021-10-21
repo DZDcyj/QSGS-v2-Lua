@@ -2248,7 +2248,7 @@ LuaShuangxiong =
 
 JieYanliangWenchou:addSkill(LuaShuangxiong)
 
-JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true, true)
+JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true)
 
 LuaXuanfengCard =
     sgs.CreateSkillCard {

@@ -633,3 +633,32 @@ sgs.ai_skill_use_func['#LuaFenchengCard'] = function(card, use, self)
 end
 
 sgs.ai_use_priority['LuaFenchengCard'] = 9.1
+
+-- 凌统
+-- 旋风
+sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
+    local targets = {}
+    for _, enemy in ipairs(self.enemies) do
+        if not enemy:isNude() and self.player:canDiscard(enemy, 'he') then
+            table.insert(targets, enemy:objectName())
+        end
+        -- 优先多目标选择
+        if #targets >= 2 then
+            break
+        end
+    end
+    if #targets > 0 then
+        self:sort(targets, 'defense')
+        return '#LuaXuanfengCard:.:->' .. table.concat(targets, '+')
+    end
+    return '.'
+end
+
+-- 旋风选择伤害目标
+sgs.ai_skill_playerchosen['LuaXuanfeng'] = function(self, targets)
+    targets = sgs.QList2Table(targets)
+    self:sort(targets, 'defense')
+    return targets[1]
+end
+
+-- 凌统暂不考虑使用【勇进】（太阴间了）
