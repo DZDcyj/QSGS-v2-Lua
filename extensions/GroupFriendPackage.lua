@@ -8,18 +8,18 @@ extension = sgs.Package('GroupFriendPackage')
 local rinsanFuncModule = require('QSanguoshaLuaFunction')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-Skadi = sgs.General(extension, 'Skadi', 'god', '5', false, true)
-Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true, true)
+Skadi = sgs.General(extension, 'Skadi', 'god', '5', false)
+Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
 Rinsan = sgs.General(extension, 'Rinsan', 'shu', '3', true, true)
 SPFuhua = sgs.General(extension, 'SPFuhua', 'qun', '4', true, true)
-SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, true)
-Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true, true)
-SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true, true)
-Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
+SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true)
+Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true)
+SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '4', true)
+Anan = sgs.General(extension, 'Anan', 'qun', '4', false)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
-Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true, true)
-Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true, true)
+Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true)
+Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 
@@ -56,7 +56,7 @@ LuaChuntian =
 
 LuaPenshuiCard =
     sgs.CreateSkillCard {
-    name = 'LuaPenshui',
+    name = 'LuaPenshuiCard',
     filter = function(self, targets, to_select)
         return #targets < sgs.Self:getMark('@Faqing') and to_select:objectName() ~= sgs.Self:objectName()
     end,

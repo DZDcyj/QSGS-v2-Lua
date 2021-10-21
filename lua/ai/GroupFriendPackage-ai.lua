@@ -1,3 +1,7 @@
+-- 群友包 AI
+-- Created by DZDcyj at 2021/9/10
+
+-- 晒卡弃牌/掉血
 sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optional, include_equip)
     -- 如果要弃置的牌大于总牌数，则不弃牌
     if discard_num > self.player:getCardCount(true) then
@@ -50,6 +54,7 @@ sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optiona
     return to_discard
 end
 
+-- 搜图送牌
 local LuaSoutu_skill = {}
 LuaSoutu_skill.name = 'LuaSoutuVS'
 
@@ -89,9 +94,10 @@ end
 sgs.ai_use_value['LuaSoutuCard'] = 100
 sgs.ai_use_priority['LuaSoutuCard'] = 10
 
+-- 谋害
 sgs.ai_skill_playerchosen.LuaMouhai = function(self, targetlist)
     local targets = sgs.QList2Table(targetlist)
-    self:sort(targets)
+    self:sort(targets, 'defense')
     local friends, enemies = {}, {}
     for _, target in ipairs(targets) do
         if not self:cantbeHurt(target, self.player) and self:damageIsEffective(target, nil, self.player) then
@@ -115,6 +121,7 @@ sgs.ai_skill_playerchosen.LuaMouhai = function(self, targetlist)
     return nil
 end
 
+-- 绝杀
 sgs.ai_skill_invoke.LuaJuesha = function(self, data)
     local target = data:toPlayer()
     if not self:isFriend(target) then
@@ -128,6 +135,7 @@ sgs.ai_skill_playerchosen.LuaChuanyi = function(self, targetlist)
     return nil
 end
 
+-- 引玉给牌
 sgs.ai_skill_cardask['@LuaYinyu-show'] = function(self, data)
     local target = data:toPlayer()
     if target:objectName() == self.player:objectName() then
@@ -151,6 +159,7 @@ sgs.ai_skill_cardask['@LuaYinyu-show'] = function(self, data)
     return cards[1]
 end
 
+-- 引玉
 sgs.ai_skill_invoke.LuaYinyu = function(self, data)
     local target = data:toPlayer()
     if self:isFriend(target) then
@@ -159,6 +168,7 @@ sgs.ai_skill_invoke.LuaYinyu = function(self, data)
     return false
 end
 
+-- 抛砖
 sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     local target = data:toPlayer()
     if self:isFriend(target) then
@@ -167,6 +177,7 @@ sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     return true
 end
 
+-- 榨汁
 sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
     local target = data:toPlayer()
     if self:isFriend(target) then
@@ -192,4 +203,154 @@ sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
         return true
     end
     return not self:isWeak()
+end
+
+-- 白嫖
+sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
+    local targets = sgs.QList2Table(targetlist)
+    self:sort(targets)
+    local friends, enemies = {}, {}
+    for _, target in ipairs(targets) do
+        -- 如果队友或自己头上有兵/乐，则拿走
+        if self:isFriend(target) and (target:containsTrick('indulgence') or target:containsTrick('supply_shortage')) then
+            table.insert(friends, target)
+        end
+
+        -- 如果敌人有牌，则考虑纳入
+        if not self:isFriend(target) and not target:isAllNude() then
+            table.insert(enemies, target)
+        end
+    end
+    if #friends > 0 then
+        self:sort(friends, 'defense')
+        return friends[1]
+    end
+    if #enemies > 0 then
+        self:sort(enemies, 'defense')
+        return enemies[1]
+    end
+    if not self.player:isAllNude() then
+        return self.player
+    end
+    return nil
+end
+
+-- 缴械
+sgs.ai_skill_invoke.LuaJiaoxie = function(self, data)
+    local target = data:toPlayer()
+    if not self:isFriend(target) then
+        return true
+    end
+    return false
+end
+
+-- 情欲
+sgs.ai_skill_choice['LuaQingyu'] = function(self, choices)
+    -- draw1 和 cancel
+    local items = choices:split('+')
+    return items[1]
+end
+
+-- 喷水
+sgs.ai_skill_use['@@LuaPenshui'] = function(self, prompt, method)
+    local x = self.player:getMark('@Faqing')
+    local targets = {}
+    self:sort(self.enemies, 'defense')
+    for _, enemy in ipairs(self.enemies) do
+        if
+            enemy:getHp() <= 2 or (enemy:getWeapon() and self.player:getArmor()) or
+                (enemy:getOffensiveHorse() and self.player:getDefensiveHorse()) or
+                enemy:getDefensiveHorse() or
+                enemy:getArmor() or
+                enemy:getEquips():length() >= 2
+         then
+            table.insert(targets, enemy:objectName())
+        end
+        if #targets >= x then
+            break
+        end
+    end
+    if #targets > 0 then
+        return '#LuaPenshuiCard:.:->' .. table.concat(targets, '+')
+    end
+    return '.'
+end
+
+-- 影噬
+sgs.ai_skill_choice['LuaYingshi'] = function(self, choices)
+    -- AI 只选择加血上限
+    -- 选项1、2分别为加上限/扣血上限获得技能
+    return choices[1]
+end
+
+-- 智屑
+-- 将锦囊牌当作连环使用
+local LuaZhixie_skill = {}
+LuaZhixie_skill.name = 'LuaZhixie'
+table.insert(sgs.ai_skills, LuaZhixie_skill)
+LuaZhixie_skill.getTurnUseCard = function(self)
+    local cards = self.player:getCards('h')
+    cards = sgs.QList2Table(cards)
+
+    local card
+    self:sortByUseValue(cards, true)
+    local slash = self:getCard('FireSlash') or self:getCard('ThunderSlash') or self:getCard('Slash')
+    if slash then
+        local dummy_use = {isDummy = true}
+        self:useBasicCard(slash, dummy_use)
+        if not dummy_use.card then
+            slash = nil
+        end
+    end
+
+    for _, acard in ipairs(cards) do
+        if acard:getTypeId() == sgs.Card_TypeTrick then
+            local shouldUse = true
+            if self:getUseValue(acard) > sgs.ai_use_value.IronChain then
+                local dummy_use = {isDummy = true}
+                self:useTrickCard(acard, dummy_use)
+                if dummy_use.card then
+                    shouldUse = false
+                end
+            end
+            if shouldUse and (not slash or slash:getEffectiveId() ~= acard:getEffectiveId()) then
+                card = acard
+                break
+            end
+        end
+    end
+
+    if not card then
+        return nil
+    end
+
+    local number = card:getNumberString()
+    local card_id = card:getEffectiveId()
+    local card_str = ('iron_chain:LuaZhixie[club:%s]=%d'):format(number, card_id)
+    local skillcard = sgs.Card_Parse(card_str)
+    assert(skillcard)
+    return skillcard
+end
+
+sgs.ai_cardneed.LuaZhixie = function(to, card)
+    return card:getTypeId() == sgs.Card_TypeTrick and to:getHandcardNum() <= 2
+end
+
+-- 智屑
+-- 回合结束选择角色横置
+sgs.ai_skill_use['@@LuaZhixie'] = function(self, prompt, method)
+    local x = self.player:getMark('LuaZhixie')
+    local targets = {}
+    for _, enemy in ipairs(self.enemies) do
+        if not enemy:isChained() then
+            table.insert(targets, enemy:objectName())
+        end
+        if #targets >= x then
+            break
+        end
+    end
+    if #targets > 0 then
+        return '#LuaZhixieCard:.:->' .. table.concat(targets, '+')
+    end
+    return '.'
 end
