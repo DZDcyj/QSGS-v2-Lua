@@ -850,3 +850,50 @@ sgs.ai_skill_choice['LuaRangjie'] = function(self, choices)
 end
 
 -- 杨彪暂不考虑使用【义争】
+
+-- 伊籍
+-- 急援
+sgs.ai_skill_invoke.LuaJiyuan = function(self, data)
+    local target = data:toPlayer()
+    if self:isFriend(target) then
+        return true
+    end
+    return false
+end
+
+-- 机捷
+local LuaJijie_skill = {}
+LuaJijie_skill.name = 'LuaJijie'
+
+table.insert(sgs.ai_skills, LuaJijie_skill)
+
+LuaJijie_skill.getTurnUseCard = function(self, inclusive)
+    if not self.player:hasUsed('#LuaJijieCard') then
+        return sgs.Card_Parse('#LuaJijieCard:.:')
+    end
+end
+
+sgs.ai_skill_use_func['#LuaJijieCard'] = function(card, use, self)
+    local card_str = '#LuaJijieCard:.:'
+    local acard = sgs.Card_Parse(card_str)
+    assert(acard)
+    use.card = acard
+end
+
+sgs.ai_skill_playerchosen['LuaJijie'] = function(self, targets)
+    targets = sgs.QList2Table(targets)
+    self:sort(targets)
+    for _, target in ipairs(targets) do
+        if
+            self:isFriend(target) and
+                (not target:hasSkill('zishu') and not target:hasSkill('manjuan') and not target:hasSkill('LuaZishu')) and
+                not self:needKongcheng(target, true)
+         then
+            return target
+        end
+    end
+    return nil
+end
+
+sgs.ai_use_value['LuaJijieCard'] = 100
+sgs.ai_use_priority['LuaJijieCard'] = 10

@@ -1556,7 +1556,7 @@ ExMajun:addSkill(LuaJingxie)
 ExMajun:addSkill(LuaQiaosi)
 SkillAnjiang:addSkill(LuaJingxieTargetMod)
 
-ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true, true)
+ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true)
 
 LuaJijieCard =
     sgs.CreateSkillCard {
