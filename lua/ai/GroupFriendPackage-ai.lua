@@ -97,7 +97,7 @@ sgs.ai_use_priority['LuaSoutuCard'] = 10
 -- 谋害
 sgs.ai_skill_playerchosen.LuaMouhai = function(self, targetlist)
     local targets = sgs.QList2Table(targetlist)
-    self:sort(targets)
+    self:sort(targets, 'defense')
     local friends, enemies = {}, {}
     for _, target in ipairs(targets) do
         if not self:cantbeHurt(target, self.player) and self:damageIsEffective(target, nil, self.player) then
@@ -211,13 +211,13 @@ sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
     self:sort(targets)
     local friends, enemies = {}, {}
     for _, target in ipairs(targets) do
-        -- 如果队友头上有兵/乐，则拿走
+        -- 如果队友或自己头上有兵/乐，则拿走
         if self:isFriend(target) and (target:containsTrick('indulgence') or target:containsTrick('supply_shortage')) then
             table.insert(friends, target)
         end
 
         -- 如果敌人有牌，则考虑纳入
-        if not self:isFriend(target) and not target:isNude() then
+        if not self:isFriend(target) and not target:isAllNude() then
             table.insert(enemies, target)
         end
     end
@@ -246,15 +246,24 @@ end
 
 -- 情欲
 sgs.ai_skill_choice['LuaQingyu'] = function(self, choices)
-    return 'draw1'
+    -- draw1 和 cancel
+    local items = choices:split('+')
+    return items[1]
 end
 
 -- 喷水
 sgs.ai_skill_use['@@LuaPenshui'] = function(self, prompt, method)
     local x = self.player:getMark('@Faqing')
     local targets = {}
+    self:sort(self.enemies, 'defense')
     for _, enemy in ipairs(self.enemies) do
-        if enemy:getHp() == 1 or enemy:getDefensiveHorse() or enemy:getArmor() or enemy:getEquips():length() >= 2 then
+        if
+            enemy:getHp() <= 2 or (enemy:getWeapon() and self.player:getArmor()) or
+                (enemy:getOffensiveHorse() and self.player:getDefensiveHorse()) or
+                enemy:getDefensiveHorse() or
+                enemy:getArmor() or
+                enemy:getEquips():length() >= 2
+         then
             table.insert(targets, enemy:objectName())
         end
         if #targets >= x then
@@ -269,7 +278,8 @@ end
 
 -- 影噬
 sgs.ai_skill_choice['LuaYingshi'] = function(self, choices)
-    -- AI 只选择加血
+    -- AI 只选择加血上限
+    -- 选项1、2分别为加上限/扣血上限获得技能
     return choices[1]
 end
 
@@ -323,7 +333,7 @@ LuaZhixie_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_cardneed.LuaZhixie = function(to, card)
-	return card:getTypeId() == sgs.Card_TypeTrick and to:getHandcardNum() <= 2
+    return card:getTypeId() == sgs.Card_TypeTrick and to:getHandcardNum() <= 2
 end
 
 -- 智屑
