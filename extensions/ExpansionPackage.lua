@@ -2579,7 +2579,7 @@ LuaLiezhi =
 ExShenpei:addSkill(LuaShouye)
 ExShenpei:addSkill(LuaLiezhi)
 
-ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true, true)
+ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true)
 
 LuaZhaohan =
     sgs.CreateTriggerSkill {

@@ -719,3 +719,134 @@ end
 
 sgs.ai_use_value['LuaGusheCard'] = sgs.ai_use_value.ExNihilo - 0.1
 sgs.ai_use_priority['LuaGusheCard'] = sgs.ai_use_priority.ExNihilo - 0.1
+
+-- 杨彪
+-- 让节
+-- 移动牌
+sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
+    local source
+    local target
+    self:sort(self.friends, 'defense')
+    -- 移掉队友头上的兵乐
+    for _, friend in ipairs(self.friends) do
+        local judges = friend:getJudgingArea()
+        if not judges:isEmpty() then
+            for _, judge in sgs.qlist(judges) do
+                if not judge:isKindOf('YanxiaoCard') then
+                    source = friend
+                    for _, enemy in ipairs(self.enemies) do
+                        if
+                            not enemy:containsTrick(judge:objectName()) and not enemy:containsTrick('YanxiaoCard') and
+                                not self.room:isProhibited(self.player, enemy, judge) and
+                                not (enemy:hasSkill('hongyan') or judge:isKindOf('Lightning'))
+                         then
+                            target = enemy
+                            break
+                        end
+                    end
+                    if target then
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    if source and target then
+        return '#LuaRangjieCard:.:->' .. source:objectName() .. '+' .. target:objectName()
+    end
+
+    -- 将对面头上的言笑牌移过来
+    for _, enemy in ipairs(self.enemies) do
+        local judges = enemy:getJudgingArea()
+        if enemy:containsTrick('YanxiaoCard') then
+            source = enemy
+            for _, judge in sgs.qlist(judges) do
+                if judge:isKindOf('YanxiaoCard') then
+                    for _, friend in ipairs(self.friends) do
+                        if
+                            not friend:containsTrick(judge:objectName()) and
+                                not self.room:isProhibited(self.player, friend, judge) and
+                                not friend:getJudgingArea():isEmpty()
+                         then
+                            target = friend
+                            break
+                        end
+                    end
+                    if target then
+                        break
+                    end
+                    for _, friend in ipairs(self.friends) do
+                        if
+                            not friend:containsTrick(judge:objectName()) and
+                                not self.room:isProhibited(self.player, friend, judge)
+                         then
+                            target = friend
+                            break
+                        end
+                    end
+                    if target then
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    if source and target then
+        return '#LuaRangjieCard:.:->' .. source:objectName() .. '+' .. target:objectName()
+    end
+
+    -- 处理装备
+    -- 把对面装备移过来
+    for _, enemy in ipairs(self.enemies) do
+        if enemy:hasEquip() then
+            source = enemy
+        end
+    end
+
+    for _, friend in ipairs(self.friends) do
+        if
+            source and (source:getWeapon() and not friend:getWeapon()) or (source:getArmor() and not friend:getArmor()) or
+                (source:getDefensiveHorse() and not friend:getDefensiveHorse()) or
+                (source:getOffensiveHorse() and not friend:getOffensiveHorse()) or
+                (source:getTreasure() and not friend:getTreasure())
+         then
+            target = friend
+        end
+    end
+
+    if source and target then
+        return '#LuaRangjieCard:.:->' .. source:objectName() .. '+' .. target:objectName()
+    end
+
+    return '.'
+end
+
+-- 选择摸牌
+sgs.ai_skill_choice['LuaRangjie'] = function(self, choices)
+    -- 分别为obtainBasic、obtainTrick、obtainEquip、以及 cancel
+
+    -- 如果对面有离魂，则不摸牌
+    for _, enemy in ipairs(self.enemies) do
+        if enemy:hasSkill('lihun') then
+            return 'cancel'
+        end
+    end
+
+    -- 如果自己快没了就摸基本，看有无桃酒
+    if self:isWeak() then
+        return 'obtainBasic'
+    end
+
+    -- 正常情况下，基本、锦囊、装备以 442 概率分配
+    local rand = math.random(1, 100)
+    if rand > 80 then
+        return 'obtainEquip'
+    elseif rand > 40 then
+        return 'obtainTrick'
+    end
+    return 'obtainBasic'
+end
+
+-- 杨彪暂不考虑使用【义争】
