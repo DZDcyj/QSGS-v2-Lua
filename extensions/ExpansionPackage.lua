@@ -4678,7 +4678,7 @@ LuaXuezhaoTargetMod =
 SkillAnjiang:addSkill(LuaXuezhaoTargetMod)
 ExTenYearDongcheng:addSkill(LuaXuezhao)
 
-ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true, true)
+ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true)
 
 LuaGusheCard =
     sgs.CreateSkillCard {
