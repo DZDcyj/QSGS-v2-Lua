@@ -362,7 +362,7 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
     -- 选敌人防御最低且未被翻面的
     self:sort(self.enemies, 'defense')
     for _, enemy in ipairs(self.enemies) do
-        if self:isWeak(enemy) and enemy:faceUp() and not enemy:hasSkill('zhaxiang') then
+        if enemy:faceUp() and not enemy:hasSkill('zhaxiang') then
             use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
             if use.to then
                 use.to:append(enemy)
