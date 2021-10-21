@@ -662,3 +662,19 @@ sgs.ai_skill_playerchosen['LuaXuanfeng'] = function(self, targets)
 end
 
 -- 凌统暂不考虑使用【勇进】（太阴间了）
+
+-- 王元姬
+-- 谦冲
+sgs.ai_skill_choice['LuaQianchong'] = function(self, choices, data)
+    local items = choices:split('+')
+    -- 分别为基本、锦囊、装备
+
+    -- 统计顺手牵羊和杀的数量
+    local snatchesCount, slashCount = self:getCardsNum('Snatch'), self:getCardsNum('Slash')
+
+    -- 无限距离锦囊牌，当顺手较多的时候，使用锦囊
+    if snatchesCount > slashCount then
+        return items[2]
+    end
+    return items[1]
+end
