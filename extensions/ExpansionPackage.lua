@@ -4682,6 +4682,7 @@ ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true
 LuaGusheCard =
     sgs.CreateSkillCard {
     name = 'LuaGusheCard',
+    will_throw = false,
     filter = function(self, selected, to_select)
         return #selected < 3 and sgs.Self:canPindian(to_select, self:objectName())
     end,
