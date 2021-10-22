@@ -661,7 +661,7 @@ sgs.ai_use_priority['LuaFenchengCard'] = 9.1
 -- 凌统
 
 -- 比装备数量
-sgs.ai_compare_func['equipcard'] = function(a, b)
+sgs.ai_compare_funcs['equipcard'] = function(a, b)
     local c1 = a:getEquips():length()
     local c2 = b:getEquips():length()
     if c1 == c2 then
