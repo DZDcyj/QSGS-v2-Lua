@@ -2263,6 +2263,7 @@ LuaXuanfengCard =
         return sgs.Self:canDiscard(to_select, 'he')
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaXuanfeng')
         local map = {}
         local totaltarget
         for _, sp in ipairs(targets) do
