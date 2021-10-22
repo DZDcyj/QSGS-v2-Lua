@@ -661,7 +661,7 @@ sgs.ai_use_priority['LuaFenchengCard'] = 9.1
 -- 凌统
 
 -- 比装备数量
-sgs.ai_compare_funcs['equipcard'] = function(a, b)
+sgs.ai_compare_funcs['equipcard'] = function(a, b, self)
     local c1 = a:getEquips():length()
     local c2 = b:getEquips():length()
     if c1 == c2 then
@@ -677,9 +677,9 @@ sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
     for _, enemy in ipairs(self.enemies) do
         if not enemy:isNude() and self.player:canDiscard(enemy, 'he') then
             if enemy:hasEquip() then
-                table.insert(equipped_targets, enemy:objectName())
+                table.insert(equipped_targets, enemy)
             else
-                table.insert(no_equip_targets, enemy:objectName())
+                table.insert(no_equip_targets, enemy)
             end
         end
     end
@@ -689,9 +689,9 @@ sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
     -- 优先拆有装备的
     if #equipped_targets > 0 then
         self:sort(equipped_targets, 'equipcard')
-        table.insert(targets, equipped_targets[1]:objectName())
+        table.insert(targets, equipped_targets[1])
         if equipped_targets[1]:getEquips():length() <= 1 and #equipped_targets > 1 then
-            table.insert(targets, equipped_targets[2]:objectName())
+            table.insert(targets, equipped_targets[2])
         end
     end
 
@@ -699,19 +699,23 @@ sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
     if #targets <= 1 then
         -- 如果只有第一个空城带单装备的，直接引入第二目标
         if targets[1]:isKongcheng() and #no_equip_targets > 0 then
-            table.insert(targets, no_equip_targets[1]:objectName())
+            table.insert(targets, no_equip_targets[1])
         end
 
         -- 随机选择是否引入
         local random = math.random(0, 1)
         if random == 1 and #no_equip_targets > 0 then
-            table.insert(targets, no_equip_targets[1]:objectName())
+            table.insert(targets, no_equip_targets[1])
         end
     end
 
     -- 输出结果
     if #targets > 0 then
-        return '#LuaXuanfengCard:.:->' .. table.concat(targets, '+')
+        local output_targets = {}
+        for _, output in ipairs(targets) do
+            table.insert(output_targets, output:objectName())
+        end
+        return '#LuaXuanfengCard:.:->' .. table.concat(output_targets, '+')
     end
     return '.'
 end
