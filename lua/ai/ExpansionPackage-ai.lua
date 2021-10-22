@@ -225,7 +225,31 @@ sgs.ai_skill_choice['LuaZhengnan'] = function(self, choices)
 end
 
 -- 精械
--- 暂不考虑加强防具
+-- 加强连弩和防具，但不考虑加强未装备的
+sgs.ai_use_value['LuaJingxieCard'] = 10
+sgs.ai_use_priority['LuaJingxieCard'] = 90
+
+local LuaJingxie_skill = {}
+LuaJingxie_skill.name = 'LuaJingxie'
+
+table.insert(sgs.ai_skills, LuaJingxie_skill)
+
+LuaJingxie_skill.getTurnUseCard = function(self, inclusive)
+    local armor = self.player:getArmor()
+    local weapon = self.player:getWeapon()
+    if armor and self.player:getMark(armor:objectName()) == 0 then
+        return sgs.Card_Parse('#LuaJingxieCard:' .. armor:getEffectiveId() .. ':')
+    end
+    if weapon and weapon:objectName() == 'crossbow' and self.player:getMark('crossbow') == 0 then
+        return sgs.Card_Parse('#LuaJingxieCard:' .. weapon:getEffectiveId() .. ':')
+    end
+end
+
+sgs.ai_skill_use_func['#LuaJingxieCard'] = function(_card, use, self)
+    use.card = _card
+end
+
+-- 濒死使用
 sgs.ai_skill_cardask['LuaJingxie-Invoke'] = function(self, data, pattern)
     local dying = data:toDying()
     local peaches = 1 - dying.who:getHp()
@@ -635,20 +659,58 @@ end
 sgs.ai_use_priority['LuaFenchengCard'] = 9.1
 
 -- 凌统
+
+-- 比装备数量
+sgs.ai_compare_func['equipcard'] = function(a, b)
+    local c1 = a:getEquips():length()
+    local c2 = b:getEquips():length()
+    if c1 == c2 then
+        return sgs.getDefenseSlash(a, self) < sgs.getDefenseSlash(b, self)
+    else
+        return c1 < c2
+    end
+end
+
 -- 旋风
 sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
-    local targets = {}
+    local equipped_targets, no_equip_targets = {}, {}
     for _, enemy in ipairs(self.enemies) do
         if not enemy:isNude() and self.player:canDiscard(enemy, 'he') then
-            table.insert(targets, enemy:objectName())
-        end
-        -- 优先多目标选择
-        if #targets >= 2 then
-            break
+            if enemy:hasEquip() then
+                table.insert(equipped_targets, enemy:objectName())
+            else
+                table.insert(no_equip_targets, enemy:objectName())
+            end
         end
     end
+
+    local targets = {}
+
+    -- 优先拆有装备的
+    if #equipped_targets > 0 then
+        self:sort(equipped_targets, 'equipcard')
+        table.insert(targets, equipped_targets[1]:objectName())
+        if equipped_targets[1]:getEquips():length() <= 1 and #equipped_targets > 1 then
+            table.insert(targets, equipped_targets[2]:objectName())
+        end
+    end
+
+    -- 如果只有一个或没有有装备的敌人，考虑手牌
+    if #targets <= 1 then
+        -- 如果只有第一个空城带单装备的，直接引入第二目标
+        if targets[1]:isKongcheng() and #no_equip_targets > 0 then
+            table.insert(targets, no_equip_targets[1]:objectName())
+        end
+
+        -- 随机选择是否引入
+        local random = math.random(0, 1)
+        if random == 1 and #no_equip_targets > 0 then
+            table.insert(targets, no_equip_targets[1]:objectName())
+        end
+    end
+
+    -- 输出结果
     if #targets > 0 then
-        self:sort(targets, 'defense')
         return '#LuaXuanfengCard:.:->' .. table.concat(targets, '+')
     end
     return '.'
@@ -711,7 +773,10 @@ sgs.ai_skill_use_func['#LuaGusheCard'] = function(_card, use, self)
         end
     end
     for _, card in ipairs(cards) do
-        if not card:isKindOf('Peach') and not card:isKindOf('ExNihilo') and not card:isKindOf('Jink') then
+        if
+            not card:isKindOf('Peach') and not card:isKindOf('ExNihilo') and not card:isKindOf('Jink') or
+                (card:getNumber() <= self.player:getMark('@LuaGushe'))
+         then
             use.card = sgs.Card_Parse('#LuaGusheCard:' .. card:getId() .. ':')
         end
     end
@@ -825,11 +890,15 @@ end
 
 -- 选择摸牌
 sgs.ai_skill_choice['LuaRangjie'] = function(self, choices)
-    -- 分别为obtainBasic、obtainTrick、obtainEquip、以及 cancel
+    -- choices 分别为obtainBasic、obtainTrick、obtainEquip、以及 cancel
 
-    -- 如果对面有离魂，则不摸牌
+    -- 如果当前回合角色有离魂且未发动，同时自身比较虚弱，则不摸牌
     for _, enemy in ipairs(self.enemies) do
-        if enemy:hasSkill('lihun') then
+        if
+            enemy:hasSkill('lihun') and self.room:getCurrent():objectName() == enemy:objectName() and
+                not enemy:hasUsed('LihunCard') and
+                self:isWeak()
+         then
             return 'cancel'
         end
     end
