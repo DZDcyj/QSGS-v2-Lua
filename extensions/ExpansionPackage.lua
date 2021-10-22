@@ -11,7 +11,7 @@ local rinsanFuncModule = require('QSanguoshaLuaFunction')
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-ExWangyuanji = sgs.General(extension, 'ExWangyuanji', 'wei', '3', false, true)
+ExWangyuanji = sgs.General(extension, 'ExWangyuanji', 'wei', '3', false)
 
 LuaQianchong =
     sgs.CreateTriggerSkill {
@@ -585,7 +585,7 @@ SkillAnjiang:addSkill(LuaXingshang)
 ExCaoying:addRelateSkill('LuaJianxiong')
 ExCaoying:addRelateSkill('LuaXingshang')
 
-ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, true, false, 4)
+ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, false, false, 4)
 
 LuaYisuan =
     sgs.CreateTriggerSkill {
@@ -665,7 +665,7 @@ LuaLangxi =
 ExLijue:addSkill(LuaYisuan)
 ExLijue:addSkill(LuaLangxi)
 
-ExMaliang = sgs.General(extension, 'ExMaliang', 'shu', '3', true, true)
+ExMaliang = sgs.General(extension, 'ExMaliang', 'shu', '3', true)
 
 LuaZishu =
     sgs.CreateTriggerSkill {
@@ -1006,7 +1006,7 @@ LuaWanlan =
 ExJiakui:addSkill(LuaZhongzuo)
 ExJiakui:addSkill(LuaWanlan)
 
-JieXusheng = sgs.General(extension, 'JieXusheng', 'wu', '4', true, true)
+JieXusheng = sgs.General(extension, 'JieXusheng', 'wu', '4', true)
 
 LuaPojun =
     sgs.CreateTriggerSkill {
@@ -1297,7 +1297,7 @@ SkillAnjiang:addSkill(LuaMashuDistance)
 JieMadai:addSkill(LuaMashu)
 JieMadai:addSkill(LuaQianxi)
 
-ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true, true)
+ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true)
 
 LuaJingxieCard =
     sgs.CreateSkillCard {
@@ -1500,7 +1500,8 @@ LuaQiaosiStartCard =
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
-        room:broadcastSkillInvoke('LuaQiaosi', math.random(1, 2))
+        room:broadcastSkillInvoke('LuaQiaosi')
+        room:notifySkillInvoked(source, 'LuaQiaosi')
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         local marks = rinsanFuncModule.LuaDoQiaosiShow(room, source, dummy)
         if marks > 0 then
@@ -1555,7 +1556,7 @@ ExMajun:addSkill(LuaJingxie)
 ExMajun:addSkill(LuaQiaosi)
 SkillAnjiang:addSkill(LuaJingxieTargetMod)
 
-ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true, true)
+ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true)
 
 LuaJijieCard =
     sgs.CreateSkillCard {
@@ -2247,7 +2248,7 @@ LuaShuangxiong =
 
 JieYanliangWenchou:addSkill(LuaShuangxiong)
 
-JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true, true)
+JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true)
 
 LuaXuanfengCard =
     sgs.CreateSkillCard {
@@ -2578,7 +2579,7 @@ LuaLiezhi =
 ExShenpei:addSkill(LuaShouye)
 ExShenpei:addSkill(LuaLiezhi)
 
-ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true, true)
+ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true)
 
 LuaZhaohan =
     sgs.CreateTriggerSkill {
@@ -2795,7 +2796,7 @@ ExYangbiao:addSkill(LuaZhaohan)
 ExYangbiao:addSkill(LuaRangjie)
 ExYangbiao:addSkill(LuaYizheng)
 
-ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true, true)
+ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true)
 
 LuaQinzheng =
     sgs.CreateTriggerSkill {
@@ -2936,7 +2937,7 @@ LuaZhiyi =
 
 ExZhangyi:addSkill(LuaZhiyi)
 
-JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true, true)
+JieLiru = sgs.General(extension, 'JieLiru', 'qun', '3', true)
 
 LuaJuece =
     sgs.CreateTriggerSkill {
@@ -3147,7 +3148,7 @@ JieLiru:addSkill(LuaJuece)
 JieLiru:addSkill(LuaMieji)
 JieLiru:addSkill(LuaFencheng)
 
-JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true, true)
+JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true)
 
 LuaJunxingCard =
     sgs.CreateSkillCard {
@@ -4677,7 +4678,7 @@ LuaXuezhaoTargetMod =
 SkillAnjiang:addSkill(LuaXuezhaoTargetMod)
 ExTenYearDongcheng:addSkill(LuaXuezhao)
 
-ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true, true)
+ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true)
 
 LuaGusheCard =
     sgs.CreateSkillCard {
@@ -5183,7 +5184,7 @@ LuaZhiyanMod =
 ExStarXuhuang:addSkill(LuaZhiyan)
 SkillAnjiang:addSkill(LuaZhiyanMod)
 
-ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true, true)
+ExTenYearGuansuo = sgs.General(extension, 'ExTenYearGuansuo', 'shu', '4', true)
 
 LuaZhengnan =
     sgs.CreateTriggerSkill {
@@ -5223,9 +5224,7 @@ LuaZhiman =
         if damage.to:objectName() == player:objectName() then
             return false
         end
-        local data2 = sgs.QVariant()
-        data2:setValue(damage.to)
-        if room:askForSkillInvoke(player, self:objectName(), data2) then
+        if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
             if not damage.to:isAllNude() then
