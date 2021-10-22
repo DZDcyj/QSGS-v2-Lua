@@ -1102,7 +1102,7 @@ LuaYinyu =
 LuaQingyu =
     sgs.CreateTriggerSkill {
     name = 'LuaQingyu',
-    events = {sgs.Damage, sgs.SlashEffected},
+    events = {sgs.Damage, sgs.TargetConfirmed},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.Damage then
@@ -1121,13 +1121,19 @@ LuaQingyu =
                     end
                 end
             end
-        elseif event == sgs.SlashEffected then
+        elseif event == sgs.TargetConfirmed then
             if player:getHandcardNum() <= player:getHp() / 2 then
-                local effect = data:toSlashEffect()
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = player})
-                room:slashResult(effect, nil)
-                return true
+                local use = data:toCardUse()
+                if use.card and use.card:isKindOf('Slash') and use.to:contains(player) then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
+                    local index = use.to:indexOf(player)
+                    rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = player})
+                    jink_table[index + 1] = 0
+                    local jink_data = sgs.QVariant()
+                    jink_data:setValue(Table2IntList(jink_table))
+                    use.from:setTag('Jink_' .. use.card:toString(), jink_data)
+                end
             end
         end
         return false
