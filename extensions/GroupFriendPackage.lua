@@ -1170,7 +1170,7 @@ LuaJiaoxie =
     on_trigger = function(self, event, player, data, room)
         if event == sgs.Damaged then
             local damage = data:toDamage()
-            if player:hasSkill(self:objectName()) then
+            if rinsanFuncModule.RIGHT(self, player) then
                 if damage.from:getMark('LuaJiaoxieForbid') > 0 then
                     return false
                 end
