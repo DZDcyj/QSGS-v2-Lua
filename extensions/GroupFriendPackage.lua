@@ -8,7 +8,6 @@ extension = sgs.Package('GroupFriendPackage')
 local rinsanFuncModule = require('QSanguoshaLuaFunction')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-Skadi = sgs.General(extension, 'Skadi', 'god', '5', false)
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
 Rinsan = sgs.General(extension, 'Rinsan', 'shu', '3', true, true)
@@ -29,99 +28,6 @@ Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 -- 枚举值使用时加上 sgs.General_ 前缀
 -- 例如 sgs.General_Sexless
 Shayu:setGender(sgs.General_Sexless)
-
-LuaChuntian =
-    sgs.CreateTriggerSkill {
-    name = 'LuaChuntian',
-    events = {sgs.CardUsed, sgs.Damaged, sgs.HpLost},
-    frequency = sgs.Skill_Compulsory,
-    on_trigger = function(self, event, player, data, room)
-        if event == sgs.CardUsed then
-            local use = data:toCardUse()
-            if use.from:objectName() == player:objectName() then
-                if use.card:isKindOf('Peach') then
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                    player:gainMark('@Faqing')
-                end
-            end
-        elseif event == sgs.Damaged then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
-            player:gainMark('@Faqing', data:toDamage().damage)
-        elseif event == sgs.HpLost then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
-            player:gainMark('@Faqing', data:toInt())
-        end
-    end
-}
-
-LuaPenshuiCard =
-    sgs.CreateSkillCard {
-    name = 'LuaPenshuiCard',
-    filter = function(self, targets, to_select)
-        return #targets < sgs.Self:getMark('@Faqing') and to_select:objectName() ~= sgs.Self:objectName()
-    end,
-    on_use = function(self, room, source, targets)
-        source:loseMark('@Faqing', #targets)
-        for _, p in ipairs(targets) do
-            p:throwAllEquips()
-            room:damage(sgs.DamageStruct(self:objectName(), source, p, 1))
-        end
-    end
-}
-
-LuaPenshuiVS =
-    sgs.CreateViewAsSkill {
-    name = 'LuaPenshui',
-    view_as = function(self, cards)
-        return LuaPenshuiCard:clone()
-    end,
-    enabled_at_play = function(self, player)
-        return false
-    end,
-    enabled_at_response = function(self, player, pattern)
-        return pattern == '@@LuaPenshui'
-    end
-}
-
-LuaPenshui =
-    sgs.CreateTriggerSkill {
-    name = 'LuaPenshui',
-    events = {sgs.EventPhaseStart},
-    view_as_skill = LuaPenshuiVS,
-    on_trigger = function(self, event, player, data, room)
-        room:askForUseCard(player, '@@LuaPenshui', '@LuaPenshui')
-        return false
-    end,
-    can_trigger = function(self, target)
-        if target then
-            if target:isAlive() and target:hasSkill(self:objectName()) then
-                if target:getPhase() == sgs.Player_Start then
-                    return target:getMark('@Faqing') > 0
-                end
-            end
-        end
-    end
-}
-
-LuaGaochao =
-    sgs.CreateTriggerSkill {
-    name = 'LuaGaochao',
-    events = {sgs.MarkChanged},
-    frequency = sgs.Skill_Wake,
-    on_trigger = function(self, event, player, data, room)
-        local mark = data:toMark()
-        if mark.name == '@Faqing' and mark.who:hasSkill(self:objectName()) then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
-            if room:changeMaxHpForAwakenSkill(player) then
-                room:acquireSkill(player, LuaPenshui)
-                room:addPlayerMark(player, 'LuaGaochao')
-            end
-        end
-    end,
-    can_trigger = function(self, player)
-        return player:getMark('@Faqing') > 2 and player:getMark('LuaGaochao') == 0
-    end
-}
 
 LuaBaipiao =
     sgs.CreateTriggerSkill {
@@ -1994,10 +1900,6 @@ LuaTaose =
     end
 }
 
-Skadi:addSkill(LuaChuntian)
-Skadi:addSkill(LuaGaochao)
-Skadi:addRelateSkill('LuaPenshui')
-SkillAnjiang:addSkill(LuaPenshui)
 Cactus:addSkill(LuaBaipiao)
 SkillAnjiang:addSkill(LuaGeidian)
 SkillAnjiang:addSkill(LuaWanneng)
