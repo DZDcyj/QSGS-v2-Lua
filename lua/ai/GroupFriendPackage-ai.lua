@@ -255,7 +255,7 @@ end
 sgs.ai_skill_choice['LuaYingshi'] = function(self, choices)
     -- AI 只选择加血上限
     -- 选项1、2分别为加上限/扣血上限获得技能
-    return choices[1]
+    return choices:split('+')[1]
 end
 
 -- 智屑
