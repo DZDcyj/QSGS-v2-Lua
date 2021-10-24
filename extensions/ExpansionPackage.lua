@@ -4690,23 +4690,31 @@ LuaGusheCard =
     end,
     on_use = function(self, room, source, targets)
         local from_id = self:getSubcards():first()
-        local from_data = sgs.QVariant()
-        from_data:setValue(from_id)
-        room:getThread():trigger(sgs.AskforPindianCard, room, source, from_data)
-        local from_card = sgs.Sanguosha:getCard(from_data:toInt())
         room:broadcastSkillInvoke('LuaGushe')
         -- 只有一个目标直接可以使用 pindian 方法
         if #targets == 1 then
             room:setPlayerFlag(source, 'LuaGusheSingleTarget')
-            source:pindian(targets[1], 'LuaGushe', from_card)
+            source:pindian(targets[1], 'LuaGushe', sgs.Sanguosha:getCard(from_id))
             return
         end
+
+        local random_from_id = math.random(1, 10000)
+        local from_data = sgs.QVariant()
+        from_data:setValue(random_from_id)
+        room:setTag('pindian' .. random_from_id, sgs.QVariant(-1))
+        -- 根据天辩的相关 Lua 逻辑，data 会传递一个 id，然后将对应摸牌的 id 放入 room 对应的 Tag
+        room:getThread():trigger(sgs.AskforPindianCard, room, source, from_data)
+        -- 使用负数作为初始值，以判断是否有类似天辩的情况出现
+        if room:getTag('pindian' .. random_from_id):toInt() ~= -1 then
+            from_id = room:getTag('pindian' .. random_from_id):toInt()
+        end
+        local from_card = sgs.Sanguosha:getCard(from_id)
         local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         slash:addSubcard(from_card)
         local moves = sgs.CardsMoveList()
         local move =
             sgs.CardsMoveStruct(
-            self:getSubcards(),
+            from_id,
             source,
             nil,
             sgs.Player_PlaceHand,
@@ -4715,6 +4723,7 @@ LuaGusheCard =
         )
         moves:append(move)
         for _, p in ipairs(targets) do
+            -- 此处同理
             local ask_card = sgs.QVariant()
             local random_id = math.random(1, 10000)
             ask_card:setValue(random_id)
