@@ -4697,16 +4697,9 @@ LuaGusheCard =
             source:pindian(targets[1], 'LuaGushe', sgs.Sanguosha:getCard(from_id))
             return
         end
-
-        local random_from_id = math.random(1, 10000)
-        local from_data = sgs.QVariant()
-        from_data:setValue(random_from_id)
-        room:setTag('pindian' .. random_from_id, sgs.QVariant(-1))
-        -- 根据天辩的相关 Lua 逻辑，data 会传递一个 id，然后将对应摸牌的 id 放入 room 对应的 Tag
-        room:getThread():trigger(sgs.AskforPindianCard, room, source, from_data)
-        -- 使用负数作为初始值，以判断是否有类似天辩的情况出现
-        if room:getTag('pindian' .. random_from_id):toInt() ~= -1 then
-            from_id = room:getTag('pindian' .. random_from_id):toInt()
+        local get_id = rinsanFuncModule.obtainIdFromAskForPindianCardEvent(room, source)
+        if get_id ~= -1 then
+            from_id = get_id
         end
         local from_card = sgs.Sanguosha:getCard(from_id)
         local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
@@ -4723,19 +4716,15 @@ LuaGusheCard =
         )
         moves:append(move)
         for _, p in ipairs(targets) do
-            -- 此处同理
-            local ask_card = sgs.QVariant()
-            local random_id = math.random(1, 10000)
-            ask_card:setValue(random_id)
-            room:setTag('pindian' .. random_id, sgs.QVariant(-1))
-            room:getThread():trigger(sgs.AskforPindianCard, room, p, ask_card)
+            -- 此处同理，响应天辩等
+            local ask_id = rinsanFuncModule.obtainIdFromAskForPindianCardEvent(room, p)
             local card, to_move, to_slash
-            if room:getTag('pindian' .. random_id):toInt() == -1 then
+            if ask_id == -1 then
                 card = room:askForExchange(p, 'LuaGushe', 1, 1, false, '@LuaGushePindian')
                 to_move = card:getSubcards()
                 to_slash = to_move:first()
             else
-                card = room:getTag('pindian' .. random_id):toInt()
+                card = ask_id
                 to_move = card
                 to_slash = card
             end
@@ -4752,6 +4741,8 @@ LuaGusheCard =
             )
             moves:append(_move)
         end
+
+        -- 将拼点所用卡牌置入处理区
         room:moveCardsAtomic(moves, true)
         for i = 1, #targets, 1 do
             local pindian = sgs.PindianStruct()
@@ -4775,8 +4766,11 @@ LuaGusheCard =
                 '$PindianResult',
                 {['from'] = pindian.to, ['card_str'] = pindian.to_card:toString()}
             )
+            -- 依次触发对应的拼点修改阶段，例如【天辩】会在此时触发
             room:getThread():trigger(sgs.PindianVerifying, room, source, data)
             room:getThread():trigger(sgs.PindianVerifying, room, targets[i], data)
+
+            -- 触发拼点结果阶段
             room:getThread():trigger(sgs.Pindian, room, source, data)
         end
         local subs = sgs.IntList()
@@ -4785,6 +4779,8 @@ LuaGusheCard =
                 subs:append(cd)
             end
         end
+
+        -- 拼点时用的卡牌会移动到处理区，在这里将其置入弃牌堆
         local move2 =
             sgs.CardsMoveStruct(
             subs,
@@ -4852,7 +4848,6 @@ LuaGushe =
                     room:setPlayerFlag(pindian.from, '-LuaGusheSingleTarget')
                 end
             else
-                pindian.from:gainMark('@LuaGushe')
                 if not pindian.from:hasFlag('LuaGusheSingleTarget') then
                     rinsanFuncModule.sendLogMessage(
                         room,
@@ -4862,6 +4857,7 @@ LuaGushe =
                 else
                     room:setPlayerFlag(pindian.from, '-LuaGusheSingleTarget')
                 end
+                pindian.from:gainMark('@LuaGushe')
             end
             if
                 not room:askForDiscard(

@@ -531,6 +531,22 @@ function cardGoBack(event, player, data, skill)
     return false
 end
 
+-- sgs.AskforPindianCard 时机卡牌获取
+function obtainIdFromAskForPindianCardEvent(room, target)
+    local from_id = -1
+    local random_from_id = math.random(1, 10000)
+    local from_data = sgs.QVariant()
+    from_data:setValue(random_from_id)
+    room:setTag('pindian' .. random_from_id, sgs.QVariant(-1))
+    -- 根据天辩的相关 Lua 逻辑，data 会传递一个 id，然后将对应摸牌的 id 放入 room 对应的 Tag
+    room:getThread():trigger(sgs.AskforPindianCard, room, target, from_data)
+    -- 使用负数作为初始值，以判断是否有类似天辩的情况出现
+    if room:getTag('pindian' .. random_from_id):toInt() ~= -1 then
+        from_id = room:getTag('pindian' .. random_from_id):toInt()
+    end
+    return from_id
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
