@@ -673,6 +673,11 @@ end
 
 -- 旋风
 sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
+    -- 只有一个敌人，且符合条件，就直接对其发动【旋风】
+    if #self.enemies == 1 and self.player:canDiscard(self.enemies[1], 'he') then
+        return '#LuaXuanfengCard:.:->' .. self.enemies[1]:objectName()
+    end
+
     local equipped_targets, no_equip_targets = {}, {}
     for _, enemy in ipairs(self.enemies) do
         if not enemy:isNude() and self.player:canDiscard(enemy, 'he') then
@@ -704,7 +709,8 @@ sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
 
         -- 随机选择是否引入
         local random = math.random(0, 1)
-        if random == 1 and #no_equip_targets > 0 then
+        -- 如果没有目标就直接考虑引入
+        if (random == 1 or #targets == 0) and #no_equip_targets > 0 then
             table.insert(targets, no_equip_targets[1])
         end
     end
