@@ -2374,7 +2374,7 @@ LuaYongjinCard =
         elseif #selected == 1 then
             for i = 0, 4, 1 do
                 if selected[1]:getEquip(i) and not to_select:getEquip(i) then
-                    return true
+                    return to_select:hasEquipArea(i)
                 end
             end
         end
@@ -2396,7 +2396,9 @@ LuaYongjinCard =
         local to = targets[2]
         local disabled_ids = sgs.IntList()
         for _, equip in sgs.qlist(from:getEquips()) do
-            if equip and to:getEquip(equip:getRealCard():toEquipCard():location()) then
+            local equip_index = equip:getRealCard():toEquipCard():location()
+            -- 如果移动的目标角色没有对应的装备栏，或者装备栏已经有装备，则不可以移动
+            if not to:hasEquipArea(equip_index) or( equip and to:getEquip(equip_index)) then
                 disabled_ids:append(equip:getId())
             end
         end
