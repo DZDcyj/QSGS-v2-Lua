@@ -1183,7 +1183,6 @@ LuaZhazhi =
                         data2:setValue(player)
                         if room:askForSkillInvoke(sp, self:objectName(), data2) then
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), player:objectName())
-                            local choices = {}
                             local choice =
                                 room:askForChoice(player, self:objectName(), 'LuaZhazhiChoice1+LuaZhazhiChoice2')
                             if choice == 'LuaZhazhiChoice1' then
