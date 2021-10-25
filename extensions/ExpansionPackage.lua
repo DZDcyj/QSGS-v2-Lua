@@ -4698,31 +4698,108 @@ LuaGusheCard =
         return #selected < 3 and sgs.Self:canPindian(to_select, self:objectName())
     end,
     on_use = function(self, room, source, targets)
-        local from_card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local from_id = self:getSubcards():first()
         room:broadcastSkillInvoke('LuaGushe')
-        for _, target in ipairs(targets) do
-            local discard_victim
-            if source:pindian(target, 'LuaGushe', from_card) then
-                discard_victim = target
-                room:addPlayerMark(source, 'LuaGusheWin')
+        -- 只有一个目标直接可以使用 pindian 方法
+        if #targets == 1 then
+            room:setPlayerFlag(source, 'LuaGusheSingleTarget')
+            source:pindian(targets[1], 'LuaGushe', sgs.Sanguosha:getCard(from_id))
+            return
+        end
+        local get_id = rinsanFuncModule.obtainIdFromAskForPindianCardEvent(room, source)
+        if get_id ~= -1 then
+            from_id = get_id
+        end
+        local from_card = sgs.Sanguosha:getCard(from_id)
+        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        slash:addSubcard(from_card)
+        local moves = sgs.CardsMoveList()
+        local move =
+            sgs.CardsMoveStruct(
+            from_id,
+            source,
+            nil,
+            sgs.Player_PlaceHand,
+            sgs.Player_PlaceTable,
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PINDIAN, source:objectName(), 'LuaGushe', '')
+        )
+        moves:append(move)
+        for _, p in ipairs(targets) do
+            -- 此处同理，响应天辩等
+            local ask_id = rinsanFuncModule.obtainIdFromAskForPindianCardEvent(room, p)
+            local card, to_move, to_slash
+            if ask_id == -1 then
+                card = room:askForExchange(p, 'LuaGushe', 1, 1, false, '@LuaGushePindian')
+                to_move = card:getSubcards()
+                to_slash = to_move:first()
             else
-                discard_victim = source
-                source:gainMark('@LuaGushe')
+                card = ask_id
+                to_move = card
+                to_slash = card
             end
-            if
-                not room:askForDiscard(
-                    discard_victim,
-                    'LuaGushe',
-                    1,
-                    1,
-                    true,
-                    true,
-                    '@LuaGusheDiscard:' .. source:objectName()
-                )
-             then
-                source:drawCards(1, 'LuaGushe')
+            slash:addSubcard(to_slash)
+            room:setPlayerMark(p, 'LuaGusheId', to_slash + 1)
+            local _move =
+                sgs.CardsMoveStruct(
+                to_move,
+                p,
+                nil,
+                sgs.Player_PlaceHand,
+                sgs.Player_PlaceTable,
+                sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PINDIAN, p:objectName(), 'LuaGushe', '')
+            )
+            moves:append(_move)
+        end
+
+        -- 将拼点所用卡牌置入处理区
+        room:moveCardsAtomic(moves, true)
+        for i = 1, #targets, 1 do
+            local pindian = sgs.PindianStruct()
+            pindian.from = source
+            pindian.to = targets[i]
+            pindian.from_card = from_card
+            pindian.to_card = sgs.Sanguosha:getCard(targets[i]:getMark('LuaGusheId') - 1)
+            pindian.from_number = pindian.from_card:getNumber()
+            pindian.to_number = pindian.to_card:getNumber()
+            pindian.reason = 'LuaGushe'
+            room:setPlayerMark(targets[i], 'LuaGusheId', 0)
+            local data = sgs.QVariant()
+            data:setValue(pindian)
+            rinsanFuncModule.sendLogMessage(
+                room,
+                '$PindianResult',
+                {['from'] = pindian.from, ['card_str'] = pindian.from_card:toString()}
+            )
+            rinsanFuncModule.sendLogMessage(
+                room,
+                '$PindianResult',
+                {['from'] = pindian.to, ['card_str'] = pindian.to_card:toString()}
+            )
+            -- 依次触发对应的拼点修改阶段，例如【天辩】会在此时触发
+            room:getThread():trigger(sgs.PindianVerifying, room, source, data)
+            room:getThread():trigger(sgs.PindianVerifying, room, targets[i], data)
+
+            -- 触发拼点结果阶段
+            room:getThread():trigger(sgs.Pindian, room, source, data)
+        end
+        local subs = sgs.IntList()
+        for _, cd in sgs.qlist(slash:getSubcards()) do
+            if room:getCardPlace(cd) == sgs.Player_PlaceTable then
+                subs:append(cd)
             end
         end
+
+        -- 拼点时用的卡牌会移动到处理区，在这里将其置入弃牌堆
+        local move2 =
+            sgs.CardsMoveStruct(
+            subs,
+            nil,
+            nil,
+            sgs.Player_PlaceTable,
+            sgs.Player_DiscardPile,
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER, nil, 'LuaGushe', '')
+        )
+        room:moveCardsAtomic(move2, true)
     end
 }
 
@@ -4745,7 +4822,7 @@ LuaGusheVS =
 LuaGushe =
     sgs.CreateTriggerSkill {
     name = 'LuaGushe',
-    events = {sgs.MarkChanged, sgs.EventPhaseChanging},
+    events = {sgs.MarkChanged, sgs.EventPhaseChanging, sgs.Pindian},
     view_as_skill = LuaGusheVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.MarkChanged then
@@ -4759,6 +4836,50 @@ LuaGushe =
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 room:setPlayerMark(player, 'LuaGusheWin', 0)
+            end
+        elseif event == sgs.Pindian then
+            local pindian = data:toPindian()
+            if pindian.reason ~= self:objectName() then
+                return false
+            end
+            pindian.success = pindian.from_number > pindian.to_number
+            local loser = pindian.from
+            if pindian.success then
+                room:addPlayerMark(pindian.from, 'LuaGusheWin')
+                loser = pindian.to
+                if not pindian.from:hasFlag('LuaGusheSingleTarget') then
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#PindianSuccess',
+                        {['from'] = pindian.from, ['to'] = pindian.to}
+                    )
+                else
+                    room:setPlayerFlag(pindian.from, '-LuaGusheSingleTarget')
+                end
+            else
+                if not pindian.from:hasFlag('LuaGusheSingleTarget') then
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#PindianFailure',
+                        {['from'] = pindian.from, ['to'] = pindian.to}
+                    )
+                else
+                    room:setPlayerFlag(pindian.from, '-LuaGusheSingleTarget')
+                end
+                pindian.from:gainMark('@LuaGushe')
+            end
+            if
+                not room:askForDiscard(
+                    loser,
+                    'LuaGushe',
+                    1,
+                    1,
+                    true,
+                    true,
+                    '@LuaGusheDiscard:' .. pindian.from:objectName()
+                )
+             then
+                pindian.from:drawCards(1, self:objectName())
             end
         end
     end
