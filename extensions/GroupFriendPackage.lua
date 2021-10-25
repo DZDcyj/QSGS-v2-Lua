@@ -1171,9 +1171,7 @@ LuaZhazhi =
     events = {
         sgs.EventPhaseStart,
         sgs.DamageCaused,
-        sgs.EventPhaseChanging,
-        sgs.PreCardUsed,
-        sgs.Damage
+        sgs.EventPhaseChanging
     },
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
@@ -1185,37 +1183,25 @@ LuaZhazhi =
                         data2:setValue(player)
                         if room:askForSkillInvoke(sp, self:objectName(), data2) then
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), player:objectName())
-                            player:setFlags('LuaZhazhiTarget')
-                            local slash =
-                                room:askForUseSlashTo(player, sp, '@LuaZhazhi-slash:' .. sp:objectName(), false, true)
-                            if not slash then
-                                player:setFlags('-LuaZhazhiTarget')
+                            local choices = {}
+                            local choice =
+                                room:askForChoice(player, self:objectName(), 'LuaZhazhiChoice1+LuaZhazhiChoice2')
+                            if choice == 'LuaZhazhiChoice1' then
+                                room:showAllCards(player)
+                                local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                                for _, cd in sgs.qlist(player:getHandcards()) do
+                                    if cd:isKindOf('Slash') or (cd:isKindOf('TrickCard') and cd:isBlack()) then
+                                        slash:addSubcard(cd)
+                                    end
+                                end
+                                slash:setSkillName(self:objectName())
+                                room:useCard(sgs.CardUseStruct(slash, player, sp))
+                            else
                                 room:addPlayerMark(player, 'LuaZhazhiDebuff' .. sp:objectName())
                                 room:addPlayerMark(player, '@LuaZhazhi')
-                            else
-                                player:setFlags('-LuaZhazhiTarget')
-                                if not sp:hasFlag('LuaZhazhiDefenseFailed') then
-                                    sp:drawCards(1, self:objectName())
-                                    room:recover(sp, sgs.RecoverStruct(sp, nil, 1))
-                                    sp:setFlags('-LuaZhazhiDefenseFailed')
-                                end
                             end
                         end
                     end
-                end
-            end
-        elseif event == sgs.PreCardUsed then
-            local use = data:toCardUse()
-            local slash = use.card
-            if use.from:hasFlag('LuaZhazhiTarget') then
-                room:setCardFlag(slash, 'LuaZhazhiSlash')
-            end
-        elseif event == sgs.Damage then
-            local damage = data:toDamage()
-            if damage.card then
-                if damage.card:hasFlag('LuaZhazhiSlash') then
-                    damage.to:setFlags('LuaZhazhiDefenseFailed')
-                    room:setCardFlag(damage.card, '-LuaZhazhiSlash')
                 end
             end
         elseif event == sgs.EventPhaseChanging then
