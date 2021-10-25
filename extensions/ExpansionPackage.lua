@@ -2619,18 +2619,22 @@ LuaRangjieCard =
         elseif #selected == 1 then
             if selected[1]:getJudgingArea():length() > 0 then
                 local judgeCards = {}
-                for _, jcd in sgs.qlist(to_select:getJudgingArea()) do
-                    table.insert(judgeCards, jcd:objectName())
-                end
-                for _, jcd in sgs.qlist(selected[1]:getJudgingArea()) do
-                    if not table.contains(judgeCards, jcd:objectName()) then
-                        return true
+                -- 判断要移动到的角色是否有判定区
+                if to_select:hasJudgeArea() then
+                    for _, jcd in sgs.qlist(to_select:getJudgingArea()) do
+                        table.insert(judgeCards, jcd:objectName())
+                    end
+                    for _, jcd in sgs.qlist(selected[1]:getJudgingArea()) do
+                        if not table.contains(judgeCards, jcd:objectName()) then
+                            return true
+                        end
                     end
                 end
             end
             for i = 0, 4, 1 do
                 if selected[1]:getEquip(i) and not to_select:getEquip(i) then
-                    return true
+                    -- 判断要移动到的角色是否有对应的装备栏
+                    return to_select:hasEquipArea(i)
                 end
             end
         end
@@ -2652,7 +2656,9 @@ LuaRangjieCard =
         local to = targets[2]
         local disabled_ids = sgs.IntList()
         for _, equip in sgs.qlist(from:getEquips()) do
-            if equip and to:getEquip(equip:getRealCard():toEquipCard():location()) then
+            local equip_index = equip:getRealCard():toEquipCard():location()
+            -- 如果移动的目标角色没有对应的装备栏，或者装备栏已经有装备，则不可以移动
+            if not to:hasEquipArea(equip_index) or( equip and to:getEquip(equip_index)) then
                 disabled_ids:append(equip:getId())
             end
         end
@@ -2661,7 +2667,8 @@ LuaRangjieCard =
             table.insert(judgeCards, jcd:objectName())
         end
         for _, jcd in sgs.qlist(from:getJudgingArea()) do
-            if table.contains(judgeCards, jcd:objectName()) then
+            -- 如果移动的目标角色没有判定区，或者判定区内有重复卡牌，则不可以移动
+            if not to:hasJudgeArea() or table.contains(judgeCards, jcd:objectName()) then
                 disabled_ids:append(jcd:getId())
             end
         end
