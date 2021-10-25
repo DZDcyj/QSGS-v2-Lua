@@ -810,7 +810,7 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                 if not judge:isKindOf('YanxiaoCard') then
                     source = friend
                     for _, enemy in ipairs(self.enemies) do
-                        -- 敌人必须有对应的装备区
+                        -- 敌人必须有对应的判定区
                         if
                             enemy:hasJudgeArea() and not enemy:containsTrick(judge:objectName()) and
                                 not enemy:containsTrick('YanxiaoCard') and
@@ -884,11 +884,11 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
 
     for _, friend in ipairs(self.friends) do
         if
-            source and (source:getWeapon() and not friend:getWeapon() and friend:hasJudgeArea(0)) or
-                (source:getArmor() and not friend:getArmor() and friend:hasJudgeArea(1)) or
-                (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasJudgeArea(2)) or
-                (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasJudgeArea(3)) or
-                (source:getTreasure() and not friend:getTreasure() and friend:hasJudgeArea(4))
+            source and (source:getWeapon() and not friend:getWeapon() and friend:hasEquipArea(0)) or
+                (source:getArmor() and not friend:getArmor() and friend:hasEquipArea(1)) or
+                (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasEquipArea(2)) or
+                (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasEquipArea(3)) or
+                (source:getTreasure() and not friend:getTreasure() and friend:hasEquipArea(4))
          then
             target = friend
         end
