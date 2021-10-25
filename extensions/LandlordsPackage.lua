@@ -170,6 +170,21 @@ LuaDizhu =
             if player:getMark(self:objectName()) == 0 and player:hasSkill(self:objectName()) then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:addPlayerMark(player, self:objectName())
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    -- 触发游戏开始时时机，例如先辅、怀橘
+                    room:getThread():trigger(sgs.GameStart, room, p)
+
+                    -- 涉及到摸初始牌的，补一下，例如挫锐、七星
+                    local draw_data = sgs.QVariant(0)
+                    room:getThread():trigger(sgs.DrawInitialCards, room, p , draw_data)
+                    local to_draw = draw_data:toInt()
+                    if to_draw>0 then
+                        p:drawCards(to_draw, self:objectName())
+                    end
+
+                    -- 摸牌后操作，例如七星
+                    room:getThread():trigger(sgs.AfterDrawInitialCards, room, p)
+                end
                 for _, skill in sgs.qlist(player:getSkillList()) do
                     if skill:isLordSkill() then
                         room:detachSkillFromPlayer(player, skill:objectName())
