@@ -212,6 +212,13 @@ sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
     return not self:isWeak()
 end
 
+sgs.ai_skill_choice['LuaZhazhi'] = function(self, choices)
+    -- 出杀或者伤害-1
+
+    -- 无脑选出杀
+    return choices:split('+')[1]
+end
+
 -- 白嫖
 sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
     local targets = sgs.QList2Table(targetlist)
