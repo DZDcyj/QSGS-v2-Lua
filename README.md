@@ -159,3 +159,19 @@ PS: 为了导入资源和避免已有武将冲突，在界限突破外的武将�
 - 界陈群
 - 界荀彧
 - 苏飞
+
+## 补充说明
+游戏自带的`extra.lua`文件包含了大量其他的 lua 扩展包武将，但不可避免的存在有 bug，在此列出并提供参考修改方案
+
+### 转换技导致部分技能触发多次
+#### 原因
+系转换技相关的`ChangeCheck`方法中使用了`ChangeHero`方法，调用该方法时将`invokeStart`参数传递为`true`，使得`sgs.EventAcquireSkill`时机触发，并进行相关询问
+
+#### 参考修改方案
+将`ChangeHero`方法的对应参数改为`false`
+
+对应函数原型如下：
+```C++
+void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart,
+    bool isSecondaryHero, bool sendLog)
+```
