@@ -673,6 +673,11 @@ end
 
 -- 旋风
 sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
+    -- 只有一个敌人，且符合条件，就直接对其发动【旋风】
+    if #self.enemies == 1 and self.player:canDiscard(self.enemies[1], 'he') then
+        return '#LuaXuanfengCard:.:->' .. self.enemies[1]:objectName()
+    end
+
     local equipped_targets, no_equip_targets = {}, {}
     for _, enemy in ipairs(self.enemies) do
         if not enemy:isNude() and self.player:canDiscard(enemy, 'he') then
@@ -704,7 +709,8 @@ sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
 
         -- 随机选择是否引入
         local random = math.random(0, 1)
-        if random == 1 and #no_equip_targets > 0 then
+        -- 如果没有目标就直接考虑引入
+        if (random == 1 or #targets == 0) and #no_equip_targets > 0 then
             table.insert(targets, no_equip_targets[1])
         end
     end
@@ -804,8 +810,10 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                 if not judge:isKindOf('YanxiaoCard') then
                     source = friend
                     for _, enemy in ipairs(self.enemies) do
+                        -- 敌人必须有对应的装备区
                         if
-                            not enemy:containsTrick(judge:objectName()) and not enemy:containsTrick('YanxiaoCard') and
+                            enemy:hasJudgeArea() and not enemy:containsTrick(judge:objectName()) and
+                                not enemy:containsTrick('YanxiaoCard') and
                                 not self.room:isProhibited(self.player, enemy, judge) and
                                 not (enemy:hasSkill('hongyan') or judge:isKindOf('Lightning'))
                          then
@@ -834,7 +842,7 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                 if judge:isKindOf('YanxiaoCard') then
                     for _, friend in ipairs(self.friends) do
                         if
-                            not friend:containsTrick(judge:objectName()) and
+                            friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
                                 not self.room:isProhibited(self.player, friend, judge) and
                                 not friend:getJudgingArea():isEmpty()
                          then
@@ -847,7 +855,7 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                     end
                     for _, friend in ipairs(self.friends) do
                         if
-                            not friend:containsTrick(judge:objectName()) and
+                            friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
                                 not self.room:isProhibited(self.player, friend, judge)
                          then
                             target = friend
@@ -876,10 +884,11 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
 
     for _, friend in ipairs(self.friends) do
         if
-            source and (source:getWeapon() and not friend:getWeapon()) or (source:getArmor() and not friend:getArmor()) or
-                (source:getDefensiveHorse() and not friend:getDefensiveHorse()) or
-                (source:getOffensiveHorse() and not friend:getOffensiveHorse()) or
-                (source:getTreasure() and not friend:getTreasure())
+            source and (source:getWeapon() and not friend:getWeapon() and friend:hasJudgeArea(0)) or
+                (source:getArmor() and not friend:getArmor() and friend:hasJudgeArea(1)) or
+                (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasJudgeArea(2)) or
+                (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasJudgeArea(3)) or
+                (source:getTreasure() and not friend:getTreasure() and friend:hasJudgeArea(4))
          then
             target = friend
         end
