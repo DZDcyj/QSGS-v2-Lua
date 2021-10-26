@@ -1438,3 +1438,50 @@ LuaShuangxiong_skill.getTurnUseCard = function(self)
     assert(skillcard)
     return skillcard
 end
+
+-- 界朱然
+-- 胆守
+sgs.ai_skill_discard['LuaDanshou'] = function(self, discard_num, min_num, optional, include_equip)
+    local current = self.room:getCurrent()
+    -- 不对队友发动胆守伤害
+    if self:isFriend(current) then
+        return {}
+    end
+
+    -- 如果啥都没有，则不丢牌
+    if self.player:isNude() then
+        return {}
+    end
+
+    -- 如果手牌数较少，且较弱
+    if self:isWeak() and self.player:getHandcardNum() < 3 then
+        return {}
+    end
+
+    -- 如果需要空城，且正好全弃牌
+    if
+        self.player:getCards('he'):length() >= discard_num and self.player:getHandcardNum() <= discard_num and
+            self:needKongcheng(self.player, true)
+     then
+        local to_discard = {}
+        local cards = sgs.QList2Table(self.player:getCards('he'))
+        self:sortByKeepValue(cards)
+        for _, cd in ipairs(cards) do
+            table.insert(to_discard, cd:getId())
+        end
+        return to_discard
+    end
+
+    -- 弃牌数超过 2/3 牌数量，不弃牌
+    if self.player:getCards('he'):length() * 2 / 3 < discard_num then
+        return {}
+    end
+
+    local to_discard = {}
+    local cards = sgs.QList2Table(self.player:getCards('he'))
+    self:sortByKeepValue(cards)
+    for i = 1, discard_num, 1 do
+        table.insert(to_discard, cards[i]:getId())
+    end
+    return to_discard
+end

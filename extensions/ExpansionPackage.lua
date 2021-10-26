@@ -3316,7 +3316,7 @@ LuaFuli =
 JieLiaohua:addSkill(LuaDangxian)
 JieLiaohua:addSkill(LuaFuli)
 
-JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
+JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true)
 
 LuaDanshou =
     sgs.CreateTriggerSkill {
