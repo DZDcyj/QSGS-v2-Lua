@@ -5520,7 +5520,7 @@ LuaSheque =
 ExStarGanning:addSkill(LuaJinfan)
 ExStarGanning:addSkill(LuaSheque)
 
-JieCaozhi = sgs.General(extension, 'JieCaozhi', 'wei', '3', true, true)
+JieCaozhi = sgs.General(extension, 'JieCaozhi', 'wei', '3', true)
 
 LuaLuoying =
     sgs.CreateTriggerSkill {

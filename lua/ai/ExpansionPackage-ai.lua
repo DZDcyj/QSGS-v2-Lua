@@ -980,6 +980,8 @@ end
 sgs.ai_use_value['LuaJijieCard'] = 100
 sgs.ai_use_priority['LuaJijieCard'] = 10
 
+-- 界廖化
+-- 伏枥
 sgs.ai_skill_invoke.LuaFuli = function(self, data)
     local dying = data:toDying()
     local peaches = 1 - dying.who:getHp()
@@ -990,6 +992,7 @@ sgs.ai_skill_invoke.LuaFuli = function(self, data)
     return false
 end
 
+-- 公孙康
 -- 讨灭只对非友军发动
 sgs.ai_skill_invoke.LuaTaomie = function(self, data)
     local currTaomieTarget
@@ -1036,6 +1039,8 @@ sgs.ai_skill_choice['LuaTaomie'] = function(self, choices)
     return items[#items - 1]
 end
 
+-- 界孙策
+-- 英魂
 sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
     local x = self.player:getLostHp()
     local n = x - 1
@@ -1258,6 +1263,7 @@ sgs.ai_skill_choice['LuaYinghun'] = function(self, choices, data)
     return 'd1tx'
 end
 
+-- 曹纯
 -- 始终发动缮甲
 sgs.ai_skill_invoke.LuaShanjia = true
 
@@ -1297,5 +1303,44 @@ sgs.ai_skill_use['@@LuaShanjia!'] = function(self, prompt, method)
             return '#LuaShanjiaCard:' .. table.concat(to_discard, '+') .. ':->' .. self.enemies[1]:objectName()
         end
         return '#LuaShanjiaCard:' .. table.concat(to_discard, '+') .. ':'
+    end
+end
+
+-- 界曹植
+-- 酒诗
+sgs.ai_cardsview['LuaJiushi'] = function(self, class_name, player)
+    if class_name == 'Analeptic' then
+        if player:hasSkill('LuaJiushi') and player:faceUp() then
+            return ('analeptic:LuaJiushi[no_suit:0]=.')
+        end
+    end
+end
+
+-- 背面朝上时始终发动酒诗翻回来
+sgs.ai_skill_invoke.LuaJiushi = function(self, data)
+    return not self.player:faceUp()
+end
+
+sgs.ai_skill_invoke.LuaLuoying = function(self)
+    if self.player:hasFlag('DimengTarget') then
+        local another
+        for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+            if player:hasFlag('DimengTarget') then
+                another = player
+                break
+            end
+        end
+        if not another or not self:isFriend(another) then
+            return false
+        end
+    end
+    return not self:needKongcheng(self.player, true)
+end
+
+sgs.ai_skill_askforag['LuaLuoying'] = function(self, card_ids)
+    if self:needKongcheng(self.player, true) then
+        return card_ids[1]
+    else
+        return -1
     end
 end
