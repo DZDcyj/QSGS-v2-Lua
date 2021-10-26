@@ -3832,7 +3832,7 @@ ExZhouchu:addSkill(LuaXianghai)
 ExZhouchu:addSkill(LuaChuhai)
 SkillAnjiang:addSkill(LuaXianghaiMaxCards)
 
-JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
+JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true)
 
 LuaJiang =
     sgs.CreateTriggerSkill {
@@ -3895,7 +3895,9 @@ LuaYinghunCard =
         local room = source:getRoom()
         local good = false
         if x > 1 then
-            local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
+            local data = sgs.QVariant()
+            data:setValue(dest)
+            local choice = room:askForChoice(source, 'LuaYinghun', 'd1tx+dxt1', data)
             if choice == 'd1tx' then
                 room:broadcastSkillInvoke('LuaYinghun')
                 dest:drawCards(1, 'LuaYinghun')

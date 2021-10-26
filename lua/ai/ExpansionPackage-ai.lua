@@ -1035,3 +1035,225 @@ sgs.ai_skill_choice['LuaTaomie'] = function(self, choices)
     local items = choices:split('+')
     return items[#items - 1]
 end
+
+sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
+    local x = self.player:getLostHp()
+    local n = x - 1
+
+    self:updatePlayers()
+
+    -- 摸1弃1，如果对面有漫卷，就安排
+    if x == 1 and #self.friends_noself == 0 then
+        for _, enemy in ipairs(self.enemies) do
+            if enemy:hasSkill('manjuan') then
+                return '#LuaYinghunCard:.:->' .. enemy:objectName()
+            end
+        end
+        return '.'
+    end
+
+    local target
+    local assistTarget = self:AssistTarget()
+
+    if x == 1 then
+        self:sort(self.friends_noself, 'handcard')
+        self.friends_noself = sgs.reverse(self.friends_noself)
+
+        -- 如果队友有掉装备的技能且没有漫卷，例如枭姬，则选他
+        for _, friend in ipairs(self.friends_noself) do
+            if
+                self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
+                    not friend:hasSkill('manjuan')
+             then
+                target = friend
+                break
+            end
+        end
+        if not target then
+            -- 配合邓艾等屯田
+            for _, friend in ipairs(self.friends_noself) do
+                if friend:hasSkills('tuntian+zaoxian') and not friend:hasSkill('manjuan') then
+                    target = friend
+                    break
+                end
+            end
+        end
+        if not target then
+            -- 如果队友要掉装备则可以，例如藤甲、白银狮子
+            for _, friend in ipairs(self.friends_noself) do
+                if self:needToThrowArmor(friend) and not friend:hasSkill('manjuan') then
+                    target = friend
+                    break
+                end
+            end
+        end
+        if not target then
+            -- 选择敌方有漫卷的安排
+            for _, enemy in ipairs(self.enemies) do
+                if enemy:hasSkill('manjuan') then
+                    return enemy
+                end
+            end
+        end
+
+        if
+            not target and assistTarget and not assistTarget:hasSkill('manjuan') and assistTarget:getCardCount(true) > 0 and
+                not self:needKongcheng(assistTarget, true)
+         then
+            target = assistTarget
+        end
+
+        -- 那没办法，英魂总得安排一个人，要不就把你给安排了吧！
+        -- 小制衡总归有好处
+        if not target then
+            for _, friend in ipairs(self.friends_noself) do
+                if friend:getCards('he'):length() > 0 and not friend:hasSkill('manjuan') then
+                    target = friend
+                    break
+                end
+            end
+        end
+
+        if not target then
+            for _, friend in ipairs(self.friends_noself) do
+                if not friend:hasSkill('manjuan') then
+                    target = friend
+                    break
+                end
+            end
+        end
+    elseif #self.friends > 1 then
+        self:sort(self.friends_noself, 'chaofeng')
+        for _, friend in ipairs(self.friends_noself) do
+            if
+                self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
+                    not friend:hasSkill('manjuan')
+             then
+                target = friend
+                break
+            end
+        end
+        if not target then
+            for _, friend in ipairs(self.friends_noself) do
+                if friend:hasSkills('tuntian+zaoxian') and not friend:hasSkill('manjuan') then
+                    target = friend
+                    break
+                end
+            end
+        end
+        if not target then
+            for _, friend in ipairs(self.friends_noself) do
+                if self:needToThrowArmor(friend) and not friend:hasSkill('manjuan') then
+                    target = friend
+                    break
+                end
+            end
+        end
+        if not target and #self.enemies > 0 then
+            local wf
+            if self.player:isLord() then
+                if self:isWeak() and (self.player:getHp() < 2 and self:getCardsNum('Peach') < 1) then
+                    wf = true
+                end
+            end
+            if not wf then
+                for _, friend in ipairs(self.friends_noself) do
+                    if self:isWeak(friend) then
+                        wf = true
+                        break
+                    end
+                end
+            end
+
+            if not wf then
+                self:sort(self.enemies, 'chaofeng')
+                for _, enemy in ipairs(self.enemies) do
+                    if enemy:getCards('he'):length() == n and not self:doNotDiscard(enemy, 'nil', true, n) then
+                        target = enemy
+                        break
+                    end
+                end
+                if not target then
+                    for _, enemy in ipairs(self.enemies) do
+                        if
+                            enemy:getCards('he'):length() >= n and not self:doNotDiscard(enemy, 'nil', true, n) and
+                                self:hasSkills(sgs.cardneed_skill, enemy)
+                         then
+                            target = enemy
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if
+        not target and assistTarget and not assistTarget:hasSkill('manjuan') and
+            not self:needKongcheng(assistTarget, true)
+     then
+        target = assistTarget
+    end
+
+    if not target then
+        target = self:findPlayerToDraw(false, n)
+    end
+
+    if not target then
+        for _, friend in ipairs(self.friends_noself) do
+            if not friend:hasSkill('manjuan') then
+                target = friend
+                break
+            end
+        end
+    end
+
+    if not target and x > 1 and #self.enemies > 0 then
+        self:sort(self.enemies, 'handcard')
+        for _, enemy in ipairs(self.enemies) do
+            if enemy:getCards('he'):length() >= n and not self:doNotDiscard(enemy, 'nil', true, n) then
+                target = enemy
+                break
+            end
+        end
+        if not target then
+            self.enemies = sgs.reverse(self.enemies)
+            for _, enemy in ipairs(self.enemies) do
+                if
+                    not enemy:isNude() and
+                        not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
+                        not self:needToThrowArmor(enemy) and
+                        not enemy:hasSkills('tuntian+zaoxian')
+                 then
+                    target = enemy
+                    break
+                end
+            end
+            if not target then
+                for _, enemy in ipairs(self.enemies) do
+                    if
+                        not enemy:isNude() and
+                            not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
+                            not self:needToThrowArmor(enemy) and
+                            not (enemy:hasSkills('tuntian+zaoxian') and x < 3 and enemy:getCards('he'):length() < 2)
+                     then
+                        target = enemy
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    if target then
+        return '#LuaYinghunCard:.:->' .. target:objectName()
+    end
+    return '.'
+end
+
+sgs.ai_skill_choice['LuaYinghun'] = function(self, choices, data)
+    -- 友军多摸，否则多弃
+    if self:isFriend(data:toPlayer()) then
+        return 'dxt1'
+    end
+    return 'd1tx'
+end
