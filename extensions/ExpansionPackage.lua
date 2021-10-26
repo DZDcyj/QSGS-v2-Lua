@@ -4326,7 +4326,7 @@ LuaShameng =
 
 ExChenzhen:addSkill(LuaShameng)
 
-ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
+ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true)
 
 LuaJuliao =
     sgs.CreateDistanceSkill {

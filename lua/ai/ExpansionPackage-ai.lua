@@ -989,3 +989,49 @@ sgs.ai_skill_invoke.LuaFuli = function(self, data)
     end
     return false
 end
+
+-- 讨灭只对非友军发动
+sgs.ai_skill_invoke.LuaTaomie = function(self, data)
+    local currTaomieTarget
+    for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+        if p:getMark('@LuaTaomie') > 0 then
+            currTaomieTarget = p
+            break
+        end
+    end
+    -- 如果场上已有讨灭标记，则判断血量
+    if currTaomieTarget then
+        local target = data:toPlayer()
+        if target:getHp() < currTaomieTarget:getHp() then
+            return true
+        else
+            return false
+        end
+    end
+    return not self:isFriend(data:toPlayer())
+end
+
+-- 讨灭给牌
+sgs.ai_skill_playerchosen['LuaTaomie'] = function(self, targets)
+    targets = sgs.QList2Table(targets)
+    -- 除去会丢掉牌的、不是队友的
+    for _, p in ipairs(targets) do
+        if
+            not self:isFriend(p) or p:hasSkill('LuaZishu') or p:hasSkill('manjuan') or p:hasSkill('zishu') or
+                self:needKongcheng(p, true)
+         then
+            table.removeOne(targets, p)
+        end
+    end
+    if #targets > 0 then
+        self:sort(targets, 'defense')
+        return targets[1]
+    end
+    return nil
+end
+
+sgs.ai_skill_choice['LuaTaomie'] = function(self, choices)
+    -- 无论如何，让 AI 选加伤害或者加伤拿牌，即倒数第二个选择
+    local items = choices:split('+')
+    return items[#items - 1]
+end
