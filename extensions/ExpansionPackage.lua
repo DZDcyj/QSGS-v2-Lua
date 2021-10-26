@@ -2091,7 +2091,7 @@ LuaLongyuan =
 ExZhaotongZhaoguang:addSkill(LuaYizan)
 ExZhaotongZhaoguang:addSkill(LuaLongyuan)
 
-JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4', true, true)
+JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4', true)
 
 LuaShuangxiongVS =
     sgs.CreateOneCardViewAsSkill {
@@ -2189,6 +2189,8 @@ LuaShuangxiong =
             local damage = data:toDamage()
             if damage.card and damage.card:getSkillName() == self:objectName() then
                 if damage.to:hasSkill(self:objectName()) then
+                    -- For AI
+                    room:setPlayerFlag(player, 'LuaShuangxiongDamaged')
                     if room:askForSkillInvoke(player, self:objectName(), data) then
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         for _, id in sgs.qlist(room:getDiscardPile()) do
@@ -2199,6 +2201,7 @@ LuaShuangxiong =
                         end
                         damage.to:obtainCard(dummy)
                     end
+                    room:setPlayerFlag(player, '-LuaShuangxiongDamaged')
                 end
             end
         elseif event == sgs.CardResponded then

@@ -1344,3 +1344,97 @@ sgs.ai_skill_askforag['LuaLuoying'] = function(self, card_ids)
         return -1
     end
 end
+
+-- 界颜良文丑
+-- 双雄
+sgs.ai_skill_invoke.LuaShuangxiong = function(self, data)
+    -- 拥有此 Flag 代表为收牌确认
+    if self.player:hasFlag('LuaShuangxiongDamaged') then
+        return true
+    end
+    if self:needBear() then
+        return false
+    end
+    if
+        self.player:isSkipped(sgs.Player_Play) or
+            (self.player:getHp() < 2 and not (self:getCardsNum('Slash') > 1 and self.player:getHandcardNum() >= 3)) or
+            #self.enemies == 0
+     then
+        return false
+    end
+    local duel = sgs.Sanguosha:cloneCard('duel')
+
+    local dummy_use = {isDummy = true}
+    self:useTrickCard(duel, dummy_use)
+
+    return self.player:getHandcardNum() >= 3 and dummy_use.card
+end
+
+sgs.ai_cardneed.LuaShuangxiong = function(to, card, self)
+    return not self:willSkipDrawPhase(to)
+end
+
+sgs.ai_skill_askforag['LuaShuangxiong'] = function(self, card_ids)
+    local card1, card2 = sgs.Sanguosha:getCard(card_ids[1]), sgs.Sanguosha:getCard(card_ids[2])
+    if card1:sameColorWith(card2) then
+        if self:getUseValue(card1) > self:getUseValue(card2) then
+            return card_ids[1]
+        end
+        return card_ids[2]
+    else
+        local blackCount, redCount = 0, 0
+        for _, cd in sgs.qlist(self.player:getHandcards()) do
+            if cd:isBlack() then
+                blackCount = blackCount + 1
+            elseif cd:isRed() then
+                redCount = redCount + 1
+            end
+        end
+        if blackCount > redCount then
+            if card1:isRed() then
+                return card_ids[1]
+            else
+                return card_ids[2]
+            end
+        else
+            if card1:isBlack() then
+                return card_ids[1]
+            else
+                return card_ids[2]
+            end
+        end
+    end
+end
+
+local LuaShuangxiong_skill = {}
+LuaShuangxiong_skill.name = 'LuaShuangxiong'
+table.insert(sgs.ai_skills, LuaShuangxiong_skill)
+LuaShuangxiong_skill.getTurnUseCard = function(self)
+    if self.player:getMark('LuaShuangxiong') == 0 then
+        return nil
+    end
+    local mark = self.player:getMark('LuaShuangxiong')
+
+    local cards = self.player:getCards('h')
+    cards = sgs.QList2Table(cards)
+    self:sortByUseValue(cards, true)
+
+    local card
+    for _, acard in ipairs(cards) do
+        if (acard:isRed() and mark == 2) or (acard:isBlack() and mark == 1) then
+            card = acard
+            break
+        end
+    end
+
+    if not card then
+        return nil
+    end
+    local suit = card:getSuitString()
+    local number = card:getNumberString()
+    local card_id = card:getEffectiveId()
+    local card_str = ('duel:LuaShuangxiong[%s:%s]=%d'):format(suit, number, card_id)
+    local skillcard = sgs.Card_Parse(card_str)
+    assert(skillcard)
+    return skillcard
+end
