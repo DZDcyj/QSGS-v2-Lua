@@ -814,7 +814,7 @@ LuaYingyuan =
 ExMaliang:addSkill(LuaZishu)
 ExMaliang:addSkill(LuaYingyuan)
 
-ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true, true)
+ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true)
 
 LuaShanjiaCard =
     sgs.CreateSkillCard {
@@ -2091,7 +2091,7 @@ LuaLongyuan =
 ExZhaotongZhaoguang:addSkill(LuaYizan)
 ExZhaotongZhaoguang:addSkill(LuaLongyuan)
 
-JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4', true, true)
+JieYanliangWenchou = sgs.General(extension, 'JieYanliangWenchou', 'qun', '4', true)
 
 LuaShuangxiongVS =
     sgs.CreateOneCardViewAsSkill {
@@ -2189,6 +2189,8 @@ LuaShuangxiong =
             local damage = data:toDamage()
             if damage.card and damage.card:getSkillName() == self:objectName() then
                 if damage.to:hasSkill(self:objectName()) then
+                    -- For AI
+                    room:setPlayerFlag(player, 'LuaShuangxiongDamaged')
                     if room:askForSkillInvoke(player, self:objectName(), data) then
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         for _, id in sgs.qlist(room:getDiscardPile()) do
@@ -2199,6 +2201,7 @@ LuaShuangxiong =
                         end
                         damage.to:obtainCard(dummy)
                     end
+                    room:setPlayerFlag(player, '-LuaShuangxiongDamaged')
                 end
             end
         elseif event == sgs.CardResponded then
@@ -3244,7 +3247,7 @@ LuaYuce =
 JieManchong:addSkill(LuaJunxing)
 JieManchong:addSkill(LuaYuce)
 
-JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
+JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true)
 
 LuaDangxian =
     sgs.CreateTriggerSkill {
@@ -3290,7 +3293,7 @@ LuaFuli =
         if dying.who:objectName() ~= player:objectName() then
             return false
         end
-        if room:askForSkillInvoke(player, self:objectName()) then
+        if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
             room:removePlayerMark(player, '@laoji')
             local recover = sgs.RecoverStruct()
@@ -3313,7 +3316,7 @@ LuaFuli =
 JieLiaohua:addSkill(LuaDangxian)
 JieLiaohua:addSkill(LuaFuli)
 
-JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true, true)
+JieZhuran = sgs.General(extension, 'JieZhuran', 'wu', '4', true)
 
 LuaDanshou =
     sgs.CreateTriggerSkill {
@@ -3832,7 +3835,7 @@ ExZhouchu:addSkill(LuaXianghai)
 ExZhouchu:addSkill(LuaChuhai)
 SkillAnjiang:addSkill(LuaXianghaiMaxCards)
 
-JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true, true)
+JieSunce = sgs.General(extension, 'JieSunce$', 'wu', '4', true)
 
 LuaJiang =
     sgs.CreateTriggerSkill {
@@ -3895,7 +3898,9 @@ LuaYinghunCard =
         local room = source:getRoom()
         local good = false
         if x > 1 then
-            local choice = room:askForChoice(source, self:objectName(), 'd1tx+dxt1')
+            local data = sgs.QVariant()
+            data:setValue(dest)
+            local choice = room:askForChoice(source, 'LuaYinghun', 'd1tx+dxt1', data)
             if choice == 'd1tx' then
                 room:broadcastSkillInvoke('LuaYinghun')
                 dest:drawCards(1, 'LuaYinghun')
@@ -4326,7 +4331,7 @@ LuaShameng =
 
 ExChenzhen:addSkill(LuaShameng)
 
-ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true, true)
+ExGongsunkang = sgs.General(extension, 'ExGongsunkang', 'qun', '4', true)
 
 LuaJuliao =
     sgs.CreateDistanceSkill {
@@ -4400,7 +4405,9 @@ LuaTaomie =
                     table.insert(choices, 'removeMark')
                 end
                 table.insert(choices, 'cancel')
-                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                local data2 = sgs.QVariant()
+                data2:setValue(damage.to)
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'), data2)
                 if choice ~= 'cancel' then
                     room:broadcastSkillInvoke(self:objectName(), math.random(2, 3))
                 end
@@ -5518,7 +5525,7 @@ LuaSheque =
 ExStarGanning:addSkill(LuaJinfan)
 ExStarGanning:addSkill(LuaSheque)
 
-JieCaozhi = sgs.General(extension, 'JieCaozhi', 'wei', '3', true, true)
+JieCaozhi = sgs.General(extension, 'JieCaozhi', 'wei', '3', true)
 
 LuaLuoying =
     sgs.CreateTriggerSkill {
