@@ -3244,7 +3244,7 @@ LuaYuce =
 JieManchong:addSkill(LuaJunxing)
 JieManchong:addSkill(LuaYuce)
 
-JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true, true)
+JieLiaohua = sgs.General(extension, 'JieLiaohua', 'shu', '4', true)
 
 LuaDangxian =
     sgs.CreateTriggerSkill {
@@ -3290,7 +3290,7 @@ LuaFuli =
         if dying.who:objectName() ~= player:objectName() then
             return false
         end
-        if room:askForSkillInvoke(player, self:objectName()) then
+        if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
             room:removePlayerMark(player, '@laoji')
             local recover = sgs.RecoverStruct()

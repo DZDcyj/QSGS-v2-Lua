@@ -979,3 +979,13 @@ end
 
 sgs.ai_use_value['LuaJijieCard'] = 100
 sgs.ai_use_priority['LuaJijieCard'] = 10
+
+sgs.ai_skill_invoke.LuaFuli = function(self, data)
+    local dying = data:toDying()
+    local peaches = 1 - dying.who:getHp()
+    -- 如果手上桃酒数量不够，则发动伏枥
+    if self:getCardsNum('Peach') + self:getCardsNum('Analeptic') < peaches then
+        return true
+    end
+    return false
+end
