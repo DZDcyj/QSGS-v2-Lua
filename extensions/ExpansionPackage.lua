@@ -4405,7 +4405,9 @@ LuaTaomie =
                     table.insert(choices, 'removeMark')
                 end
                 table.insert(choices, 'cancel')
-                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                local data2 = sgs.QVariant()
+                data2:setValue(damage.to)
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'), data2)
                 if choice ~= 'cancel' then
                     room:broadcastSkillInvoke(self:objectName(), math.random(2, 3))
                 end

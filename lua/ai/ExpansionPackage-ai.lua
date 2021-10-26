@@ -1033,9 +1033,18 @@ sgs.ai_skill_playerchosen['LuaTaomie'] = function(self, targets)
     return nil
 end
 
-sgs.ai_skill_choice['LuaTaomie'] = function(self, choices)
-    -- 无论如何，让 AI 选加伤害或者加伤拿牌，即倒数第二个选择
+sgs.ai_skill_choice['LuaTaomie'] = function(self, choices, data)
+    -- 选项为：加伤害、拿牌、加伤害+拿牌
     local items = choices:split('+')
+    local target = data:toPlayer()
+    local armor = target:getArmor()
+    if armor and armor:objectName() == 'silver_lion' then
+        -- 有白银狮子，只拿牌
+        if table.contains(items, 'getOneCard') then
+            return 'getOneCard'
+        end
+        return 'cancel'
+    end
     return items[#items - 1]
 end
 
@@ -1321,6 +1330,7 @@ sgs.ai_skill_invoke.LuaJiushi = function(self, data)
     return not self.player:faceUp()
 end
 
+-- 落英
 sgs.ai_skill_invoke.LuaLuoying = function(self)
     if self.player:hasFlag('DimengTarget') then
         local another
@@ -1337,6 +1347,7 @@ sgs.ai_skill_invoke.LuaLuoying = function(self)
     return not self:needKongcheng(self.player, true)
 end
 
+-- 落英移除不需要的牌，仅在需要空城时选择，默认全拿走
 sgs.ai_skill_askforag['LuaLuoying'] = function(self, card_ids)
     if self:needKongcheng(self.player, true) then
         return card_ids[1]
