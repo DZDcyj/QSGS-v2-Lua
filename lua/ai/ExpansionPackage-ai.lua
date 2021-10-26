@@ -1257,3 +1257,45 @@ sgs.ai_skill_choice['LuaYinghun'] = function(self, choices, data)
     end
     return 'd1tx'
 end
+
+-- 始终发动缮甲
+sgs.ai_skill_invoke.LuaShanjia = true
+
+sgs.ai_skill_use['@@LuaShanjia!'] = function(self, prompt, method)
+    local x = 3 - self.player:getMark('@luashanjia')
+    if x == 0 then
+        if #self.enemies > 0 then
+            self:sort(self.enemies, 'defense')
+            return '#LuaShanjiaCard:.:->' .. self.enemies[1]:objectName()
+        end
+        return '#LuaShanjiaCard:.:.'
+    else
+        local to_discard = {}
+        if self.player:getEquips():length() < x then
+            local cards = sgs.QList2Table(self.player:getCards('he'))
+            self:sortByUseValue(cards, true)
+            for i = 1, x, 1 do
+                table.insert(to_discard, cards[i]:getId())
+            end
+        else
+            local cards = sgs.QList2Table(self.player:getEquips())
+            self:sortByKeepValue(cards, true)
+            for i = 1, x, 1 do
+                table.insert(to_discard, cards[i]:getId())
+            end
+        end
+        local can_slash = true
+        for _, id in ipairs(to_discard) do
+            local cd = sgs.Sanguosha:getCard(id)
+            if cd:isKindOf('BasicCard') or cd:isKindOf('TrickCard') then
+                can_slash = false
+                break
+            end
+        end
+        if can_slash then
+            self:sort(self.enemies, 'defense')
+            return '#LuaShanjiaCard:' .. table.concat(to_discard, '+') .. ':->' .. self.enemies[1]:objectName()
+        end
+        return '#LuaShanjiaCard:' .. table.concat(to_discard, '+') .. ':'
+    end
+end

@@ -814,7 +814,7 @@ LuaYingyuan =
 ExMaliang:addSkill(LuaZishu)
 ExMaliang:addSkill(LuaYingyuan)
 
-ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true, true)
+ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true)
 
 LuaShanjiaCard =
     sgs.CreateSkillCard {
