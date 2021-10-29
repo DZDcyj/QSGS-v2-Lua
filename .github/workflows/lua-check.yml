@@ -48,14 +48,14 @@ jobs:
           # Required recipients' addresses:
           to: 954732822@qq.com
           # Required sender full name (address can be skipped):
-          from: Github 合并请求提醒
+          from: Github PR 提醒
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           # Optional plain body:
-          body: ${{github.actor}} 发起 MR。请尽快 CR
+          body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
           # Optional converting Markdown to HTML (set content_type to text/html too):
           convert_markdown: true
           # Optional priority: 'high', 'normal' (default) or 'low'
-          priority: high
+          priority: normal
