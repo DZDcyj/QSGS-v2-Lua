@@ -43,11 +43,11 @@ jobs:
           # Optional (recommended) mail server password:
           password: ${{secrets.MAIL_PASSWORD}}
           # Required mail subject:
-          subject: MR Notification
+          subject: MR 提醒
           # Required recipients' addresses:
           to: 954732822@qq.com
           # Required sender full name (address can be skipped):
-          from: Rinkosanvsky
+          from: Github 合并请求 Bot
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           # Optional plain body:
