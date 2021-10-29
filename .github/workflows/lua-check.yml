@@ -30,7 +30,6 @@ jobs:
   Email-Notification:
     name: "Email Notification"
     runs-on: ubuntu-latest
-    needs: [Pull-Request-Title-Check, Pull-Request-Label-Check, Pull-Request-Issue-Check]
     steps:
       - name: "Send Email"
         uses: dawidd6/action-send-mail@v3
