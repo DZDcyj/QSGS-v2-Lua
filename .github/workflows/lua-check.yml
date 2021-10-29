@@ -44,7 +44,7 @@ jobs:
           # Optional (recommended) mail server password:
           password: ${{secrets.MAIL_PASSWORD}}
           # Required mail subject:
-          subject: MR 提醒
+          subject: Pull Request Review 提醒
           # Required recipients' addresses:
           to: 954732822@qq.com
           # Required sender full name (address can be skipped):
