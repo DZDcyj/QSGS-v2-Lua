@@ -130,8 +130,15 @@ sgs.ai_skill_invoke.LuaJuesha = function(self, data)
     return false
 end
 
+
+-- 传艺
+sgs.ai_skill_choice['LuaChuanyi'] = function(self, choices)
+    -- 选最后一个：本局游戏不再发动
+    local items = choices:split('+')
+    return items[#items]
+end
 sgs.ai_skill_playerchosen.LuaChuanyi = function(self, targetlist)
-    -- AI 永不发动传艺
+    -- AI 不指定目标
     return nil
 end
 

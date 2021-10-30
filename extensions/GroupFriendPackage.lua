@@ -850,48 +850,60 @@ LuaMouhai =
     end
 }
 
-LuaChuanyiCard =
-    sgs.CreateSkillCard {
-    name = 'LuaChuanyiCard',
-    target_fixed = true,
-    will_throw = false,
-    on_use = function(self, room, source, targets)
-        room:detachSkillFromPlayer(source, 'LuaChuanyi')
-    end
-}
-
-LuaChuanyiVS =
-    sgs.CreateZeroCardViewAsSkill {
-    name = 'LuaChuanyi',
-    view_as = function(self, cards)
-        return LuaChuanyiCard:clone()
-    end,
-    enabled_at_play = function(self, player)
-        return true
-    end
-}
-
 LuaChuanyi =
     sgs.CreateTriggerSkill {
     name = 'LuaChuanyi',
     events = {sgs.EventPhaseStart},
-    view_as_skill = LuaChuanyiVS,
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
+            local choices = {}
             local targets = sgs.SPlayerList()
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                if p:getMark('@' .. self:objectName()) == 0 then
+                -- 先判断是否对该玩家发动过传艺
+                if p:getMark(player:objectName() .. self:objectName()) == 0 then
                     targets:append(p)
+                    -- 判断其是否有“绝杀”或“谋害”技能
+                    if not table.contains(choices, 'LuaJuesha') and not p:hasSkill('LuaJuesha') then
+                        table.insert(choices, 'LuaJuesha')
+                    end
+                    if not table.contains(choices, 'LuaMouhai') and not p:hasSkill('LuaMouhai') then
+                        table.insert(choices, 'LuaMouhai')
+                    end
                 end
             end
-            if not targets:isEmpty() then
-                local target =
-                    room:askForPlayerChosen(player, targets, self:objectName(), 'LuaChuanyi-choose', true, true)
-                if target then
-                    room:loseMaxHp(player)
-                    local choose = room:askForChoice(player, self:objectName(), 'LuaJuesha+LuaMouhai')
-                    room:acquireSkill(target, choose)
-                    room:addPlayerMark(target, '@' .. self:objectName())
+            if not targets:isEmpty() and player:getMark('LuaChuanyiGiveUp') == 0 then
+                -- 取消和本局不发动
+                table.insert(choices, 'cancel')
+                table.insert(choices, 'LuaChuanyiGiveUp')
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                if choice == 'LuaJuesha' or choice == 'LuaMouhai' then
+                    local available_targets = sgs.SPlayerList()
+                    -- 从没被“传艺”过的玩家中选择没有对应技能的
+                    for _, target in sgs.qlist(targets) do
+                        if not target:hasSkill(choice) then
+                            available_targets:append(target)
+                        end
+                    end
+                    if not available_targets:isEmpty() then
+                        local target =
+                            room:askForPlayerChosen(
+                            player,
+                            available_targets,
+                            self:objectName(),
+                            'LuaChuanyi-choose:' .. choice,
+                            true,
+                            true
+                        )
+                        if target then
+                            room:loseMaxHp(player)
+                            room:acquireSkill(target, choice)
+                            room:addPlayerMark(target, '@' .. self:objectName())
+                            room:addPlayerMark(target, player:objectName() .. self:objectName())
+                        end
+                    end
+                elseif choice == 'LuaChuanyiGiveUp' then
+                    -- 本局游戏不再发动
+                    room:addPlayerMark(player, 'LuaChuanyiGiveUp')
                 end
             end
         end
