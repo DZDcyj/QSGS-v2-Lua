@@ -132,9 +132,8 @@ end
 
 
 -- 传艺
-
 sgs.ai_skill_choice['LuaChuanyi'] = function(self, choices)
-    -- 选最后一个，本轮游戏不再询问
+    -- 选最后一个：本局游戏不再发动
     local items = choices:split('+')
     return items[#items]
 end
