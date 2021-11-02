@@ -6134,6 +6134,9 @@ LuaLonghun =
                 end
             end
         end
+    end,
+    can_trigger = function(self, target)
+        return target
     end
 }
 
