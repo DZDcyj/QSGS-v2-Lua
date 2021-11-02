@@ -6095,7 +6095,11 @@ LuaLonghun =
             if damage.card and damage.card:getSkillName() == self:objectName() and damage.card:subcardsLength() > 1 then
                 local msg = sgs.LogMessage()
                 room:sendLog(msg)
-                rinsanFuncModule.sendLogMessage(room, '#LuaLonghunAddDamage', {['from'] = player, ['arg'] = damage.damage, ['arg2'] = damage.damage+1})
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaLonghunAddDamage',
+                    {['from'] = player, ['arg'] = damage.damage, ['arg2'] = damage.damage + 1}
+                )
                 room:notifySkillInvoked(damage.from, self:objectName())
                 damage.damage = damage.damage + 1
                 data:setValue(damage)
