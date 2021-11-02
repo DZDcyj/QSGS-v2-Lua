@@ -2401,7 +2401,7 @@ LuaYongjinCard =
         for _, equip in sgs.qlist(from:getEquips()) do
             local equip_index = equip:getRealCard():toEquipCard():location()
             -- 如果移动的目标角色没有对应的装备栏，或者装备栏已经有装备，则不可以移动
-            if not to:hasEquipArea(equip_index) or( equip and to:getEquip(equip_index)) then
+            if not to:hasEquipArea(equip_index) or (equip and to:getEquip(equip_index)) then
                 disabled_ids:append(equip:getId())
             end
         end
@@ -2663,7 +2663,7 @@ LuaRangjieCard =
         for _, equip in sgs.qlist(from:getEquips()) do
             local equip_index = equip:getRealCard():toEquipCard():location()
             -- 如果移动的目标角色没有对应的装备栏，或者装备栏已经有装备，则不可以移动
-            if not to:hasEquipArea(equip_index) or( equip and to:getEquip(equip_index)) then
+            if not to:hasEquipArea(equip_index) or (equip and to:getEquip(equip_index)) then
                 disabled_ids:append(equip:getId())
             end
         end
@@ -5966,3 +5966,176 @@ LuaGaoyuan =
 
 ExSufei:addSkill(LuaZhengjian)
 ExSufei:addSkill(LuaGaoyuan)
+
+ExShenZhaoyun = sgs.General(extension, 'ExShenZhaoyun', 'god', '2', true, true)
+
+LuaJuejing =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJuejing',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.Dying, sgs.QuitDying, sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Discard then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+            end
+        else
+            if data:toDying().who:objectName() == player:objectName() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                player:drawCards(1, self:objectName())
+            end
+        end
+    end
+}
+
+LuaJuejingMaxCards =
+    sgs.CreateMaxCardsSkill {
+    name = '#LuaJuejing',
+    extra_func = function(self, target)
+        if target:hasSkill('LuaJuejing') then
+            return 2
+        else
+            return 0
+        end
+    end
+}
+
+LuaLonghunVS =
+    sgs.CreateViewAsSkill {
+    name = 'LuaLonghun',
+    response_or_use = true,
+    n = 2,
+    view_filter = function(self, selected, card)
+        if #selected >= 2 or card:hasFlag('using') then
+            return false
+        end
+        if #selected >= 1 then
+            local suit = selected[1]:getSuit()
+            return card:getSuit() == suit
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
+            if sgs.Self:isWounded() and card:getSuit() == sgs.Card_Heart then
+                return true
+            elseif card:getSuit() == sgs.Card_Diamond then
+                local slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_SuitToBeDecided, -1)
+                slash:addSubcard(card:getEffectiveId())
+                slash:deleteLater()
+                return slash:isAvailable(sgs.Self)
+            else
+                return false
+            end
+        elseif
+            sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or
+                sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+         then
+            local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
+            if pattern == 'jink' then
+                return card:getSuit() == sgs.Card_Club
+            elseif pattern == 'nullification' then
+                return card:getSuit() == sgs.Card_Spade
+            elseif string.find(pattern, 'peach') then
+                return card:getSuit() == sgs.Card_Heart
+            elseif pattern == 'slash' then
+                return card:getSuit() == sgs.Card_Diamond
+            end
+            return false
+        end
+        return false
+    end,
+    view_as = function(self, cards)
+        if #cards < 1 then
+            return nil
+        end
+        local card = cards[1]
+        local new_card = nil
+        if card:getSuit() == sgs.Card_Spade then
+            new_card = sgs.Sanguosha:cloneCard('nullification', sgs.Card_SuitToBeDecided, 0)
+        elseif card:getSuit() == sgs.Card_Heart then
+            new_card = sgs.Sanguosha:cloneCard('peach', sgs.Card_SuitToBeDecided, 0)
+        elseif card:getSuit() == sgs.Card_Club then
+            new_card = sgs.Sanguosha:cloneCard('jink', sgs.Card_SuitToBeDecided, 0)
+        elseif card:getSuit() == sgs.Card_Diamond then
+            new_card = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_SuitToBeDecided, 0)
+        end
+        if new_card then
+            new_card:setSkillName(self:objectName())
+            for _, c in ipairs(cards) do
+                new_card:addSubcard(c)
+            end
+        end
+        return new_card
+    end,
+    enabled_at_play = function(self, player)
+        return player:isWounded() or sgs.Slash_IsAvailable(player)
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == 'slash' or pattern == 'jink' or
+            (string.find(pattern, 'peach') and player:getMark('Global_PreventPeach') == 0) or
+            pattern == 'nullification'
+    end,
+    enabled_at_nullification = function(self, player)
+        for _, cd in sgs.qlist(player:getCards('he')) do
+            if cd:getSuit() == sgs.Card_Spade then
+                return true
+            end
+        end
+        return false
+    end
+}
+
+LuaLonghun =
+    sgs.CreateTriggerSkill {
+    name = 'LuaLonghun',
+    view_as_skill = LuaLonghunVS,
+    events = {sgs.DamageCaused, sgs.PreHpRecover, sgs.CardFinished},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            if damage.card and damage.card:getSkillName() == self:objectName() and damage.card:subcardsLength() > 1 then
+                local msg = sgs.LogMessage()
+                room:sendLog(msg)
+                rinsanFuncModule.sendLogMessage(room, '#LuaLonghunAddDamage', {['from'] = player, ['arg'] = damage.damage, ['arg2'] = damage.damage+1})
+                room:notifySkillInvoked(damage.from, self:objectName())
+                damage.damage = damage.damage + 1
+                data:setValue(damage)
+            end
+        elseif event == sgs.PreHpRecover then
+            local rec = data:toRecover()
+            if rec.card and rec.card:getSkillName() == self:objectName() and rec.card:subcardsLength() > 1 then
+                rec.recover = rec.recover + 1
+                room:sendCompulsoryTriggerLog(rec.who, self:objectName())
+                data:setValue(rec)
+            end
+        else
+            local use = data:toCardUse()
+            if
+                use.card and use.card:isBlack() and use.card:getSkillName() == self:objectName() and
+                    use.card:subcardsLength() > 1
+             then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                if player:canDiscard(room:getCurrent(), 'he') then
+                    room:throwCard(
+                        room:askForCardChosen(
+                            player,
+                            room:getCurrent(),
+                            'he',
+                            self:objectName(),
+                            false,
+                            sgs.Card_MethodDiscard
+                        ),
+                        room:getCurrent(),
+                        player
+                    )
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+ExShenZhaoyun:addSkill(LuaJuejing)
+ExShenZhaoyun:addSkill(LuaLonghun)
+SkillAnjiang:addSkill(LuaJuejingMaxCards)
