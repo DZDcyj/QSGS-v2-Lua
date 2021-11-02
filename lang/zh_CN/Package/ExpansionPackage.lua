@@ -470,5 +470,15 @@ return {
     ['@LuaZhengjian-choose'] = '请选择一名角色，令其获得“诤荐”标记',
     ['LuaGaoyuan'] = '告援',
     [':LuaGaoyuan'] = '当你成为【杀】的目标时，你可以弃置一张牌，将此【杀】转移给有“诤荐”标记的角色（不能是此【杀】的使用者）',
-    ['@LuaGaoyuan'] = '你可以弃置一张牌发动“告援”，将【杀】的目标转移给 %src'
+    ['@LuaGaoyuan'] = '你可以弃置一张牌发动“告援”，将【杀】的目标转移给 %src',
+    ['ExShenZhaoyun'] = '神赵云',
+    ['&ExShenZhaoyun'] = '神赵云',
+    ['#ExShenZhaoyun'] = '神威如龙',
+    ['LuaJuejing'] = '绝境',
+    [':LuaJuejing'] = '锁定技，你的手牌上限+2；当你进入或脱离濒死状态时，你摸一张牌',
+    ['LuaLonghun'] = '龙魂',
+    [':LuaLonghun'] = '你可以将至多两张花色相同的牌按下列规则使用或打出：红桃当【桃】；方块当火【杀】；梅花当【闪】；黑桃当【无懈可击】。\
+    若你以此法使用了两张红色牌，则此牌回复值或伤害值+1。若你以此法使用了两张黑色牌，则你弃置当前回合角色一张牌',
+    ['LuaLonghunTwo'] = '龙魂',
+    ['#LuaLonghunAddDamage'] = '%from 的“<font color="yellow"><b>龙魂</b></font>”被触发，伤害值从 %arg 增加至 %arg2'
 }
