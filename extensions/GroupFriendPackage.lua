@@ -1275,7 +1275,7 @@ LuaShaikaCard =
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
-        local len = self:getSubcards():length() + 1
+        local len = self:subcardsLength() + 1
         if
             not room:askForDiscard(
                 target,

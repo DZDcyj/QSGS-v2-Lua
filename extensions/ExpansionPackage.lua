@@ -3175,7 +3175,7 @@ LuaJunxingCard =
     on_use = function(self, room, source, targets)
         room:broadcastSkillInvoke('LuaJunxing')
         local target = targets[1]
-        local len = self:getSubcards():length()
+        local len = self:subcardsLength()
         if room:askForDiscard(target, 'LuaJunxing', len, len, true, true, '@LuaJunxing:::' .. len) then
             room:loseHp(target)
         else
