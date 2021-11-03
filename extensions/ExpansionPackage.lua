@@ -6152,9 +6152,9 @@ LuaZhanyiCard =
     on_use = function(self, room, source, targets)
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         -- 首先失去一点体力
+        room:broadcastSkillInvoke('LuaZhanyi')
         room:loseHp(source)
         room:setPlayerFlag(source, 'LuaZhanyiUsed')
-        room:broadcastSkillInvoke('LuaZhanyi')
 
         -- 根据不同牌型，用不同 flag 标识
         if card:isKindOf('BasicCard') then
