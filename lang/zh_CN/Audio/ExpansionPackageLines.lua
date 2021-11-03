@@ -245,5 +245,9 @@ return {
     ['$LuaJuejing2'] = '绝望中，仍存有一线生机！',
     ['$LuaLonghun1'] = '龙战于野，其血玄黄！',
     ['$LuaLonghun2'] = '潜龙勿用，藏锋守拙！',
-    ['~ExShenZhaoyun'] = '龙鳞崩损，坠于九天！'
+    ['~ExShenZhaoyun'] = '龙鳞崩损，坠于九天！',
+    -- 朱灵
+    ['$LuaZhanyi1'] = '战，乃军中第一要事！',
+    ['$LuaZhanyi2'] = '征伐训备，只为战而胜之',
+    ['~ExZhuling'] = '吾赤诚以待主公，奈何不得深信啊……',
 }

@@ -6156,10 +6156,13 @@ LuaZhanyiCard =
         -- 首先失去一点体力
         room:loseHp(source)
         room:setPlayerFlag(source, 'LuaZhanyiUsed')
+        room:broadcastSkillInvoke('LuaZhanyi')
         -- 基本牌：你使用的第一张基本牌的回复量/伤害量+1
         if card:isKindOf('BasicCard') then
             room:setPlayerFlag(source, 'LuaZhanyiBasicCard')
             room:setPlayerFlag(source, 'LuaZhanyiFirstBasicCard')
+            -- 解禁蛊惑框内容
+            room:setPlayerProperty(source, 'allowed_guhuo_dialog_buttons', sgs.QVariant(''))
         elseif card:isKindOf('TrickCard') then
             source:drawCards(3, 'LuaZhanyi')
             room:setPlayerFlag(source, 'LuaZhanyiTrickCard')
@@ -6369,10 +6372,95 @@ LuaZhanyiVS =
 LuaZhanyi =
     sgs.CreateTriggerSkill {
     name = 'LuaZhanyi',
-    events = {sgs.CardUsed},
+    events = {sgs.TurnStart, sgs.CardEffected, sgs.CardUsed, sgs.DamageCaused, sgs.PreHpRecover, sgs.ChoiceMade},
     view_as_skill = LuaZhanyiVS,
     on_trigger = function(self, event, player, data, room)
-        
+        if event == sgs.TurnStart and player:hasSkill(self:objectName()) then
+            -- 蛊惑框导致选择技能时会弹框，影响体验，在这里先把基本牌排除掉
+            -- 令蛊惑框内容仅允许【决斗】可选，但指定为基本牌类型，故初次使用时不会弹框
+            -- 在基本牌使用后解除弹框限制即可
+            room:setPlayerProperty(player, 'allowed_guhuo_dialog_buttons', sgs.QVariant('duel'))
+        elseif event == sgs.CardEffected then
+            local effect = data:toCardEffect()
+            local source = effect.from
+            local card = effect.card
+            -- 因持续效果，故在此判断 Flag
+            if source:hasFlag('LuaZhanyiTrickCard') then
+                if card:isNDTrick() then
+                    room:sendCompulsoryTriggerLog(source, self:objectName())
+                    local trick = card:toTrick()
+                    trick:setCancelable(false)
+                    effect.card = trick
+                    data:setValue(effect)
+                end
+            end
+        elseif event == sgs.CardUsed then
+            local use = data:toCardUse()
+            local card = use.card
+            if card:isKindOf('Slash') and use.from:hasFlag('LuaZhanyiEquipCard') then
+                room:sendCompulsoryTriggerLog(use.from, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                for _, p in sgs.qlist(use.to) do
+                    room:askForDiscard(p, self:objectName(), 2, 2, false, true)
+                end
+            end
+        elseif event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            if damage.from and damage.from:hasFlag('LuaZhanyiFirstBasicCard') then
+                if damage.card and damage.card:isKindOf('BasicCard') then
+                    room:sendCompulsoryTriggerLog(damage.from, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    damage.damage = damage.damage + 1
+                    data:setValue(damage)
+                    room:setPlayerFlag(damage.from, '-LuaZhanyiFirstBasicCard')
+                end
+            end
+        elseif event == sgs.PreHpRecover then
+            local rec = data:toRecover()
+            if rec.who and rec.who:hasFlag('LuaZhanyiFirstBasicCard') then
+                if rec.card and rec.card:isKindOf('BasicCard') then
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:sendCompulsoryTriggerLog(rec.who, self:objectName())
+                    rec.recover = rec.recover + 1
+                    data:setValue(rec)
+                    room:setPlayerFlag(rec.who, '-LuaZhanyiFirstBasicCard')
+                end
+            end
+        elseif event == sgs.ChoiceMade then
+            local dataStr = data:toString():split(':')
+            if #dataStr ~= 3 or dataStr[1] ~= 'cardDiscard' or dataStr[2] ~= self:objectName() then
+                return false
+            end
+            if #dataStr[3]:split('+') == 0 then
+                return false
+            end
+            local source
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasFlag('LuaZhanyiEquipCard') then
+                    source = p
+                    break
+                end
+            end
+            -- dataStr[3] 的结构是：$id+id+id+...，因此需要去掉第一个$
+            local card_ids = string.sub(dataStr[3], 2):split('+')
+            local cards = sgs.IntList()
+            for _, id in ipairs(card_ids) do
+                cards:append(tonumber(id))
+            end
+            if source and not cards:isEmpty() then
+                room:fillAG(cards, source)
+                -- false 代表不能拒绝拿牌（根据技能描述）
+                local id = room:askForAG(source, cards, false, self:objectName())
+                if id ~= -1 then
+                    room:obtainCard(source, id)
+                end
+                room:clearAG(source)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive()
     end
 }
 
