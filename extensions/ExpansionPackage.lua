@@ -1848,7 +1848,6 @@ LuaYizanCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetFilter(players, to_select, sgs.Self) and
             not sgs.Self:isProhibited(to_select, card, players)
@@ -1872,7 +1871,6 @@ LuaYizanCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetsFeasible(players, sgs.Self)
     end,
@@ -6157,7 +6155,8 @@ LuaZhanyiCard =
         room:loseHp(source)
         room:setPlayerFlag(source, 'LuaZhanyiUsed')
         room:broadcastSkillInvoke('LuaZhanyi')
-        -- 基本牌：你使用的第一张基本牌的回复量/伤害量+1
+
+        -- 根据不同牌型，用不同 flag 标识
         if card:isKindOf('BasicCard') then
             room:setPlayerFlag(source, 'LuaZhanyiBasicCard')
             room:setPlayerFlag(source, 'LuaZhanyiFirstBasicCard')
@@ -6197,7 +6196,6 @@ LuaZhanyiBasicCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetFilter(players, to_select, sgs.Self) and
             not sgs.Self:isProhibited(to_select, card, players)
@@ -6221,7 +6219,6 @@ LuaZhanyiBasicCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetsFeasible(players, sgs.Self)
     end,
@@ -6406,6 +6403,7 @@ LuaZhanyi =
             end
         elseif event == sgs.DamageCaused then
             local damage = data:toDamage()
+            -- 如果有对应 flag 且造成伤害为基本牌，则加伤害
             if damage.from and damage.from:hasFlag('LuaZhanyiFirstBasicCard') then
                 if damage.card and damage.card:isKindOf('BasicCard') then
                     room:sendCompulsoryTriggerLog(damage.from, self:objectName())
@@ -6417,6 +6415,7 @@ LuaZhanyi =
             end
         elseif event == sgs.PreHpRecover then
             local rec = data:toRecover()
+            -- 如果有对应 flag 且回复牌为基本牌，则加回复量
             if rec.who and rec.who:hasFlag('LuaZhanyiFirstBasicCard') then
                 if rec.card and rec.card:isKindOf('BasicCard') then
                     room:broadcastSkillInvoke(self:objectName())
