@@ -1848,7 +1848,6 @@ LuaYizanCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetFilter(players, to_select, sgs.Self) and
             not sgs.Self:isProhibited(to_select, card, players)
@@ -1872,7 +1871,6 @@ LuaYizanCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetsFeasible(players, sgs.Self)
     end,
@@ -6143,3 +6141,328 @@ LuaLonghun =
 ExShenZhaoyun:addSkill(LuaJuejing)
 ExShenZhaoyun:addSkill(LuaLonghun)
 SkillAnjiang:addSkill(LuaJuejingMaxCards)
+
+ExZhuling = sgs.General(extension, 'ExZhuling', 'wei', '4', true, true)
+
+LuaZhanyiCard =
+    sgs.CreateSkillCard {
+    name = 'LuaZhanyiCard',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        -- 首先失去一点体力
+        room:loseHp(source)
+        room:setPlayerFlag(source, 'LuaZhanyiUsed')
+        room:broadcastSkillInvoke('LuaZhanyi')
+
+        -- 根据不同牌型，用不同 flag 标识
+        if card:isKindOf('BasicCard') then
+            room:setPlayerFlag(source, 'LuaZhanyiBasicCard')
+            room:setPlayerFlag(source, 'LuaZhanyiFirstBasicCard')
+            -- 解禁蛊惑框内容
+            room:setPlayerProperty(source, 'allowed_guhuo_dialog_buttons', sgs.QVariant(''))
+        elseif card:isKindOf('TrickCard') then
+            source:drawCards(3, 'LuaZhanyi')
+            room:setPlayerFlag(source, 'LuaZhanyiTrickCard')
+        elseif card:isKindOf('EquipCard') then
+            room:setPlayerFlag(source, 'LuaZhanyiEquipCard')
+        end
+    end
+}
+
+LuaZhanyiBasicCard =
+    sgs.CreateSkillCard {
+    name = 'LuaZhanyiBasicCard',
+    will_throw = false,
+    handling_method = sgs.Card_MethodNone,
+    filter = function(self, targets, to_select)
+        local players = sgs.PlayerList()
+        for i = 1, #targets do
+            players:append(targets[i])
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card
+            if self:getUserString() and self:getUserString() ~= '' then
+                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+                return card and card:targetFilter(players, to_select, sgs.Self) and
+                    not sgs.Self:isProhibited(to_select, card, players)
+            end
+        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+            return false
+        end
+        local _card = sgs.Self:getTag('LuaZhanyi'):toCard()
+        if _card == nil then
+            return false
+        end
+        local card = sgs.Sanguosha:cloneCard(_card)
+        card:deleteLater()
+        return card and card:targetFilter(players, to_select, sgs.Self) and
+            not sgs.Self:isProhibited(to_select, card, players)
+    end,
+    feasible = function(self, targets)
+        local players = sgs.PlayerList()
+        for i = 1, #targets do
+            players:append(targets[i])
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card
+            if self:getUserString() and self:getUserString() ~= '' then
+                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+                return card and card:targetsFeasible(players, sgs.Self)
+            end
+        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+            return true
+        end
+        local _card = sgs.Self:getTag('LuaZhanyi'):toCard()
+        if _card == nil then
+            return false
+        end
+        local card = sgs.Sanguosha:cloneCard(_card)
+        card:deleteLater()
+        return card and card:targetsFeasible(players, sgs.Self)
+    end,
+    on_validate = function(self, card_use)
+        local source = card_use.from
+        local room = source:getRoom()
+        local to_use = self:getUserString()
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        if
+            to_use == 'slash' and
+                sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+         then
+            local use_list = {}
+            table.insert(use_list, 'slash')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'normal_slash')
+                table.insert(use_list, 'thunder_slash')
+                table.insert(use_list, 'fire_slash')
+            end
+            to_use = room:askForChoice(source, 'zhanyi_slash', table.concat(use_list, '+'))
+            source:setTag('ZhanyiSlash', sgs.QVariant(to_use))
+        end
+        local user_str = to_use
+        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+        if use_card == nil then
+            use_card = sgs.Sanguosha:cloneCard('slash', card:getSuit(), card:getNumber())
+        end
+        use_card:setSkillName('LuaZhanyi')
+        use_card:addSubcards(self:getSubcards())
+        use_card:deleteLater()
+        local tos = card_use.to
+        for _, to in sgs.qlist(tos) do
+            local skill = room:isProhibited(source, to, use_card)
+            if skill then
+                card_use.to:removeOne(to)
+            end
+        end
+        return use_card
+    end,
+    on_validate_in_response = function(self, source)
+        local room = source:getRoom()
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local to_use
+        if self:getUserString() == 'peach+analeptic' then
+            local use_list = {}
+            table.insert(use_list, 'peach')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'analeptic')
+            end
+            to_use = room:askForChoice(source, 'zhanyi_saveself', table.concat(use_list, '+'))
+            source:setTag('ZhanyiSaveSelf', sgs.QVariant(to_use))
+        elseif self:getUserString() == 'slash' then
+            local use_list = {}
+            table.insert(use_list, 'slash')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'normal_slash')
+                table.insert(use_list, 'thunder_slash')
+                table.insert(use_list, 'fire_slash')
+            end
+            to_use = room:askForChoice(source, 'zhanyi_slash', table.concat(use_list, '+'))
+            source:setTag('ZhanyiSlash', sgs.QVariant(to_use))
+        else
+            to_use = self:getUserString()
+        end
+        local user_str
+        if to_use == 'slash' then
+            user_str = 'slash'
+        elseif to_use == 'normal_slash' then
+            user_str = 'slash'
+        else
+            user_str = to_use
+        end
+        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+        use_card:setSkillName('LuaZhanyi')
+        use_card:addSubcards(self:getSubcards())
+        use_card:deleteLater()
+        return use_card
+    end
+}
+
+LuaZhanyiVS =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaZhanyi',
+    response_or_use = false,
+    view_filter = function(self, to_select)
+        -- 如果没有发动过“战意”，那么啥牌都行，如果发动过且弃置的是基本牌，只能基本牌
+        return not sgs.Self:hasFlag('LuaZhanyiUsed') or
+            (sgs.Self:hasFlag('LuaZhanyiBasicCard') and to_select:isKindOf('BasicCard'))
+    end,
+    enabled_at_response = function(self, player, pattern)
+        if not player:hasFlag('LuaZhanyiBasicCard') then
+            return false
+        end
+        if string.startsWith(pattern, '.') or string.startsWith(pattern, '@') then
+            return false
+        end
+        if pattern == 'peach' and player:getMark('Global_PreventPeach') > 0 then
+            return false
+        end
+        if pattern == 'nullification' then
+            return false
+        end
+        if string.find(pattern, '[%u%d]') then
+            return false
+        end -- 这是个极其肮脏的黑客！！ 因此我们需要去阻止基本牌模式
+        return true
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasFlag('LuaZhanyiUsed') or
+            (player:hasFlag('LuaZhanyiBasicCard') and
+                (player:isWounded() or sgs.Slash_IsAvailable(player) or sgs.Analeptic_IsAvailable(player)))
+    end,
+    enabled_at_nullification = function(self, player)
+        return false
+    end,
+    view_as = function(self, orginalCard)
+        if not sgs.Self:hasFlag('LuaZhanyiUsed') then
+            local vs_card = LuaZhanyiCard:clone()
+            vs_card:addSubcard(orginalCard)
+            return vs_card
+        end
+        if sgs.Self:hasFlag('LuaZhanyiBasicCard') then
+            if
+                sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or
+                    sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+             then
+                local card = LuaZhanyiBasicCard:clone()
+                card:setUserString(sgs.Sanguosha:getCurrentCardUsePattern())
+                card:addSubcard(orginalCard)
+                return card
+            end
+            local c = sgs.Self:getTag('LuaZhanyi'):toCard()
+            if c then
+                local card = LuaZhanyiBasicCard:clone()
+                card:setUserString(c:objectName())
+                card:addSubcard(orginalCard)
+                return card
+            else
+                return nil
+            end
+        end
+    end
+}
+
+LuaZhanyi =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZhanyi',
+    events = {sgs.TurnStart, sgs.CardEffected, sgs.CardUsed, sgs.DamageCaused, sgs.PreHpRecover, sgs.ChoiceMade},
+    view_as_skill = LuaZhanyiVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.TurnStart and player:hasSkill(self:objectName()) then
+            -- 蛊惑框导致选择技能时会弹框，影响体验，在这里先把基本牌排除掉
+            -- 令蛊惑框内容仅允许【决斗】可选，但指定为基本牌类型，故初次使用时不会弹框
+            -- 在基本牌使用后解除弹框限制即可
+            room:setPlayerProperty(player, 'allowed_guhuo_dialog_buttons', sgs.QVariant('duel'))
+        elseif event == sgs.CardEffected then
+            local effect = data:toCardEffect()
+            local source = effect.from
+            local card = effect.card
+            -- 因持续效果，故在此判断 Flag
+            if source:hasFlag('LuaZhanyiTrickCard') then
+                if card:isNDTrick() then
+                    room:sendCompulsoryTriggerLog(source, self:objectName())
+                    local trick = card:toTrick()
+                    trick:setCancelable(false)
+                    effect.card = trick
+                    data:setValue(effect)
+                end
+            end
+        elseif event == sgs.CardUsed then
+            local use = data:toCardUse()
+            local card = use.card
+            if card:isKindOf('Slash') and use.from:hasFlag('LuaZhanyiEquipCard') then
+                room:sendCompulsoryTriggerLog(use.from, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                for _, p in sgs.qlist(use.to) do
+                    room:askForDiscard(p, self:objectName(), 2, 2, false, true)
+                end
+            end
+        elseif event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            -- 如果有对应 flag 且造成伤害为基本牌，则加伤害
+            if damage.from and damage.from:hasFlag('LuaZhanyiFirstBasicCard') then
+                if damage.card and damage.card:isKindOf('BasicCard') then
+                    room:sendCompulsoryTriggerLog(damage.from, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    damage.damage = damage.damage + 1
+                    data:setValue(damage)
+                    room:setPlayerFlag(damage.from, '-LuaZhanyiFirstBasicCard')
+                end
+            end
+        elseif event == sgs.PreHpRecover then
+            local rec = data:toRecover()
+            -- 如果有对应 flag 且回复牌为基本牌，则加回复量
+            if rec.who and rec.who:hasFlag('LuaZhanyiFirstBasicCard') then
+                if rec.card and rec.card:isKindOf('BasicCard') then
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:sendCompulsoryTriggerLog(rec.who, self:objectName())
+                    rec.recover = rec.recover + 1
+                    data:setValue(rec)
+                    room:setPlayerFlag(rec.who, '-LuaZhanyiFirstBasicCard')
+                end
+            end
+        elseif event == sgs.ChoiceMade then
+            local dataStr = data:toString():split(':')
+            if #dataStr ~= 3 or dataStr[1] ~= 'cardDiscard' or dataStr[2] ~= self:objectName() then
+                return false
+            end
+            if #dataStr[3]:split('+') == 0 then
+                return false
+            end
+            local source
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasFlag('LuaZhanyiEquipCard') then
+                    source = p
+                    break
+                end
+            end
+            -- dataStr[3] 的结构是：$id+id+id+...，因此需要去掉第一个$
+            local card_ids = string.sub(dataStr[3], 2):split('+')
+            local cards = sgs.IntList()
+            for _, id in ipairs(card_ids) do
+                cards:append(tonumber(id))
+            end
+            if source and not cards:isEmpty() then
+                room:fillAG(cards, source)
+                -- false 代表不能拒绝拿牌（根据技能描述）
+                local id = room:askForAG(source, cards, false, self:objectName())
+                if id ~= -1 then
+                    room:obtainCard(source, id)
+                end
+                room:clearAG(source)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive()
+    end
+}
+
+LuaZhanyi:setGuhuoDialog('l')
+
+ExZhuling:addSkill(LuaZhanyi)

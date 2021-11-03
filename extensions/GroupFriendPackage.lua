@@ -181,7 +181,6 @@ LuaWannengCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetFilter(players, to_select, sgs.Self) and
             not sgs.Self:isProhibited(to_select, card, players)
@@ -205,7 +204,6 @@ LuaWannengCard =
             return false
         end
         local card = sgs.Sanguosha:cloneCard(_card)
-        -- card:setCanRecast(false)
         card:deleteLater()
         return card and card:targetsFeasible(players, sgs.Self)
     end,
