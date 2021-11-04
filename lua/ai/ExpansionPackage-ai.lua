@@ -451,7 +451,8 @@ sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
     self:updatePlayers()
     targets = sgs.QList2Table(targets)
     for _, p in ipairs(targets) do
-        if self:isFriend(p) then
+        -- damageIsEffective 函数封装了对应的判断逻辑
+        if self:isFriend(p) or self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
             table.removeOne(targets, p)
         end
     end
@@ -467,7 +468,7 @@ sgs.ai_skill_playerchosen['LuaJuece'] = function(self, targets)
     self:updatePlayers()
     targets = sgs.QList2Table(targets)
     for _, p in ipairs(targets) do
-        if self:isFriend(p) then
+        if self:isFriend(p) or self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
             table.removeOne(targets, p)
         end
     end
@@ -730,7 +731,12 @@ end
 sgs.ai_skill_playerchosen['LuaXuanfeng'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets, 'defense')
-    return targets[1]
+    for _, target in ipairs(targets) do
+        if self:damageIsEffective(target, sgs.DamageStruct_Normal, self.player) then
+            return target
+        end
+    end
+    return nil
 end
 
 -- 凌统暂不考虑使用【勇进】（太阴间了）
