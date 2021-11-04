@@ -252,6 +252,9 @@ LuaXionghuoCard =
     name = 'LuaXionghuoCard',
     target_fixed = false,
     will_throw = true,
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:getMark('@baoli') == 0 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
     on_effect = function(self, effect)
         effect.from:loseMark('@baoli')
         effect.from:getRoom():broadcastSkillInvoke('LuaXionghuo')
@@ -263,12 +266,6 @@ LuaXionghuoVS =
     sgs.CreateViewAsSkill {
     name = 'LuaXionghuo',
     n = 0,
-    filter = function(self, selected, to_select)
-        if #selected == 0 then
-            return to_select:objectName() ~= sgs.Self:objectName()
-        end
-        return false
-    end,
     view_as = function(self, cards)
         return LuaXionghuoCard:clone()
     end,
