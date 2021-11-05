@@ -4978,7 +4978,7 @@ LuaFanghunVS =
         return player:getMark('@LuaFanghun') > 0 and sgs.Slash_IsAvailable(player)
     end,
     enabled_at_response = function(self, player, pattern)
-        return player:getMark('@LuaFanghun') > 0 and pattern == 'slash' or pattern == 'jink'
+        return player:getMark('@LuaFanghun') > 0 and (pattern == 'slash' or pattern == 'jink')
     end
 }
 
