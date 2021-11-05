@@ -201,14 +201,7 @@ LuaShangjian =
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
             if player:hasSkill(self:objectName()) then
-                if
-                    (move.from and (move.from:objectName() == player:objectName()) and
-                        (move.from_places:contains(sgs.Player_PlaceHand) or
-                            move.from_places:contains(sgs.Player_PlaceEquip))) and
-                        not (move.to and
-                            (move.to:objectName() == player:objectName() and
-                                (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
-                 then
+                if rinsanFuncModule.lostCard(move, player) then
                     room:addPlayerMark(player, '@' .. self:objectName(), move.card_ids:length())
                 end
             end
@@ -2959,13 +2952,7 @@ LuaJuece =
             if move.from and move.from:objectName() == room:getCurrent():objectName() then
                 return false
             end
-            if
-                (move.from and (move.from:objectName() == player:objectName()) and
-                    (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))) and
-                    not (move.to and
-                        (move.to:objectName() == player:objectName() and
-                            (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
-             then
+            if rinsanFuncModule.lostCard(move, player) then
                 room:addPlayerMark(player, self:objectName())
             end
         elseif event == sgs.EventPhaseStart then
@@ -6474,20 +6461,8 @@ LuaPianchong =
         if event == sgs.EventPhaseStart then
             if player:hasSkill(self:objectName()) and player:getPhase() == sgs.Player_Draw then
                 if room:askForSkillInvoke(player, self:objectName(), data) then
-                    local redCard =
-                        rinsanFuncModule.obtainSpecifiedCard(
-                        room,
-                        function(card)
-                            return card:isRed()
-                        end
-                    )
-                    local blackCard =
-                        rinsanFuncModule.obtainSpecifiedCard(
-                        room,
-                        function(card)
-                            return card:isBlack()
-                        end
-                    )
+                    local redCard = rinsanFuncModule.obtainSpecifiedCard(room, rinsanFuncModule.isRedCard)
+                    local blackCard = rinsanFuncModule.obtainSpecifiedCard(room, rinsanFuncModule.isBlackCard)
                     if redCard then
                         player:obtainCard(redCard, false)
                     end
@@ -6497,8 +6472,10 @@ LuaPianchong =
                     local choice =
                         room:askForChoice(player, self:objectName(), 'LuaPianchongChoice1+LuaPianchongChoice2')
                     if choice == 'LuaPianchongChoice1' then
+                        -- 失去红牌摸黑牌
                         room:setPlayerMark(player, self:objectName(), 1)
                     elseif choice == 'LuaPianchongChoice2' then
+                        -- 失去黑牌摸红牌
                         room:setPlayerMark(player, self:objectName(), 2)
                     end
                     return true
@@ -6509,44 +6486,28 @@ LuaPianchong =
         else
             local move = data:toMoveOneTime()
             if player:hasSkill(self:objectName()) and player:getMark(self:objectName()) > 0 then
-                if
-                    (move.from and (move.from:objectName() == player:objectName()) and
-                        (move.from_places:contains(sgs.Player_PlaceHand) or
-                            move.from_places:contains(sgs.Player_PlaceEquip))) and
-                        not (move.to and
-                            (move.to:objectName() == player:objectName() and
-                                (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip)))
-                 then
-                    local redCheckFunc = function(card)
-                        return card:isRed()
+                if rinsanFuncModule.lostCard(move, player) then
+                    -- 判断卡牌颜色和要获得的卡牌颜色
+                    if player:getMark(self:objectName()) > 2 then
+                        return false
                     end
-                    local blackCheckFunc = function(card)
-                        return card:isBlack()
+                    local cardColorCheck = rinsanFuncModule.isRedCard
+                    local obtainCardColorCheck = rinsanFuncModule.isBlackCard
+                    if player:getMark(self:objectName()) == 2 then
+                        cardColorCheck = rinsanFuncModule.isBlackCard
+                        obtainCardColorCheck = rinsanFuncModule.isRedCard
                     end
                     local broadcasted = false
                     for _, id in sgs.qlist(move.card_ids) do
                         local move_card = sgs.Sanguosha:getCard(id)
-                        if player:getMark(self:objectName()) == 1 then
-                            if redCheckFunc(move_card) then
-                                local blackCard = rinsanFuncModule.obtainSpecifiedCard(room, blackCheckFunc)
-                                if blackCard then
-                                    if not broadcasted then
-                                        broadcasted = true
-                                        room:sendCompulsoryTriggerLog(player, self:objectName())
-                                    end
-                                    player:obtainCard(blackCard, false)
+                        if cardColorCheck(move_card) then
+                            local obtainCard = rinsanFuncModule.obtainSpecifiedCard(room, obtainCardColorCheck)
+                            if obtainCard then
+                                if not broadcasted then
+                                    broadcasted = true
+                                    room:sendCompulsoryTriggerLog(player, self:objectName())
                                 end
-                            end
-                        elseif player:getMark(self:objectName()) == 2 then
-                            if blackCheckFunc(move_card) then
-                                local redCard = rinsanFuncModule.obtainSpecifiedCard(room, redCheckFunc)
-                                if redCard then
-                                    if not broadcasted then
-                                        broadcasted = true
-                                        room:sendCompulsoryTriggerLog(player, self:objectName())
-                                    end
-                                    player:obtainCard(redCard, false)
-                                end
+                                player:obtainCard(obtainCard, false)
                             end
                         end
                     end
@@ -6565,14 +6526,26 @@ LuaZunweiCard =
     name = 'LuaZunweiCard',
     filter = function(self, selected, to_select)
         if #selected == 0 and to_select:objectName() ~= sgs.Self:objectName() then
+            -- 分别代表三个选项是否可用
+
+            -- 选项一：摸牌至与对应角色相同
+            -- 判断依据：未选中过此选项且手牌数小于对方
             local choice1_available =
                 sgs.Self:getMark('LuaZunweiChoice1') == 0 and to_select:getHandcardNum() > sgs.Self:getHandcardNum()
+
+            -- 选项二：随机使用装备牌至与对应角色相同
+            -- 判断依据：未选中过此选项且装备数数小于对方
             local choice2_available =
                 sgs.Self:getMark('LuaZunweiChoice2') == 0 and
                 to_select:getEquips():length() > sgs.Self:getEquips():length()
+
+            -- 选项三：回复体力至与对应角色相同
+            -- 判断依据：未选中过此选项且体力值小于对方体力值与自身最大体力值
             local choice3_available =
                 sgs.Self:getMark('LuaZunweiChoice3') == 0 and
                 math.min(to_select:getHp(), sgs.Self:getMaxHp()) > sgs.Self:getHp()
+
+            -- 需要满足这三个条件之一，方可被选中
             return choice1_available or choice2_available or choice3_available
         end
         return false
@@ -6581,30 +6554,45 @@ LuaZunweiCard =
     on_use = function(self, room, source, targets)
         local target = targets[1]
         local choices = {}
+
+        -- 三个选项是否可用
+
+        -- 手牌选项是否满足
         local choice1_available =
             source:getMark('LuaZunweiChoice1') == 0 and target:getHandcardNum() > source:getHandcardNum()
-        local choice2_available =
-            source:getMark('LuaZunweiChoice2') == 0 and target:getEquips():length() > source:getEquips():length()
-        local choice3_available =
-            source:getMark('LuaZunweiChoice3') == 0 and math.min(target:getHp(), source:getMaxHp()) > source:getHp()
+        -- 如果满足，添加到备选
         if choice1_available then
             table.insert(choices, 'LuaZunweiChoice1')
         end
+
+        -- 装备选项是否满足
+        local choice2_available =
+            source:getMark('LuaZunweiChoice2') == 0 and target:getEquips():length() > source:getEquips():length()
+        -- 如果满足，添加到备选
         if choice2_available then
             table.insert(choices, 'LuaZunweiChoice2')
         end
+
+        -- 体力选项是否满足
+        local choice3_available =
+            source:getMark('LuaZunweiChoice3') == 0 and math.min(target:getHp(), source:getMaxHp()) > source:getHp()
+        -- 如果满足，添加到备选
         if choice3_available then
             table.insert(choices, 'LuaZunweiChoice3')
         end
+
+        -- 如果至少有一个可选项，则可以执行下列流程
         if #choices > 0 then
             local choice = room:askForChoice(source, 'LuaZunwei', table.concat(choices, '+'))
             room:addPlayerMark(source, choice)
             if choice == 'LuaZunweiChoice1' then
+                -- 摸牌
                 local x = math.min(target:getHandcardNum() - source:getHandcardNum(), 5)
                 if x > 0 then
                     source:drawCards(x, 'LuaZunwei')
                 end
             elseif choice == 'LuaZunweiChoice2' then
+                -- 用装备
                 local equipCheckFunc = function(card)
                     return card:isKindOf('EquipCard')
                 end
@@ -6614,6 +6602,7 @@ LuaZunweiCard =
                     equip = rinsanFuncModule.obtainSpecifiedCard(room, equipCheckFunc)
                 end
             elseif choice == 'LuaZunweiChoice3' then
+                -- 回复体力
                 local x = target:getHp() - source:getHp()
                 if x > 0 then
                     room:recover(source, sgs.RecoverStruct(nil, nil, x))

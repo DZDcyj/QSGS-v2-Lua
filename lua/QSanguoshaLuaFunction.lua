@@ -547,6 +547,30 @@ function obtainIdFromAskForPindianCardEvent(room, target)
     return from_id
 end
 
+-- 判断是否失去牌
+-- move 卡牌移动结构体
+-- source 判断是否为该角色失去牌
+function lostCard(move, source)
+    local fromSource =
+        move.from and (move.from:objectName() == source:objectName()) and
+        (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))
+    local toSource =
+        move.to and
+        (move.to:objectName() == source:objectName() and
+            (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip))
+    return fromSource and not toSource
+end
+
+-- 判断是否红牌
+function isRedCard(card)
+    return card:isRed()
+end
+
+-- 判断是否黑牌
+function isBlackCard(card)
+    return card:isBlack()
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
