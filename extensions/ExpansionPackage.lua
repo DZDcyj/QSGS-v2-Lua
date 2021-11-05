@@ -6461,6 +6461,7 @@ LuaPianchong =
         if event == sgs.EventPhaseStart then
             if player:hasSkill(self:objectName()) and player:getPhase() == sgs.Player_Draw then
                 if room:askForSkillInvoke(player, self:objectName(), data) then
+                    room:broadcastSkillInvoke(self:objectName())
                     local redCard = rinsanFuncModule.obtainSpecifiedCard(room, rinsanFuncModule.isRedCard)
                     local blackCard = rinsanFuncModule.obtainSpecifiedCard(room, rinsanFuncModule.isBlackCard)
                     if redCard then
@@ -6471,6 +6472,7 @@ LuaPianchong =
                     end
                     local choice =
                         room:askForChoice(player, self:objectName(), 'LuaPianchongChoice1+LuaPianchongChoice2')
+                    rinsanFuncModule.sendLogMessage(room, '#choose', {['from'] = player, ['arg'] = choice})
                     if choice == 'LuaPianchongChoice1' then
                         -- 失去红牌摸黑牌
                         room:setPlayerMark(player, self:objectName(), 1)
@@ -6505,6 +6507,7 @@ LuaPianchong =
                             if obtainCard then
                                 if not broadcasted then
                                     broadcasted = true
+                                    room:broadcastSkillInvoke(self:objectName())
                                     room:sendCompulsoryTriggerLog(player, self:objectName())
                                 end
                                 player:obtainCard(obtainCard, false)
@@ -6583,6 +6586,7 @@ LuaZunweiCard =
 
         -- 如果至少有一个可选项，则可以执行下列流程
         if #choices > 0 then
+            room:broadcastSkillInvoke('LuaZunwei')
             local choice = room:askForChoice(source, 'LuaZunwei', table.concat(choices, '+'))
             room:addPlayerMark(source, choice)
             if choice == 'LuaZunweiChoice1' then
