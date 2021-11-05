@@ -6570,7 +6570,9 @@ LuaZunweiCard =
             local choice2_available =
                 sgs.Self:getMark('LuaZunweiChoice2') == 0 and
                 to_select:getEquips():length() > sgs.Self:getEquips():length()
-            local choice3_available = sgs.Self:getMark('LuaZunweiChoice3') == 0 and math.min(to_select:getHp(), sgs.Self:getMaxHp()) > sgs.Self:getHp()
+            local choice3_available =
+                sgs.Self:getMark('LuaZunweiChoice3') == 0 and
+                math.min(to_select:getHp(), sgs.Self:getMaxHp()) > sgs.Self:getHp()
             return choice1_available or choice2_available or choice3_available
         end
         return false
@@ -6583,7 +6585,8 @@ LuaZunweiCard =
             source:getMark('LuaZunweiChoice1') == 0 and target:getHandcardNum() > source:getHandcardNum()
         local choice2_available =
             source:getMark('LuaZunweiChoice2') == 0 and target:getEquips():length() > source:getEquips():length()
-        local choice3_available = source:getMark('LuaZunweiChoice3') == 0 and math.min(target:getHp(), source:getMaxHp()) > source:getHp()
+        local choice3_available =
+            source:getMark('LuaZunweiChoice3') == 0 and math.min(target:getHp(), source:getMaxHp()) > source:getHp()
         if choice1_available then
             table.insert(choices, 'LuaZunweiChoice1')
         end
