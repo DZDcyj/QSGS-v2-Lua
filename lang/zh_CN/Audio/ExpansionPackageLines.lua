@@ -250,4 +250,10 @@ return {
     ['$LuaZhanyi1'] = '战，乃军中第一要事！',
     ['$LuaZhanyi2'] = '征伐训备，只为战而胜之',
     ['~ExZhuling'] = '吾赤诚以待主公，奈何不得深信啊……',
+    -- 郭照
+    ['$LuaPianchong1'] = '得陛下怜爱，恩宠不衰',
+    ['$LuaPianchong2'] = '谬蒙圣恩，光授殊宠',
+    ['$LuaZunwei1'] = '处尊居显，位极椒房',
+    ['$LuaZunwei2'] = '自在东宫，及即尊位',
+    ['~ExGuozhao'] = '我的出身，不配为后？'
 }
