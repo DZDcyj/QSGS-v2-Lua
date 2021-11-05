@@ -5605,7 +5605,7 @@ LuaJiushi =
             end
         elseif event == sgs.PreDamageDone then
             room:setTag('PredamagedFace', sgs.QVariant(player:faceUp()))
-        elseif event == sgs.DamageComplete then
+        elseif event == sgs.Damaged then
             local faceup = room:getTag('PredamagedFace'):toBool()
             room:removeTag('PredamagedFace')
             if not (faceup or player:faceUp()) then
