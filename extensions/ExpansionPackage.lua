@@ -5594,7 +5594,7 @@ LuaJiushiVS =
 LuaJiushi =
     sgs.CreateTriggerSkill {
     name = 'LuaJiushi',
-    events = {sgs.PreCardUsed, sgs.PreDamageDone, sgs.DamageComplete, sgs.MarkChanged, sgs.TurnedOver},
+    events = {sgs.PreCardUsed, sgs.Damaged, sgs.MarkChanged, sgs.TurnedOver},
     view_as_skill = LuaJiushiVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.PreCardUsed then
@@ -5603,12 +5603,8 @@ LuaJiushi =
             if card:getSkillName() == self:objectName() then
                 player:turnOver()
             end
-        elseif event == sgs.PreDamageDone then
-            room:setTag('PredamagedFace', sgs.QVariant(player:faceUp()))
         elseif event == sgs.Damaged then
-            local faceup = room:getTag('PredamagedFace'):toBool()
-            room:removeTag('PredamagedFace')
-            if not (faceup or player:faceUp()) then
+            if not player:faceUp() then
                 if player:askForSkillInvoke(self:objectName(), data) then
                     room:setPlayerFlag(player, 'LuaJiushiTurnOver')
                     player:turnOver()
