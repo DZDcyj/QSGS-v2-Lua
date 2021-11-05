@@ -6593,13 +6593,10 @@ LuaZunweiCard =
                 end
             elseif choice == 'LuaZunweiChoice2' then
                 -- 用装备
-                local equipCheckFunc = function(card)
-                    return card:isKindOf('EquipCard')
-                end
-                local equip = rinsanFuncModule.obtainSpecifiedCard(room, equipCheckFunc)
+                local equip = rinsanFuncModule.obtainTargetedTypeCard(room, {['type'] = 'EquipCard'})
                 while equip and source:getEquips():length() < target:getEquips():length() do
                     room:useCard(sgs.CardUseStruct(equip, source, source))
-                    equip = rinsanFuncModule.obtainSpecifiedCard(room, equipCheckFunc)
+                    equip = rinsanFuncModule.obtainTargetedTypeCard(room, {['type'] = 'EquipCard'})
                 end
             elseif choice == 'LuaZunweiChoice3' then
                 -- 回复体力
