@@ -298,7 +298,7 @@ end
 
 -- 巧思获得牌
 function LuaQiaosiGetCards(room, roleType) --
-    --[[ 
+    --[[
         王、商、工、农、士、将
         King、Merchant、Artisan、Farmer、Scholar、General
         roleType 代表转的人类型，为 Table 类型
