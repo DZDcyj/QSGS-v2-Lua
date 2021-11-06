@@ -452,7 +452,7 @@ sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     for _, p in ipairs(targets) do
         -- damageIsEffective 函数封装了对应的判断逻辑
-        if self:isFriend(p) or self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
+        if self:isFriend(p) or not self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
             table.removeOne(targets, p)
         end
     end
@@ -468,7 +468,7 @@ sgs.ai_skill_playerchosen['LuaJuece'] = function(self, targets)
     self:updatePlayers()
     targets = sgs.QList2Table(targets)
     for _, p in ipairs(targets) do
-        if self:isFriend(p) or self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
+        if self:isFriend(p) or not self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
             table.removeOne(targets, p)
         end
     end
