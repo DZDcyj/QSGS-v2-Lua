@@ -6,6 +6,9 @@ extension = sgs.Package('LandlordsPackage')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+-- 引入封装函数包
+local rinsanFuncModule = require('QSanguoshaLuaFunction')
+
 LuaBahu =
     sgs.CreateTriggerSkill {
     name = 'LuaBahu',
@@ -172,12 +175,9 @@ LuaDizhu =
             if player:getMark(self:objectName()) == 0 and player:hasSkill(self:objectName()) then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:addPlayerMark(player, self:objectName())
-                -- TODO: 调整初始血量
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    local general = p:getGeneral()
-                    -- TODO: 替换为实际血量
-                    local real_hp = general:getMaxHp()
-                    room:setPlayerProperty(p, 'hp', real_hp)
+                    local start_hp = rinsanFuncModule.getStartHp(p)
+                    room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
                 end
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     -- 触发游戏开始时时机，例如先辅、怀橘

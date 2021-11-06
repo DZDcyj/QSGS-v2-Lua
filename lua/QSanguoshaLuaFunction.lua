@@ -571,6 +571,18 @@ function isBlackCard(card)
     return card:isBlack()
 end
 
+-- 获取武将初始血量
+function getStartHp(player)
+    -- 目前缺少详细 API，暂时只能写死，之后根据具体情形要更新这部分
+    local general_hp_map = {
+        ['shenganning'] = 3,
+        ['ExShenpei'] = 2,
+        ['ExLijue'] = 4,
+        ['SPCactus'] = 3
+    }
+    return general_hp_map[player:getGeneralName()] or player:getGeneral():getMaxHp()
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
