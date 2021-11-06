@@ -6,6 +6,9 @@ extension = sgs.Package('LandlordsPackage')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+-- 引入封装函数包
+local rinsanFuncModule = require('QSanguoshaLuaFunction')
+
 LuaBahu =
     sgs.CreateTriggerSkill {
     name = 'LuaBahu',
@@ -150,6 +153,8 @@ LuaDizhu =
     name = 'LuaDizhu',
     events = {sgs.BuryVictim, sgs.TurnStart},
     frequency = sgs.Skill_Compulsory,
+    -- priority 调整为最优先
+    priority = 10,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.BuryVictim then
             local death = data:toDeath()
@@ -171,14 +176,18 @@ LuaDizhu =
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:addPlayerMark(player, self:objectName())
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    local start_hp = rinsanFuncModule.getStartHp(p)
+                    room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
+                end
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
                     -- 触发游戏开始时时机，例如先辅、怀橘
                     room:getThread():trigger(sgs.GameStart, room, p)
 
                     -- 涉及到摸初始牌的，补一下，例如挫锐、七星
                     local draw_data = sgs.QVariant(0)
-                    room:getThread():trigger(sgs.DrawInitialCards, room, p , draw_data)
+                    room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
                     local to_draw = draw_data:toInt()
-                    if to_draw>0 then
+                    if to_draw > 0 then
                         p:drawCards(to_draw, self:objectName())
                     end
 
