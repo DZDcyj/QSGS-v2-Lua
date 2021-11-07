@@ -2670,13 +2670,18 @@ LuaRangjieCard =
         local card_id =
             room:askForCardChosen(source, from, 'ej', 'LuaRangjie', false, sgs.Card_MethodNone, disabled_ids)
         local card = sgs.Sanguosha:getCard(card_id)
-        room:moveCardTo(
-            card,
-            from,
-            to,
-            room:getCardPlace(card_id),
-            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), 'LuaRangjie', '')
-        )
+        -- 由于 AI 的问题，可能会选中 disable_ids 内的卡牌，这时不移动卡牌，使之返回
+        if not to:getEquip(card:getRealCard():toEquipCard():location()) then
+            room:moveCardTo(
+                card,
+                from,
+                to,
+                room:getCardPlace(card_id),
+                sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), 'LuaRangjie', '')
+            )
+        else
+            room:setTag('LuaRangjieMoveFailed', sgs.QVariant(true))
+        end
     end
 }
 
@@ -2708,11 +2713,12 @@ LuaRangjie =
             if rinsanFuncModule.canMoveCard(room) then
                 move = room:askForUseCard(player, '@@LuaRangjie', '@LuaRangjie')
             end
-            if not move then
+            if (not move) or (room:getTag('LuaRangjieMoveFailed'):toBool()) then
                 local choice =
                     room:askForChoice(player, self:objectName(), 'obtainBasic+obtainTrick+obtainEquip+cancel')
                 local params = {['existed'] = {}, ['findDiscardPile'] = true}
                 if choice == 'cancel' then
+                    room:setTag('LuaRangjieMoveFailed', sgs.QVariant(false))
                     return false
                 else
                     params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
@@ -2722,6 +2728,7 @@ LuaRangjie =
                     end
                 end
             end
+            room:setTag('LuaRangjieMoveFailed', sgs.QVariant(false))
             -- 只要发动了“让节”，就会摸牌，因为选择“取消”时已经跳出循环了，因此不需要冗余的判断
             player:drawCards(1, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
