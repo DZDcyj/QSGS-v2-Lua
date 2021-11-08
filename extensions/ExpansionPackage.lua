@@ -2671,7 +2671,13 @@ LuaRangjieCard =
             room:askForCardChosen(source, from, 'ej', 'LuaRangjie', false, sgs.Card_MethodNone, disabled_ids)
         local card = sgs.Sanguosha:getCard(card_id)
         -- 由于 AI 的问题，可能会选中 disable_ids 内的卡牌，这时不移动卡牌，使之返回
-        if not to:getEquip(card:getRealCard():toEquipCard():location()) then
+        local canMove
+        if card:isKindOf('EquipCard') then
+            canMove = not to:getEquip(card:getRealCard():toEquipCard():location())
+        elseif card:isKindOf('TrickCard') then
+            canMove = not to:containsTrick(card:objectName())
+        end
+        if not canMove then
             room:moveCardTo(
                 card,
                 from,
