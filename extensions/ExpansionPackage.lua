@@ -5433,7 +5433,7 @@ LuaJinfan =
     view_as_skill = LuaJinfanVS,
     events = {sgs.EventPhaseStart, sgs.CardsMoveOneTime},
     on_trigger = function(self, event, player, data, room)
-        if player:getPhase() == sgs.Player_Discard then
+        if event == sgs.EventPhaseStart and player:getPhase() == sgs.Player_Discard then
             local canInvoke
             local suits = {}
             for _, cd in sgs.qlist(player:getPile('&luajinfanpile')) do
@@ -5475,6 +5475,7 @@ LuaJinfan =
                 end
             end
         end
+        return false
     end
 }
 
