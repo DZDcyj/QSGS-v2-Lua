@@ -6636,3 +6636,138 @@ LuaZunwei =
 
 ExGuozhao:addSkill(LuaPianchong)
 ExGuozhao:addSkill(LuaZunwei)
+
+JieDengai = sgs.General(extension, 'JieDengai', 'wei', '4', true, true)
+
+LuaTuntian =
+    sgs.CreateTriggerSkill {
+    name = 'LuaTuntian',
+    frequency = sgs.Skill_Frequent,
+    events = {sgs.CardsMoveOneTime, sgs.FinishJudge},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            local triggerable
+            if rinsanFuncModule.lostCard(move, player) then
+                if player:getPhase() == sgs.Player_NotActive then
+                    triggerable = true
+                end
+                if
+                    (not triggerable) and
+                        (rinsanFuncModule.moveBasicReasonCompare(
+                            move.reason.m_reason,
+                            sgs.CardMoveReason_S_REASON_DISCARD
+                        ))
+                 then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        local curr_card = sgs.Sanguosha:getCard(id)
+                        if curr_card:isKindOf('Slash') then
+                            triggerable = true
+                            break
+                        end
+                    end
+                end
+                if triggerable and room:askForSkillInvoke(player, self:objectName(), data) then
+                    room:broadcastSkillInvoke(self:objectName())
+                    local judge =
+                        rinsanFuncModule.createJudgeStruct(
+                        {
+                            ['who'] = player,
+                            ['good'] = false,
+                            ['pattern'] = '.|heart',
+                            ['reason'] = self:objectName(),
+                            ['play_animation'] = true
+                        }
+                    )
+                    room:judge(judge)
+                end
+            end
+        else
+            local judge = data:toJudge()
+            if
+                judge.reason == self:objectName() and
+                    room:getCardPlace(judge.card:getEffectiveId()) == sgs.Player_PlaceJudge
+             then
+                if judge:isGood() then
+                    player:addToPile('field', judge.card:getEffectiveId())
+                else
+                    player:obtainCard(judge.card)
+                end
+            end
+        end
+        return false
+    end
+}
+
+LuaTuntianDistance =
+    sgs.CreateDistanceSkill {
+    name = '#LuaTuntianDistance',
+    correct_func = function(self, from, to)
+        if from:hasSkill('LuaTuntian') then
+            return -from:getPile('field'):length()
+        else
+            return 0
+        end
+    end
+}
+
+LuaZaoxian =
+    sgs.CreateTriggerSkill {
+    name = 'LuaZaoxian',
+    frequency = sgs.Skill_Wake,
+    events = {sgs.EventPhaseStart, sgs.EventPhaseChanging},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if
+                (player:getPhase() == sgs.Player_Start) and (player:getMark(self:objectName()) == 0) and
+                    (player:getPile('field'):length() >= 3)
+             then
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#ZaoxianWake',
+                    {['from'] = player, ['arg'] = player:getPile('field'):length(), ['arg2'] = self:objectName()}
+                )
+                if room:changeMaxHpForAwakenSkill(player) then
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:addPlayerMark(player, self:objectName())
+                    room:acquireSkill(player, 'LuaJixi')
+                end
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if
+                data:toPhaseChange().to == sgs.Player_NotActive and player:getMark(self:objectName()) >= 1 and
+                    player:getMark(self:objectName() .. 'ExtraTurn') == 0
+             then
+                room:addPlayerMark(player, self:objectName() .. 'ExtraTurn')
+                room:broadcastSkillInvoke(self:objectName())
+                rinsanFuncModule.sendLogMessage(room, '#LuaZaoxianExtraTurn', {['from'] = player})
+                player:gainAnExtraTurn()
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsanFuncModule.RIGHT(self, target)
+    end
+}
+
+LuaJixi =
+    sgs.CreateOneCardViewAsSkill {
+    name = 'LuaJixi',
+    filter_pattern = '.|.|.|field',
+    expand_pile = 'field',
+    view_as = function(self, card)
+        local snatch = sgs.Sanguosha:cloneCard('snatch', card:getSuit(), card:getNumber())
+        snatch:addSubcard(card)
+        snatch:setSkillName(self:objectName())
+        return snatch
+    end,
+    enabled_at_play = function(self, player)
+        return not player:getPile('field'):isEmpty()
+    end
+}
+
+JieDengai:addSkill(LuaTuntian)
+JieDengai:addSkill(LuaZaoxian)
+JieDengai:addRelateSkill('LuaJixi')
+SkillAnjiang:addSkill(LuaTuntianDistance)
+SkillAnjiang:addSkill(LuaJixi)
