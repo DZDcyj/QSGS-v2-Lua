@@ -130,7 +130,6 @@ sgs.ai_skill_invoke.LuaJuesha = function(self, data)
     return false
 end
 
-
 -- 传艺
 sgs.ai_skill_choice['LuaChuanyi'] = function(self, choices)
     -- 选最后一个：本局游戏不再发动
@@ -191,7 +190,7 @@ sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
         return false
     end
     if
-        self:getCardsNum('Slash', target) < 1 and self.player:getHp() > 1 and not self:canHit(self.player, target) and
+        self.player:getHp() > 1 and not self:canHit(self.player, target) and
             not (target:hasWeapon('double_sword') and self.player:getGender() ~= target:getGender())
      then
         return true

@@ -1249,6 +1249,43 @@ LuaZhazhi =
     end
 }
 
+LuaJueding =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJueding',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.TurnedOver, sgs.DamageInflicted, sgs.EventLoseSkill},
+    on_trigger = function(self, event, player, data, room)
+        if event ~= sgs.EventLoseSkill and (not player:hasSkill(self:objectName())) then
+            return false
+        end
+        if event == sgs.TurnedOver then
+            if player:faceUp() then
+                -- 翻回来，解除卡牌限制
+                rinsanFuncModule.sendLogMessage(room, '#LuaJuedingAvailable',{['from'] = player, ['arg'] = self:objectName()})
+                room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
+            else
+                -- 进行卡牌限制
+                rinsanFuncModule.sendLogMessage(room, '#LuaJuedingDisable',{['from'] = player, ['arg'] = self:objectName()})
+                room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
+            end
+        elseif event == sgs.EventLoseSkill then
+            -- 失去技能时应当解除卡牌限制
+            if data:toString() == self:objectName() then
+                room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
+            end
+        elseif event == sgs.DamageInflicted then
+            if not player:faceUp() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:turnOver()
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
 LuaShaikaCard =
     sgs.CreateSkillCard {
     name = 'LuaShaikaCard',
@@ -1919,6 +1956,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
+Anan:addSkill(LuaJueding)
 Erenlei:addSkill(LuaShaika)
 Erenlei:addSkill(LuaChutou)
 Yaoyu:addSkill(LuaYingshi)
