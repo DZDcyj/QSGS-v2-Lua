@@ -1178,15 +1178,16 @@ LuaZhazhi =
             if player:getPhase() == sgs.Player_Play then
                 local splayers = room:findPlayersBySkillName(self:objectName())
                 for _, sp in sgs.qlist(splayers) do
-                    if sp:objectName() ~= player:objectName() and player:inMyAttackRange(sp) then
+                    if sp:objectName() ~= player:objectName() then
                         local data2 = sgs.QVariant()
                         data2:setValue(player)
                         if room:askForSkillInvoke(sp, self:objectName(), data2) then
+                            sp:turnOver()
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), player:objectName())
+                            room:showAllCards(player)
                             local choice =
                                 room:askForChoice(player, self:objectName(), 'LuaZhazhiChoice1+LuaZhazhiChoice2')
                             if choice == 'LuaZhazhiChoice1' then
-                                room:showAllCards(player)
                                 local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                                 for _, cd in sgs.qlist(player:getHandcards()) do
                                     if cd:isKindOf('Slash') or (cd:isKindOf('TrickCard') and cd:isBlack()) then
@@ -1205,7 +1206,6 @@ LuaZhazhi =
             end
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                -- room:sendCompulsoryTriggerLog(player, self:objectName())
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     for _, mark in sgs.list(p:getMarkNames()) do
                         if string.find(mark, 'LuaZhazhiDebuff') and p:getMark(mark) > 0 then
