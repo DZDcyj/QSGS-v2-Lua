@@ -584,8 +584,20 @@ function getStartHp(player)
 end
 
 -- 手气卡
-function askForLuckCard(player)
-    -- TODO: 实现手气卡
+function askForLuckCard(room, player)
+    if player:getAI() then
+        -- AI 就没有手气卡了
+        return
+    end
+    local times = sgs.GetConfig('LuckCardLimitation', 0)
+    local count = player:getHandcardNum()
+    while times > 0 and room:askForSkillInvoke(player, 'luck_card', sgs.QVariant('LuaLuckCard')) do
+        times = times - 1
+        -- 简化处理，以弃牌形式代替
+        sendLogMessage(room, '#UseLuckCard', {['from'] = player})
+        player:throwAllHandCards()
+        player:drawCards(count, 'luck_card')
+    end
 end
 
 -- Animate 参数，用于 doAnimate 方法
