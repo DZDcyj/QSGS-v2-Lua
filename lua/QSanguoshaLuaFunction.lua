@@ -583,6 +583,11 @@ function getStartHp(player)
     return general_hp_map[player:getGeneralName()] or player:getGeneral():getMaxHp()
 end
 
+-- 手气卡
+function askForLuckCard(player)
+    -- TODO: 实现手气卡
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
