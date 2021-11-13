@@ -183,41 +183,6 @@ sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     return true
 end
 
--- 榨汁
-sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
-    local target = data:toPlayer()
-    if self:isFriend(target) then
-        return false
-    end
-    if
-        self.player:getHp() > 1 and not self:canHit(self.player, target) and
-            not (target:hasWeapon('double_sword') and self.player:getGender() ~= target:getGender())
-     then
-        return true
-    end
-    if
-        sgs.card_lack[target:objectName()]['Slash'] == 1 or self:needLeiji(self.player, target) or
-            self:getDamagedEffects(self.player, target, true) or
-            self:needToLoseHp(self.player, target, true)
-     then
-        return true
-    end
-    if self:getOverflow() and self:getCardsNum('Jink') > 1 then
-        return true
-    end
-    if target:isWeak() then
-        return true
-    end
-    return not self:isWeak()
-end
-
-sgs.ai_skill_choice['LuaZhazhi'] = function(self, choices)
-    -- 出杀或者伤害-1
-
-    -- 无脑选出杀
-    return choices:split('+')[1]
-end
-
 -- 白嫖
 sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
     local targets = sgs.QList2Table(targetlist)
