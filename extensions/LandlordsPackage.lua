@@ -135,12 +135,15 @@ LuaNongmin =
             if player:hasSkill(self:objectName()) then
                 if player:objectName() == death.who:objectName() then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
+                    -- 避免触发“自书”
+                    room:setTag('FirstRound', sgs.QVariant(true))
                     for _, target in sgs.qlist(room:getOtherPlayers(player)) do
                         if target:getRole() == player:getRole() then
                             target:drawCards(2)
                             room:recover(target, sgs.RecoverStruct(player, nil, 1))
                         end
                     end
+                    room:setTag('FirstRound', sgs.QVariant(false))
                 end
             end
         end
@@ -183,9 +186,12 @@ LuaDizhu =
                 end
 
                 -- 手气卡
+                -- 避免“自书”触发
+                room:setTag('FirstRound', sgs.QVariant(true))
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     rinsanFuncModule.askForLuckCard(room, p)
                 end
+                room:setTag('FirstRound', sgs.QVariant(false))
 
                 -- 初始技能触发
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
