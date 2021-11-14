@@ -593,10 +593,30 @@ function askForLuckCard(room, player)
     local count = player:getHandcardNum()
     while times > 0 and room:askForSkillInvoke(player, 'luck_card', sgs.QVariant('LuaLuckCard')) do
         times = times - 1
-        -- 简化处理，以弃牌形式代替
         sendLogMessage(room, '#UseLuckCard', {['from'] = player})
-        player:throwAllHandCards()
-        player:drawCards(count, 'luck_card')
+        local ids = sgs.IntList()
+        for _, cd in sgs.qlist(player:getHandcards()) do
+            ids:append(cd:getId())
+        end
+        local move =
+            sgs.CardsMoveStruct(
+            ids,
+            player,
+            nil,
+            sgs.Player_PlaceHand,
+            sgs.Player_DrawPile,
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'luck_card', '')
+        )
+        room:moveCardsAtomic(move, true)
+        -- 目前找不到法子刷新牌堆，改为随机获取等量的牌
+        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        local index = 0
+        while index < count do
+            index = index + 1
+            local curr = math.random(0, room:getDrawPile():length() - 1)
+            dummy:addSubcard(room:getDrawPile():at(curr))
+        end
+        player:obtainCard(dummy, false)
     end
 end
 
