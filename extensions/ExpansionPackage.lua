@@ -1086,6 +1086,8 @@ LuaPojun =
             end
             return false
         elseif rinsanFuncModule.cardGoBack(event, player, data, self:objectName()) then
+            -- 消除“自书”影响
+            room:setTag('FirstRound', sgs.QVariant(true))
             for _, p in sgs.qlist(room:getAllPlayers()) do
                 if p:getPile('LuaPojun'):length() > 0 then
                     local to_obtain = sgs.IntList()
@@ -1097,6 +1099,7 @@ LuaPojun =
                     room:obtainCard(p, dummy, false)
                 end
             end
+            room:setTag('FirstRound', sgs.QVariant(false))
         end
         return false
     end,
