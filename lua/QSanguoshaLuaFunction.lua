@@ -583,6 +583,47 @@ function getStartHp(player)
     return general_hp_map[player:getGeneralName()] or player:getGeneral():getMaxHp()
 end
 
+-- 手气卡
+function askForLuckCard(room, player)
+    if player:getAI() then
+        -- AI 就没有手气卡了
+        return
+    end
+    local times = sgs.GetConfig('LuckCardLimitation', 0)
+    local count = player:getHandcardNum()
+    while times > 0 and room:askForSkillInvoke(player, 'luck_card', sgs.QVariant('LuaLuckCard')) do
+        times = times - 1
+        sendLogMessage(room, '#UseLuckCard', {['from'] = player})
+        local ids = sgs.IntList()
+        for _, cd in sgs.qlist(player:getHandcards()) do
+            ids:append(cd:getId())
+        end
+        local move =
+            sgs.CardsMoveStruct(
+            ids,
+            player,
+            nil,
+            sgs.Player_PlaceHand,
+            sgs.Player_DrawPile,
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'luck_card', '')
+        )
+        room:moveCardsAtomic(move, true)
+        -- 洗牌
+        shuffleDrawPile(room)
+        player:drawCards(count, 'luck_card')
+    end
+end
+
+-- 使用 Fisher-Yates 洗牌算法打乱牌堆
+function shuffleDrawPile(room)
+    local drawPile = room:getDrawPile()
+    local len = drawPile:length()
+    for i = 0, len - 1, 1 do
+        local j = math.random(i, len - 1)
+        drawPile:swap(i, j)
+    end
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
