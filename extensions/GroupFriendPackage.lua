@@ -1884,7 +1884,7 @@ LuaTaoseCard =
 LuaTaoseVS =
     sgs.CreateOneCardViewAsSkill {
     name = 'LuaTaose',
-    filter_pattern = '.|heart|.|hand',
+    filter_pattern = '.|heart|.|.',
     view_as = function(self, card)
         local ts = LuaTaoseCard:clone()
         ts:addSubcard(card)
