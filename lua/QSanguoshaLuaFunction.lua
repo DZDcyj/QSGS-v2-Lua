@@ -608,15 +608,19 @@ function askForLuckCard(room, player)
             sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'luck_card', '')
         )
         room:moveCardsAtomic(move, true)
-        -- 目前找不到法子刷新牌堆，改为随机获取等量的牌
-        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        local index = 0
-        while index < count do
-            index = index + 1
-            local curr = math.random(0, room:getDrawPile():length() - 1)
-            dummy:addSubcard(room:getDrawPile():at(curr))
-        end
-        player:obtainCard(dummy, false)
+        -- 洗牌
+        shuffleDrawPile(room)
+        player:drawCards(count, 'luck_card')
+    end
+end
+
+-- 使用 Fisher-Yates 洗牌算法打乱牌堆
+function shuffleDrawPile(room)
+    local drawPile = room:getDrawPile()
+    local len = drawPile:length()
+    for i = 0, len - 1, 1 do
+        local j = math.random(i, len - 1)
+        drawPile:swap(i, j)
     end
 end
 
