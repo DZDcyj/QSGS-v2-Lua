@@ -803,7 +803,7 @@ sgs.ai_use_priority['LuaGusheCard'] = sgs.ai_use_priority.ExNihilo - 0.1
 
 -- 杨彪
 -- 让节
--- 移动牌
+-- 移动牌目标
 sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
     local source
     local target
@@ -890,11 +890,12 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
 
     for _, friend in ipairs(self.friends) do
         if
-            source and (source:getWeapon() and not friend:getWeapon() and friend:hasEquipArea(0)) or
-                (source:getArmor() and not friend:getArmor() and friend:hasEquipArea(1)) or
-                (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasEquipArea(2)) or
-                (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasEquipArea(3)) or
-                (source:getTreasure() and not friend:getTreasure() and friend:hasEquipArea(4))
+            source and
+                ((source:getWeapon() and not friend:getWeapon() and friend:hasEquipArea(0)) or
+                    (source:getArmor() and not friend:getArmor() and friend:hasEquipArea(1)) or
+                    (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasEquipArea(2)) or
+                    (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasEquipArea(3)) or
+                    (source:getTreasure() and not friend:getTreasure() and friend:hasEquipArea(4)))
          then
             target = friend
         end
@@ -905,6 +906,43 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
     end
 
     return '.'
+end
+
+sgs.ai_skill_cardchosen['LuaRangjie'] = function(self, who, flags, method)
+    local disabled_ids = self.room:getTag('LuaRangjieDisabledIntList'):toIntList()
+    -- 优先选择判定区
+    for _, cd in sgs.qlist(who:getCards('j')) do
+        if not cd:isKindOf('YanxiaoCard') and not disabled_ids:contains(cd:getEffectiveId()) then
+            return cd
+        end
+    end
+
+    -- 以 +1 马、防具、-1 马、武器、宝物·的顺序判断
+    local defensiveHorse = who:getDefensiveHorse()
+    if defensiveHorse and not disabled_ids:contains(defensiveHorse) then
+        return defensiveHorse
+    end
+
+    local armor = who:getArmor()
+    if armor and not disabled_ids:contains(armor) then
+        return armor
+    end
+
+    local offensiveHorse = who:getOffensiveHorse()
+    if offensiveHorse and not disabled_ids:contains(offensiveHorse) then
+        return offensiveHorse
+    end
+
+    local weapon = who:getWeapon()
+    if weapon and not disabled_ids:contains(weapon) then
+        return weapon
+    end
+
+    local treasure = who:getTreasure()
+    if treasure and not disabled_ids:contains(treasure) then
+        return treasure
+    end
+    return nil
 end
 
 -- 选择摸牌
