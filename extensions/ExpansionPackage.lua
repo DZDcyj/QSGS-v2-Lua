@@ -2667,17 +2667,22 @@ LuaRangjieCard =
         end
         rinsanFuncModule.sendLogMessage(room, '#InvokeSkill', {['from'] = source, ['arg'] = 'LuaRangjie'})
         room:notifySkillInvoked(source, 'LuaRangjie')
+        -- 使用 Tag 存储不能选择的 id
+        local disabled_ids_data = sgs.QVariant()
+        disabled_ids_data:setValue(disabled_ids)
+        room:setTag('LuaRangjieDisabledIntList', disabled_ids_data)
         local card_id =
             room:askForCardChosen(source, from, 'ej', 'LuaRangjie', false, sgs.Card_MethodNone, disabled_ids)
+        room:removeTag('LuaRangjieDisabledIntList')
         local card = sgs.Sanguosha:getCard(card_id)
-        -- 由于 AI 的问题，可能会选中 disable_ids 内的卡牌，这时不移动卡牌，使之返回
+        -- 由于 AI 的问题，可能会选中 disabled_ids 内的卡牌，这时不移动卡牌，使之返回
         local canMove
         if card:isKindOf('EquipCard') then
             canMove = not to:getEquip(card:getRealCard():toEquipCard():location())
         elseif card:isKindOf('TrickCard') then
             canMove = not to:containsTrick(card:objectName())
         end
-        if not canMove then
+        if canMove then
             room:moveCardTo(
                 card,
                 from,
