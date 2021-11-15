@@ -322,7 +322,7 @@ LuaXionghuo =
                         player:loseMark('@baoli')
                         room:sendCompulsoryTriggerLog(splayer, self:objectName())
                         room:broadcastSkillInvoke(self:objectName())
-                        local choice = math.random(1, 3)
+                        local choice = rinsanFuncModule.random(1, 3)
                         if choice == 1 then
                             rinsanFuncModule.doDamage(room, nil, player, 1, sgs.DamageStruct_Fire)
                             room:addPlayerMark(player, 'XionghuoSlashPro')
@@ -560,7 +560,7 @@ LuaFujian =
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             local max = room:alivePlayerCount() - 1
-            local index = math.random(1, max)
+            local index = rinsanFuncModule.random(1, max)
             local target = sgs.QList2Table(room:getOtherPlayers(player))[index]
             room:showAllCards(target, player)
             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), target:objectName())
@@ -639,7 +639,7 @@ LuaLangxi =
                 local target =
                     room:askForPlayerChosen(player, targets, self:objectName(), 'LuaLangxi-choose', true, true)
                 if target then
-                    local value = math.random(0, 2)
+                    local value = rinsanFuncModule.random(0, 2)
                     room:broadcastSkillInvoke(self:objectName())
                     if value == 0 then
                         return false
@@ -847,7 +847,7 @@ LuaShanjiaCard =
             slash:setSkillName('LuaShanjia')
             room:useCard(sgs.CardUseStruct(slash, source, targets_list))
         else
-            room:broadcastSkillInvoke('LuaShanjia', math.random(1, 2))
+            room:broadcastSkillInvoke('LuaShanjia', rinsanFuncModule.random(1, 2))
         end
     end
 }
@@ -1299,8 +1299,7 @@ LuaJingxieCard =
     will_throw = false,
     on_use = function(self, room, source, targets)
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        math.randomseed(os.time())
-        room:broadcastSkillInvoke('LuaJingxie', math.random(1, 2))
+        room:broadcastSkillInvoke('LuaJingxie')
         room:setPlayerMark(source, card:objectName(), 1)
         room:showCard(source, card:getEffectiveId())
         if room:getCardPlace(card:getEffectiveId()) == sgs.Player_PlaceHand then
@@ -1500,7 +1499,6 @@ LuaQiaosiStartCard =
         if marks > 0 then
             room:addPlayerMark(source, 'LuaQiaosiCardsNum', marks)
             room:addPlayerMark(source, 'LuaQiaosiGiven')
-            math.randomseed(os.time())
             room:askForUseCard(
                 source,
                 '@@LuaQiaosi!',
@@ -1563,8 +1561,7 @@ LuaJijieCard =
         local id = ids:last()
         cards:append(id)
         room:fillAG(cards, source)
-        math.randomseed(os.time())
-        room:broadcastSkillInvoke('LuaJijie', math.random(1, 2))
+        room:broadcastSkillInvoke('LuaJijie')
         local card = sgs.Sanguosha:getCard(id)
         local target =
             room:askForPlayerChosen(
@@ -1622,8 +1619,7 @@ LuaJiyuan =
             local data2 = sgs.QVariant()
             data2:setValue(dying.who)
             if room:askForSkillInvoke(player, self:objectName(), data2) then
-                math.randomseed(os.time())
-                room:broadcastSkillInvoke(self:objectName(), math.random(1, 2))
+                room:broadcastSkillInvoke(self:objectName())
                 room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), dying.who:objectName())
                 dying.who:drawCards(1, self:objectName())
             end
@@ -3069,7 +3065,7 @@ LuaMiejiCard =
                     end
                 end
             end
-            card = cards:at(math.random(0, cards:length() - 1))
+            card = cards:at(rinsanFuncModule.random(0, cards:length() - 1))
         end
         if card then
             if card:isKindOf('TrickCard') then
@@ -3264,7 +3260,7 @@ LuaDangxian =
             if player:hasSkill('LuaZhengnan') then
                 room:broadcastSkillInvoke(self:objectName(), 3)
             else
-                room:broadcastSkillInvoke(self:objectName(), math.random(1, 2))
+                room:broadcastSkillInvoke(self:objectName(), rinsanFuncModule.random(1, 2))
             end
             rinsanFuncModule.sendLogMessage(room, '#LuaDangxianExtraPhase', {['from'] = player})
             player:setPhase(sgs.Player_Play)
@@ -3851,8 +3847,7 @@ LuaJiang =
             if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
                 if sunce:askForSkillInvoke(self:objectName(), data) then
                     sunce:drawCards(1, self:objectName())
-                    math.randomseed(os.time())
-                    room:broadcastSkillInvoke(self:objectName(), math.random(1, 2))
+                    room:broadcastSkillInvoke(self:objectName())
                 end
             end
         end
@@ -3869,7 +3864,6 @@ LuaYingzi =
         if event == sgs.DrawNCards then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             local count = data:toInt() + 1
-            math.randomseed(os.time())
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, 'drawed')
             data:setValue(count)
@@ -4412,7 +4406,7 @@ LuaTaomie =
                 data2:setValue(damage.to)
                 local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'), data2)
                 if choice ~= 'cancel' then
-                    room:broadcastSkillInvoke(self:objectName(), math.random(2, 3))
+                    room:broadcastSkillInvoke(self:objectName(), rinsanFuncModule.random(2, 3))
                 end
                 if choice == 'addDamage' then
                     room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
@@ -4473,7 +4467,7 @@ LuaLvemingCard =
         else
             local cards = target:getCards('hej')
             if not cards:isEmpty() then
-                local card = cards:at(math.random(0, cards:length() - 1))
+                local card = cards:at(rinsanFuncModule.random(0, cards:length() - 1))
                 if card then
                     room:obtainCard(source, card, false)
                 end

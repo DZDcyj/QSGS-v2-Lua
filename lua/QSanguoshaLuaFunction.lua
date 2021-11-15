@@ -103,7 +103,7 @@ function getFuhanShuGenerals(room, general_num)
     local i = 0
     while i < general_num do
         i = i + 1
-        local index = math.random(1, #shu_generals)
+        local index = random(1, #shu_generals)
         local selected = shu_generals[index]
         table.insert(available_generals, selected)
         table.removeOne(shu_generals, shu_generals[index])
@@ -277,8 +277,7 @@ function LuaDoQiaosiShow(room, player, dummyCard)
             end
         else
             -- 不确定的，要抽奖
-            math.randomseed(os.time())
-            local currType = math.random(1, 5)
+            local currType = random(1, 5)
             local type = cardTypes[currType]
             if string.find(type, 'JinkOrPeach') then
                 type = LuaGetRoleCardType('scholarKing', true, true)
@@ -356,8 +355,7 @@ end
 function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
     local mod = math.fmod(markNum, modNum)
     if mod == 0 then
-        math.randomseed(os.time())
-        local type = math.random(1, 2)
+        local type = random(1, 2)
         local card
         local params = {['existed'] = {}, ['findDiscardPile'] = true}
         if type == 1 then
@@ -534,7 +532,7 @@ end
 -- sgs.AskforPindianCard 时机卡牌获取
 function obtainIdFromAskForPindianCardEvent(room, target)
     local from_id = -1
-    local random_from_id = math.random(1, 10000)
+    local random_from_id = random(1, 10000)
     local from_data = sgs.QVariant()
     from_data:setValue(random_from_id)
     room:setTag('pindian' .. random_from_id, sgs.QVariant(-1))
@@ -619,7 +617,7 @@ function shuffleDrawPile(room)
     local drawPile = room:getDrawPile()
     local len = drawPile:length()
     for i = 0, len - 1, 1 do
-        local j = math.random(i, len - 1)
+        local j = random(i, len - 1)
         drawPile:swap(i, j)
     end
 end
@@ -635,7 +633,7 @@ function random(min, max)
     if min ~= nil and max ~= nil then
         return math.floor(min + (math.random(math.randomseed(os.time() + seed_offset)) * 999999 % max))
     end
-    return -1
+    error('Invalid Input')
 end
 
 -- Animate 参数，用于 doAnimate 方法
