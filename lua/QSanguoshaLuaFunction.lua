@@ -622,16 +622,34 @@ function shuffleDrawPile(room)
     end
 end
 
--- 随机数
--- 返回[min, max]随机值
-
 -- 种子偏移量
 local seed_offset = 0
 
+-- 随机数
+-- 返回[min, max]随机值
 function random(min, max)
     seed_offset = seed_offset + 1
     if min ~= nil and max ~= nil then
-        return math.floor(min + (math.random(math.randomseed(os.time() + seed_offset)) * 999999 % max))
+        -- 使用种子偏移量和当前时间的方式保证随机数种子不同
+        local seed = os.time() + seed_offset
+        math.randomseed(seed)
+
+        -- 由于某些原因，初始的几个随机数一致的，先 pop 出来
+        math.random()
+        math.random()
+        math.random()
+
+        -- 无参数调用产生[0, 1)之间的浮点数
+        local rand = math.random()
+
+        -- 修正参数，使得范围值达到 [0, max - min + 1)
+        rand = rand * (max - min + 1)
+
+        -- 修正参数到范围 [min, max + 1)
+        rand = rand + min
+
+        -- 向下取整，使得最后的结果为 [min, max] 范围内整数
+        return math.floor(rand)
     end
     error('Invalid Input')
 end
