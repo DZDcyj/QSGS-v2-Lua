@@ -624,6 +624,20 @@ function shuffleDrawPile(room)
     end
 end
 
+-- 随机数
+-- 返回[min, max]随机值
+
+-- 种子偏移量
+local seed_offset = 0
+
+function random(min, max)
+    seed_offset = seed_offset + 1
+    if min ~= nil and max ~= nil then
+        return math.floor(min + (math.random(math.randomseed(os.time() + seed_offset)) * 999999 % max))
+    end
+    return -1
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
