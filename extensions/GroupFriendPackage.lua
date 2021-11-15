@@ -1696,7 +1696,7 @@ LuaFumoVS =
     end,
     view_as = function(self, cards)
         if #cards >= 2 then
-            local slash = sgs.Sanguosha:cloneCard('slash', cards[1]:getSuit(), cards[1]:getNumber())
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
             for _, cd in ipairs(cards) do
                 slash:addSubcard(cd)
             end
