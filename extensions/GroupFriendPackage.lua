@@ -114,16 +114,16 @@ LuaGeidianCard =
                 sgs.Card_MethodNone
             )
             if not card then
-                local equipOrHand = math.random(0, 1)
+                local equipOrHand = rinsanFuncModule.random(0, 1)
                 if p:getEquips():isEmpty() then
-                    card = p:getHandcards():at(math.random(0, p:getHandcardNum() - 1))
+                    card = p:getHandcards():at(rinsanFuncModule.random(0, p:getHandcardNum() - 1))
                 elseif p:getHandcardNum() == 0 then
-                    card = p:getEquips():at(math.random(0, p:getEquips():length() - 1))
+                    card = p:getEquips():at(rinsanFuncModule.random(0, p:getEquips():length() - 1))
                 else
                     if equipOrHand == 0 then
-                        card = p:getHandcards():at(math.random(0, p:getHandcardNum() - 1))
+                        card = p:getHandcards():at(rinsanFuncModule.random(0, p:getHandcardNum() - 1))
                     else
-                        card = p:getEquips():at(math.random(0, p:getEquips():length() - 1))
+                        card = p:getEquips():at(rinsanFuncModule.random(0, p:getEquips():length() - 1))
                     end
                 end
             end
@@ -1551,7 +1551,7 @@ LuaTianfa =
                     room:sendCompulsoryTriggerLog(shayu, self:objectName())
                     local drawPile = room:getDrawPile()
                     local len = drawPile:length()
-                    local card_id = drawPile:at(math.random(0, len - 1))
+                    local card_id = drawPile:at(rinsanFuncModule.random(0, len - 1))
                     local card = sgs.Sanguosha:getCard(card_id)
                     room:throwCard(
                         card,
@@ -1718,7 +1718,7 @@ LuaFumoVS =
     end,
     view_as = function(self, cards)
         if #cards >= 2 then
-            local slash = sgs.Sanguosha:cloneCard('slash', cards[1]:getSuit(), cards[1]:getNumber())
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
             for _, cd in ipairs(cards) do
                 slash:addSubcard(cd)
             end
@@ -1906,7 +1906,7 @@ LuaTaoseCard =
 LuaTaoseVS =
     sgs.CreateOneCardViewAsSkill {
     name = 'LuaTaose',
-    filter_pattern = '.|heart|.|hand',
+    filter_pattern = '.|heart|.|.',
     view_as = function(self, card)
         local ts = LuaTaoseCard:clone()
         ts:addSubcard(card)
