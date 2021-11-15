@@ -911,36 +911,49 @@ end
 sgs.ai_skill_cardchosen['LuaRangjie'] = function(self, who, flags, method)
     local disabled_ids = self.room:getTag('LuaRangjieDisabledIntList'):toIntList()
     -- 优先选择判定区
-    for _, cd in sgs.qlist(who:getCards('j')) do
-        if not cd:isKindOf('YanxiaoCard') and not disabled_ids:contains(cd:getEffectiveId()) then
-            return cd
+    -- 如果是队友，则把头上的言笑之外的牌移走
+    if self:isFriend(who) then
+        for _, cd in sgs.qlist(who:getCards('j')) do
+            if (not cd:isKindOf('YanxiaoCard')) and (not disabled_ids:contains(cd:getEffectiveId())) then
+                return cd
+            end
+        end
+    else
+        -- 移走对面的言笑牌
+        for _, cd in sgs.qlist(who:getCards('j')) do
+            if cd:isKindOf('YanxiaoCard') and (not disabled_ids:contains(cd:getEffectiveId())) then
+                return cd
+            end
         end
     end
 
-    -- 以 +1 马、防具、-1 马、武器、宝物·的顺序判断
-    local defensiveHorse = who:getDefensiveHorse()
-    if defensiveHorse and not disabled_ids:contains(defensiveHorse) then
-        return defensiveHorse
-    end
+    if not self:isFriend(who) then
+        -- 移走对面的装备
+        -- 以 +1 马、防具、-1 马、武器、宝物·的顺序判断
+        local defensiveHorse = who:getDefensiveHorse()
+        if defensiveHorse and not disabled_ids:contains(defensiveHorse:getEffectiveId()) then
+            return defensiveHorse
+        end
 
-    local armor = who:getArmor()
-    if armor and not disabled_ids:contains(armor) then
-        return armor
-    end
+        local armor = who:getArmor()
+        if armor and not disabled_ids:contains(armor:getEffectiveId()) then
+            return armor
+        end
 
-    local offensiveHorse = who:getOffensiveHorse()
-    if offensiveHorse and not disabled_ids:contains(offensiveHorse) then
-        return offensiveHorse
-    end
+        local offensiveHorse = who:getOffensiveHorse()
+        if offensiveHorse and not disabled_ids:contains(offensiveHorse:getEffectiveId()) then
+            return offensiveHorse
+        end
 
-    local weapon = who:getWeapon()
-    if weapon and not disabled_ids:contains(weapon) then
-        return weapon
-    end
+        local weapon = who:getWeapon()
+        if weapon and not disabled_ids:contains(weapon:getEffectiveId()) then
+            return weapon
+        end
 
-    local treasure = who:getTreasure()
-    if treasure and not disabled_ids:contains(treasure) then
-        return treasure
+        local treasure = who:getTreasure()
+        if treasure and not disabled_ids:contains(treasure:getEffectiveId()) then
+            return treasure
+        end
     end
     return nil
 end
