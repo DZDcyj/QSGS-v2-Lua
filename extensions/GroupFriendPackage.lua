@@ -101,55 +101,55 @@ LuaGeidianCard =
     target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        return to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude()
+        return to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude() and
+            not to_select:hasFlag('LuaGeidianTargeted')
     end,
     on_use = function(self, room, source, targets)
-        for _, p in ipairs(targets) do
-            local card =
-                room:askForCard(
-                p,
-                '.|.|.|.|hand,equiped',
-                '@LuaGeidian-ask:' .. source:objectName(),
-                sgs.QVariant(),
-                sgs.Card_MethodNone
-            )
-            if not card then
-                local equipOrHand = rinsanFuncModule.random(0, 1)
-                if p:getEquips():isEmpty() then
-                    card = p:getHandcards():at(rinsanFuncModule.random(0, p:getHandcardNum() - 1))
-                elseif p:getHandcardNum() == 0 then
-                    card = p:getEquips():at(rinsanFuncModule.random(0, p:getEquips():length() - 1))
-                else
-                    if equipOrHand == 0 then
-                        card = p:getHandcards():at(rinsanFuncModule.random(0, p:getHandcardNum() - 1))
-                    else
-                        card = p:getEquips():at(rinsanFuncModule.random(0, p:getEquips():length() - 1))
-                    end
-                end
-            end
-            source:obtainCard(card, false)
+        local target = targets[1]
+        room:addPlayerMark(source, 'LuaGeidianUsedTime')
+        room:setPlayerFlag(target, 'LuaGeidianTargeted')
+        local card =
+            room:askForCard(
+            target,
+            '.|.|.|.|.',
+            '@LuaGeidian-ask:' .. source:objectName(),
+            sgs.QVariant(),
+            sgs.Card_MethodNone
+        )
+        if not card then
+            local cards = target:getCards('he')
+            card = cards:at(rinsanFuncModule.random(0, cards:length() - 1))
         end
-        local slash = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, 0)
-        slash:setSkillName('LuaGeidian')
-        if #targets > 2 then
-            for _, target in ipairs(targets) do
-                room:useCard(sgs.CardUseStruct(slash, target, source))
-            end
+        source:obtainCard(card, false)
+        if source:getMark('LuaGeidianUsedTime') > math.max(1, source:getLostHp()) then
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName('LuaGeidian')
+            room:useCard(sgs.CardUseStruct(slash, target, source))
         end
     end
 }
 
-LuaGeidian =
-    sgs.CreateViewAsSkill {
+LuaGeidianVS =
+    sgs.CreateZeroCardViewAsSkill {
     name = 'LuaGeidian',
-    n = 0,
-    view_as = function(self, cards)
+    view_as = function(self)
         return LuaGeidianCard:clone()
     end,
     enabled_at_play = function(self, player)
-        for _, p in sgs.qlist(player:getSiblings()) do
-            if not p:isNude() then
-                return not player:hasUsed('#LuaGeidianCard')
+        return true
+    end
+}
+
+LuaGeidian = sgs.CreateTriggerSkill{
+    name = 'LuaGeidian',
+    view_as_skill = LuaGeidianVS,
+    events = {sgs.EventPhaseEnd},
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Play then
+            -- 出牌阶段结束时清理标记（因考虑当先）
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerFlag(p, '-LuaGeidianTargeted')
+                room:setPlayerMark(p, 'LuaGeidianUsedTime', 0)
             end
         end
         return false
