@@ -189,7 +189,16 @@ LuaDizhu =
                 -- 避免“自书”触发
                 room:setTag('FirstRound', sgs.QVariant(true))
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    -- 在手气卡使用前先令所有技能失效，避免不必要的其他结算
+                    local skills = p:getSkillList()
+                    for _, skill in sgs.qlist(skills) do
+                        room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
+                    end
                     rinsanFuncModule.askForLuckCard(room, p)
+                    -- 恢复所有技能
+                    for _, skill in sgs.qlist(skills) do
+                        room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
+                    end
                 end
                 room:setTag('FirstRound', sgs.QVariant(false))
 
