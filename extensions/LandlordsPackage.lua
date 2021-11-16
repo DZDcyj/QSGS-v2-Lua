@@ -78,31 +78,13 @@ LuaFeiyangVS =
 LuaFeiyang =
     sgs.CreateTriggerSkill {
     name = 'LuaFeiyang',
-    events = {sgs.TurnStart, sgs.EventPhaseStart},
+    events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Compulsory,
     view_as_skill = LuaFeiyangVS,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.TurnStart and player:getMark(self:objectName()) == 0 then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
-            room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
-            local msg = sgs.LogMessage()
-            msg.type = '#addmaxhp'
-            msg.arg = 1
-            msg.from = player
-            room:sendLog(msg)
-            local theRecover = sgs.RecoverStruct()
-            theRecover.recover = 1
-            theRecover.who = player
-            room:recover(player, theRecover)
-            room:addPlayerMark(player, self:objectName())
-        else
-            if player:getPhase() == sgs.Player_Start then
-                if
-                    player:getJudgingArea():length() > 0 and player:canDiscard(player, 'h') and
-                        player:getHandcardNum() >= 2
-                 then
-                    room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
-                end
+        if player:getPhase() == sgs.Player_Start then
+            if player:getJudgingArea():length() > 0 and player:canDiscard(player, 'h') and player:getHandcardNum() >= 2 then
+                room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
             end
         end
     end
@@ -185,6 +167,33 @@ LuaDizhu =
                     room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
                 end
 
+                -- 为自己增加一点体力上限
+                room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
+                local msg = sgs.LogMessage()
+                msg.type = '#addmaxhp'
+                msg.arg = 1
+                msg.from = player
+                room:sendLog(msg)
+                local theRecover = sgs.RecoverStruct()
+                theRecover.recover = 1
+                theRecover.who = player
+                room:recover(player, theRecover)
+                room:addPlayerMark(player, self:objectName())
+
+                -- 初始技能触发
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    -- 触发游戏开始时时机，例如先辅、怀橘
+                    room:getThread():trigger(sgs.GameStart, room, p)
+
+                    -- 涉及到摸初始牌的，补一下，例如挫锐、七星
+                    local draw_data = sgs.QVariant(0)
+                    room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
+                    local to_draw = draw_data:toInt()
+                    if to_draw > 0 then
+                        p:drawCards(to_draw, self:objectName())
+                    end
+                end
+
                 -- 手气卡
                 -- 避免“自书”触发
                 room:setTag('FirstRound', sgs.QVariant(true))
@@ -204,20 +213,11 @@ LuaDizhu =
 
                 -- 初始技能触发
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    -- 触发游戏开始时时机，例如先辅、怀橘
-                    room:getThread():trigger(sgs.GameStart, room, p)
-
-                    -- 涉及到摸初始牌的，补一下，例如挫锐、七星
-                    local draw_data = sgs.QVariant(0)
-                    room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
-                    local to_draw = draw_data:toInt()
-                    if to_draw > 0 then
-                        p:drawCards(to_draw, self:objectName())
-                    end
-
                     -- 摸牌后操作，例如七星
                     room:getThread():trigger(sgs.AfterDrawInitialCards, room, p)
                 end
+
+                -- 移除主公技
                 for _, skill in sgs.qlist(player:getSkillList()) do
                     if skill:isLordSkill() then
                         room:detachSkillFromPlayer(player, skill:objectName())
