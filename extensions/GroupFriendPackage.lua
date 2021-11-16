@@ -1018,23 +1018,25 @@ LuaYinyu =
 LuaQingyu =
     sgs.CreateTriggerSkill {
     name = 'LuaQingyu',
-    events = {sgs.Damage, sgs.TargetConfirmed},
+    events = {sgs.Damage, sgs.TargetConfirmed, sgs.EventPhaseChanging},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.Damage then
             local damage = data:toDamage()
-            if player:getHandcardNum() >= player:getHp() then
-                local choices = 'draw1+cancel'
-                local i = 0
-                while i < damage.damage do
-                    i = i + 1
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                    local choice = room:askForChoice(player, self:objectName(), choices)
-                    if choice == 'draw1' then
-                        player:drawCards(1, self:objectName())
-                    else
-                        break
-                    end
+            if damage.card and damage.card:isKindOf('Slash') then
+                local choices = {}
+                if player:getMaxCards() > 0 then
+                    table.insert(choices, 'LuaQingyuChoice1')
+                end
+                table.insert(choices, 'LuaQingyuChoice2')
+                table.insert(choices, 'cancel')
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                if choice == 'LuaQingyuChoice1' then
+                    room:addPlayerMark(player, self:objectName() .. 'Minus')
+                    player:drawCards(1, self:objectName())
+                elseif choice == 'LuaQingyuChoice2' then
+                    room:addPlayerMark(player, self:objectName() .. 'Plus')
                 end
             end
         elseif event == sgs.TargetConfirmed then
@@ -1051,6 +1053,11 @@ LuaQingyu =
                     use.from:setTag('Jink_' .. use.card:toString(), jink_data)
                 end
             end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                room:setPlayerMark(player, self:objectName() .. 'Plus', 0)
+                room:setPlayerMark(player, self:objectName() .. 'Minus', 0)
+            end
         end
         return false
     end
@@ -1063,7 +1070,7 @@ LuaQingyuTargetMod =
     pattern = '.',
     residue_func = function(self, player)
         if player:hasSkill('LuaQingyu') then
-            if player:getHp() <= player:getHandcardNum() then
+            if player:getPhase() == sgs.Player_Play then
                 return 1000
             end
         end
@@ -1071,9 +1078,20 @@ LuaQingyuTargetMod =
     end,
     distance_limit_func = function(self, from, card)
         if from:hasSkill('LuaQingyu') then
-            if from:getHp() <= from:getHandcardNum() then
+            if from:getPhase() == sgs.Player_Play then
                 return 1000
             end
+        end
+        return 0
+    end
+}
+
+LuaQingyuMaxCards =
+    sgs.CreateMaxCardsSkill {
+    name = '#LuaQingyu',
+    extra_func = function(self, target)
+        if target:hasSkill('LuaQingyu') then
+            return target:getMark('LuaQingyuPlus') - target:getMark('LuaQingyuMinus')
         end
         return 0
     end
@@ -1094,14 +1112,7 @@ LuaJiaoxie =
                     local data2 = sgs.QVariant()
                     data2:setValue(damage.from)
                     if room:askForSkillInvoke(player, self:objectName(), data2) then
-                        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), damage.from:objectName())
-                        if damage.from:hasEquip() then
-                            for _, cd in sgs.qlist(damage.from:getEquips()) do
-                                dummy:addSubcard(cd)
-                            end
-                            damage.from:addToPile('LuaJiaoxie', dummy)
-                        end
                         room:addPlayerMark(damage.from, 'LuaJiaoxieForbid')
                         if damage.from:objectName() == room:getCurrent():objectName() then
                             room:setPlayerFlag(damage.from, 'Global_PlayPhaseTerminated')
@@ -1114,21 +1125,6 @@ LuaJiaoxie =
             if player:getMark('LuaJiaoxieForbid') > 0 then
                 player:obtainEquipArea()
                 room:removePlayerMark(player, 'LuaJiaoxieForbid')
-                for _, cd in sgs.qlist(player:getPile('LuaJiaoxie')) do
-                    local card = sgs.Sanguosha:getCard(cd)
-                    room:moveCardTo(
-                        card,
-                        player,
-                        player,
-                        sgs.Player_PlaceEquip,
-                        sgs.CardMoveReason(
-                            sgs.CardMoveReason_S_REASON_TRANSFER,
-                            player:objectName(),
-                            self:objectName(),
-                            ''
-                        )
-                    )
-                end
             end
         end
     end,
@@ -1930,6 +1926,7 @@ Qiumu:addSkill(LuaPaozhuan)
 Qiumu:addSkill(LuaYinyu)
 SPRinsan:addSkill(LuaQingyu)
 SkillAnjiang:addSkill(LuaQingyuTargetMod)
+SkillAnjiang:addSkill(LuaQingyuMaxCards)
 SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
