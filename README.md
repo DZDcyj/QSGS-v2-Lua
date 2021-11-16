@@ -179,3 +179,25 @@ PS: 为了导入资源和避免已有武将冲突，在界限突破外的武将�
 void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart,
     bool isSecondaryHero, bool sendLog)
 ```
+### 岑昏【极奢】不发动
+#### 原因
+系源代码中使用了未定义的变量`room`所致
+
+#### 参考修改方案
+在`extra.lua`的相关代码中添加获取`room`语句即可：
+```
+on_phasechange = function(self, player)
+	local invoke = false
+    -- 这里使用了未定义的 room，添加即可
+    local room = player:getRoom()
+	for _, p in sgs.qlist(room:getAlivePlayers()) do
+		if not invoke then
+			invoke = not p:isChained()
+		end
+	end
+	if invoke and player:getPhase() == sgs.Player_Finish and player:isKongcheng() and player:getHp() > 0 then
+		player:getRoom():askForUseCard(player, "@@jishe", "@jishe")
+	end
+end
+```
+
