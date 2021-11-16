@@ -1628,7 +1628,7 @@ LuaJiyuan =
             if move.to and move.to:objectName() ~= player:objectName() then
                 if move.from and move.from:objectName() == player:objectName() then
                     local reason = move.reason.m_reason
-                    if reason == sgs.CardMoveReason_S_REASON_GIVE or reason == sgs.CardMoveReason_S_REASON_PREVIEWGIVE then
+                    if rinsanFuncModule.moveBasicReasonCompare(reason, sgs.CardMoveReason_S_REASON_GOTCARD) then
                         local target
                         for _, p in sgs.qlist(room:getAlivePlayers()) do
                             if p:objectName() == move.to:objectName() then
