@@ -46,7 +46,7 @@ LuaBaipiao =
                     rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_GIVE) or
                     move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
                 if not notTriggerable then
-                    if move.to then
+                    if move.to and move.to:objectName() ~= player:objectName() then
                         room:sendCompulsoryTriggerLog(player, self:objectName())
                         player:drawCards(1, self:objectName())
                     else
