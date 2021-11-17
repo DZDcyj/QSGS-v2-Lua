@@ -187,7 +187,7 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
 在`extra.lua`的相关代码中添加获取`room`语句即可：
 ```
 on_phasechange = function(self, player)
-	local invoke = false
+    local invoke = false
     -- 这里使用了未定义的 room，添加即可
     local room = player:getRoom()
 	for _, p in sgs.qlist(room:getAlivePlayers()) do
