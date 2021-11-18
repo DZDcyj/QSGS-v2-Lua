@@ -196,14 +196,14 @@ LuaDoudizhuScenario =
                 if target:getRole() == player:getRole() then
                     local choices = {}
                     if target:isWounded() then
-                        table.insert(choices, 'recover')
+                        table.insert(choices, 'LuaNongminChoice1')
                     end
-                    table.insert(choices, 'draw')
+                    table.insert(choices, 'LuaNongminChoice2')
                     table.insert(choices, 'cancel')
                     local choice = room:askForChoice(target, 'LuaNongmin', table.concat(choices, '+'))
-                    if choice == 'recover' then
+                    if choice == 'LuaNongminChoice1' then
                         room:recover(target, sgs.RecoverStruct(player, nil, 1))
-                    elseif choice == 'draw' then
+                    elseif choice == 'LuaNongminChoice2' then
                         target:drawCards(2)
                     end
                 end
