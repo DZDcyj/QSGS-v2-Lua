@@ -20,8 +20,8 @@ LuaBahu =
             player:drawCards(1)
         end
     end,
-    -- 考虑到现在的“缠怨”实现不为倾城标记的添加，在这里以“地主”标记作为地主的标志进行判断依据
-    -- 如此一来，无论是断肠抑或是缠怨都不会影响地主技能的释放
+    -- 考虑到现在的“缠怨”实现不为倾城标记的添加，在这里以地主标记作为判断依据
+    -- 如此一来，无论是“断肠”还是“缠怨”都不会影响地主技能的释放
     can_trigger = function(self, target)
         return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaDizhu') > 0)
     end
@@ -213,7 +213,7 @@ LuaDoudizhuScenario =
         return false
     end,
     can_trigger = function(self, target)
-        -- 当且仅当存在地主标志的人物时，才会启用斗地主模式技能
+        -- 当且仅当存在拥有地主标志角色的时，才会启用斗地主模式相关逻辑
         if target and target:getMark('LuaDizhu') > 0 then
             return true
         end
