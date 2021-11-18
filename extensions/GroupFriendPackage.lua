@@ -140,7 +140,8 @@ LuaGeidianVS =
     end
 }
 
-LuaGeidian = sgs.CreateTriggerSkill{
+LuaGeidian =
+    sgs.CreateTriggerSkill {
     name = 'LuaGeidian',
     view_as_skill = LuaGeidianVS,
     events = {sgs.EventPhaseEnd},
@@ -1178,7 +1179,7 @@ LuaZhazhi =
             if player:getPhase() == sgs.Player_Play then
                 local splayers = room:findPlayersBySkillName(self:objectName())
                 for _, sp in sgs.qlist(splayers) do
-                    if sp:objectName() ~= player:objectName() then
+                    if sp:objectName() ~= player:objectName() and sp:faceUp() then
                         local data2 = sgs.QVariant()
                         data2:setValue(player)
                         if room:askForSkillInvoke(sp, self:objectName(), data2) then
@@ -1261,11 +1262,19 @@ LuaJueding =
         if event == sgs.TurnedOver then
             if player:faceUp() then
                 -- 翻回来，解除卡牌限制
-                rinsanFuncModule.sendLogMessage(room, '#LuaJuedingAvailable',{['from'] = player, ['arg'] = self:objectName()})
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJuedingAvailable',
+                    {['from'] = player, ['arg'] = self:objectName()}
+                )
                 room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
             else
                 -- 进行卡牌限制
-                rinsanFuncModule.sendLogMessage(room, '#LuaJuedingDisable',{['from'] = player, ['arg'] = self:objectName()})
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJuedingDisable',
+                    {['from'] = player, ['arg'] = self:objectName()}
+                )
                 room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
             end
         elseif event == sgs.EventLoseSkill then
