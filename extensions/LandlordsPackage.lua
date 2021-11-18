@@ -19,6 +19,11 @@ LuaBahu =
             room:sendCompulsoryTriggerLog(player, self:objectName())
             player:drawCards(1)
         end
+    end,
+    -- 考虑到现在的“缠怨”实现不为倾城标记的添加，在这里以“地主”标记作为地主的标志进行判断依据
+    -- 如此一来，无论是断肠抑或是缠怨都不会影响地主技能的释放
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaDizhu') > 0)
     end
 }
 
@@ -87,6 +92,10 @@ LuaFeiyang =
                 room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
             end
         end
+    end,
+    -- 同“跋扈”
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaDizhu') > 0)
     end
 }
 
@@ -118,7 +127,6 @@ LuaDizhu =
         theRecover.recover = 1
         theRecover.who = player
         room:recover(player, theRecover)
-        room:addPlayerMark(player, self:objectName())
 
         -- 初始技能触发
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -205,11 +213,12 @@ LuaDoudizhuScenario =
         return false
     end,
     can_trigger = function(self, target)
-        if target and target:hasSkill('LuaDizhu') then
+        -- 当且仅当存在地主标志的人物时，才会启用斗地主模式技能
+        if target and target:getMark('LuaDizhu') > 0 then
             return true
         end
         for _, p in sgs.qlist(target:getSiblings()) do
-            if p:hasSkill('LuaDizhu') then
+            if p:getMark('LuaDizhu') > 0 then
                 return true
             end
         end
