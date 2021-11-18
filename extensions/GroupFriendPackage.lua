@@ -1186,8 +1186,21 @@ LuaZhazhi =
                             sp:turnOver()
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), player:objectName())
                             room:showAllCards(player)
-                            local choice =
-                                room:askForChoice(player, self:objectName(), 'LuaZhazhiChoice1+LuaZhazhiChoice2')
+                            local choices = {}
+                            local tempSlash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                            -- 该角色可以对发动“榨汁”的角色使用【杀】时
+                            if not player:isCardLimited(tempSlash, sgs.Card_MethodUse) then
+                                -- 有杀或者黑色锦囊牌才可选择第一项
+                                for _, cd in sgs.qlist(player:getHandcards()) do
+                                    if cd:isKindOf('Slash') or (cd:isKindOf('TrickCard') and cd:isBlack()) then
+                                        table.insert(choices, 'LuaZhazhiChoice1')
+                                        break
+                                    end
+                                end
+                            end
+                            tempSlash:deleteLater()
+                            table.insert(choices, 'LuaZhazhiChoice2')
+                            local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
                             if choice == 'LuaZhazhiChoice1' then
                                 local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                                 for _, cd in sgs.qlist(player:getHandcards()) do
