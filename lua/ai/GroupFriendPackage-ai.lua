@@ -130,7 +130,6 @@ sgs.ai_skill_invoke.LuaJuesha = function(self, data)
     return false
 end
 
-
 -- 传艺
 sgs.ai_skill_choice['LuaChuanyi'] = function(self, choices)
     -- 选最后一个：本局游戏不再发动
@@ -210,6 +209,16 @@ sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
         return true
     end
     return not self:isWeak()
+end
+
+-- 考虑到 SmartAI 中仅传入这些参数，故暂时仅判断是否榨汁-1
+sgs.ai_damage_effect['LuaZhazhi'] = function(self, to, nature, from)
+    for _, mark in sgs.list(to:getMarkNames()) do
+        if string.find(mark, 'LuaZhazhiDebuff') and to:getMark(mark) > 0 then
+            return false
+        end
+    end
+    return true
 end
 
 -- 白嫖
@@ -335,4 +344,13 @@ sgs.ai_skill_use['@@LuaZhixie'] = function(self, prompt, method)
         return '#LuaZhixieCard:.:->' .. table.concat(targets, '+')
     end
     return '.'
+end
+
+-- 机械减伤害
+sgs.ai_damage_effect['LuaJixie'] = function(self, to, nature, from)
+    self.room:writeToConsole(from:getGeneralName() .. ' is trying to damage ' .. to:getGeneralName())
+    if to:hasSkill('LuaJixie') and nature == sgs.DamageStruct_Thunder then
+        return false
+    end
+    return true
 end
