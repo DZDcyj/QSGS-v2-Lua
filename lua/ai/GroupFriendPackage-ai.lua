@@ -3,9 +3,6 @@
 
 -- 晒卡弃牌/掉血
 
--- 不知道为什么不能直接定义 sgs.ai_damage_effect 对应的函数，先用一个临时存储，再插入
-local group_ai_damage_effect = {}
-
 sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optional, include_equip)
     -- 如果要弃置的牌大于总牌数，则不弃牌
     if discard_num > self.player:getCardCount(true) then
@@ -226,6 +223,7 @@ LuaZhazhiDamageEffect = function(self, to, nature, from, damageValue)
     return count > 0
 end
 
+-- 不知道为什么不能直接定义 sgs.ai_damage_effect 对应的函数，只能如这般插入
 table.insert(sgs.ai_damage_effect, LuaZhazhiDamageEffect)
 
 -- 白嫖
