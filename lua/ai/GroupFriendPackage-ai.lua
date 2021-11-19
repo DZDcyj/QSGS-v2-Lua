@@ -2,7 +2,6 @@
 -- Created by DZDcyj at 2021/9/10
 
 -- 晒卡弃牌/掉血
-
 sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optional, include_equip)
     -- 如果要弃置的牌大于总牌数，则不弃牌
     if discard_num > self.player:getCardCount(true) then
