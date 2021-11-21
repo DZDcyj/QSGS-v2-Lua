@@ -183,6 +183,20 @@ sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     return true
 end
 
+-- 榨汁伤害判断
+LuaZhazhiDamageEffect = function(self, to, nature, from, damageValue)
+    local count = damageValue
+    for _, mark in sgs.list(from:getMarkNames()) do
+        if string.find(mark, 'LuaZhazhiDebuff')  then
+            count = count - from:getMark(mark)
+        end
+    end
+    return count > 0
+end
+
+-- 不知道为什么不能直接定义 sgs.ai_damage_effect 对应的函数，只能如这般插入
+table.insert(sgs.ai_damage_effect, LuaZhazhiDamageEffect)
+
 -- 白嫖
 sgs.ai_skill_playerchosen.LuaBaipiao = function(self, targetlist)
     local targets = sgs.QList2Table(targetlist)
@@ -307,3 +321,13 @@ sgs.ai_skill_use['@@LuaZhixie'] = function(self, prompt, method)
     end
     return '.'
 end
+
+-- 机械减伤害
+LuaJixieDamageEffect = function(self, to, nature, from, damageValue)
+    if to:hasSkill('LuaJixie') and nature == sgs.DamageStruct_Thunder then
+        return damageValue > 1
+    end
+    return true
+end
+
+table.insert(sgs.ai_damage_effect, LuaJixieDamageEffect)
