@@ -1209,7 +1209,8 @@ LuaZhazhi =
                                     end
                                 end
                                 slash:setSkillName(self:objectName())
-                                room:useCard(sgs.CardUseStruct(slash, player, sp))
+                                -- 此【杀】需要计入出牌阶段次数
+                                room:useCard(sgs.CardUseStruct(slash, player, sp), true)
                             else
                                 room:addPlayerMark(player, 'LuaZhazhiDebuff' .. sp:objectName())
                                 room:addPlayerMark(player, '@LuaZhazhi')
