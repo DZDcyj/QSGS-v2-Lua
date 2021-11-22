@@ -18,3 +18,16 @@ sgs.ai_skill_use['@@LuaFeiyang'] = function(self, prompt, method)
     self:sortByUseValue(cards, true)
     return '#LuaFeiyangCard:' .. table.concat({cards[1]:getEffectiveId(), cards[2]:getEffectiveId()}, '+') .. ':.'
 end
+
+-- 农民选择
+sgs.ai_skill_choice['LuaNongmin'] = function(self, choices)
+    -- choices 可能取值为
+    -- LuaNongminChoice1 LuaNongminChoice2 cancel
+    local items = choices:split('+')
+    if self.player:getHp() < self.player:getMaxHp() - 1 then
+        -- 此项流程中，一定可以回血，选第一个
+        return items[1]
+    end
+    -- 选倒数第二个摸牌
+    return items[#items-1]
+end
