@@ -53,7 +53,9 @@ jobs:
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           # Optional plain body:
-          body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
+          # body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
+          # Using Markdown
+          html_body: file://email-template.md
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
           # Optional converting Markdown to HTML (set content_type to text/html too):
