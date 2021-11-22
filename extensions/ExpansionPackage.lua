@@ -6793,48 +6793,26 @@ LuaLeiji =
             if judge.reason == 'baonue' then
                 return false
             end
-            if judge.who:objectName() == player:objectName() then
-                local damage = sgs.DamageStruct()
-                damage.from = player
-                damage.nature = sgs.DamageStruct_Thunder
+            if judge.who:objectName() == player:objectName() and judge.card:isBlack() then
+                -- 默认为黑桃，草花额外提供回血并调整伤害数值
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                local damageValue = 2
                 if judge.card:getSuit() == sgs.Card_Club then
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                    local theRecover = sgs.RecoverStruct()
-                    theRecover.recover = 1
-                    theRecover.who = player
-                    room:recover(player, theRecover)
-                    local target =
-                        room:askForPlayerChosen(
-                        player,
-                        room:getOtherPlayers(player),
-                        self:objectName(),
-                        '@LuaLeiji-choose-damage:' .. '1',
-                        true,
-                        true
-                    )
-                    if target then
-                        room:broadcastSkillInvoke(self:objectName())
-                        damage.to = target
-                        damage.damage = 1
-                        room:damage(damage)
-                    end
-                elseif judge.card:getSuit() == sgs.Card_Spade then
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                    local target =
-                        room:askForPlayerChosen(
-                        player,
-                        room:getOtherPlayers(player),
-                        self:objectName(),
-                        '@LuaLeiji-choose-damage:' .. '2',
-                        true,
-                        true
-                    )
-                    if target then
-                        room:broadcastSkillInvoke(self:objectName())
-                        damage.damage = 2
-                        damage.to = target
-                        room:damage(damage)
-                    end
+                    room:recover(player, sgs.RecoverStruct())
+                    damageValue = 1
+                end
+                local target =
+                    room:askForPlayerChosen(
+                    player,
+                    room:getOtherPlayers(player),
+                    self:objectName(),
+                    '@LuaLeiji-choose-damage:' .. tostring(damageValue),
+                    true,
+                    true
+                )
+                if target then
+                    room:broadcastSkillInvoke(self:objectName())
+                    rinsanFuncModule.doDamage(room, player, target, damageValue, sgs.DamageStruct_Thunder)
                 end
             end
         else
@@ -6847,12 +6825,16 @@ LuaLeiji =
             if card then
                 if card:isKindOf('Jink') or card:isKindOf('Lightning') then
                     if room:askForSkillInvoke(player, self:objectName()) then
-                        local judge = sgs.JudgeStruct()
-                        judge.pattern = '.|black'
-                        judge.good = true
-                        judge.reason = self:objectName()
-                        judge.who = player
-                        judge.play_animation = true
+                        room:broadcastSkillInvoke(self:objectName())
+                        local judge =
+                            rinsanFuncModule.createJudgeStruct(
+                            {
+                                ['pattern'] = '.|black',
+                                ['reason'] = self:objectName(),
+                                ['who'] = player,
+                                ['play_animation'] = true
+                            }
+                        )
                         room:judge(judge)
                     end
                 end
