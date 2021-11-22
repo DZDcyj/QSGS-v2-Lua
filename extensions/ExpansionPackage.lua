@@ -3329,6 +3329,9 @@ LuaDanshou =
             if use.card:isKindOf('SkillCard') then
                 return false
             end
+            if use.from:objectName() ~= room:getCurrent():objectName() then
+                return false
+            end
             for _, p in sgs.qlist(use.to) do
                 room:addPlayerMark(p, self:objectName())
             end
