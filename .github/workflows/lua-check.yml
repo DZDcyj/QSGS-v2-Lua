@@ -105,9 +105,9 @@ jobs:
             目标分支：${{github.base_ref}}
             
             ## Last Commit 信息
-            Commit SHA: ${{latest_commit_sha}}
+            Commit SHA: ${{env.latest_commit_sha}}
             
-            Commit Message: ${{latest_commit_message}}
+            Commit Message: ${{env.latest_commit_message}}
             
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
