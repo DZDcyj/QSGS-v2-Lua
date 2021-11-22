@@ -33,6 +33,39 @@ jobs:
     runs-on: ubuntu-latest
     needs: Lua-Format-Check
     steps:
+      - name: List commits on the pull request
+        run: |
+          response=$(curl --request GET \
+          --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits' \
+          --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'Accept: application/vnd.github.v3+json' \
+          --header 'Content-Type: application/json')
+          
+          echo $response > response.json
+
+      - name: Get latest commit
+        run: |
+          echo "Get length of the array:"
+          length=$(jq 'length' response.json)
+
+          echo "Get index of the latest commit:"
+          index=$(($length - 1))
+
+          echo "Get context of the latest commit:"
+          latest_commit=$(jq --argjson index $index '.[$index]' response.json)
+          echo "$latest_commit"
+
+          echo "Get commit message of the latest commit:"
+          latest_commit_message=$(echo "$latest_commit" | jq -r '.commit.message')
+          echo "$latest_commit_message"
+
+          echo "Get commit SHA of the latest commit:"
+          latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
+          echo "$latest_commit_sha"
+          
+          echo "Get name of committer of the latest commit:"
+          latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
+          echo "$latest_commit_sha"
       - name: "Send Email"
         uses: dawidd6/action-send-mail@v3
         with:
@@ -59,7 +92,7 @@ jobs:
             ## Pull Request Review 提醒
             ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review
             
-            PR 地址：${{github.event.pull_request.html_url}}
+            Pull Request 地址：${{github.event.pull_request.html_url}}
 
             ## 相关 PR 信息
             拉取请求标题：${{github.event.pull_request.title}}
@@ -67,7 +100,12 @@ jobs:
             源分支：${{github.head_ref}}
             
             目标分支：${{github.base_ref}}
-
+            
+            ## Last Commit 信息
+            Commit SHA: ${{latest_commit_sha}}
+            
+            Commit Message: ${{latest_commit_message}}
+            
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
           # Optional converting Markdown to HTML (set content_type to text/html too):
