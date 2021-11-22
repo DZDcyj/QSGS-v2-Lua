@@ -6783,3 +6783,100 @@ JieDengai:addSkill(LuaZaoxian)
 JieDengai:addRelateSkill('LuaJixi')
 SkillAnjiang:addSkill(LuaTuntianDistance)
 SkillAnjiang:addSkill(LuaJixi)
+
+JieZhangjiao = sgs.General(extension, 'JieZhangjiao$', 'qun', '3', true, true)
+
+LuaLeiji =
+    sgs.CreateTriggerSkill {
+    name = 'LuaLeiji',
+    events = {sgs.FinishJudge, sgs.CardUsed, sgs.CardResponded},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.FinishJudge then
+            local judge = data:toJudge()
+            if judge.reason == 'baonue' then
+                return false
+            end
+            if judge.who:objectName() == player:objectName() and judge.card:isBlack() then
+                -- 默认为黑桃，草花额外提供回血并调整伤害数值
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                local damageValue = 2
+                if judge.card:getSuit() == sgs.Card_Club then
+                    room:recover(player, sgs.RecoverStruct())
+                    damageValue = 1
+                end
+                local target =
+                    room:askForPlayerChosen(
+                    player,
+                    room:getOtherPlayers(player),
+                    self:objectName(),
+                    '@LuaLeiji-choose-damage:' .. tostring(damageValue),
+                    true,
+                    true
+                )
+                if target then
+                    room:broadcastSkillInvoke(self:objectName())
+                    rinsanFuncModule.doDamage(room, player, target, damageValue, sgs.DamageStruct_Thunder)
+                end
+            end
+        else
+            local card
+            if event == sgs.CardUsed then
+                card = data:toCardUse().card
+            else
+                card = data:toCardResponse().m_card
+            end
+            if card then
+                if card:isKindOf('Jink') or card:isKindOf('Lightning') then
+                    if room:askForSkillInvoke(player, self:objectName()) then
+                        room:broadcastSkillInvoke(self:objectName())
+                        local judge =
+                            rinsanFuncModule.createJudgeStruct(
+                            {
+                                ['pattern'] = '.|black',
+                                ['reason'] = self:objectName(),
+                                ['who'] = player,
+                                ['play_animation'] = true
+                            }
+                        )
+                        room:judge(judge)
+                    end
+                end
+            end
+        end
+        return false
+    end
+}
+
+LuaGuidao =
+    sgs.CreateTriggerSkill {
+    name = 'LuaGuidao',
+    events = {sgs.AskForRetrial},
+    on_trigger = function(self, event, player, data, room)
+        local judge = data:toJudge()
+        if player:hasSkill(self:objectName()) and player:isAlive() then
+            local prompt_list = {
+                '@guidao-card',
+                judge.who:objectName(),
+                self:objectName(),
+                judge.reason,
+                tostring(judge.card:getEffectiveId())
+            }
+            local prompt = table.concat(prompt_list, ':')
+            local card =
+                room:askForCard(player, '.|black|.|.|.', prompt, data, sgs.Card_MethodResponse, judge.who, true)
+            if card then
+                room:broadcastSkillInvoke(self:objectName())
+                room:retrial(card, player, judge, self:objectName(), true)
+                if card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    player:drawCards(1)
+                end
+            end
+        end
+        return false
+    end
+}
+
+JieZhangjiao:addSkill(LuaLeiji)
+JieZhangjiao:addSkill(LuaGuidao)
+JieZhangjiao:addSkill('huangtian')
