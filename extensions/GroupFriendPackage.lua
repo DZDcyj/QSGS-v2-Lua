@@ -140,7 +140,8 @@ LuaGeidianVS =
     end
 }
 
-LuaGeidian = sgs.CreateTriggerSkill{
+LuaGeidian =
+    sgs.CreateTriggerSkill {
     name = 'LuaGeidian',
     view_as_skill = LuaGeidianVS,
     events = {sgs.EventPhaseEnd},
@@ -1022,36 +1023,21 @@ LuaQingyu =
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.Damage then
-            local damage = data:toDamage()
-            if damage.card and damage.card:isKindOf('Slash') then
-                local choices = {}
-                if player:getMaxCards() > 0 then
-                    table.insert(choices, 'LuaQingyuChoice1')
-                end
-                table.insert(choices, 'LuaQingyuChoice2')
-                table.insert(choices, 'cancel')
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
-                if choice == 'LuaQingyuChoice1' then
-                    room:addPlayerMark(player, self:objectName() .. 'Minus')
-                    player:drawCards(1, self:objectName())
-                elseif choice == 'LuaQingyuChoice2' then
-                    room:addPlayerMark(player, self:objectName() .. 'Plus')
-                end
+            if player:getPhase() ~= sgs.Player_Play then
+                return false
             end
-        elseif event == sgs.TargetConfirmed then
-            if player:getHandcardNum() <= player:getHp() / 2 then
-                local use = data:toCardUse()
-                if use.card and use.card:isKindOf('Slash') and use.to:contains(player) then
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                    local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
-                    local index = use.to:indexOf(player)
-                    rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = player})
-                    jink_table[index + 1] = 0
-                    local jink_data = sgs.QVariant()
-                    jink_data:setValue(Table2IntList(jink_table))
-                    use.from:setTag('Jink_' .. use.card:toString(), jink_data)
-                end
+            local choices = {}
+            if player:getMaxCards() > 0 then
+                table.insert(choices, 'LuaQingyuChoice1')
+            end
+            table.insert(choices, 'LuaQingyuChoice2')
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+            if choice == 'LuaQingyuChoice1' then
+                room:addPlayerMark(player, self:objectName() .. 'Minus')
+                player:drawCards(1, self:objectName())
+            elseif choice == 'LuaQingyuChoice2' then
+                room:addPlayerMark(player, self:objectName() .. 'Plus')
             end
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
