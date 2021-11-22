@@ -187,7 +187,7 @@ end
 LuaZhazhiDamageEffect = function(self, to, nature, from, damageValue)
     local count = damageValue
     for _, mark in sgs.list(from:getMarkNames()) do
-        if string.find(mark, 'LuaZhazhiDebuff')  then
+        if string.find(mark, 'LuaZhazhiDebuff') then
             count = count - from:getMark(mark)
         end
     end
