@@ -43,7 +43,7 @@ LuaBaipiao =
                     rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_USE) or
                     rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RESPONSE) or
                     rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RECAST) or
-                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_GIVE) or
+                    move.reason.m_reason == sgs.CardMoveReason_S_REASON_GIVE or
                     move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
                 if not notTriggerable then
                     if move.to and move.to:objectName() ~= player:objectName() then
