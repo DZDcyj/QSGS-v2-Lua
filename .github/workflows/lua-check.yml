@@ -66,6 +66,9 @@ jobs:
           echo "Get name of committer of the latest commit:"
           latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
           echo "$latest_commit_sha"
+          
+          echo "latest_commit_sha=${latest_commit_sha}" >> $GITHUB_ENV
+          echo "latest_commit_message=${latest_commit_message}" >> $GITHUB_ENV
       - name: "Send Email"
         uses: dawidd6/action-send-mail@v3
         with:
