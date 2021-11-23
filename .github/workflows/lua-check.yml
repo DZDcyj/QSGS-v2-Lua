@@ -99,9 +99,9 @@ jobs:
           # Using Markdown
           html_body: |
             ## ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review
-            ${{github.actor}} 想要将 ${{github.head_ref}} 的 ${{github.event.pull_request.commits}} 个提交合并到 ${{github.base_ref}}
+            ${{github.actor}} 想要将分支 ${{github.head_ref}} 上的 ${{github.event.pull_request.commits}} 个提交合并到 ${{github.base_ref}} 分支
             
-            拉取请求标题：${{github.event.pull_request.title}}
+            Pull Request 标题：${{github.event.pull_request.title}}
             
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
