@@ -63,12 +63,13 @@ jobs:
           latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
           echo "$latest_commit_sha"
           
-          echo "Get name of committer of the latest commit:"
-          latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
-          echo "$latest_commit_sha"
+          echo "Get name of author of the latest commit:"
+          latest_commit_author=$(echo "$latest_commit" | jq -r '.author.name')
+          echo "$latest_commit_author"
           
           echo "latest_commit_sha=${latest_commit_sha}" >> $GITHUB_ENV
           echo "latest_commit_message=${latest_commit_message}" >> $GITHUB_ENV
+          echo "latest_commit_author=${latest_commit_author}" >> $GITHUB_ENV
       - name: "Send Email"
         uses: dawidd6/action-send-mail@v3
         with:
@@ -92,19 +93,16 @@ jobs:
           # body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
           # Using Markdown
           html_body: |
-            ## Pull Request Review 提醒
-            ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review
+            ## ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review
+            ${{github.actor}} 想要将 ${{github.head_ref}} 的 ${{github.event.pull_request.commits}} 个提交合并到 ${{github.base_ref}}
+            
+            拉取请求标题：${{github.event.pull_request.title}}
             
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
-            ## 相关 PR 信息
-            拉取请求标题：${{github.event.pull_request.title}}
+            ### 最新的提交：
+            Author: $${{env.latest_commit_author}}
             
-            源分支：${{github.head_ref}}
-            
-            目标分支：${{github.base_ref}}
-            
-            ## Last Commit 信息
             Commit SHA: ${{env.latest_commit_sha}}
             
             Commit Message: ${{env.latest_commit_message}}
