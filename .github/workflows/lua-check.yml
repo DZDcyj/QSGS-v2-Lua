@@ -64,7 +64,7 @@ jobs:
           echo "$latest_commit_sha"
           
           echo "Get name of author of the latest commit:"
-          latest_commit_author=$(echo "$latest_commit" | jq -r '.commit.author.name')
+          latest_commit_author_name=$(echo "$latest_commit" | jq -r '.commit.author.name')
           echo "$latest_commit_author_name"
           
           echo "Get email of author of the latest commit:"
@@ -106,7 +106,7 @@ jobs:
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
             ### 最新的提交：
-            Author: $${{env.latest_commit_author_name}}($${{env.latest_commit_author_email}})
+            Author: ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
             
             Commit SHA: ${{env.latest_commit_sha}}
             
