@@ -20,6 +20,7 @@ Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true)
 Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
+Ajie = sgs.General(extension, 'Ajie', 'wei', '3', true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -774,11 +775,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.QuitDying then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
-                for _, mark in sgs.list(p:getMarkNames()) do
-                    if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
-                        room:setPlayerMark(p, mark, 0)
-                    end
-                end
+                rinsanFuncModule.clearAllMarksContains(room, p, self:objectName())
             end
         end
         return false
@@ -943,11 +940,7 @@ LuaYinyu = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                for _, mark in sgs.list(player:getMarkNames()) do
-                    if string.find(mark, self:objectName()) and player:getMark(mark) > 0 then
-                        room:setPlayerMark(player, mark, 0)
-                    end
-                end
+                rinsanFuncModule.clearAllMarksContains(room, player, self:objectName())
             end
         end
         return false
@@ -1300,11 +1293,7 @@ LuaShaika = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    for _, mark in sgs.list(p:getMarkNames()) do
-                        if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
-                            room:setPlayerMark(p, mark, 0)
-                        end
-                    end
+                    rinsanFuncModule.clearAllMarksContains(room, p, self:objectName())
                 end
             end
         end
@@ -1800,6 +1789,102 @@ LuaTaose = sgs.CreateTriggerSkill {
     end
 }
 
+LuaJiaren =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJiaren',
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Finish and room:askForSkillInvoke(player, self:objectName(), data) then
+                local judge =
+                    rinsanFuncModule.createJudgeStruct(
+                    {
+                        ['play_animation'] = true,
+                        ['who'] = player,
+                        ['reason'] = self:objectName()
+                    }
+                )
+                room:judge(judge)
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJiarenForbidSlash',
+                    {['from'] = player, ['arg'] = self:objectName(), ['arg2'] = judge.card:getSuitString()}
+                )
+                room:addPlayerMark(player, self:objectName() .. judge.card:getSuitString())
+            end
+        end
+    end
+}
+
+-- 清除标记
+LuaJiarenClear =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJiarenClear',
+    global = true,
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.TurnStart},
+    on_trigger = function(self, event, player, data, room)
+        rinsanFuncModule.clearAllMarksContains(room, player, 'LuaJiaren')
+    end
+}
+
+-- 不能成为【杀】的合法目标
+LuaJiarenForbid =
+    sgs.CreateProhibitSkill {
+    name = 'LuaJiarenForbid',
+    is_prohibited = function(self, from, to, card)
+        return card:isKindOf('Slash') and to:getMark('LuaJiaren' .. card:getSuitString()) > 0
+    end
+}
+
+LuaFabing =
+    sgs.CreateTriggerSkill {
+    name = 'LuaFabing',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.transfer or damage.chain then
+            return false
+        end
+        if damage.card and damage.card:isKindOf('Slash') then
+            if damage.nature ~= sgs.DamageStruct_Normal then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                damage.damage = damage.damage + 1
+                data:setValue(damage)
+            end
+        end
+    end
+}
+
+LuaChengsheng =
+    sgs.CreateTriggerSkill {
+    name = 'LuaChengsheng',
+    events = {sgs.EventPhaseChanging, sgs.CardEffected},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardEffected then
+            local effect = data:toCardEffect()
+            if effect.card and effect.card:isKindOf('TrickCard') then
+                if room:askForSkillInvoke(player, self:objectName(), data) then
+                    player:drawCards(1, self:objectName())
+                    if room:getCurrent():objectName() == player:objectName() then
+                        room:setPlayerFlag(player, 'LuaChengshengSkipDiscardPhase')
+                    end
+                end
+            end
+        else
+            local phase = data:toPhaseChange().to
+            if phase == sgs.Player_Discard then
+                if player:hasFlag('LuaChengshengSkipDiscardPhase') then
+                    if room:askForSkillInvoke(player, self:objectName(), data) then
+                        player:skip(phase)
+                    end
+                end
+            end
+        end
+    end
+}
+
 Cactus:addSkill(LuaBaipiao)
 SkillAnjiang:addSkill(LuaGeidian)
 SkillAnjiang:addSkill(LuaWanneng)
@@ -1837,3 +1922,8 @@ Yeniao:addSkill(LuaFumo)
 SkillAnjiang:addSkill(LuaFumoTargetMod)
 Linxi:addSkill(LuaTaose)
 Linxi:addSkill('hongyan')
+Ajie:addSkill(LuaJiaren)
+Ajie:addSkill(LuaFabing)
+Ajie:addSkill(LuaChengsheng)
+SkillAnjiang:addSkill(LuaJiarenClear)
+SkillAnjiang:addSkill(LuaJiarenForbid)

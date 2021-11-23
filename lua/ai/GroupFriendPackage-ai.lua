@@ -339,3 +339,6 @@ LuaJixieDamageEffect = function(self, to, nature, from, damageValue)
 end
 
 table.insert(sgs.ai_damage_effect, LuaJixieDamageEffect)
+
+sgs.ai_skill_invoke.LuaJiaren = true
+sgs.ai_skill_invoke.LuaChengsheng = true
