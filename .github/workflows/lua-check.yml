@@ -64,12 +64,17 @@ jobs:
           echo "$latest_commit_sha"
           
           echo "Get name of author of the latest commit:"
-          latest_commit_author=$(echo "$latest_commit" | jq -r '.author.name')
-          echo "$latest_commit_author"
+          latest_commit_author=$(echo "$latest_commit" | jq -r '.commit.author.name')
+          echo "$latest_commit_author_name"
+          
+          echo "Get email of author of the latest commit:"
+          latest_commit_author_email=$(echo "$latest_commit" | jq -r '.commit.author.email')
+          echo "$latest_commit_author_email"
           
           echo "latest_commit_sha=${latest_commit_sha}" >> $GITHUB_ENV
           echo "latest_commit_message=${latest_commit_message}" >> $GITHUB_ENV
-          echo "latest_commit_author=${latest_commit_author}" >> $GITHUB_ENV
+          echo "latest_commit_author_name=${latest_commit_author_name}" >> $GITHUB_ENV
+          echo "latest_commit_author_email=${latest_commit_author_email}" >> $GITHUB_ENV
       - name: "Send Email"
         uses: dawidd6/action-send-mail@v3
         with:
@@ -101,7 +106,7 @@ jobs:
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
             ### 最新的提交：
-            Author: $${{env.latest_commit_author}}
+            Author: $${{env.latest_commit_author_name}}($${{env.latest_commit_author_email}})
             
             Commit SHA: ${{env.latest_commit_sha}}
             
