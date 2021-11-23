@@ -108,9 +108,9 @@ jobs:
             ### 最新的提交：
             Author: ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
             
-            Commit SHA: ${{env.latest_commit_sha}}
+            SHA: ${{env.latest_commit_sha}}
             
-            Commit Message: ${{env.latest_commit_message}}
+            Message: ${{env.latest_commit_message}}
             
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
