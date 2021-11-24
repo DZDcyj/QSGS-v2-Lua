@@ -33,6 +33,48 @@ jobs:
     runs-on: ubuntu-latest
     needs: Lua-Format-Check
     steps:
+      - name: List commits on the pull request
+        run: |
+          response=$(curl --request GET \
+          --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits' \
+          --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'Accept: application/vnd.github.v3+json' \
+          --header 'Content-Type: application/json')
+          
+          echo $response > response.json
+
+      - name: Get latest commit
+        run: |
+          echo "Get length of the array:"
+          length=$(jq 'length' response.json)
+
+          echo "Get index of the latest commit:"
+          index=$(($length - 1))
+
+          echo "Get context of the latest commit:"
+          latest_commit=$(jq --argjson index $index '.[$index]' response.json)
+          echo "$latest_commit"
+
+          echo "Get commit message of the latest commit:"
+          latest_commit_message=$(echo "$latest_commit" | jq -r '.commit.message')
+          echo "$latest_commit_message"
+
+          echo "Get commit SHA of the latest commit:"
+          latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
+          echo "$latest_commit_sha"
+          
+          echo "Get name of author of the latest commit:"
+          latest_commit_author_name=$(echo "$latest_commit" | jq -r '.commit.author.name')
+          echo "$latest_commit_author_name"
+          
+          echo "Get email of author of the latest commit:"
+          latest_commit_author_email=$(echo "$latest_commit" | jq -r '.commit.author.email')
+          echo "$latest_commit_author_email"
+          
+          echo "latest_commit_sha=${latest_commit_sha}" >> $GITHUB_ENV
+          echo "latest_commit_message=${latest_commit_message}" >> $GITHUB_ENV
+          echo "latest_commit_author_name=${latest_commit_author_name}" >> $GITHUB_ENV
+          echo "latest_commit_author_email=${latest_commit_author_email}" >> $GITHUB_ENV
       - name: "Send Email"
         uses: dawidd6/action-send-mail@v3
         with:
@@ -53,7 +95,23 @@ jobs:
           # Optional whether this connection use TLS (default is true if server_port is 465)
           secure: true
           # Optional plain body:
-          body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
+          # body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
+          # Using Markdown
+          html_body: |
+            ## ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review
+            ${{github.actor}} 想要将分支 ${{github.head_ref}} 上的 ${{github.event.pull_request.commits}} 个提交合并到 ${{github.base_ref}} 分支
+            
+            Pull Request 标题：${{github.event.pull_request.title}}
+            
+            Pull Request 地址：${{github.event.pull_request.html_url}}
+
+            ### 最新的提交：
+            Author: ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
+            
+            SHA: ${{env.latest_commit_sha}}
+            
+            Message: ${{env.latest_commit_message}}
+            
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
           # Optional converting Markdown to HTML (set content_type to text/html too):
