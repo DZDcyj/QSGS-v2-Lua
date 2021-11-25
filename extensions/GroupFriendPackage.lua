@@ -626,7 +626,8 @@ LuaYangjing =
         sgs.EventPhaseEnd,
         sgs.CardFinished,
         sgs.DamageCaused,
-        sgs.TargetSpecified
+        sgs.TargetSpecified,
+        sgs.BeforeCardsMove
     },
     global = true,
     on_trigger = function(self, event, player, data, room)
@@ -702,7 +703,26 @@ LuaYangjing =
                 room:addPlayerMark(p, 'LuaYangjingDamageUp', x)
                 room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, player:objectName(), p:objectName())
             end
+        elseif event == sgs.BeforeCardsMove then
+            local move = data:toMoveOneTime()
+            if
+                rinsanFuncModule.RIGHT(self, player) and rinsanFuncModule.lostCard(move, player) and
+                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD)
+             then
+                local x = 0
+                for _, id in sgs.qlist(move.card_ids) do
+                    local curr_card = sgs.Sanguosha:getCard(id)
+                    if curr_card:isKindOf('Slash') then
+                        x = x + 1
+                    end
+                end
+                if x > 0 then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    player:gainMark('@LuaJing', x)
+                end
+            end
         end
+        return false
     end
 }
 
@@ -722,29 +742,42 @@ LuaYangjingTargetMod =
 LuaTuci =
     sgs.CreateTriggerSkill {
     name = 'LuaTuci',
-    events = {sgs.TargetSpecified},
+    events = {sgs.TargetSpecified, sgs.PreCardUsed},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
         if not use.card:isKindOf('Slash') then
             return false
         end
-        local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
-        local index = 1
-        for _, p in sgs.qlist(use.to) do
-            if not player:isAlive() then
-                break
+        if event == sgs.TargetSpecified then
+            local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
+            local index = 1
+            for _, p in sgs.qlist(use.to) do
+                if not player:isAlive() then
+                    break
+                end
+                if p:isAlive() and p:distanceTo(player) < player:getAttackRange() + player:getMark('@LuaJing') then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = p})
+                    jink_table[index] = 0
+                end
+                index = index + 1
             end
-            if p:isAlive() and p:distanceTo(player) < player:getAttackRange() + player:getMark('@LuaJing') then
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                rinsanFuncModule.sendLogMessage(room, '#NoJink', {['from'] = p})
-                jink_table[index] = 0
+            local jink_data = sgs.QVariant()
+            jink_data:setValue(Table2IntList(jink_table))
+            player:setTag('Jink_' .. use.card:toString(), jink_data)
+        elseif event == sgs.PreCardUsed then
+            if use.from:objectName() == player:objectName() then
+                for _, p in sgs.qlist(use.to) do
+                    if not player:isAlive() then
+                        break
+                    end
+                    if p:isAlive() and p:distanceTo(player) < player:getAttackRange() + player:getMark('@LuaJing') then
+                        p:addQinggangTag(use.card)
+                    end
+                end
             end
-            index = index + 1
         end
-        local jink_data = sgs.QVariant()
-        jink_data:setValue(Table2IntList(jink_table))
-        player:setTag('Jink_' .. use.card:toString(), jink_data)
         return false
     end
 }
