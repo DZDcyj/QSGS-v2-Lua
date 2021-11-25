@@ -5,4 +5,4 @@ ownership_rules:
     - name: lua core codes
       path: lua/**/*
     - name: documentations
-      path: /**/*
+      path: ./
