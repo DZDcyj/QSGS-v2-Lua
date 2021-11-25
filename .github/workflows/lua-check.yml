@@ -98,8 +98,8 @@ jobs:
           # body: ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review。
           # Using Markdown
           html_body: |
-            ## ${{github.actor}} 发起 Pull Request，请尽快进行 Code Review
-            ${{github.actor}} 想要将分支 ${{github.head_ref}} 上的 ${{github.event.pull_request.commits}} 个提交合并到 ${{github.base_ref}} 分支
+            ## ${{github.event.pull_request.user.login}} 发起 Pull Request，请尽快进行 Code Review
+            ${{github.event.pull_request.user.login}} 想要将分支 ${{github.head_ref}} 上的 ${{github.event.pull_request.commits}} 个提交合并到 ${{github.base_ref}} 分支
             
             Pull Request 标题：${{github.event.pull_request.title}}
             
@@ -108,10 +108,10 @@ jobs:
             ### 最新的提交：
             Author: ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
             
-            SHA: ${{env.latest_commit_sha}}
-            
             Message: ${{env.latest_commit_message}}
             
+            SHA: ${{env.latest_commit_sha}}
+                        
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
           # Optional converting Markdown to HTML (set content_type to text/html too):
