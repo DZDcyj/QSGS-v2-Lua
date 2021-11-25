@@ -1,7 +1,8 @@
 ownership_rules:
-  global_allowed_users: [DZDcyj, Rinkosanvsky]
   directory_matching_rules:
     - name: general codes
       path: extensions/**/*
     - name: lua core codes
       path: lua/**/*
+    - name: root
+      path: /
