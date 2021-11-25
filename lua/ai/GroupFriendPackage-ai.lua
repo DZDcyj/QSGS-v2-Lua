@@ -238,9 +238,16 @@ end
 
 -- 情欲
 sgs.ai_skill_choice['LuaQingyu'] = function(self, choices)
-    -- draw1 和 cancel
+    -- 选项为 LuaQingyuChoice1 LuaQingyuChoice2 cancel
+    -- 对应 摸牌、加上限、取消
     local items = choices:split('+')
-    return items[1]
+    -- 手牌数少就摸牌
+    if table.contains(items, 'LuaQingyuChoice1') then
+        if self.player:getHandcardNum() < self.player:getMaxCards() then
+            return 'LuaQingyuChoice1'
+        end
+    end
+    return 'LuaQingyuChoice2'
 end
 
 -- 影噬

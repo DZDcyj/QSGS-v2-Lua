@@ -97,6 +97,19 @@ $ brew install git
 ### lua
 这个目录下放有 AI 文件以及抽离出来的公共方法调用部分
 
+添加 AI 伤害判断后，smart-ai 文件需要同步更新
+
+**请在 smart-ai.lua 文件中添加如下代码**
+```
+for _, callback in ipairs(sgs.ai_damage_effect) do
+    if type(callback) == "function" then
+        -- 在最后添加 damage 参数，以传入伤害值
+        local is_effective = callback(self, to, nature, from, damage)
+        if not is_effective then return false end
+    end
+end
+```
+
 ## 当前收录的包和角色
 ### 群友包
 - 仙人掌
@@ -190,14 +203,14 @@ on_phasechange = function(self, player)
     local invoke = false
     -- 这里使用了未定义的 room，添加即可
     local room = player:getRoom()
-	for _, p in sgs.qlist(room:getAlivePlayers()) do
-		if not invoke then
-			invoke = not p:isChained()
-		end
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+	if not invoke then
+		invoke = not p:isChained()
 	end
-	if invoke and player:getPhase() == sgs.Player_Finish and player:isKongcheng() and player:getHp() > 0 then
-		player:getRoom():askForUseCard(player, "@@jishe", "@jishe")
-	end
+    end
+    if invoke and player:getPhase() == sgs.Player_Finish and player:isKongcheng() and player:getHp() > 0 then
+	player:getRoom():askForUseCard(player, "@@jishe", "@jishe")
+    end
 end
 ```
 
