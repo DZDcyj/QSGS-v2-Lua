@@ -1,7 +1,7 @@
 ownership_rules:
   directory_matching_rules:
     - name: documentations
-      path: *
+      path: /**
     - name: general codes
       path: extensions/**/*
     - name: lua core codes
