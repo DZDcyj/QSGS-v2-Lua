@@ -190,14 +190,14 @@ on_phasechange = function(self, player)
     local invoke = false
     -- 这里使用了未定义的 room，添加即可
     local room = player:getRoom()
-	for _, p in sgs.qlist(room:getAlivePlayers()) do
-		if not invoke then
-			invoke = not p:isChained()
-		end
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+	if not invoke then
+		invoke = not p:isChained()
 	end
-	if invoke and player:getPhase() == sgs.Player_Finish and player:isKongcheng() and player:getHp() > 0 then
-		player:getRoom():askForUseCard(player, "@@jishe", "@jishe")
-	end
+    end
+    if invoke and player:getPhase() == sgs.Player_Finish and player:isKongcheng() and player:getHp() > 0 then
+	player:getRoom():askForUseCard(player, "@@jishe", "@jishe")
+    end
 end
 ```
 
