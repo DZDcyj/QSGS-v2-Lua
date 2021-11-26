@@ -36,23 +36,20 @@ LuaBaipiao =
     events = {sgs.CardsMoveOneTime},
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
-        if player:hasSkill(self:objectName()) then
-            if
-                (move.from and (move.from:objectName() == player:objectName()) and
-                    (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip)))
-             then
-                if (move.to_place == sgs.Player_DiscardPile) then
-                    if
-                        not ((rinsanFuncModule.moveBasicReasonCompare(
-                            move.reason.m_reason,
-                            sgs.CardMoveReason_S_REASON_USE
-                        )) or
-                            (rinsanFuncModule.moveBasicReasonCompare(
-                                move.reason.m_reason,
-                                sgs.CardMoveReason_S_REASON_RESPONSE
-                            )) or
-                            move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP)
-                     then
+        if rinsanFuncModule.RIGHT(self, player) then
+            if rinsanFuncModule.lostCard(move, player) then
+                -- 当你的牌因使用、打出、重铸、给出、更换装备而失去时，不可以触发
+                local notTriggerable =
+                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_USE) or
+                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RESPONSE) or
+                    rinsanFuncModule.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RECAST) or
+                    move.reason.m_reason == sgs.CardMoveReason_S_REASON_GIVE or
+                    move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
+                if not notTriggerable then
+                    if move.to and move.to:objectName() ~= player:objectName() then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        player:drawCards(1, self:objectName())
+                    else
                         local targets = sgs.SPlayerList()
                         for _, p in sgs.qlist(room:getAlivePlayers()) do
                             if not p:isAllNude() then
