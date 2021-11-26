@@ -183,37 +183,9 @@ sgs.ai_skill_invoke.LuaPaozhuan = function(self, data)
     return true
 end
 
--- 榨汁
-sgs.ai_skill_invoke.LuaZhazhi = function(self, data)
-    local target = data:toPlayer()
-    if self:isFriend(target) then
-        return false
-    end
-    if
-        self:getCardsNum('Slash', target) < 1 and self.player:getHp() > 1 and not self:canHit(self.player, target) and
-            not (target:hasWeapon('double_sword') and self.player:getGender() ~= target:getGender())
-     then
-        return true
-    end
-    if
-        sgs.card_lack[target:objectName()]['Slash'] == 1 or self:needLeiji(self.player, target) or
-            self:getDamagedEffects(self.player, target, true) or
-            self:needToLoseHp(self.player, target, true)
-     then
-        return true
-    end
-    if self:getOverflow() and self:getCardsNum('Jink') > 1 then
-        return true
-    end
-    if target:isWeak() then
-        return true
-    end
-    return not self:isWeak()
-end
-
 -- 榨汁伤害判断
 LuaZhazhiDamageEffect = function(self, to, nature, from, damageValue)
-    local count = damageValue
+    local count = damageValue or 1
     for _, mark in sgs.list(from:getMarkNames()) do
         if string.find(mark, 'LuaZhazhiDebuff') then
             count = count - from:getMark(mark)
@@ -359,8 +331,9 @@ end
 
 -- 机械减伤害
 LuaJixieDamageEffect = function(self, to, nature, from, damageValue)
+    local count = damageValue or 1
     if to:hasSkill('LuaJixie') and nature == sgs.DamageStruct_Thunder then
-        return damageValue > 1
+        return count > 1
     end
     return true
 end

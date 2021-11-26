@@ -15,7 +15,7 @@ SPFuhua = sgs.General(extension, 'SPFuhua', 'qun', '4', true, true)
 SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, false, false, 3)
 Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '3', true)
-Anan = sgs.General(extension, 'Anan', 'qun', '4', false)
+Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true)
 Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
@@ -1183,56 +1183,55 @@ LuaZhazhi =
     events = {
         sgs.EventPhaseStart,
         sgs.DamageCaused,
-        sgs.EventPhaseChanging,
-        sgs.PreCardUsed,
-        sgs.Damage
+        sgs.EventPhaseChanging
     },
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Play then
                 local splayers = room:findPlayersBySkillName(self:objectName())
                 for _, sp in sgs.qlist(splayers) do
-                    if sp:objectName() ~= player:objectName() and player:inMyAttackRange(sp) then
+                    if sp:objectName() ~= player:objectName() and sp:faceUp() then
                         local data2 = sgs.QVariant()
                         data2:setValue(player)
                         if room:askForSkillInvoke(sp, self:objectName(), data2) then
+                            sp:turnOver()
                             room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, sp:objectName(), player:objectName())
-                            player:setFlags('LuaZhazhiTarget')
-                            local slash =
-                                room:askForUseSlashTo(player, sp, '@LuaZhazhi-slash:' .. sp:objectName(), false, true)
-                            if not slash then
-                                player:setFlags('-LuaZhazhiTarget')
+                            room:showAllCards(player)
+                            local choices = {}
+                            local tempSlash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                            -- 该角色可以对发动“榨汁”的角色使用【杀】时
+                            if not player:isCardLimited(tempSlash, sgs.Card_MethodUse) then
+                                -- 有杀或者黑色锦囊牌才可选择第一项
+                                for _, cd in sgs.qlist(player:getHandcards()) do
+                                    if cd:isKindOf('Slash') or (cd:isKindOf('TrickCard') and cd:isBlack()) then
+                                        table.insert(choices, 'LuaZhazhiChoice1')
+                                        break
+                                    end
+                                end
+                            end
+                            tempSlash:deleteLater()
+                            table.insert(choices, 'LuaZhazhiChoice2')
+                            local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                            if choice == 'LuaZhazhiChoice1' then
+                                local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                                for _, cd in sgs.qlist(player:getHandcards()) do
+                                    if cd:isKindOf('Slash') or (cd:isKindOf('TrickCard') and cd:isBlack()) then
+                                        slash:addSubcard(cd)
+                                    end
+                                end
+                                slash:setSkillName(self:objectName())
+                                -- 此【杀】需要计入出牌阶段次数
+                                room:useCard(sgs.CardUseStruct(slash, player, sp), true)
+                            else
                                 room:addPlayerMark(player, 'LuaZhazhiDebuff' .. sp:objectName())
                                 room:addPlayerMark(player, '@LuaZhazhi')
-                            else
-                                player:setFlags('-LuaZhazhiTarget')
-                                if not sp:hasFlag('LuaZhazhiDefenseFailed') then
-                                    sp:drawCards(1, self:objectName())
-                                    room:recover(sp, sgs.RecoverStruct(sp, nil, 1))
-                                    sp:setFlags('-LuaZhazhiDefenseFailed')
-                                end
                             end
                         end
                     end
                 end
             end
-        elseif event == sgs.PreCardUsed then
-            local use = data:toCardUse()
-            local slash = use.card
-            if use.from:hasFlag('LuaZhazhiTarget') then
-                room:setCardFlag(slash, 'LuaZhazhiSlash')
-            end
-        elseif event == sgs.Damage then
-            local damage = data:toDamage()
-            if damage.card then
-                if damage.card:hasFlag('LuaZhazhiSlash') then
-                    damage.to:setFlags('LuaZhazhiDefenseFailed')
-                    room:setCardFlag(damage.card, '-LuaZhazhiSlash')
-                end
-            end
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                -- room:sendCompulsoryTriggerLog(player, self:objectName())
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     for _, mark in sgs.list(p:getMarkNames()) do
                         if string.find(mark, 'LuaZhazhiDebuff') and p:getMark(mark) > 0 then
@@ -1266,6 +1265,67 @@ LuaZhazhi =
                     data:setValue(damage)
                 else
                     return true
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaJueding =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJueding',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.TurnedOver, sgs.DamageInflicted, sgs.EventLoseSkill, sgs.EventAcquireSkill},
+    on_trigger = function(self, event, player, data, room)
+        if (event ~= sgs.EventLoseSkill and event ~= sgs.EventAcquireSkill) and (not player:hasSkill(self:objectName())) then
+            return false
+        end
+        if event == sgs.TurnedOver then
+            if player:faceUp() then
+                -- 翻回来，解除卡牌限制
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJuedingAvailable',
+                    {['from'] = player, ['arg'] = self:objectName()}
+                )
+                room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
+            else
+                -- 进行卡牌限制
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJuedingDisable',
+                    {['from'] = player, ['arg'] = self:objectName()}
+                )
+                room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
+            end
+        elseif event == sgs.EventLoseSkill then
+            -- 失去技能时应当解除卡牌限制
+            if data:toString() == self:objectName() then
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJuedingAvailable',
+                    {['from'] = player, ['arg'] = self:objectName()}
+                )
+                room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
+            end
+        elseif event == sgs.DamageInflicted then
+            if not player:faceUp() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:turnOver()
+            end
+        elseif event == sgs.EventAcquireSkill then
+            if data:toString() == self:objectName() then
+                if not player:faceUp() then
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#LuaJuedingDisable',
+                        {['from'] = player, ['arg'] = self:objectName()}
+                    )
+                    room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
                 end
             end
         end
@@ -1947,6 +2007,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
+Anan:addSkill(LuaJueding)
 Erenlei:addSkill(LuaShaika)
 Erenlei:addSkill(LuaChutou)
 Yaoyu:addSkill(LuaYingshi)
