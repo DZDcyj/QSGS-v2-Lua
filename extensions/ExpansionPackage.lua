@@ -789,9 +789,17 @@ LuaYingyuan =
                             true
                         )
                         if target then
-                            room:obtainCard(target, togain)
-                            room:addPlayerMark(effect.from, 'LuaYingyuan' .. card:objectName() .. '-Clear')
+                            local reason =
+                                sgs.CardMoveReason(
+                                sgs.CardMoveReason_S_REASON_GIVE,
+                                effect.from:objectName(),
+                                target:objectName(),
+                                self:objectName(),
+                                nil
+                            )
                             room:broadcastSkillInvoke(self:objectName())
+                            room:moveCardTo(togain, effect.from, target, sgs.Player_PlaceHand, reason, false)
+                            room:addPlayerMark(effect.from, 'LuaYingyuan' .. card:objectName() .. '-Clear')
                         end
                     end
                 end
@@ -1628,7 +1636,11 @@ LuaJiyuan =
             if move.to and move.to:objectName() ~= player:objectName() then
                 if move.from and move.from:objectName() == player:objectName() then
                     local reason = move.reason.m_reason
-                    if reason == sgs.CardMoveReason_S_REASON_GIVE or reason == sgs.CardMoveReason_S_REASON_PREVIEWGIVE then
+                    -- 顺手牵羊等为此 reason_id
+                    if reason == sgs.CardMoveReason_S_REASON_EXTRACTION or reason == sgs.CardMoveReason_S_REASON_ROB then
+                        return false
+                    end
+                    if rinsanFuncModule.moveBasicReasonCompare(reason, sgs.CardMoveReason_S_REASON_GOTCARD) then
                         local target
                         for _, p in sgs.qlist(room:getAlivePlayers()) do
                             if p:objectName() == move.to:objectName() then
