@@ -15,7 +15,7 @@ SPFuhua = sgs.General(extension, 'SPFuhua', 'qun', '4', true, true)
 SPCactus = sgs.General(extension, 'SPCactus', 'wei', '4', true, false, false, 3)
 Qiumu = sgs.General(extension, 'Qiumu', 'qun', '3', true)
 SPRinsan = sgs.General(extension, 'SPRinsan', 'shu', '3', true)
-Anan = sgs.General(extension, 'Anan', 'qun', '4', false)
+Anan = sgs.General(extension, 'Anan', 'qun', '4', false, true)
 Erenlei = sgs.General(extension, 'Erenlei', 'wu', '3', true, true)
 Yaoyu = sgs.General(extension, 'Yaoyu', 'wu', '4', true)
 Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
@@ -1282,9 +1282,9 @@ LuaJueding =
     sgs.CreateTriggerSkill {
     name = 'LuaJueding',
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.TurnedOver, sgs.DamageInflicted, sgs.EventLoseSkill},
+    events = {sgs.TurnedOver, sgs.DamageInflicted, sgs.EventLoseSkill, sgs.EventAcquireSkill},
     on_trigger = function(self, event, player, data, room)
-        if event ~= sgs.EventLoseSkill and (not player:hasSkill(self:objectName())) then
+        if (event ~= sgs.EventLoseSkill and event ~= sgs.EventAcquireSkill) and (not player:hasSkill(self:objectName())) then
             return false
         end
         if event == sgs.TurnedOver then
@@ -1308,12 +1308,28 @@ LuaJueding =
         elseif event == sgs.EventLoseSkill then
             -- 失去技能时应当解除卡牌限制
             if data:toString() == self:objectName() then
+                rinsanFuncModule.sendLogMessage(
+                    room,
+                    '#LuaJuedingAvailable',
+                    {['from'] = player, ['arg'] = self:objectName()}
+                )
                 room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
             end
         elseif event == sgs.DamageInflicted then
             if not player:faceUp() then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 player:turnOver()
+            end
+        elseif event == sgs.EventAcquireSkill then
+            if data:toString() == self:objectName() then
+                if not player:faceUp() then
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#LuaJuedingDisable',
+                        {['from'] = player, ['arg'] = self:objectName()}
+                    )
+                    room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
+                end
             end
         end
         return false
