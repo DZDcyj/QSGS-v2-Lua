@@ -185,7 +185,7 @@ end
 
 -- 榨汁伤害判断
 LuaZhazhiDamageEffect = function(self, to, nature, from, damageValue)
-    local count = damageValue
+    local count = damageValue or 1
     for _, mark in sgs.list(from:getMarkNames()) do
         if string.find(mark, 'LuaZhazhiDebuff') then
             count = count - from:getMark(mark)
@@ -331,8 +331,9 @@ end
 
 -- 机械减伤害
 LuaJixieDamageEffect = function(self, to, nature, from, damageValue)
+    local count = damageValue or 1
     if to:hasSkill('LuaJixie') and nature == sgs.DamageStruct_Thunder then
-        return damageValue > 1
+        return count > 1
     end
     return true
 end
