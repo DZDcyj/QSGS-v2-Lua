@@ -6,6 +6,9 @@ extension = sgs.Package('ImpassePackage')
 
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+-- 引入封装函数包
+local rinsanFuncModule = require('QSanguoshaLuaFunction')
+
 -- 暴走标记
 BaozouMark = '@baozou'
 
@@ -150,3 +153,90 @@ LuaDaji =
 }
 
 SkillAnjiang:addSkill(LuaDaji)
+
+LuaGuzhan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaGuzhan',
+    events = {sgs.CardsMoveOneTime, sgs.EventAcquireSkill},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if
+                ((move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceEquip) or
+                    (move.from and move.from:objectName() == player:objectName()) and
+                        move.from_places:contains(sgs.Player_PlaceEquip))
+             then
+                if rinsanFuncModule.RIGHT(self, player) then
+                    if player:getWeapon() then
+                        room:detachSkillFromPlayer(player, 'paoxiao')
+                    else
+                        room:acquireSkill(player, 'paoxiao')
+                    end
+                end
+            end
+        elseif event == sgs.EventAcquireSkill then
+            if data:toString() == self:objectName() then
+                if not player:getWeapon() then
+                    room:acquireSkill(player, 'paoxiao')
+                end
+            end
+        end
+    end
+}
+
+SkillAnjiang:addSkill(LuaGuzhan)
+
+LuaJizhan =
+    sgs.CreateTriggerSkill {
+    name = 'LuaJizhan',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.Damage, sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Damage then
+            if player:getPhase() == sgs.Player_Play then
+                local damage = data:toDamage()
+                if damage.to:objectName() ~= player:objectName() and player:isWounded() then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    room:recover(player, sgs.RecoverStruct(nil, nil, damage.damage))
+                end
+            end
+        else
+            local move = data:toMoveOneTime()
+            local source = move.from
+            local target = move.to
+            if not source or source:objectName() ~= player:objectName() then
+                if not target or target:objectName() ~= player:objectName() then
+                    return false
+                end
+            end
+            if move.to_place ~= sgs.Player_PlaceHand then
+                if not move.from_places:contains(sgs.Player_PlaceHand) then
+                    return false
+                end
+            end
+            if player:getPhase() == sgs.Player_Discard then
+                return false
+            end
+            if player:getHandcardNum() < room:alivePlayerCount() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                player:drawCards(1, self:objectName())
+            end
+        end
+        return false
+    end
+}
+
+SkillAnjiang:addSkill(LuaJizhan)
+
+LuaDuduan =
+    sgs.CreateProhibitSkill {
+    name = 'LuaDuduan',
+    is_prohibited = function(self, from, to, card)
+        if to:hasSkill(self:objectName()) then
+            return card:isKindOf('DelayedTrick')
+        end
+    end
+}
+
+SkillAnjiang:addSkill(LuaDuduan)
