@@ -102,7 +102,7 @@ LuaFeiyang =
 LuaDizhu =
     sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
-    events = {sgs.BuryVictim, sgs.TurnStart},
+    events = {sgs.TurnStart},
     frequency = sgs.Skill_Compulsory,
     -- priority 调整为最优先
     priority = 10,
