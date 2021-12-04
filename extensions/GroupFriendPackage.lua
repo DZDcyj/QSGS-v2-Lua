@@ -723,11 +723,10 @@ LuaYangjing =
     end
 }
 
-LuaYangjingTargetMod =
-    sgs.CreateTargetModSkill {
-    name = 'LuaYangjingTargetMod',
-    pattern = 'Slash',
-    distance_limit_func = function(self, from, card)
+LuaYangjingAttackRange =
+    sgs.CreateAttackRangeSkill {
+    name = 'LuaYangjingAttackRange',
+    extra_func = function(self, from, card)
         if from:hasSkill('LuaYangjing') then
             return from:getMark('@LuaJing')
         else
@@ -1993,7 +1992,7 @@ SkillAnjiang:addSkill(LuaZibao)
 SkillAnjiang:addSkill(LuaSoutuVS)
 Rinsan:addSkill(LuaSoutu)
 SPFuhua:addSkill(LuaYangjing)
-SkillAnjiang:addSkill(LuaYangjingTargetMod)
+SkillAnjiang:addSkill(LuaYangjingAttackRange)
 SPFuhua:addSkill(LuaTuci)
 SPCactus:addSkill(LuaJuesha)
 SPCactus:addSkill(LuaMouhai)

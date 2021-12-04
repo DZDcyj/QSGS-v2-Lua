@@ -1448,13 +1448,12 @@ LuaJingxie =
     end
 }
 
-LuaJingxieTargetMod =
-    sgs.CreateTargetModSkill {
-    name = '#LuaJingxieTargetMod',
-    pattern = 'Slash',
-    distance_limit_func = function(self, from, card)
+LuaJingxieAttackRange =
+    sgs.CreateAttackRangeSkill {
+    name = '#LuaJingxieAttackRange',
+    extra_func = function(self, from, card)
         if from:hasSkill('LuaJingxie') and from:getMark('crossbow') > 0 then
-            return 3
+            return 2
         else
             return 0
         end
@@ -1553,7 +1552,7 @@ LuaQiaosi =
 
 ExMajun:addSkill(LuaJingxie)
 ExMajun:addSkill(LuaQiaosi)
-SkillAnjiang:addSkill(LuaJingxieTargetMod)
+SkillAnjiang:addSkill(LuaJingxieAttackRange)
 
 ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true)
 
