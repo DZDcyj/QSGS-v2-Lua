@@ -5054,8 +5054,7 @@ LuaFuhan =
                     player:loseAllMarks('@LuaFanghun')
                     player:loseMark('@LuaFuhan')
                     player:drawCards(x, self:objectName())
-                    local shu_generals =
-                        rinsanFuncModule.getFuhanShuGenerals(room, math.max(4, room:alivePlayerCount()))
+                    local shu_generals = rinsanFuncModule.getFuhanShuGenerals(math.max(4, room:alivePlayerCount()))
                     local index = 0
                     while index < 2 and #shu_generals > 0 and
                         room:askForChoice(player, self:objectName(), 'LuaFuhan+cancel') ~= 'cancel' do

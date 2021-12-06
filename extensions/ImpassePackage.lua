@@ -22,8 +22,8 @@ LuaSilve =
     frequency = sgs.Skill_Compulsory,
     events = {sgs.DrawNCards},
     on_trigger = function(self, event, player, data, room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
         if player:getMark(BaozouMark) == 0 then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
             data:setValue(player:getHp())
         else
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
@@ -154,39 +154,24 @@ LuaDaji =
 
 SkillAnjiang:addSkill(LuaDaji)
 
+-- 孤战
+-- 锁定技，当你没装备武器时，使用【杀】无次数限制
 LuaGuzhan =
-    sgs.CreateTriggerSkill {
+    sgs.CreateTargetModSkill {
     name = 'LuaGuzhan',
-    events = {sgs.CardsMoveOneTime, sgs.EventAcquireSkill},
-    frequency = sgs.Skill_Compulsory,
-    on_trigger = function(self, event, player, data, room)
-        if event == sgs.CardsMoveOneTime then
-            local move = data:toMoveOneTime()
-            if
-                ((move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceEquip) or
-                    (move.from and move.from:objectName() == player:objectName()) and
-                        move.from_places:contains(sgs.Player_PlaceEquip))
-             then
-                if rinsanFuncModule.RIGHT(self, player) then
-                    if player:getWeapon() then
-                        room:detachSkillFromPlayer(player, 'paoxiao')
-                    else
-                        room:acquireSkill(player, 'paoxiao')
-                    end
-                end
-            end
-        elseif event == sgs.EventAcquireSkill then
-            if data:toString() == self:objectName() then
-                if not player:getWeapon() then
-                    room:acquireSkill(player, 'paoxiao')
-                end
-            end
+    residue_func = function(self, player)
+        if player:hasSkill(self:objectName()) and not player:getWeapon() then
+            return 1000
+        else
+            return 0
         end
     end
 }
 
 SkillAnjiang:addSkill(LuaGuzhan)
 
+-- 激战
+-- 锁定技，出牌阶段，你每对其他角色造成一点伤害回复一点体力；当手牌小于存活的角色数时，你摸一张牌
 LuaJizhan =
     sgs.CreateTriggerSkill {
     name = 'LuaJizhan',
@@ -215,9 +200,6 @@ LuaJizhan =
                     return false
                 end
             end
-            if player:getPhase() == sgs.Player_Discard then
-                return false
-            end
             if player:getHandcardNum() < room:alivePlayerCount() then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 player:drawCards(1, self:objectName())
@@ -229,6 +211,8 @@ LuaJizhan =
 
 SkillAnjiang:addSkill(LuaJizhan)
 
+-- 独断
+-- 锁定技，你不能成为延时类锦囊的目标
 LuaDuduan =
     sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
@@ -240,3 +224,195 @@ LuaDuduan =
 }
 
 SkillAnjiang:addSkill(LuaDuduan)
+
+-- 初始化技能
+-- 调整全场血量，赋予随机技能
+-- 反正都这么阴间了，懒得调什么禁表，干就完了
+-- TODO：实际发现某些技能在做 BOSS 时过于离谱（放箭、Giao 云等），需要调整
+LuaBoss =
+    sgs.CreateTriggerSkill {
+    name = 'LuaBoss',
+    events = {sgs.TurnStart},
+    frequency = sgs.Skill_Compulsory,
+    -- priority 调整为最优先
+    priority = 10,
+    on_trigger = function(self, event, player, data, room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        room:addPlayerMark(player, self:objectName())
+
+        -- 避免触发暴走
+        room:setTag('BaozouNotInvoke', sgs.QVariant(true))
+
+        -- 设置初始血量，主要针对不满血的武将
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            local start_hp = rinsanFuncModule.getStartHp(p)
+            room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
+        end
+
+        -- 调整 BOSS 体力上限
+        local to_maxhp = 8
+        if player:getGeneral():getMaxHp() < 4 then
+            to_maxhp = 7
+        end
+        room:setPlayerProperty(player, 'maxhp', sgs.QVariant(to_maxhp))
+        room:setPlayerProperty(player, 'hp', sgs.QVariant(to_maxhp))
+        room:setTag('BaozouNotInvoke', sgs.QVariant(false))
+
+        -- 非 BOSS 获取随机技能
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            room:acquireSkill(p, rinsanFuncModule.getRandomGeneralSkill(room))
+        end
+
+        -- BOSS 获取技能
+        local skill_pair = rinsanFuncModule.random(0, 1)
+        if skill_pair == 1 then
+            room:acquireSkill(player, 'LuaSilve')
+            room:acquireSkill(player, 'LuaKedi')
+        else
+            room:acquireSkill(player, 'LuaJishi')
+            room:acquireSkill(player, 'LuaDaji')
+        end
+
+        -- 初始技能触发
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            -- 触发游戏开始时时机，例如先辅、怀橘
+            room:getThread():trigger(sgs.GameStart, room, p)
+
+            -- 涉及到摸初始牌的，补一下，例如挫锐、七星
+            local draw_data = sgs.QVariant(0)
+            room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
+            local to_draw = draw_data:toInt()
+            if to_draw > 0 then
+                p:drawCards(to_draw, self:objectName())
+            end
+        end
+
+        -- 手气卡
+        -- 避免“自书”触发
+        room:setTag('FirstRound', sgs.QVariant(true))
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            -- 在手气卡使用前先令所有技能失效，避免不必要的其他结算
+            local skills = p:getSkillList()
+            for _, skill in sgs.qlist(skills) do
+                room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
+            end
+            rinsanFuncModule.askForLuckCard(room, p)
+            -- 恢复所有技能
+            for _, skill in sgs.qlist(skills) do
+                room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
+            end
+        end
+        room:setTag('FirstRound', sgs.QVariant(false))
+
+        -- 初始技能触发
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            -- 摸牌后操作，例如七星
+            room:getThread():trigger(sgs.AfterDrawInitialCards, room, p)
+        end
+
+        -- 移除主公技
+        for _, skill in sgs.qlist(player:getSkillList()) do
+            if skill:isLordSkill() then
+                room:detachSkillFromPlayer(player, skill:objectName())
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsanFuncModule.RIGHT(self, target) and target:getMark(self:objectName()) == 0
+    end
+}
+
+SkillAnjiang:addSkill(LuaBoss)
+
+-- 暴走状态技能
+-- 进入暴走状态、判定相关
+-- TODO：处理无视防具的问题
+LuaBaozou =
+    sgs.CreateTriggerSkill {
+    name = 'LuaBaozou',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.HpChanged, sgs.MaxHpChanged, sgs.TurnStart, sgs.EventPhaseChanging, sgs.MarkChanged},
+    on_trigger = function(self, event, player, data, room)
+        if room:getTag('BaozouNotInvoke'):toBool() then
+            return false
+        end
+        if event == sgs.TurnStart then
+            if player:getMark(self:objectName()) == 0 then
+                return false
+            end
+            if player:getMark(BaozouMark) > 0 then
+                player:loseMark(BaozouMark)
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if p:hasFlag('LuaBaozouKill') then
+                        room:sendCompulsoryTriggerLog(p, self:objectName())
+                        room:killPlayer(p)
+                    end
+                end
+            end
+        elseif event == sgs.MarkChanged then
+            if data:toMark().name == BaozouMark then
+                if player:getMark(self:objectName()) > 0 then
+                    if player:getMark(BaozouMark) == 0 then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                            local judge =
+                                rinsanFuncModule.createJudgeStruct(
+                                {
+                                    ['who'] = p,
+                                    ['pattern'] = 'Peach,Analeptic|.|.|.',
+                                    ['reason'] = self:objectName(),
+                                    ['play_animation'] = true
+                                }
+                            )
+                            room:judge(judge)
+                            if not judge:isGood() then
+                                local x = p:getHp()
+                                room:loseHp(p, x)
+                                room:recover(p, sgs.RecoverStruct(nil, nil, x - 1))
+                            end
+                        end
+                        room:setPlayerFlag(player, 'LuaBaozouKill')
+                    end
+                end
+            end
+        else
+            if player:getMark(self:objectName()) > 0 then
+                return false
+            end
+            if player:hasSkill(self:objectName()) or player:getMark('LuaBoss') > 0 then
+                if player:getHp() <= 3 then
+                    room:addPlayerMark(player, self:objectName())
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    if player:getJudgingArea():length() > 0 then
+                        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                        for _, cd in sgs.qlist(player:getJudgingArea()) do
+                            slash:addSubcard(cd)
+                        end
+                        room:throwCard(slash, player)
+                    end
+                    -- 获得特殊技能
+                    room:acquireSkill(player, 'LuaGuzhan')
+                    room:acquireSkill(player, 'LuaJizhan')
+                    room:acquireSkill(player, 'LuaDuduan')
+
+                    -- 修正技能效果
+                    rinsanFuncModule.modifieSkillDescription(':LuaSilve', ':LuaSilveBaozou')
+                    rinsanFuncModule.modifieSkillDescription(':LuaKedi', ':LuaKediBaozou')
+                    rinsanFuncModule.modifieSkillDescription(':LuaJishi', ':LuaJishiBaozou')
+                    rinsanFuncModule.modifieSkillDescription(':LuaDaji', ':LuaDajiBaozou')
+                    room:setPlayerProperty(player, 'maxhp', sgs.QVariant(3))
+                    player:gainMark(BaozouMark, room:alivePlayerCount())
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+SkillAnjiang:addSkill(LuaBaozou)

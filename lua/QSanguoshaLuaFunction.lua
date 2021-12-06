@@ -88,7 +88,7 @@ end
 
 -- 获取可扶汉的武将 Table
 -- 暂时没有排除已获得所有技能的武将
-function getFuhanShuGenerals(room, general_num)
+function getFuhanShuGenerals(general_num)
     local general_names = sgs.Sanguosha:getLimitedGeneralNames()
     local shu_generals = {}
     for _, name in ipairs(general_names) do
@@ -652,6 +652,41 @@ function random(min, max)
         return math.floor(rand)
     end
     error('Invalid Input')
+end
+
+-- 获取随机未拥有技能
+function getRandomGeneralSkill(room)
+    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
+    local available_skills = {}
+    repeat
+        local random_general = general_names[random(1, #general_names)]
+        local general = sgs.Sanguosha:getGeneral(random_general)
+        for _, skill in sgs.qlist(general:getVisibleSkillList()) do
+            local have
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasSkill(skill:objectName()) then
+                    have = true
+                    break
+                end
+            end
+            if not have then
+                table.insert(available_skills, skill:objectName())
+            end
+        end
+    until #available_skills > 0
+    return available_skills[random(1, #available_skills)]
+end
+
+function modifieSkillDescription(translation, new_translation)
+    sgs.Sanguosha:addTranslationEntry(
+        translation,
+        '' ..
+            string.gsub(
+                sgs.Sanguosha:translate(translation),
+                sgs.Sanguosha:translate(translation),
+                sgs.Sanguosha:translate(new_translation)
+            )
+    )
 end
 
 -- Animate 参数，用于 doAnimate 方法
