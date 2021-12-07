@@ -411,7 +411,9 @@ LuaBaozou =
                             if not judge:isGood() then
                                 local x = p:getHp()
                                 room:loseHp(p, x)
-                                room:recover(p, sgs.RecoverStruct(nil, nil, x - 1))
+                                if x > 1 then
+                                    room:recover(p, sgs.RecoverStruct(nil, nil, x - 1))
+                                end
                             end
                         end
                         room:setPlayerFlag(player, 'LuaBaozouKill')
