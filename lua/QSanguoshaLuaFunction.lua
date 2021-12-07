@@ -655,7 +655,8 @@ function random(min, max)
 end
 
 -- 获取随机未拥有技能
-function getRandomGeneralSkill(room)
+-- banned_skills 为禁表
+function getRandomGeneralSkill(room, banned_skills, banned_skills_for_lord, is_lord)
     local general_names = sgs.Sanguosha:getLimitedGeneralNames()
     local available_skills = {}
     repeat
@@ -669,14 +670,17 @@ function getRandomGeneralSkill(room)
                     break
                 end
             end
-            if not have then
-                table.insert(available_skills, skill:objectName())
+            if (not have) and (not table.contains(banned_skills, skill:objectName())) then
+                if not is_lord or (is_lord and (not table.contains(banned_skills_for_lord, skill:objectName()))) then
+                    table.insert(available_skills, skill:objectName())
+                end
             end
         end
     until #available_skills > 0
     return available_skills[random(1, #available_skills)]
 end
 
+-- 修改技能描述
 function modifieSkillDescription(translation, new_translation)
     sgs.Sanguosha:addTranslationEntry(
         translation,
@@ -687,6 +691,16 @@ function modifieSkillDescription(translation, new_translation)
                 sgs.Sanguosha:translate(new_translation)
             )
     )
+end
+
+-- 获取随机武将
+function getRandomGeneral(banned_generals)
+    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
+    local random_general
+    repeat
+        random_general = general_names[random(1, #general_names)]
+    until not table.contains(banned_generals, random_general)
+    return random_general
 end
 
 -- Animate 参数，用于 doAnimate 方法

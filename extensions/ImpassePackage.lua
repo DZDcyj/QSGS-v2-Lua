@@ -225,10 +225,41 @@ LuaDuduan =
 
 SkillAnjiang:addSkill(LuaDuduan)
 
+LuaBannedGenerals = {
+    'yuanshao',
+    'yanliangwenchou',
+    'zhaoyun',
+    'guanyu',
+    'shencaocao'
+}
+
+LuaBannedBossSkills = {
+    'luanji',
+    'shuangxiong',
+    'longdan',
+    'wusheng',
+    'guixin'
+}
+
+LuaBannedSkills = {
+    'shenli',
+    'midao',
+    'kuangfeng',
+    'dawu',
+    'kuangbao',
+    'wuqian',
+    'shenfen',
+    'wumou',
+    'wuhun',
+    'tongxin',
+    'xinsheng',
+    'zaoxian',
+    'renjie',
+    'baiyin'
+}
+
 -- 初始化技能
 -- 调整全场血量，赋予随机技能
--- 反正都这么阴间了，懒得调什么禁表，干就完了
--- TODO：实际发现某些技能在做 BOSS 时过于离谱（放箭、Giao 云等），需要调整
 LuaBoss =
     sgs.CreateTriggerSkill {
     name = 'LuaBoss',
@@ -242,6 +273,12 @@ LuaBoss =
 
         -- 避免触发暴走
         room:setTag('BaozouNotInvoke', sgs.QVariant(true))
+
+        -- 调整 BOSS 武将
+        if table.contains(LuaBannedGenerals, player:getGeneralName()) then
+            local to_change = rinsanFuncModule.getRandomGeneral(LuaBannedGenerals)
+            room:changeHero(player, to_change, true, false, false, true)
+        end
 
         -- 设置初始血量，主要针对不满血的武将
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -258,9 +295,9 @@ LuaBoss =
         room:setPlayerProperty(player, 'hp', sgs.QVariant(to_maxhp))
         room:setTag('BaozouNotInvoke', sgs.QVariant(false))
 
-        -- 非 BOSS 获取随机技能
-        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-            room:acquireSkill(p, rinsanFuncModule.getRandomGeneralSkill(room))
+        -- 获取随机技能
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:acquireSkill(p, rinsanFuncModule.getRandomGeneralSkill(room, LuaBannedSkills, LuaBannedBossSkills, p:isLord()))
         end
 
         -- BOSS 获取技能
@@ -416,3 +453,94 @@ LuaBaozou =
 }
 
 SkillAnjiang:addSkill(LuaBaozou)
+
+LuaImpasseDeath =
+    sgs.CreateTriggerSkill {
+    name = 'LuaImpasseDeath',
+    events = {sgs.BuryVictim, sgs.Death},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.BuryVictim then
+            room:setTag('SkipNormalDeathProcess', sgs.QVariant(true))
+            player:bury()
+        else
+            if player:getMark('LuaBoss') == 0 then
+                return false
+            end
+            local death = data:toDeath()
+            local killer
+            if death.damage then
+                killer = death.damage.from
+            end
+            if killer then
+                if killer:isLord() then
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#LuaImpasseLordKill',
+                        {['from'] = killer, ['to'] = death.who, ['arg'] = 2}
+                    )
+                    killer:drawCards(2, self:objectName())
+                    if killer:getMaxHp() > 3 then
+                        rinsanFuncModule.sendLogMessage(
+                            room,
+                            '#LuaImpasseLordLostMaxHp',
+                            {['from'] = killer, ['to'] = death.who, ['arg'] = 1}
+                        )
+                        room:loseMaxHp(killer)
+                    end
+                else
+                    rinsanFuncModule.sendLogMessage(
+                        room,
+                        '#LuaImpasseRebelKill',
+                        {['from'] = killer, ['to'] = death.who}
+                    )
+                    killer:throwAllHandCards()
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        if target and target:getMark('LuaBoss') > 0 then
+            return true
+        end
+        for _, p in sgs.qlist(target:getSiblings()) do
+            if p:getMark('LuaBoss') > 0 then
+                return true
+            end
+        end
+        return false
+    end
+}
+
+SkillAnjiang:addSkill(LuaImpasseDeath)
+
+LuaImpasseArmor =
+    sgs.CreateTriggerSkill {
+    name = 'LuaImpasseArmor',
+    events = {sgs.TargetConfirmed, sgs.CardFinished},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getMark('LuaBaozou') == 0 then
+            return false
+        end
+        local use = data:toCardUse()
+        if use.from:objectName() ~= player:objectName() then
+            return false
+        end
+        if event == sgs.TargetConfirmed then
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                room:addPlayerMark(p, 'Armor_Nullified')
+            end
+        else
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                room:removePlayerMark(p, 'Armor_Nullified')
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+SkillAnjiang:addSkill(LuaImpasseArmor)
