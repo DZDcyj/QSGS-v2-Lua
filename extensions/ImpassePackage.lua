@@ -297,7 +297,10 @@ LuaBoss =
 
         -- 获取随机技能
         for _, p in sgs.qlist(room:getAlivePlayers()) do
-            room:acquireSkill(p, rinsanFuncModule.getRandomGeneralSkill(room, LuaBannedSkills, LuaBannedBossSkills, p:isLord()))
+            room:acquireSkill(
+                p,
+                rinsanFuncModule.getRandomGeneralSkill(room, LuaBannedSkills, LuaBannedBossSkills, p:isLord())
+            )
         end
 
         -- BOSS 获取技能
@@ -363,7 +366,6 @@ SkillAnjiang:addSkill(LuaBoss)
 
 -- 暴走状态技能
 -- 进入暴走状态、判定相关
--- TODO：处理无视防具的问题
 LuaBaozou =
     sgs.CreateTriggerSkill {
     name = 'LuaBaozou',
@@ -378,6 +380,7 @@ LuaBaozou =
                 return false
             end
             if player:getMark(BaozouMark) > 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
                 player:loseMark(BaozouMark)
             end
         elseif event == sgs.EventPhaseChanging then
@@ -483,10 +486,23 @@ LuaImpasseDeath =
                     if killer:getMaxHp() > 3 then
                         rinsanFuncModule.sendLogMessage(
                             room,
-                            '#LuaImpasseLordLostMaxHp',
+                            '#LuaImpasseLordLoseMaxHp',
                             {['from'] = killer, ['to'] = death.who, ['arg'] = 1}
                         )
                         room:loseMaxHp(killer)
+                    end
+                    -- 如果标记大于场上反贼数，失去一个
+                    if killer:getMark(BaozouMark) > room:alivePlayerCount() - 1 then
+                        rinsanFuncModule.sendLogMessage(
+                            room,
+                            '#LuaImpasseLordLoseMark',
+                            {
+                                ['from'] = killer,
+                                ['arg'] = killer:getMark(BaozouMark),
+                                ['arg2'] = room:alivePlayerCount() - 1
+                            }
+                        )
+                        killer:loseMark(BaozouMark)
                     end
                 else
                     rinsanFuncModule.sendLogMessage(
