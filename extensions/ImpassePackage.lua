@@ -35,6 +35,9 @@ LuaSilve =
             data:setValue(0)
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
     end
 }
 
@@ -56,6 +59,9 @@ LuaKedi =
             player:drawCards(x, self:objectName())
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
     end
 }
 
@@ -90,6 +96,9 @@ LuaJishi =
                 end
             end
         end
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
     end
 }
 
@@ -149,6 +158,9 @@ LuaDaji =
             end
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
     end
 }
 
@@ -206,6 +218,9 @@ LuaJizhan =
             end
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
     end
 }
 
