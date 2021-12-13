@@ -261,17 +261,19 @@ function LuaDoQiaosiShow(room, player, dummyCard)
         index = index + 1
     end
     local toGiveCardTypes = LuaQiaosiGetCards(room, chosenRoles)
+    local about_to_obtain = {}
     for _, cardTypes in ipairs(toGiveCardTypes) do
-        local params = {['existed'] = {}, ['findDiscardPile'] = true}
+        local params = {['existed'] = about_to_obtain, ['findDiscardPile'] = true}
         if #cardTypes == 2 then
             -- 确定的，王、将
             params['type'] = cardTypes[1]
             local card1 = obtainTargetedTypeCard(room, params)
             if card1 then
-                params['existed'] = {card1:objectName()}
+                table.insert(about_to_obtain, card1:getId())
                 dummyCard:addSubcard(card1)
                 local card2 = obtainTargetedTypeCard(room, params)
                 if card2 then
+                    table.insert(about_to_obtain, card2:getId())
                     dummyCard:addSubcard(card2)
                 end
             end
@@ -287,6 +289,7 @@ function LuaDoQiaosiShow(room, player, dummyCard)
             params['type'] = type
             local card = obtainTargetedTypeCard(room, params)
             if card then
+                table.insert(about_to_obtain, card:getId())
                 dummyCard:addSubcard(card)
             end
         end
@@ -296,13 +299,12 @@ function LuaDoQiaosiShow(room, player, dummyCard)
 end
 
 -- 巧思获得牌
-function LuaQiaosiGetCards(room, roleType) --
-    --[[
-        王、商、工、农、士、将
-        King、Merchant、Artisan、Farmer、Scholar、General
-        roleType 代表转的人类型，为 Table 类型
-        例如{"king", "artisan", "general"}
-    ]] local results = {}
+function LuaQiaosiGetCards(room, roleType)
+    -- 王、商、工、农、士、将
+    -- King、Merchant、Artisan、Farmer、Scholar、General
+    -- roleType 代表转的人类型，为 Table 类型
+    -- 例如{"king", "artisan", "general"}
+    local results = {}
     local kingActivated = table.contains(roleType, 'king')
     local generalActivated = table.contains(roleType, 'general')
     for _, type in ipairs(roleType) do
@@ -390,14 +392,14 @@ function obtainTargetedTypeCard(room, params)
     if type == nil then
         return nil
     end
-    local existedNames = params['existed']
-    if existedNames == nil then
-        existedNames = {}
+    local existedIds = params['existed']
+    if existedIds == nil then
+        existedIds = {}
     end
     local findDiscardPile = params['findDiscardPile']
     local card
     local checker = function(_card)
-        return _card:isKindOf(type) and not table.contains(existedNames, _card:objectName())
+        return _card:isKindOf(type) and not table.contains(existedIds, _card:getId())
     end
     card = obtainCardFromPile(checker, room:getDrawPile())
     if not card and findDiscardPile then
