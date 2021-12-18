@@ -681,7 +681,7 @@ function getRandomGeneralSkill(room, banned_skills, banned_skills_for_lord, is_l
 end
 
 -- 修改技能描述
-function modifieSkillDescription(translation, new_translation)
+function modifySkillDescription(translation, new_translation)
     sgs.Sanguosha:addTranslationEntry(
         translation,
         '' ..
@@ -701,6 +701,11 @@ function getRandomGeneral(banned_generals)
         random_general = general_names[random(1, #general_names)]
     until not table.contains(banned_generals, random_general)
     return random_general
+end
+
+-- 判断是否处于暴走状态
+function isBaozou(player)
+    return player:getMark('@baozou') or player:hasFlag('LuaBaozouKill')
 end
 
 -- Animate 参数，用于 doAnimate 方法

@@ -23,7 +23,7 @@ LuaSilve =
     events = {sgs.DrawNCards},
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
-        if player:getMark(BaozouMark) == 0 then
+        if rinsanFuncModule.isBaozou(player) then
             data:setValue(player:getHp())
         else
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
@@ -52,7 +52,7 @@ LuaKedi =
     events = {sgs.Damaged},
     on_trigger = function(self, event, player, data, room)
         local x = player:getHp()
-        if player:getMark(BaozouMark) > 0 then
+        if rinsanFuncModule.isBaozou(player) then
             x = room:alivePlayerCount()
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
@@ -79,7 +79,7 @@ LuaJishi =
         if player:getPhase() == sgs.Player_Start then
             local x = player:getHp()
             local loseHpNum = 1
-            if player:getMark(BaozouMark) > 0 then
+            if rinsanFuncModule.isBaozou(player) then
                 x = player:getMaxHp() + room:alivePlayerCount()
                 loseHpNum = 2
             end
@@ -106,7 +106,7 @@ LuaJishiMaxCards =
     sgs.CreateMaxCardsSkill {
     name = '#LuaJishiMaxCards',
     fixed_func = function(self, target)
-        if target:hasSkill('LuaJishi') and target:getMark(BaozouMark) > 0 then
+        if (target:hasSkill('LuaJishi') or target:getMark('LuaBoss') > 0) and rinsanFuncModule.isBaozou(target) then
             return target:getAliveSiblings():length() + 1
         end
         return -1
@@ -130,7 +130,7 @@ LuaDaji =
             if player:getPhase() == sgs.Player_Finish then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local x = player:getHp()
-                if player:getMark(BaozouMark) > 0 then
+                if rinsanFuncModule.isBaozou(player) then
                     x = room:alivePlayerCount()
                 end
                 player:drawCards(x, self:objectName())
@@ -143,7 +143,7 @@ LuaDaji =
                 data:setValue(damage)
             end
         elseif event == sgs.TargetConfirmed then
-            if player:getMark(BaozouMark) == 0 or (not player:isWounded()) then
+            if (not rinsanFuncModule.isBaozou(player)) or (not player:isWounded()) then
                 return false
             end
             local use = data:toCardUse()
@@ -172,7 +172,7 @@ LuaGuzhan =
     sgs.CreateTargetModSkill {
     name = 'LuaGuzhan',
     residue_func = function(self, player)
-        if player:hasSkill(self:objectName()) and not player:getWeapon() then
+        if (player:hasSkill(self:objectName()) or player:getMark('LuaBoss') > 0) and not player:getWeapon() then
             return 1000
         else
             return 0
@@ -232,7 +232,7 @@ LuaDuduan =
     sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
     is_prohibited = function(self, from, to, card)
-        if to:hasSkill(self:objectName()) then
+        if (to:hasSkill(self:objectName()) or to:getMark('LuaBoss') > 0) then
             return card:isKindOf('DelayedTrick')
         end
     end
@@ -240,6 +240,7 @@ LuaDuduan =
 
 SkillAnjiang:addSkill(LuaDuduan)
 
+-- BOSS 武将禁表
 LuaBannedGenerals = {
     'yuanshao',
     'yanliangwenchou',
@@ -248,6 +249,7 @@ LuaBannedGenerals = {
     'shencaocao'
 }
 
+-- BOSS 随机技能禁表
 LuaBannedBossSkills = {
     'luanji',
     'shuangxiong',
@@ -256,6 +258,7 @@ LuaBannedBossSkills = {
     'guixin'
 }
 
+-- 随机技能禁表
 LuaBannedSkills = {
     'shenli',
     'midao',
@@ -456,10 +459,10 @@ LuaBaozou =
                     room:acquireSkill(player, 'LuaDuduan')
 
                     -- 修正技能效果
-                    rinsanFuncModule.modifieSkillDescription(':LuaSilve', ':LuaSilveBaozou')
-                    rinsanFuncModule.modifieSkillDescription(':LuaKedi', ':LuaKediBaozou')
-                    rinsanFuncModule.modifieSkillDescription(':LuaJishi', ':LuaJishiBaozou')
-                    rinsanFuncModule.modifieSkillDescription(':LuaDaji', ':LuaDajiBaozou')
+                    rinsanFuncModule.modifySkillDescription(':LuaSilve', ':LuaSilveBaozou')
+                    rinsanFuncModule.modifySkillDescription(':LuaKedi', ':LuaKediBaozou')
+                    rinsanFuncModule.modifySkillDescription(':LuaJishi', ':LuaJishiBaozou')
+                    rinsanFuncModule.modifySkillDescription(':LuaDaji', ':LuaDajiBaozou')
                     room:setPlayerProperty(player, 'maxhp', sgs.QVariant(3))
                     player:gainMark(BaozouMark, room:alivePlayerCount())
                 end
