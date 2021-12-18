@@ -183,7 +183,7 @@ LuaGuzhan =
 SkillAnjiang:addSkill(LuaGuzhan)
 
 -- 激战
--- 锁定技，出牌阶段，你每对其他角色造成一点伤害回复一点体力；当手牌小于存活的角色数时，你摸一张牌
+-- 锁定技，出牌阶段，你每对其他角色造成一点伤害回复一点体力；当手牌小于存活的角色数时，你将手牌摸至存活角色数
 LuaJizhan =
     sgs.CreateTriggerSkill {
     name = 'LuaJizhan',
@@ -214,7 +214,7 @@ LuaJizhan =
             end
             if player:getHandcardNum() < room:alivePlayerCount() then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                player:drawCards(1, self:objectName())
+                player:drawCards(room:alivePlayerCount() - player:getHandcardNum(), self:objectName())
             end
         end
         return false
@@ -346,7 +346,6 @@ LuaBoss =
         end
 
         -- 手气卡
-        -- 避免“自书”触发
         room:setTag('FirstRound', sgs.QVariant(true))
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 在手气卡使用前先令所有技能失效，避免不必要的其他结算
