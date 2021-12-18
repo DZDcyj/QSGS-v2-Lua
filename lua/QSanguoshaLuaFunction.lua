@@ -262,12 +262,15 @@ function LuaDoQiaosiShow(room, player, dummyCard)
     end
     local toGiveCardTypes = LuaQiaosiGetCards(room, chosenRoles)
     local about_to_obtain = {}
+    -- 预期的总牌数
+    local expected_length = 0
     for _, cardTypes in ipairs(toGiveCardTypes) do
         local params = {['existed'] = about_to_obtain, ['findDiscardPile'] = true}
         if #cardTypes == 2 then
             -- 确定的，王、将
             params['type'] = cardTypes[1]
             local card1 = obtainTargetedTypeCard(room, params)
+            expected_length = expected_length + 2
             if card1 then
                 table.insert(about_to_obtain, card1:getId())
                 dummyCard:addSubcard(card1)
@@ -280,6 +283,7 @@ function LuaDoQiaosiShow(room, player, dummyCard)
         else
             -- 不确定的，要抽奖
             local currType = random(1, 5)
+            expected_length = expected_length + 1
             local type = cardTypes[currType]
             if string.find(type, 'JinkOrPeach') then
                 type = LuaGetRoleCardType('scholarKing', true, true)
@@ -295,6 +299,10 @@ function LuaDoQiaosiShow(room, player, dummyCard)
         end
     end
     player:obtainCard(dummyCard)
+    -- 直接从牌堆顶获取差额牌
+    if dummyCard:subcardsLength() < expected_length then
+        dummyCard:addSubcards(room:getNCards(expected_length - dummyCard:subCardsLength()))
+    end
     return dummyCard:subcardsLength()
 end
 
