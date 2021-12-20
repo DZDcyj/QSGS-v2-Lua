@@ -18,6 +18,10 @@ BossMark = 'LuaBoss'
 -- 已经进入暴走状态标记
 BaozouStatusMark = 'LuaBaozou'
 
+local boss_can_trigger = function(self, target)
+    return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
+end
+
 -- BOSS 技能
 
 -- 思略
@@ -30,8 +34,6 @@ LuaSilve =
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
         if rinsanFuncModule.isBaozou(player) then
-            data:setValue(player:getHp())
-        else
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if not p:isNude() then
                     local id = room:askForCardChosen(player, p, 'he', self:objectName())
@@ -39,12 +41,12 @@ LuaSilve =
                 end
             end
             data:setValue(0)
+        else
+            data:setValue(player:getHp())
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
-    end
+    can_trigger = boss_can_trigger
 }
 
 SkillAnjiang:addSkill(LuaSilve)
@@ -66,9 +68,7 @@ LuaKedi =
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
-    end
+    can_trigger = boss_can_trigger
 }
 
 SkillAnjiang:addSkill(LuaKedi)
@@ -103,9 +103,7 @@ LuaJishi =
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
-    end
+    can_trigger = boss_can_trigger
 }
 
 LuaJishiMaxCards =
@@ -165,9 +163,7 @@ LuaDaji =
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
-    end
+    can_trigger = boss_can_trigger
 }
 
 SkillAnjiang:addSkill(LuaDaji)
@@ -178,7 +174,10 @@ LuaGuzhan =
     sgs.CreateTargetModSkill {
     name = 'LuaGuzhan',
     residue_func = function(self, player)
-        if rinsanFuncModule.bossSkillEnabled(player, self:objectName(), BossMark) and not player:getWeapon() then
+        if
+            rinsanFuncModule.bossSkillEnabled(player, self:objectName(), BossMark) and rinsanFuncModule.isBaozou(player) and
+                not player:getWeapon()
+         then
             return 1000
         else
             return 0
@@ -218,15 +217,16 @@ LuaJizhan =
                     return false
                 end
             end
-            if player:getHandcardNum() < room:alivePlayerCount() then
+            local x = room:alivePlayerCount() - player:getHandcardNum()
+            if x > 0 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                player:drawCards(room:alivePlayerCount() - player:getHandcardNum(), self:objectName())
+                player:drawCards(x, self:objectName())
             end
         end
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
+        return boss_can_trigger(self, target) and rinsanFuncModule.isBaozou(target)
     end
 }
 
@@ -238,7 +238,7 @@ LuaDuduan =
     sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
     is_prohibited = function(self, from, to, card)
-        if rinsanFuncModule.bossSkillEnabled(to, self:objectName(), BossMark) then
+        if rinsanFuncModule.bossSkillEnabled(to, self:objectName(), BossMark) and rinsanFuncModule.isBaozou(to) then
             return card:isKindOf('DelayedTrick')
         end
     end
