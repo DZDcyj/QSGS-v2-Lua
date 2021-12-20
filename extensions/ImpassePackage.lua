@@ -562,7 +562,7 @@ LuaImpasseArmor =
     events = {sgs.TargetConfirmed, sgs.CardFinished},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        if player:getMark('LuaBaozou') == 0 then
+        if player:getMark(BaozouStatusMark) == 0 then
             return false
         end
         local use = data:toCardUse()
