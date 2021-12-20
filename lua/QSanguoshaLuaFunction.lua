@@ -655,7 +655,10 @@ function random(min, max)
 end
 
 -- 获取随机未拥有技能
--- banned_skills 为禁表
+-- banned_skills 为随机技能禁表
+-- banned_skills_for_lord 为 BOSS 技能禁表
+-- is_lord 参数代表是否为 BOSS
+-- 因主公为 boss，故直接判断主公即可
 function getRandomGeneralSkill(room, banned_skills, banned_skills_for_lord, is_lord)
     local general_names = sgs.Sanguosha:getLimitedGeneralNames()
     local available_skills = {}
@@ -705,7 +708,12 @@ end
 
 -- 判断是否处于暴走状态
 function isBaozou(player)
-    return player:getMark('@baozou') or player:hasFlag('LuaBaozouKill')
+    return player:getMark('LuaBaozou') > 0
+end
+
+-- 判断是否可以使用 BOSS 技能
+function bossSkillEnabled(player, skill_name, mark_name)
+    return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
 end
 
 -- Animate 参数，用于 doAnimate 方法

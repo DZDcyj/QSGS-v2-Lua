@@ -12,6 +12,12 @@ local rinsanFuncModule = require('QSanguoshaLuaFunction')
 -- 暴走标记
 BaozouMark = '@baozou'
 
+-- BOSS 标记，用于技能判断
+BossMark = 'LuaBoss'
+
+-- 已经进入暴走状态标记
+BaozouStatusMark = 'LuaBaozou'
+
 -- BOSS 技能
 
 -- 思略
@@ -37,7 +43,7 @@ LuaSilve =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
+        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
     end
 }
 
@@ -61,7 +67,7 @@ LuaKedi =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
+        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
     end
 }
 
@@ -98,7 +104,7 @@ LuaJishi =
         end
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
+        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
     end
 }
 
@@ -106,7 +112,7 @@ LuaJishiMaxCards =
     sgs.CreateMaxCardsSkill {
     name = '#LuaJishiMaxCards',
     fixed_func = function(self, target)
-        if (target:hasSkill('LuaJishi') or target:getMark('LuaBoss') > 0) and rinsanFuncModule.isBaozou(target) then
+        if rinsanFuncModule.bossSkillEnabled(target, 'LuaJishi', BossMark) and rinsanFuncModule.isBaozou(target) then
             return target:getAliveSiblings():length() + 1
         end
         return -1
@@ -160,7 +166,7 @@ LuaDaji =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
+        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
     end
 }
 
@@ -172,7 +178,7 @@ LuaGuzhan =
     sgs.CreateTargetModSkill {
     name = 'LuaGuzhan',
     residue_func = function(self, player)
-        if (player:hasSkill(self:objectName()) or player:getMark('LuaBoss') > 0) and not player:getWeapon() then
+        if rinsanFuncModule.bossSkillEnabled(player, self:objectName(), BossMark) and not player:getWeapon() then
             return 1000
         else
             return 0
@@ -220,7 +226,7 @@ LuaJizhan =
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaBoss') > 0)
+        return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
     end
 }
 
@@ -232,7 +238,7 @@ LuaDuduan =
     sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
     is_prohibited = function(self, from, to, card)
-        if (to:hasSkill(self:objectName()) or to:getMark('LuaBoss') > 0) then
+        if rinsanFuncModule.bossSkillEnabled(to, self:objectName(), BossMark) then
             return card:isKindOf('DelayedTrick')
         end
     end
@@ -441,7 +447,7 @@ LuaBaozou =
             if player:getMark(self:objectName()) > 0 then
                 return false
             end
-            if player:hasSkill(self:objectName()) or player:getMark('LuaBoss') > 0 then
+            if player:hasSkill(self:objectName()) or player:getMark(BossMark) > 0 then
                 if player:getHp() <= 3 then
                     room:addPlayerMark(player, self:objectName())
                     room:sendCompulsoryTriggerLog(player, self:objectName())
@@ -486,7 +492,7 @@ LuaImpasseDeath =
             room:setTag('SkipNormalDeathProcess', sgs.QVariant(true))
             player:bury()
         else
-            if player:getMark('LuaBoss') == 0 then
+            if player:getMark(BossMark) == 0 then
                 return false
             end
             local death = data:toDeath()
@@ -536,11 +542,11 @@ LuaImpasseDeath =
         return false
     end,
     can_trigger = function(self, target)
-        if target and target:getMark('LuaBoss') > 0 then
+        if target and target:getMark(BossMark) > 0 then
             return true
         end
         for _, p in sgs.qlist(target:getSiblings()) do
-            if p:getMark('LuaBoss') > 0 then
+            if p:getMark(BossMark) > 0 then
                 return true
             end
         end
