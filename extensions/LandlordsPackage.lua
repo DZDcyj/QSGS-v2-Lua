@@ -1,6 +1,5 @@
 -- 斗地主包
 -- Created by DZDcyj at 2021/10/9
-
 module('extensions.LandlordsPackage', package.seeall)
 extension = sgs.Package('LandlordsPackage')
 
@@ -9,8 +8,7 @@ SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, tr
 -- 引入封装函数包
 local rinsanFuncModule = require('QSanguoshaLuaFunction')
 
-LuaBahu =
-    sgs.CreateTriggerSkill {
+LuaBahu = sgs.CreateTriggerSkill {
     name = 'LuaBahu',
     frequency = sgs.Skill_Compulsory,
     events = {sgs.EventPhaseStart},
@@ -27,12 +25,11 @@ LuaBahu =
     end
 }
 
-LuaBahuSlash =
-    sgs.CreateTargetModSkill {
+LuaBahuSlash = sgs.CreateTargetModSkill {
     name = 'LuaBahuSlash',
     frequency = sgs.Skill_Compulsory,
     residue_func = function(self, player)
-        if player:hasSkill('LuaBahu') then
+        if player:hasSkill('LuaBahu') or player:getMark('LuaDizhu') > 0 then
             return 1
         else
             return 0
@@ -40,23 +37,19 @@ LuaBahuSlash =
     end
 }
 
-LuaFeiyangCard =
-    sgs.CreateSkillCard {
+LuaFeiyangCard = sgs.CreateSkillCard {
     name = 'LuaFeiyangCard',
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
         if source:getJudgingArea():length() > 0 then
-            room:throwCard(
-                room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
-                source
-            )
+            room:throwCard(room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
+                source)
         end
     end
 }
 
-LuaFeiyangVS =
-    sgs.CreateViewAsSkill {
+LuaFeiyangVS = sgs.CreateViewAsSkill {
     name = 'LuaFeiyang',
     n = 2,
     view_filter = function(self, selected, to_select)
@@ -80,8 +73,7 @@ LuaFeiyangVS =
     end
 }
 
-LuaFeiyang =
-    sgs.CreateTriggerSkill {
+LuaFeiyang = sgs.CreateTriggerSkill {
     name = 'LuaFeiyang',
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Compulsory,
@@ -99,8 +91,7 @@ LuaFeiyang =
     end
 }
 
-LuaDizhu =
-    sgs.CreateTriggerSkill {
+LuaDizhu = sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
     events = {sgs.TurnStart},
     frequency = sgs.Skill_Compulsory,
@@ -179,8 +170,7 @@ LuaDizhu =
 
 -- 斗地主场景技能
 -- 主要负责模块为：死亡奖惩与农民摸牌
-LuaDoudizhuScenario =
-    sgs.CreateTriggerSkill {
+LuaDoudizhuScenario = sgs.CreateTriggerSkill {
     name = 'LuaDoudizhuScenario',
     frequency = sgs.Skill_Compulsory,
     events = {sgs.BuryVictim, sgs.Death},
