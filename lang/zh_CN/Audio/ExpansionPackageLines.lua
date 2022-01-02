@@ -277,5 +277,11 @@ return {
     -- 谋黄忠
     ['$LuaLiegong1'] = '矢贯坚石，劲冠三军！',
     ['$LuaLiegong2'] = '吾虽年迈，箭矢犹锋！',
-    ['~ExMouHuangzhong'] = '弦断弓藏，将老孤亡…'
+    ['~ExMouHuangzhong'] = '弦断弓藏，将老孤亡…',
+    -- 蒲元
+    ['$LuaTianjiang1'] = '天赐匠法，精心锤炼',
+    ['$LuaTianjiang2'] = '巧夺天工，超凡脱俗',
+    ['$LuaZhuren1'] = '造刀三千口，用法各不同',
+    ['$LuaZhuren2'] = '此刀，可劈铁珠之筒！',
+    ['~ExPuyuan'] = '铸木镂冰，怎成大器！'
 }

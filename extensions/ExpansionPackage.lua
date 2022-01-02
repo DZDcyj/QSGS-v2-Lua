@@ -6675,3 +6675,244 @@ LuaLiegongAttackMod = sgs.CreateTargetModSkill {
 ExMouHuangzhong:addSkill(LuaLiegong)
 SkillAnjiang:addSkill(LuaLiegongAttackMod)
 SkillAnjiang:addSkill(LuaLiegongMark)
+
+ExPuyuan = sgs.General(extension, 'ExPuyuan', 'shu', '4', true, true)
+
+LuaTianjiangCard = sgs.CreateSkillCard {
+    name = 'LuaTianjiangCard',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, targets, to_select)
+        if #targets == 0 then
+            return to_select:objectName() ~= sgs.Self:objectName()
+        end
+        return false
+    end,
+    on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaTianjiang')
+        local target = targets[1]
+        local equip = sgs.Sanguosha:getCard(self:getSubcards():first())
+        room:moveCardTo(equip, source, target, sgs.Player_PlaceHand, sgs.CardMoveReason(
+            sgs.CardMoveReason_S_REASON_TRANSFER, source:objectName(), self:objectName(), ''))
+        room:useCard(sgs.CardUseStruct(equip, target, target))
+    end
+}
+
+LuaTianjiangVS = sgs.CreateViewAsSkill {
+    name = 'LuaTianjiang',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return to_select:isEquipped()
+        end
+        return false
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local kf = LuaTianjiangCard:clone()
+        for _, cd in ipairs(cards) do
+            kf:addSubcard(cd)
+        end
+        return kf
+    end
+}
+
+LuaTianjiang = sgs.CreateTriggerSkill {
+    name = 'LuaTianjiang',
+    events = {sgs.TurnStart, sgs.GameStart},
+    view_as_skill = LuaTianjiangVS,
+    on_trigger = function(self, event, player, data, room)
+        if player:getMark(self:objectName()) == 0 then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            room:addPlayerMark(player, self:objectName())
+            local count = 0
+            local names = {}
+            local subTypes = {}
+            for _, id in sgs.qlist(room:getDrawPile()) do
+                local card = sgs.Sanguosha:getCard(id)
+                if card:isKindOf('EquipCard') then
+                    if not table.contains(names, card:getName()) then
+                        if not table.contains(subTypes, card:getSubtype()) then
+                            table.insert(names, card:getName())
+                            table.insert(subTypes, card:getSubtype())
+                            room:useCard(sgs.CardUseStruct(card, player, player))
+                            count = count + 1
+                        end
+                    end
+                    if count == 2 then
+                        break
+                    end
+                end
+            end
+        end
+        return false
+    end
+}
+
+LuaZhurenCard = sgs.CreateSkillCard {
+    name = 'LuaZhurenCard',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaZhuren')
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local number = card:getNumber() * 4
+        local success = math.random(1, 100)
+        if card:isKindOf('Lightning') then
+            number = 60
+        end
+        local puyuan = room:getCurrent()
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:hasSkill(self:objectName()) or p:getPile('LuaZhurenPile'):length() > 0 then
+                puyuan = p
+                break
+            end
+        end
+        local msg = sgs.LogMessage()
+        msg.from = source
+        if success <= number then
+            msg.type = '#LuaZhurenSuccess'
+            room:sendLog(msg)
+            local drawed = false
+            for _, id in sgs.qlist(puyuan:getPile('LuaZhurenPile')) do
+                local currCard = sgs.Sanguosha:getCard(id)
+                if card:isKindOf('Lightning') then
+                    if currCard:objectName() == 'Tianleiren' then
+                        source:obtainCard(currCard)
+                        drawed = true
+                        break
+                    end
+                else
+                    if card:getSuit() == sgs.Card_Heart and currCard:objectName() == 'Hongduanqiang' then
+                        source:obtainCard(currCard)
+                        drawed = true
+                        break
+                    elseif card:getSuit() == sgs.Card_Spade and currCard:objectName() == 'Hunduwandao' then
+                        source:obtainCard(currCard)
+                        drawed = true
+                        break
+                    elseif card:getSuit() == sgs.Card_Club and currCard:objectName() == 'Shuibojian' then
+                        source:obtainCard(currCard)
+                        drawed = true
+                        break
+                    elseif card:getSuit() == sgs.Card_Diamond and currCard:objectName() == 'Liecuiren' then
+                        source:obtainCard(currCard)
+                        drawed = true
+                        break
+                    end
+                end
+            end
+            if not drawed then
+                source:drawCards(1)
+            end
+        else
+            source:drawCards(1)
+            msg.type = '#LuaZhurenFailed'
+            room:sendLog(msg)
+        end
+    end
+}
+
+LuaZhurenVS = sgs.CreateViewAsSkill {
+    name = 'LuaZhuren',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return not to_select:isEquipped()
+        end
+        return false
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local kf = LuaZhurenCard:clone()
+        for _, cd in ipairs(cards) do
+            kf:addSubcard(cd)
+        end
+        return kf
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaZhurenCard')
+    end
+}
+
+LuaZhuren = sgs.CreateTriggerSkill {
+    name = 'LuaZhuren',
+    events = {sgs.GameStart, sgs.TurnStart, sgs.CardsMoveOneTime},
+    view_as_skill = LuaZhurenVS,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local puyuan = room:getCurrent()
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:hasSkill(self:objectName()) or p:getPile('LuaZhurenPile'):length() > 0 then
+                puyuan = p
+                break
+            end
+        end
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if move.to_place == sgs.Player_DiscardPile then
+                for i = 0, move.card_ids:length() - 1, 1 do
+                    local card = sgs.Sanguosha:getCard(move.card_ids:at(i))
+                    local name = card:objectName()
+                    if name == 'Hongduanqiang' or name == 'Liecuiren' or name == 'Shuibojian' or name == 'Hunduwandao' or
+                        name == 'Tianleiren' then
+                        puyuan:addToPile('LuaZhurenPile', move.card_ids:at(i))
+                    end
+                end
+            end
+        else
+            if puyuan:getMark(self:objectName()) == 0 then
+                room:addPlayerMark(puyuan, self:objectName())
+                room:sendCompulsoryTriggerLog(puyuan, self:objectName())
+                for _, id in sgs.qlist(room:getDrawPile()) do
+                    local card = sgs.Sanguosha:getCard(id)
+                    local name = card:objectName()
+                    if name == 'Hongduanqiang' or name == 'Liecuiren' or name == 'Shuibojian' or name == 'Hunduwandao' or
+                        name == 'Tianleiren' then
+                        puyuan:addToPile('LuaZhurenPile', id)
+                    end
+                end
+                for _, id in sgs.qlist(room:getDiscardPile()) do
+                    local card = sgs.Sanguosha:getCard(id)
+                    local name = card:objectName()
+                    if name == 'Hongduanqiang' or name == 'Liecuiren' or name == 'Shuibojian' or name == 'Hunduwandao' or
+                        name == 'Tianleiren' then
+                        puyuan:addToPile('LuaZhurenPile', id)
+                    end
+                end
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    for _, id in sgs.qlist(p:getHandcards()) do
+                        local card = id
+                        local name = card:objectName()
+                        if name == 'Hongduanqiang' or name == 'Liecuiren' or name == 'Shuibojian' or name ==
+                            'Hunduwandao' or name == 'Tianleiren' then
+                            puyuan:addToPile('LuaZhurenPile', card:getEffectiveId())
+                            p:drawCards(1)
+                        end
+                    end
+                    for _, id in sgs.qlist(p:getEquips()) do
+                        local card = id
+                        local name = card:objectName()
+                        if name == 'Hongduanqiang' or name == 'Liecuiren' or name == 'Shuibojian' or name ==
+                            'Hunduwandao' or name == 'Tianleiren' then
+                            puyuan:addToPile('LuaZhurenPile', card:getEffectiveId())
+                            p:drawCards(1)
+                        end
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+ExPuyuan:addSkill(LuaTianjiang)
+ExPuyuan:addSkill(LuaZhuren)

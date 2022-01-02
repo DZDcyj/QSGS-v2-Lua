@@ -1,0 +1,27 @@
+-- translation for PuyuanArmors Package
+return {
+    ['PuyuanArmors'] = '蒲元装备包',
+    ['Hongduanqiang'] = '红缎枪',
+    ['&Hongduanqiang'] = '红缎枪',
+    [':Hongduanqiang'] = '<b>装备牌·武器</b><br><b>攻击范围</b>：3<br>当你的【杀】造成伤害后，你可以进行一次判定，若为红色，你恢复一点体力',
+    ['Hongduanqiang_skill'] = '红缎枪',
+    ['Liecuiren'] = '烈淬刃',
+    ['&Liecuiren'] = '烈淬刃',
+    [':Liecuiren'] = '<b>装备牌·武器</b><br><b>攻击范围</b>：2<br>当你的【杀】对一名角色造成伤害时，你可以弃置一张【杀】或武器牌令此伤害+1',
+    ['Liecuiren_skill'] = '烈淬刃',
+    ['#LuaDamageupOne'] = '%from 执行“<font color="yellow"><b>%arg</b></font>”的效果，%card 的伤害值 + <font color = "yellow"><b>1</b></font>',
+    ['@Liecuiren'] = '你可以弃置一张【杀】或武器牌，令此【杀】造成的伤害 + 1',
+    ['Shuibojian'] = '水波剑',
+    ['&Shuibojian'] = '水波剑',
+    [':Shuibojian'] = '<b>装备牌·武器</b><br><b>攻击范围</b>：2<br>当你使用【杀】或非延时锦囊牌时，你可以额外指定一个目标',
+    ['Shuibojian_skill'] = '水波剑',
+    ['@Shuibojian'] = '你可以选择额外一个目标',
+    ['Hunduwandao'] = '混毒弯刀',
+    ['&Hunduwandao'] = '混毒弯刀',
+    [':Hunduwandao'] = '<b>装备牌·武器</b><br><b>攻击范围</b>：1<br>你使用的黑色【杀】指定单一目标后，你可令该角色获得此【杀】，然后其失去1点体力',
+    ['Hunduwandao_skill'] = '混毒弯刀',
+    ['Tianleiren'] = '天雷刃',
+    ['&Tianleiren'] = '天雷刃',
+    [':Tianleiren'] = '<b>装备牌·武器</b><br><b>攻击范围</b>：4<br>你使用【杀】仅指定一名角色为目标后，可令其进行一次判定，若结果为♠2~9，该角色受到3点雷电伤害，然后此【杀】对其无效',
+    ['Tianleiren_skill'] = '天雷刃'
+}

@@ -63,6 +63,7 @@ lang/zh_CN/Package/*.lua
 !ImpassePackage.lua
 !GroupFriendPackage.lua
 !LandlordsPackage.lua
+!PuyuanArmors.lua
 listserver/
 lua/ai/[^A-Z]*.lua
 lua/lib
