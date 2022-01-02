@@ -25,11 +25,11 @@ Hongduanqiang_skill = sgs.CreateTriggerSkill {
     events = {sgs.Damage},
     on_trigger = function(self, event, player, data, room)
         if data:toDamage().card and data:toDamage().card:isKindOf('Slash') then
-            if room:askForSkillInvoke(player, self:objectName()) then
+            if room:askForSkillInvoke(player, 'Hongduanqiang') then
                 local judge = sgs.JudgeStruct()
                 judge.pattern = '.|red'
                 judge.good = true
-                judge.reason = self:objectName()
+                judge.reason = 'Hongduanqiang'
                 judge.who = player
                 judge.play_animation = true
                 room:judge(judge)
@@ -65,7 +65,7 @@ Liecuiren_skill = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         if damage.card and damage.card:isKindOf('Slash') then
-            local use = room:askForCard(player, 'Slash, Weapon|.|.|hand', '@Liecuiren')
+            local use = room:askForCard(player, 'Slash, Weapon|.|.|hand', '@Liecuiren', data, 'Liecuiren')
             if use then
                 damage.damage = damage.damage + 1
                 local msg = sgs.LogMessage()
@@ -164,11 +164,11 @@ Hunduwandao_skill = sgs.CreateTriggerSkill {
                     data2:setValue(p)
                     splayer = p
                 end
-                if room:askForSkillInvoke(player, self:objectName(), data2) then
+                if room:askForSkillInvoke(player, 'Hunduwandao', data2) then
                     local log = sgs.LogMessage()
                     log.from = player
                     log.type = '#InvokeSkill'
-                    log.arg = self:objectName()
+                    log.arg = 'Hunduwandao'
                     room:sendLog(log)
                     if splayer then
                         splayer:obtainCard(use.card)
@@ -216,17 +216,17 @@ Tianleiren_skill = sgs.CreateTriggerSkill {
                     data2:setValue(p)
                     splayer = p
                 end
-                if room:askForSkillInvoke(player, self:objectName(), data2) then
+                if room:askForSkillInvoke(player, 'Tianleiren', data2) then
                     local log = sgs.LogMessage()
                     log.from = player
                     log.type = '#InvokeSkill'
-                    log.arg = self:objectName()
+                    log.arg = 'Tianleiren'
                     room:sendLog(log)
                     if splayer then
                         local judge = sgs.JudgeStruct()
                         judge.pattern = '.|spade|2~9'
                         judge.good = true
-                        judge.reason = self:objectName()
+                        judge.reason = 'Tianleiren'
                         judge.who = splayer
                         judge.play_animation = true
                         room:judge(judge)
