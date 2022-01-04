@@ -4873,7 +4873,7 @@ LuaZhiyan = sgs.CreateViewAsSkill {
     n = 999,
     view_filter = function(self, selected, to_select)
         local y = sgs.Self:getHandcardNum() - sgs.Self:getHp()
-        return y > 0 and #selected < y
+        return y > 0 and #selected < y and (not to_select:isEquipped())
     end,
     view_as = function(self, cards)
         local x = sgs.Self:getMaxHp() - sgs.Self:getHandcardNum()
