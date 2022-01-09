@@ -107,15 +107,12 @@ jobs:
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
             ### 最新的提交：
-            作者: 
-            
+            #### 作者 
             ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
-            
-            提交信息: 
-
+            #### 提交信息
             ${{env.latest_commit_message}}
-            
-            SHA: ${{env.latest_commit_sha}}
+            #### 提交 SHA
+            ${{env.latest_commit_sha}}
                         
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
