@@ -59,7 +59,7 @@ jobs:
           echo 'latest_commit_message<<EOF' >> $GITHUB_ENV
           echo "$latest_commit" | jq -r '.commit.message' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-          echo "$latest_commit_message"
+          echo "${{ env.latest_commit_message }}"
 
           echo "Get commit SHA of the latest commit:"
           latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
@@ -74,7 +74,6 @@ jobs:
           echo "$latest_commit_author_email"
           
           echo "latest_commit_sha=${latest_commit_sha}" >> $GITHUB_ENV
-          echo "latest_commit_message=${latest_commit_message}" >> $GITHUB_ENV
           echo "latest_commit_author_name=${latest_commit_author_name}" >> $GITHUB_ENV
           echo "latest_commit_author_email=${latest_commit_author_email}" >> $GITHUB_ENV
       - name: "Send Email"
