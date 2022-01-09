@@ -60,6 +60,7 @@ lang/zh_CN/Audio/*.lua
 lang/zh_CN/Package/*.lua
 !ExpansionPackageLines.lua
 !ExpansionPackage.lua
+!ImpassePackage.lua
 !GroupFriendPackage.lua
 !LandlordsPackage.lua
 listserver/

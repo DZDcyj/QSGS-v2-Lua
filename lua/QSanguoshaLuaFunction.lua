@@ -88,7 +88,7 @@ end
 
 -- 获取可扶汉的武将 Table
 -- 暂时没有排除已获得所有技能的武将
-function getFuhanShuGenerals(room, general_num)
+function getFuhanShuGenerals(general_num)
     local general_names = sgs.Sanguosha:getLimitedGeneralNames()
     local shu_generals = {}
     for _, name in ipairs(general_names) do
@@ -662,6 +662,68 @@ function random(min, max)
         return math.floor(rand)
     end
     error('Invalid Input')
+end
+
+-- 获取随机未拥有技能
+-- banned_skills 为随机技能禁表
+-- banned_skills_for_lord 为 BOSS 技能禁表
+-- is_lord 参数代表是否为 BOSS
+-- 因主公为 boss，故直接判断主公即可
+function getRandomGeneralSkill(room, banned_skills, banned_skills_for_lord, is_lord)
+    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
+    local available_skills = {}
+    repeat
+        local random_general = general_names[random(1, #general_names)]
+        local general = sgs.Sanguosha:getGeneral(random_general)
+        for _, skill in sgs.qlist(general:getVisibleSkillList()) do
+            local have
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasSkill(skill:objectName()) then
+                    have = true
+                    break
+                end
+            end
+            if (not have) and (not table.contains(banned_skills, skill:objectName())) then
+                if not is_lord or (is_lord and (not table.contains(banned_skills_for_lord, skill:objectName()))) then
+                    table.insert(available_skills, skill:objectName())
+                end
+            end
+        end
+    until #available_skills > 0
+    return available_skills[random(1, #available_skills)]
+end
+
+-- 修改技能描述
+function modifySkillDescription(translation, new_translation)
+    sgs.Sanguosha:addTranslationEntry(
+        translation,
+        '' ..
+            string.gsub(
+                sgs.Sanguosha:translate(translation),
+                sgs.Sanguosha:translate(translation),
+                sgs.Sanguosha:translate(new_translation)
+            )
+    )
+end
+
+-- 获取随机武将
+function getRandomGeneral(banned_generals)
+    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
+    local random_general
+    repeat
+        random_general = general_names[random(1, #general_names)]
+    until not table.contains(banned_generals, random_general)
+    return random_general
+end
+
+-- 判断是否处于暴走状态
+function isBaozou(player)
+    return player:getMark('LuaBaozou') > 0
+end
+
+-- 判断是否可以使用 BOSS 技能
+function bossSkillEnabled(player, skill_name, mark_name)
+    return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
 end
 
 -- Animate 参数，用于 doAnimate 方法
