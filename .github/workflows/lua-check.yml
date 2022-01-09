@@ -107,11 +107,11 @@ jobs:
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
             ### 最新的提交：
-            Author: 
+            作者: 
             
             ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
             
-            Message: 
+            提交信息: 
 
             ${{env.latest_commit_message}}
             
