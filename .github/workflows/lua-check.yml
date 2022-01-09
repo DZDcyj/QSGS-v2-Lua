@@ -56,7 +56,9 @@ jobs:
           echo "$latest_commit"
 
           echo "Get commit message of the latest commit:"
-          latest_commit_message=$(echo "$latest_commit" | jq -r '.commit.message')
+          echo 'latest_commit_message<<EOF' >> $GITHUB_ENV
+          echo '$(echo "$latest_commit" | jq -r '.commit.message')' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
           echo "$latest_commit_message"
 
           echo "Get commit SHA of the latest commit:"
