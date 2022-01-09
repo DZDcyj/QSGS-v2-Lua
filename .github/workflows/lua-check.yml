@@ -56,8 +56,10 @@ jobs:
           echo "$latest_commit"
 
           echo "Get commit message of the latest commit:"
-          latest_commit_message=$(echo "$latest_commit" | jq -r '.commit.message')
-          echo "$latest_commit_message"
+          echo 'latest_commit_message<<EOF' >> $GITHUB_ENV
+          echo "$latest_commit" | jq -r '.commit.message' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          echo "${{ env.latest_commit_message }}"
 
           echo "Get commit SHA of the latest commit:"
           latest_commit_sha=$(echo "$latest_commit" | jq -r '.sha')
@@ -72,7 +74,6 @@ jobs:
           echo "$latest_commit_author_email"
           
           echo "latest_commit_sha=${latest_commit_sha}" >> $GITHUB_ENV
-          echo "latest_commit_message=${latest_commit_message}" >> $GITHUB_ENV
           echo "latest_commit_author_name=${latest_commit_author_name}" >> $GITHUB_ENV
           echo "latest_commit_author_email=${latest_commit_author_email}" >> $GITHUB_ENV
       - name: "Send Email"
@@ -106,11 +107,12 @@ jobs:
             Pull Request 地址：${{github.event.pull_request.html_url}}
 
             ### 最新的提交：
-            Author: ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
-            
-            Message: ${{env.latest_commit_message}}
-            
-            SHA: ${{env.latest_commit_sha}}
+            #### 作者 
+            ${{env.latest_commit_author_name}}(${{env.latest_commit_author_email}})
+            #### 提交信息
+            ${{env.latest_commit_message}}
+            #### 提交 SHA
+            ${{env.latest_commit_sha}}
                         
           # Optional unsigned/invalid certificates allowance:
           ignore_cert: true
