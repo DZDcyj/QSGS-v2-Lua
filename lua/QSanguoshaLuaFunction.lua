@@ -726,6 +726,17 @@ function bossSkillEnabled(player, skill_name, mark_name)
     return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
 end
 
+-- 获取内伐不可使用卡牌数
+function getNeifaUselessCardCount(player)
+    local count = 0
+    for _, cd in sgs.qlist(player:getHandcards()) do
+        if player:isLocked(cd) then
+            count = count + 1
+        end
+    end
+    return math.min(count, 5)
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
