@@ -6370,7 +6370,7 @@ ExYuantanYuanshang = sgs.General(extension, 'ExYuantanYuanshang', 'qun', '4', tr
 LuaNeifaCard = sgs.CreateSkillCard {
     name = 'LuaNeifaCard',
     filter = function(self, selected, to_select)
-        return #selected < 1 and to_select:objectName() ~= sgs.Self:objectName() and (not to_select:isNude())
+        return #selected < 1 and (not to_select:isAllNude())
     end,
     feasible = function(self, targets)
         return #targets <= 1
@@ -6379,21 +6379,23 @@ LuaNeifaCard = sgs.CreateSkillCard {
         if #targets == 0 then
             source:drawCards(2, 'LuaNeifa')
         else
-            local card_id = room:askForCardChosen(source, targets[1], 'he', 'LuaNeifa', false, sgs.Card_MethodNone)
+            local card_id = room:askForCardChosen(source, targets[1], 'hej', 'LuaNeifa', false, sgs.Card_MethodNone)
             source:obtainCard(sgs.Sanguosha:getCard(card_id), false)
         end
         room:broadcastSkillInvoke('LuaNeifa')
-        local card = room:askForCard(source, '..!', '@LuaNeifa-discard', sgs.QVariant(), sgs.Card_MethodDiscard)
-        if card then
-            if card:isKindOf('BasicCard') then
-                room:setPlayerFlag(source, 'LuaNeifa-Basic')
-                room:setPlayerCardLimitation(source, 'use', 'TrickCard,EquipCard|.|.|.', true)
-            else
-                room:setPlayerFlag(source, 'LuaNeifa-NonBasic')
-                room:setPlayerCardLimitation(source, 'use', 'BasicCard|.|.|.', true)
+        if source:canDiscard(source, 'he') then
+            local card = room:askForCard(source, '..!', '@LuaNeifa-discard', sgs.QVariant(), sgs.Card_MethodDiscard)
+            if card then
+                if card:isKindOf('BasicCard') then
+                    room:setPlayerFlag(source, 'LuaNeifa-Basic')
+                    room:setPlayerCardLimitation(source, 'use', 'TrickCard,EquipCard|.|.|.', true)
+                else
+                    room:setPlayerFlag(source, 'LuaNeifa-NonBasic')
+                    room:setPlayerCardLimitation(source, 'use', 'BasicCard|.|.|.', true)
+                end
+                local x = rinsanFuncModule.getNeifaUselessCardCount(source)
+                room:setPlayerMark(source, '@LuaNeifaCount', x)
             end
-            local x = rinsanFuncModule.getNeifaUselessCardCount(source)
-            room:setPlayerMark(source, '@LuaNeifaCount', x)
         end
     end
 }
@@ -6460,7 +6462,7 @@ LuaNeifa = sgs.CreateTriggerSkill {
                     if to then
                         local params = {
                             ['to'] = to,
-                            ['card_str'] = use.card:toString(),
+                            ['card_str'] = use.card:toString()
                         }
                         room:broadcastSkillInvoke(self:objectName())
                         if use.to:contains(to) then
