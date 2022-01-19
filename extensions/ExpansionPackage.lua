@@ -6442,27 +6442,34 @@ LuaNeifa = sgs.CreateTriggerSkill {
         elseif event == sgs.TargetConfirmed then
             local use = data:toCardUse()
             if use.card and use.card:isNDTrick() and use.from:hasFlag('LuaNeifa-NonBasic') then
-                local players = room:getAlivePlayers()
-                for _, p in sgs.qlist(use.to) do
-                    players:removeOne(p)
-                end
-                for _, p in sgs.qlist(players) do
-                    if room:isProhibited(use.from, p, use.card) then
-                        players:removeOne(p)
+                local players = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if (not room:isProhibited(use.from, p, use.card)) and
+                        use.card:targetFilter(sgs.PlayerList(), p, use.from) then
+                        players:append(p)
                     end
                 end
                 for _, p in sgs.qlist(use.to) do
-                    players:append(p)
+                    if not players:contains(p) then
+                        players:append(p)
+                    end
                 end
                 if not players:isEmpty() then
                     local to = room:askForPlayerChosen(use.from, players, self:objectName(), 'LuaNeifa-invoke', true,
                         true)
                     if to then
+                        local params = {
+                            ['to'] = to,
+                            ['card_str'] = use.card:toString(),
+                        }
                         room:broadcastSkillInvoke(self:objectName())
                         if use.to:contains(to) then
                             use.to:removeOne(to)
+                            rinsanFuncModule.sendLogMessage(room, '#LuaNeifaRemove', params)
+
                         else
                             use.to:append(to)
+                            rinsanFuncModule.sendLogMessage(room, '#LuaNeifaAppend', params)
                         end
                         room:sortByActionOrder(use.to)
                         data:setValue(use)

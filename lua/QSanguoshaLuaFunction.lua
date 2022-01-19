@@ -726,7 +726,7 @@ function bossSkillEnabled(player, skill_name, mark_name)
     return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
 end
 
--- 获取内伐不可使用卡牌数
+-- 获取内伐不可使用手牌数
 function getNeifaUselessCardCount(player)
     local count = 0
     for _, cd in sgs.qlist(player:getHandcards()) do

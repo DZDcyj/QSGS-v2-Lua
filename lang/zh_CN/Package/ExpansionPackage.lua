@@ -547,5 +547,7 @@ return {
     ['@LuaNeifa'] = '你可以发动“内伐”',
     ['~LuaNeifa'] = '选择至多一名角色→点击确定',
     ['@LuaNeifa-discard'] = '请弃置一张牌',
-    ['LuaNeifa-invoke'] = '你可以选择一名角色，使其成为或不再是你该张锦囊牌的目标'
+    ['LuaNeifa-invoke'] = '你可以选择一名角色，使其成为或不再是你该张锦囊牌的目标',
+    ['#LuaNeifaAppend'] = '%to 成为了 %card 的目标',
+    ['#LuaNeifaRemove'] = '%to 不再是 %card 的目标'
 }
