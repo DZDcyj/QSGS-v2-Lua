@@ -6457,8 +6457,8 @@ LuaNeifa = sgs.CreateTriggerSkill {
                     end
                 end
                 if not players:isEmpty() then
-                    local to = room:askForPlayerChosen(use.from, players, self:objectName(), 'LuaNeifa-invoke', true,
-                        true)
+                    local to = room:askForPlayerChosen(use.from, players, self:objectName(),
+                        'LuaNeifa-invoke:' .. use.card:objectName(), true, true)
                     if to then
                         local params = {
                             ['to'] = to,
