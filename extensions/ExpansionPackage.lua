@@ -6436,9 +6436,9 @@ LuaNeifa = sgs.CreateTriggerSkill {
             end
             local use = data:toCardUse()
             if use.card and use.card:isKindOf('EquipCard') then
-                player:drawCards(player:getMark('@LuaNeifaCount'), self:objectName())
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
+                player:drawCards(player:getMark('@LuaNeifaCount'), self:objectName())
                 room:addPlayerMark(player, 'LuaNeifaEquipCount')
             end
         elseif event == sgs.TargetConfirmed then
@@ -6468,7 +6468,6 @@ LuaNeifa = sgs.CreateTriggerSkill {
                         if use.to:contains(to) then
                             use.to:removeOne(to)
                             rinsanFuncModule.sendLogMessage(room, '#LuaNeifaRemove', params)
-
                         else
                             use.to:append(to)
                             rinsanFuncModule.sendLogMessage(room, '#LuaNeifaAppend', params)
