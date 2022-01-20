@@ -6386,13 +6386,14 @@ LuaNeifaCard = sgs.CreateSkillCard {
         if source:canDiscard(source, 'he') then
             local card = room:askForCard(source, '..!', '@LuaNeifa-discard', sgs.QVariant(), sgs.Card_MethodDiscard)
             if card then
+                local flag = 'LuaNeifa-NonBasic'
+                local limit_prompt = 'BasicCard'
                 if card:isKindOf('BasicCard') then
-                    room:setPlayerFlag(source, 'LuaNeifa-Basic')
-                    room:setPlayerCardLimitation(source, 'use', 'TrickCard,EquipCard|.|.|.', true)
-                else
-                    room:setPlayerFlag(source, 'LuaNeifa-NonBasic')
-                    room:setPlayerCardLimitation(source, 'use', 'BasicCard|.|.|.', true)
+                    flag = 'LuaNeifa-Basic'
+                    limit_prompt = 'TrickCard,EquipCard'
                 end
+                room:setPlayerFlag(source, flag)
+                room:setPlayerCardLimitation(source, 'use', limit_prompt .. '|.|.|.', true)
                 local x = rinsanFuncModule.getNeifaUselessCardCount(source)
                 room:setPlayerMark(source, '@LuaNeifaCount', x)
             end
