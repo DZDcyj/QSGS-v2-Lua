@@ -6364,3 +6364,141 @@ LuaGuidao = sgs.CreateTriggerSkill {
 JieZhangjiao:addSkill(LuaLeiji)
 JieZhangjiao:addSkill(LuaGuidao)
 JieZhangjiao:addSkill('huangtian')
+
+ExYuantanYuanshang = sgs.General(extension, 'ExYuantanYuanshang', 'qun', '4', true, true)
+
+LuaNeifaCard = sgs.CreateSkillCard {
+    name = 'LuaNeifaCard',
+    filter = function(self, selected, to_select)
+        return #selected < 1 and (not to_select:isAllNude())
+    end,
+    feasible = function(self, targets)
+        return #targets <= 1
+    end,
+    on_use = function(self, room, source, targets)
+        if #targets == 0 then
+            source:drawCards(2, 'LuaNeifa')
+        else
+            local card_id = room:askForCardChosen(source, targets[1], 'hej', 'LuaNeifa', false, sgs.Card_MethodNone)
+            source:obtainCard(sgs.Sanguosha:getCard(card_id), false)
+        end
+        room:broadcastSkillInvoke('LuaNeifa')
+        if source:canDiscard(source, 'he') then
+            local card = room:askForCard(source, '..!', '@LuaNeifa-discard', sgs.QVariant(), sgs.Card_MethodDiscard)
+            if card then
+                local flag = 'LuaNeifa-NonBasic'
+                local limit_prompt = 'BasicCard'
+                if card:isKindOf('BasicCard') then
+                    flag = 'LuaNeifa-Basic'
+                    limit_prompt = 'TrickCard,EquipCard'
+                end
+                room:setPlayerFlag(source, flag)
+                room:setPlayerCardLimitation(source, 'use', limit_prompt .. '|.|.|.', true)
+                local x = rinsanFuncModule.getNeifaUselessCardCount(source)
+                room:setPlayerMark(source, '@LuaNeifaCount', x)
+            end
+        end
+    end
+}
+
+LuaNeifaVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaNeifa',
+    view_as = function(self, cards)
+        return LuaNeifaCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaNeifa'
+    end
+}
+
+LuaNeifa = sgs.CreateTriggerSkill {
+    name = 'LuaNeifa',
+    events = {sgs.EventPhaseStart, sgs.EventPhaseChanging, sgs.CardUsed, sgs.TargetConfirmed},
+    view_as_skill = LuaNeifaVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Play then
+                room:askForUseCard(player, '@@LuaNeifa', '@LuaNeifa')
+            end
+        elseif event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                room:setPlayerMark(player, '@LuaNeifaCount', 0)
+                room:setPlayerMark(player, 'LuaNeifaEquipCount', 0)
+            end
+        elseif event == sgs.CardUsed then
+            if not player:hasFlag('LuaNeifa-NonBasic') then
+                return false
+            end
+            if player:getMark('LuaNeifaEquipCount') > 1 then
+                return false
+            end
+            local use = data:toCardUse()
+            if use.card and use.card:isKindOf('EquipCard') then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                player:drawCards(player:getMark('@LuaNeifaCount'), self:objectName())
+                room:addPlayerMark(player, 'LuaNeifaEquipCount')
+            end
+        elseif event == sgs.TargetConfirmed then
+            local use = data:toCardUse()
+            if use.card and use.card:isNDTrick() and use.from:hasFlag('LuaNeifa-NonBasic') then
+                local players = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if (not room:isProhibited(use.from, p, use.card)) and
+                        use.card:targetFilter(sgs.PlayerList(), p, use.from) then
+                        players:append(p)
+                    end
+                end
+                for _, p in sgs.qlist(use.to) do
+                    if not players:contains(p) then
+                        players:append(p)
+                    end
+                end
+                if not players:isEmpty() then
+                    local to = room:askForPlayerChosen(use.from, players, self:objectName(),
+                        'LuaNeifa-invoke:' .. use.card:objectName(), true, true)
+                    if to then
+                        local params = {
+                            ['to'] = to,
+                            ['card_str'] = use.card:toString()
+                        }
+                        room:broadcastSkillInvoke(self:objectName())
+                        if use.to:contains(to) then
+                            use.to:removeOne(to)
+                            rinsanFuncModule.sendLogMessage(room, '#LuaNeifaRemove', params)
+                        else
+                            use.to:append(to)
+                            rinsanFuncModule.sendLogMessage(room, '#LuaNeifaAppend', params)
+                        end
+                        room:sortByActionOrder(use.to)
+                        data:setValue(use)
+                    end
+                end
+            end
+        end
+    end
+}
+
+LuaNeifaTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaNeifa',
+    pattern = 'Slash',
+    residue_func = function(self, player)
+        if player:hasFlag('LuaNeifa-Basic') then
+            return player:getMark('@LuaNeifaCount')
+        end
+        return 0
+    end,
+    extra_target_func = function(self, from)
+        if from:hasFlag('LuaNeifa-Basic') then
+            return 1
+        end
+        return 0
+    end
+
+}
+
+ExYuantanYuanshang:addSkill(LuaNeifa)
+SkillAnjiang:addSkill(LuaNeifaTargetMod)

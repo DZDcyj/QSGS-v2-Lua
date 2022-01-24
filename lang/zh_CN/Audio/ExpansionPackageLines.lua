@@ -269,5 +269,9 @@ return {
     ['$LuaLeiji2'] = '迅雷烈风，威力无边！',
     ['$LuaGuidao1'] = '跪服在，鬼道的威力之下吧！',
     ['$LuaGuidao2'] = '鬼道，才是你要遵循的命运',
-    ['~JieZhangjiao'] = '天下大吉的一天，何时来到？'
+    ['~JieZhangjiao'] = '天下大吉的一天，何时来到？',
+    -- 袁谭袁尚
+    ['$LuaNeifa1'] = '同室内伐，贻笑外人',
+    ['$LuaNeifa2'] = '自相恩残，相煎何急',
+    ['~ExYuantanYuanshang'] = '兄弟难齐心，该有此果……'
 }
