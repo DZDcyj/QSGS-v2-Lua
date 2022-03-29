@@ -4510,6 +4510,14 @@ LuaGushe = sgs.CreateTriggerSkill {
                 end
                 pindian.from:gainMark('@LuaGushe')
             end
+            -- 单独处理同点数问题
+            if pindian.from_number == pindian.to_number then
+                if not room:askForDiscard(pindian.to, 'LuaGushe', 1, 1, true, true,
+                    '@LuaGusheDiscard:' .. pindian.from:objectName()) then
+                    pindian.from:drawCards(1, self:objectName())
+                end
+            end
+            -- 该处代码只让拼点失败方选择，若点数相同，则失败方为己方，故使用上面代码额外处理
             if not room:askForDiscard(loser, 'LuaGushe', 1, 1, true, true,
                 '@LuaGusheDiscard:' .. pindian.from:objectName()) then
                 pindian.from:drawCards(1, self:objectName())

@@ -90,7 +90,7 @@ jobs:
           # Required mail subject:
           subject: Pull Request Review 提醒
           # Required recipients' addresses:
-          to: 954732822@qq.com
+          to: ${{secrets.MAIL_RECEIVER}}
           # Required sender full name (address can be skipped):
           from: Github PR 提醒
           # Optional whether this connection use TLS (default is true if server_port is 465)

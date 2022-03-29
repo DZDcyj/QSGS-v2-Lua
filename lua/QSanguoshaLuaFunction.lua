@@ -406,8 +406,8 @@ function obtainTargetedTypeCard(room, params)
     end
     local findDiscardPile = params['findDiscardPile']
     local card
-    local checker = function(_card)
-        return _card:isKindOf(type) and not table.contains(existedIds, _card:getId())
+    local checker = function(cd)
+        return cd:isKindOf(type) and not table.contains(existedIds, cd:getId())
     end
     card = obtainCardFromPile(checker, room:getDrawPile())
     if not card and findDiscardPile then
