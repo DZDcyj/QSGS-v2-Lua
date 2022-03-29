@@ -245,8 +245,8 @@ LuaJingxie_skill.getTurnUseCard = function(self, inclusive)
     end
 end
 
-sgs.ai_skill_use_func['#LuaJingxieCard'] = function(_card, use, self)
-    use.card = _card
+sgs.ai_skill_use_func['#LuaJingxieCard'] = function(cd, use, self)
+    use.card = cd
 end
 
 -- 濒死使用
