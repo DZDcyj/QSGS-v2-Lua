@@ -549,5 +549,12 @@ return {
     ['@LuaNeifa-discard'] = '请弃置一张牌',
     ['LuaNeifa-invoke'] = '你可以选择一名角色，使其成为或不再是 %src 的目标',
     ['#LuaNeifaAppend'] = '%to 成为了 %card 的目标',
-    ['#LuaNeifaRemove'] = '%to 不再是 %card 的目标'
+    ['#LuaNeifaRemove'] = '%to 不再是 %card 的目标',
+    ['ExMouHuangzhong'] = '谋黄忠',
+    ['&ExMouHuangzhong'] = '谋黄忠',
+    ['#ExMouHuangzhong'] = '没金铩羽',
+    ['LuaLiegong'] = '烈弓',
+    [':LuaLiegong'] = '①你使用【杀】时可以选择距离不大于此【杀】点数的角色为目标；\
+    ②当你使用牌时，或成为其他角色使用牌的目标后，若此牌的花色未被记录，记录此花色；\
+    ③当你使用【杀】指定一名角色为唯一目标后，你可以展示牌堆顶的X张牌（X为你已记录的花色数-1，且至少为0），其中每有一张已记录的花色的牌，此【杀】的伤害便+1，且其不能使用已记录的花色的牌响应此【杀】，然后此【杀】结算结束后，清除所有已记录的花色',
 }

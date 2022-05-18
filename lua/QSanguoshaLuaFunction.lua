@@ -737,6 +737,25 @@ function getNeifaUselessCardCount(player)
     return math.min(count, 5)
 end
 
+-- 获取烈弓花色数
+function getLiegongSuitNum(player)
+    local count = 0
+    if player:getMark('@LuaLiegongClub') > 0 then
+        count = count + 1
+    end
+    if player:getMark('@LuaLiegongDiamond') > 0 then
+        count = count + 1
+    end
+    if player:getMark('@LuaLiegongHeart') > 0 then
+        count = count + 1
+    end
+    if player:getMark('@LuaLiegongSpade') > 0 then
+        count = count + 1
+    end
+
+    return count
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
