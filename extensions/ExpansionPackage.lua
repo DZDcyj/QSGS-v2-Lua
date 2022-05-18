@@ -6527,6 +6527,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
                 local x = rinsanFuncModule.getLiegongSuitNum(player)
                 if x > 0 then
                     if room:askForSkillInvoke(player, self:objectName(), data) then
+                        room:broadcastSkillInvoke(self:objectName())
                         room:setPlayerFlag(player, 'LuaLiegongInvoked')
                         x = math.max(0, x - 1)
                         if x > 0 then
@@ -6585,7 +6586,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
             local all_suits = {'heart', 'diamond', 'club', 'spade'}
             local suits = {}
             for _, suit in ipairs(all_suits) do
-                if not slash:hasFlag('LuaLiegong' .. rinsanFuncModule.firstToUpper(suit)) then
+                if effect.from:getMark('@LuaLiegong' .. rinsanFuncModule.firstToUpper(suit)) == 0 then
                     table.insert(suits, suit)
                 end
             end
@@ -6594,6 +6595,15 @@ LuaLiegong = sgs.CreateTriggerSkill {
                 local prompt = string.format('@LuaLiegong-jink:%s:%s:%s', effect.from:objectName(), source:objectName(),
                     self:objectName())
                 local jink = room:askForCard(effect.to, 'Jink|' .. table.concat(suits, ','), prompt, data, sgs.Card_MethodUse,
+                    source)
+                if jink then
+                    room:slashResult(effect, jink)
+                else
+                    room:slashResult(effect, nil)
+                end
+                return true
+            else
+                local jink = room:askForCard(effect.to, 'Jink|no_suit', prompt, data, sgs.Card_MethodUse,
                     source)
                 if jink then
                     room:slashResult(effect, jink)
@@ -6612,7 +6622,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
 
 LuaLiegongMark = sgs.CreateTriggerSkill {
     name = 'LuaLiegongMark',
-    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.CardFinished},
+    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.CardFinished, sgs.CardResponded},
     global = true,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardFinished then
@@ -6631,20 +6641,29 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
                     room:setCardFlag(card, '-LuaLiegong' .. suit)
                 end
             end
-        elseif event == sgs.CardUsed then
-            local use = data:toCardUse()
-            local card = use.card
-            if card and (not card:isKindOf('SkillCard')) and card:getSuit() ~= sgs.Card_NoSuit then
-                if use.from:hasSkill('LuaLiegong') then
-                    room:addPlayerMark(use.from, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()))
-                end
-            end
-        else
+        elseif event == sgs.TargetConfirmed then
             local use = data:toCardUse()
             local card = use.card
             if card and card:getSuit() ~= sgs.Card_NoSuit then
                 if use.to:contains(player) and player:hasSkill('LuaLiegong') then
-                    room:addPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()))
+                    room:setPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()), 1)
+                end
+            end
+        else
+            local card
+            if event == sgs.CardUsed then
+                card = data:toCardUse().card
+            else
+                -- 用于区分无目标响应使用卡牌，例如【闪】
+                local resp = data:toCardResponse()
+                if not resp.m_isUse then
+                    return false
+                end
+                card = resp.m_card
+            end
+            if card and (not card:isKindOf('SkillCard')) and card:getSuit() ~= sgs.Card_NoSuit then
+                if player:hasSkill('LuaLiegong') then
+                    room:setPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()), 1)
                 end
             end
         end

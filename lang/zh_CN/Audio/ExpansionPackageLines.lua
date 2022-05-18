@@ -273,5 +273,9 @@ return {
     -- 袁谭袁尚
     ['$LuaNeifa1'] = '同室内伐，贻笑外人',
     ['$LuaNeifa2'] = '自相恩残，相煎何急',
-    ['~ExYuantanYuanshang'] = '兄弟难齐心，该有此果……'
+    ['~ExYuantanYuanshang'] = '兄弟难齐心，该有此果……',
+    -- 谋黄忠
+    ['$LuaLiegong1'] = '矢贯坚石，劲冠三军！',
+    ['$LuaLiegong2'] = '吾虽年迈，箭矢犹锋！',
+    ['~ExMouHuangzhong'] = '弦断弓藏，将老孤亡…'
 }
