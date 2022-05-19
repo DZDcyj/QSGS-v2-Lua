@@ -6543,14 +6543,16 @@ LuaLiegong = sgs.CreateTriggerSkill {
                             room:getThread():delay()
                             room:getThread():delay()
                             local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                            local damage_count = 0
                             for _, card_id in sgs.qlist(card_ids) do
                                 local cd = sgs.Sanguosha:getCard(card_id)
                                 local suit_string = rinsanFuncModule.firstToUpper(cd:getSuitString())
                                 if player:getMark('@LuaLiegong' .. suit_string) > 0 then
-                                    room:setCardFlag(card, 'LuaLiegong' .. suit_string)
+                                    damage_count = damage_count + 1
                                 end
                                 dummy:addSubcard(cd)
                             end
+                            card:setTag('LuaLiegongExtraDamage',sgs.QVariant(damage_count))
                             room:throwCard(dummy, sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER,
                                 player:objectName(), self:objectName(), ''), nil)
                         end
@@ -6561,21 +6563,13 @@ LuaLiegong = sgs.CreateTriggerSkill {
             local damage = data:toDamage()
             local card = damage.card
             if card and card:isKindOf('Slash') then
-                local x = 0
-                local all_suits = {'Heart', 'Diamond', 'Club', 'Spade'}
-                local suits = {}
-                for _, suit in ipairs(all_suits) do
-                    if card:hasFlag('LuaLiegong' .. suit) then
-                        -- 务必不要在遍历的时候对原 table 进行修改，否则会造成遍历的一些问题
-                        table.insert(suits, suit)
-                    end
-                end
-                x = #suits
+                local x = card:getTag('LuaLiegongExtraDamage'):toInt()
                 if x > 0 then
                     damage.damage = damage.damage + x
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     data:setValue(damage)
                 end
+                card:removeTag('LuaLIegongExtraDamage')
             end
         else
             local effect = data:toSlashEffect()
