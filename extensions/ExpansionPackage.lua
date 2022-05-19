@@ -6573,7 +6573,6 @@ LuaLiegong = sgs.CreateTriggerSkill {
             end
         else
             local effect = data:toSlashEffect()
-            local slash = effect.slash
             if not effect.to:hasFlag('LuaLiegongTarget') then
                 return false
             end
@@ -6629,7 +6628,6 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
                 room:setPlayerMark(player, '@LuaLiegongDiamond', 0)
             end
             if card then
-                local x = 0
                 local suits = {'Heart', 'Diamond', 'Club', 'Spade'}
                 for _, suit in ipairs(suits) do
                     room:setCardFlag(card, '-LuaLiegong' .. suit)
