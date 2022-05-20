@@ -6552,7 +6552,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
                                 end
                                 dummy:addSubcard(cd)
                             end
-                            card:setTag('LuaLiegongExtraDamage',sgs.QVariant(damage_count))
+                            card:setTag('LuaLiegongExtraDamage', sgs.QVariant(damage_count))
                             room:throwCard(dummy, sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER,
                                 player:objectName(), self:objectName(), ''), nil)
                         end
@@ -6579,30 +6579,22 @@ LuaLiegong = sgs.CreateTriggerSkill {
             local all_suits = {'heart', 'diamond', 'club', 'spade'}
             local suits = {}
             for _, suit in ipairs(all_suits) do
-                if effect.from:getMark('@LuaLiegong' .. rinsanFuncModule.firstToUpper(suit)) == 0 then
+                if effect.from:getMark('@LuaLiegong' .. rinsanFuncModule.firstToUpper(suit)) > 0 then
                     table.insert(suits, suit)
                 end
             end
             if #suits > 0 then
+                room:setPlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','), false)
                 local source = room:findPlayerBySkillName(self:objectName())
                 local prompt = string.format('@LuaLiegong-jink:%s:%s:%s', effect.from:objectName(), source:objectName(),
                     self:objectName())
-                local jink = room:askForCard(effect.to, 'Jink|' .. table.concat(suits, ','), prompt, data, sgs.Card_MethodUse,
-                    source)
+                local jink = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, source)
                 if jink then
                     room:slashResult(effect, jink)
                 else
                     room:slashResult(effect, nil)
                 end
-                return true
-            else
-                local jink = room:askForCard(effect.to, 'Jink|no_suit', prompt, data, sgs.Card_MethodUse,
-                    source)
-                if jink then
-                    room:slashResult(effect, jink)
-                else
-                    room:slashResult(effect, nil)
-                end
+                room:removePlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','))
                 return true
             end
         end
