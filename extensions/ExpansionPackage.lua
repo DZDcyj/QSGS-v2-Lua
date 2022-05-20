@@ -6628,7 +6628,7 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
         elseif event == sgs.TargetConfirmed then
             local use = data:toCardUse()
             local card = use.card
-            if card and card:getSuit() ~= sgs.Card_NoSuit then
+            if rinsanFuncModule.cardCanBeRecorded(card) then
                 if use.to:contains(player) and player:hasSkill('LuaLiegong') then
                     room:setPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()), 1)
                 end
@@ -6645,7 +6645,7 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
                 end
                 card = resp.m_card
             end
-            if card and (not card:isKindOf('SkillCard')) and card:getSuit() ~= sgs.Card_NoSuit then
+            if rinsanFuncModule.cardCanBeRecorded(card) then
                 if player:hasSkill('LuaLiegong') then
                     room:setPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()), 1)
                 end

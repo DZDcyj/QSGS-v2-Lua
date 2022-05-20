@@ -1,6 +1,5 @@
 -- 日神杀公用 Lua 函数封装模块
 -- Created by DZDcyj at 2021/9/23
-
 module('QSanguoshaLuaFunction', package.seeall)
 
 -- 封装好的函数部分
@@ -78,8 +77,8 @@ function doQuanji(self, player, room)
                 card_id = player:handCards():first()
                 room:getThread():delay()
             else
-                card_id =
-                    room:askForExchange(player, self:objectName(), 1, 1, false, 'QuanjiPush'):getSubcards():first()
+                card_id = room:askForExchange(player, self:objectName(), 1, 1, false, 'QuanjiPush'):getSubcards()
+                    :first()
             end
             player:addToPile('power', card_id)
         end
@@ -146,24 +145,11 @@ end
 function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
     local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
     from:obtainCard(sgs.Sanguosha:getCard(card_id), false)
-    local togive =
-        room:askForPlayerChosen(
-        from,
-        room:getOtherPlayers(card_source),
-        self:objectName(),
-        '@LuaTaomie-give:' .. card_source:objectName(),
-        true,
-        true
-    )
+    local togive = room:askForPlayerChosen(from, room:getOtherPlayers(card_source), self:objectName(),
+        '@LuaTaomie-give:' .. card_source:objectName(), true, true)
     if togive then
-        local reason =
-            sgs.CardMoveReason(
-            sgs.CardMoveReason_S_REASON_GIVE,
-            from:objectName(),
-            togive:objectName(),
-            self:objectName(),
-            nil
-        )
+        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, from:objectName(), togive:objectName(),
+            self:objectName(), nil)
         room:moveCardTo(sgs.Sanguosha:getCard(card_id), from, togive, sgs.Player_PlaceHand, reason, false)
     end
 end
@@ -239,15 +225,7 @@ end
 
 -- 巧思封装函数
 function LuaDoQiaosiShow(room, player, dummyCard)
-    local choices = {
-        'king',
-        'merchant',
-        'artisan',
-        'farmer',
-        'scholar',
-        'general',
-        'cancel'
-    }
+    local choices = {'king', 'merchant', 'artisan', 'farmer', 'scholar', 'general', 'cancel'}
     local chosenRoles = {}
     local index = 0
     local continuePlaying = true
@@ -265,7 +243,10 @@ function LuaDoQiaosiShow(room, player, dummyCard)
     -- 预期的总牌数
     local expected_length = 0
     for _, cardTypes in ipairs(toGiveCardTypes) do
-        local params = {['existed'] = about_to_obtain, ['findDiscardPile'] = true}
+        local params = {
+            ['existed'] = about_to_obtain,
+            ['findDiscardPile'] = true
+        }
         if #cardTypes == 2 then
             -- 确定的，王、将
             params['type'] = cardTypes[1]
@@ -329,28 +310,10 @@ function LuaGetRoleCardType(roleType, kingActivated, generalActivated)
         ['general'] = {'EquipCard', 'EquipCard'},
         ['artisan'] = {'Slash', 'Slash', 'Slash', 'Slash', 'Analeptic'},
         ['farmer'] = {'Jink', 'Jink', 'Jink', 'Jink', 'Peach'},
-        ['scholar'] = {
-            'TrickCard',
-            'TrickCard',
-            'TrickCard',
-            'TrickCard',
-            'JinkOrPeach'
-        },
+        ['scholar'] = {'TrickCard', 'TrickCard', 'TrickCard', 'TrickCard', 'JinkOrPeach'},
         ['scholarKing'] = {'Peach', 'Peach', 'Peach', 'Peach', 'Jink'},
-        ['merchant'] = {
-            'EquipCard',
-            'EquipCard',
-            'EquipCard',
-            'EquipCard',
-            'SlashOrAnaleptic'
-        },
-        ['merchantGeneral'] = {
-            'Analeptic',
-            'Analeptic',
-            'Analeptic',
-            'Analeptic',
-            'Slash'
-        }
+        ['merchant'] = {'EquipCard', 'EquipCard', 'EquipCard', 'EquipCard', 'SlashOrAnaleptic'},
+        ['merchantGeneral'] = {'Analeptic', 'Analeptic', 'Analeptic', 'Analeptic', 'Slash'}
     }
     if roleType == 'scholar' and kingActivated then
         roleType = roleType .. 'King'
@@ -367,7 +330,10 @@ function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
     if mod == 0 then
         local type = random(1, 2)
         local card
-        local params = {['existed'] = {}, ['findDiscardPile'] = true}
+        local params = {
+            ['existed'] = {},
+            ['findDiscardPile'] = true
+        }
         if type == 1 then
             params['type'] = cardType1
             card = obtainTargetedTypeCard(room, params)
@@ -559,13 +525,11 @@ end
 -- move 卡牌移动结构体
 -- source 判断是否为该角色失去牌
 function lostCard(move, source)
-    local fromSource =
-        move.from and (move.from:objectName() == source:objectName()) and
-        (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))
-    local toSource =
-        move.to and
-        (move.to:objectName() == source:objectName() and
-            (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip))
+    local fromSource = move.from and (move.from:objectName() == source:objectName()) and
+                           (move.from_places:contains(sgs.Player_PlaceHand) or
+                               move.from_places:contains(sgs.Player_PlaceEquip))
+    local toSource = move.to and (move.to:objectName() == source:objectName() and
+                         (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip))
     return fromSource and not toSource
 end
 
@@ -601,20 +565,15 @@ function askForLuckCard(room, player)
     local count = player:getHandcardNum()
     while times > 0 and room:askForSkillInvoke(player, 'luck_card', sgs.QVariant('LuaLuckCard')) do
         times = times - 1
-        sendLogMessage(room, '#UseLuckCard', {['from'] = player})
+        sendLogMessage(room, '#UseLuckCard', {
+            ['from'] = player
+        })
         local ids = sgs.IntList()
         for _, cd in sgs.qlist(player:getHandcards()) do
             ids:append(cd:getId())
         end
-        local move =
-            sgs.CardsMoveStruct(
-            ids,
-            player,
-            nil,
-            sgs.Player_PlaceHand,
-            sgs.Player_DrawPile,
-            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'luck_card', '')
-        )
+        local move = sgs.CardsMoveStruct(ids, player, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile,
+            sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'luck_card', ''))
         room:moveCardsAtomic(move, true)
         -- 洗牌
         shuffleDrawPile(room)
@@ -695,15 +654,9 @@ end
 
 -- 修改技能描述
 function modifySkillDescription(translation, new_translation)
-    sgs.Sanguosha:addTranslationEntry(
-        translation,
-        '' ..
-            string.gsub(
-                sgs.Sanguosha:translate(translation),
-                sgs.Sanguosha:translate(translation),
-                sgs.Sanguosha:translate(new_translation)
-            )
-    )
+    sgs.Sanguosha:addTranslationEntry(translation,
+        '' .. string.gsub(sgs.Sanguosha:translate(translation), sgs.Sanguosha:translate(translation),
+            sgs.Sanguosha:translate(new_translation)))
 end
 
 -- 获取随机武将
@@ -754,6 +707,17 @@ function getLiegongSuitNum(player)
     end
 
     return count
+end
+
+-- 烈弓用，判断是否记录该牌花色
+function cardCanBeRecorded(card)
+    return card and (not card:isKindOf('SkillCard')) and cardSuitCanBeRecorded(card)
+end
+
+-- 替代简单的判断 NoSuit，因存在无花色红、黑等
+function cardSuitCanBeRecorded(card)
+    return card:getSuit() == sgs.Card_Spade or card:getSuit() == sgs.Card_Club or card:getSuit() == sgs.Card_Heart or
+               card:getSuit() == sgs.Card_Diamond
 end
 
 -- Animate 参数，用于 doAnimate 方法
