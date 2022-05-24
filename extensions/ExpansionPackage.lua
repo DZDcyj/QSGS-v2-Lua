@@ -6589,19 +6589,21 @@ LuaLiegong = sgs.CreateTriggerSkill {
                 local prompt = string.format('@LuaLiegong-jink:%s:%s:%s', effect.from:objectName(), source:objectName(),
                     self:objectName())
                 local jink = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, source)
-                room:removePlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','))
-                local invalid_jink = table.contains(suits, jink:getSuitString())
-                if jink and (not invalid_jink) then
-                    room:slashResult(effect, jink)
-                else
+                if jink then
+                    local invalid_jink = table.contains(suits, jink:getSuitString())
                     if invalid_jink then
                         rinsanFuncModule.sendLogMessage(room, '#LuaLiegongInvalidJink', {
                             ['from'] = effect.to,
                             ['card_str'] = jink:toString()
                         })
+                        room:slashResult(effect, nil)
+                    else
+                        room:slashResult(effect, jink)
                     end
+                else
                     room:slashResult(effect, nil)
                 end
+                room:removePlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','))
                 return true
             end
         end
