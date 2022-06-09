@@ -6561,6 +6561,9 @@ LuaLiegong = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.DamageCaused then
             local damage = data:toDamage()
+            if damage.transfer or damage.chain then
+                return false
+            end
             local card = damage.card
             if card and card:isKindOf('Slash') then
                 local x = card:getTag('LuaLiegongExtraDamage'):toInt()
