@@ -6572,7 +6572,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     data:setValue(damage)
                 end
-                card:removeTag('LuaLIegongExtraDamage')
+                card:removeTag('LuaLiegongExtraDamage')
             end
         else
             local effect = data:toSlashEffect()
@@ -6631,18 +6631,12 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
                 room:setPlayerMark(player, '@LuaLiegongSpade', 0)
                 room:setPlayerMark(player, '@LuaLiegongDiamond', 0)
             end
-            if card then
-                local suits = {'Heart', 'Diamond', 'Club', 'Spade'}
-                for _, suit in ipairs(suits) do
-                    room:setCardFlag(card, '-LuaLiegong' .. suit)
-                end
-            end
         elseif event == sgs.TargetConfirmed then
             local use = data:toCardUse()
             local card = use.card
             if rinsanFuncModule.cardCanBeRecorded(card) then
                 if use.to:contains(player) and player:hasSkill('LuaLiegong') then
-                    room:setPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()), 1)
+                    room:setPlayerMark(player, rinsanFuncModule.getLiegongSuitMarkName(card), 1)
                 end
             end
         else
@@ -6659,7 +6653,7 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
             end
             if rinsanFuncModule.cardCanBeRecorded(card) then
                 if player:hasSkill('LuaLiegong') then
-                    room:setPlayerMark(player, '@LuaLiegong' .. rinsanFuncModule.firstToUpper(card:getSuitString()), 1)
+                    room:setPlayerMark(player, rinsanFuncModule.getLiegongSuitMarkName(card), 1)
                 end
             end
         end

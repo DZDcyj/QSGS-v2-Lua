@@ -720,6 +720,11 @@ function cardSuitCanBeRecorded(card)
                card:getSuit() == sgs.Card_Diamond
 end
 
+-- 烈弓用，获取花色标记名称
+function getLiegongSuitMarkName(card)
+    return '@LuaLiegong' .. firstToUpper(card:getSuitString())
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
