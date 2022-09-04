@@ -6623,7 +6623,6 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardFinished then
-            local card = data:toCardUse().card
             if player:hasFlag('LuaLiegongInvoked') then
                 room:setPlayerFlag(player, '-LuaLiegongInvoked')
                 room:setPlayerMark(player, '@LuaLiegongHeart', 0)
