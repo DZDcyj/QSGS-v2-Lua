@@ -6510,3 +6510,168 @@ LuaNeifaTargetMod = sgs.CreateTargetModSkill {
 
 ExYuantanYuanshang:addSkill(LuaNeifa)
 SkillAnjiang:addSkill(LuaNeifaTargetMod)
+
+ExMouHuangzhong = sgs.General(extension, 'ExMouHuangzhong', 'shu', '4', true, true)
+
+LuaLiegong = sgs.CreateTriggerSkill {
+    name = 'LuaLiegong',
+    events = {sgs.TargetSpecified, sgs.DamageCaused, sgs.SlashProceed},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.TargetSpecified then
+            local use = data:toCardUse()
+            local card = use.card
+            if use.to:length() > 1 then
+                return false
+            end
+            if card and card:isKindOf('Slash') then
+                local x = rinsanFuncModule.getLiegongSuitNum(player)
+                if x > 0 then
+                    if room:askForSkillInvoke(player, self:objectName(), data) then
+                        room:broadcastSkillInvoke(self:objectName())
+                        room:setPlayerFlag(player, 'LuaLiegongInvoked')
+                        x = math.max(0, x - 1)
+                        if x > 0 then
+                            -- 参照源码【裸衣】亮出方式
+                            local card_ids = room:getNCards(x, false)
+                            for _, to in sgs.qlist(use.to) do
+                                room:setPlayerFlag(to, 'LuaLiegongTarget')
+                            end
+                            local move = sgs.CardsMoveStruct(card_ids, player, sgs.Player_PlaceTable,
+                                sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TURNOVER, player:objectName(),
+                                    self:objectName(), ''))
+                            room:moveCardsAtomic(move, true)
+                            room:getThread():delay()
+                            room:getThread():delay()
+                            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                            local damage_count = 0
+                            for _, card_id in sgs.qlist(card_ids) do
+                                local cd = sgs.Sanguosha:getCard(card_id)
+                                local suit_string = rinsanFuncModule.firstToUpper(cd:getSuitString())
+                                if player:getMark('@LuaLiegong' .. suit_string) > 0 then
+                                    damage_count = damage_count + 1
+                                end
+                                dummy:addSubcard(cd)
+                            end
+                            card:setTag('LuaLiegongExtraDamage', sgs.QVariant(damage_count))
+                            room:throwCard(dummy, sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER,
+                                player:objectName(), self:objectName(), ''), nil)
+                        end
+                    end
+                end
+            end
+        elseif event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            if damage.transfer or damage.chain then
+                return false
+            end
+            local card = damage.card
+            if card and card:isKindOf('Slash') then
+                local x = card:getTag('LuaLiegongExtraDamage'):toInt()
+                if x > 0 then
+                    damage.damage = damage.damage + x
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    data:setValue(damage)
+                end
+                card:removeTag('LuaLiegongExtraDamage')
+            end
+        else
+            local effect = data:toSlashEffect()
+            if not effect.to:hasFlag('LuaLiegongTarget') then
+                return false
+            end
+            local all_suits = {'heart', 'diamond', 'club', 'spade'}
+            local suits = {}
+            for _, suit in ipairs(all_suits) do
+                if effect.from:getMark('@LuaLiegong' .. rinsanFuncModule.firstToUpper(suit)) > 0 then
+                    table.insert(suits, suit)
+                end
+            end
+            if #suits > 0 then
+                room:setPlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','), false)
+                local source = room:findPlayerBySkillName(self:objectName())
+                local prompt = string.format('@LuaLiegong-jink:%s:%s:%s', effect.from:objectName(), source:objectName(),
+                    self:objectName())
+                local jink = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, source)
+                if jink then
+                    local invalid_jink = table.contains(suits, jink:getSuitString())
+                    if invalid_jink then
+                        rinsanFuncModule.sendLogMessage(room, '#LuaLiegongInvalidJink', {
+                            ['from'] = effect.to,
+                            ['card_str'] = jink:toString()
+                        })
+                        room:slashResult(effect, nil)
+                    else
+                        room:slashResult(effect, jink)
+                    end
+                else
+                    room:slashResult(effect, nil)
+                end
+                room:removePlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','))
+                return true
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaLiegongMark = sgs.CreateTriggerSkill {
+    name = 'LuaLiegongMark',
+    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.CardFinished, sgs.CardResponded},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardFinished then
+            if player:hasFlag('LuaLiegongInvoked') then
+                room:setPlayerFlag(player, '-LuaLiegongInvoked')
+                room:setPlayerMark(player, '@LuaLiegongHeart', 0)
+                room:setPlayerMark(player, '@LuaLiegongClub', 0)
+                room:setPlayerMark(player, '@LuaLiegongSpade', 0)
+                room:setPlayerMark(player, '@LuaLiegongDiamond', 0)
+            end
+        elseif event == sgs.TargetConfirmed then
+            local use = data:toCardUse()
+            local card = use.card
+            if rinsanFuncModule.cardCanBeRecorded(card) then
+                if use.to:contains(player) and player:hasSkill('LuaLiegong') then
+                    room:setPlayerMark(player, rinsanFuncModule.getLiegongSuitMarkName(card), 1)
+                end
+            end
+        else
+            local card
+            if event == sgs.CardUsed then
+                card = data:toCardUse().card
+            else
+                -- 用于区分无目标响应使用卡牌，例如【闪】
+                local resp = data:toCardResponse()
+                if not resp.m_isUse then
+                    return false
+                end
+                card = resp.m_card
+            end
+            if rinsanFuncModule.cardCanBeRecorded(card) then
+                if player:hasSkill('LuaLiegong') then
+                    room:setPlayerMark(player, rinsanFuncModule.getLiegongSuitMarkName(card), 1)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaLiegongAttackMod = sgs.CreateTargetModSkill {
+    name = 'LuaLiegongAttackMod',
+    pattern = 'Slash',
+    distance_limit_func = function(self, from, card, to)
+        if from:hasSkill('LuaLiegong') then
+            return math.max(card:getNumber() - from:getAttackRange(), 0)
+        end
+    end
+}
+
+ExMouHuangzhong:addSkill(LuaLiegong)
+SkillAnjiang:addSkill(LuaLiegongAttackMod)
+SkillAnjiang:addSkill(LuaLiegongMark)
