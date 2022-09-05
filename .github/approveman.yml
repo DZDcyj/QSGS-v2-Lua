@@ -1,8 +1,0 @@
-ownership_rules:
-  directory_matching_rules:
-    - name: general codes
-      path: extensions/**/*
-    - name: lua core codes
-      path: lua/**/*
-    - name: root documentations
-      path: /**/*.md
