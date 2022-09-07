@@ -725,6 +725,15 @@ function getLiegongSuitMarkName(card)
     return '@LuaLiegong' .. firstToUpper(card:getSuitString())
 end
 
+-- 清除 player 所有包含有 content 内容的 mark
+function clearAllMarksContains(room, player, content)
+    for _, mark in sgs.list(player:getMarkNames()) do
+        if string.find(mark, content) and player:getMark(mark) > 0 then
+            room:setPlayerMark(player, mark, 0)
+        end
+    end
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线

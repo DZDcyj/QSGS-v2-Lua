@@ -679,11 +679,7 @@ LuaZishu = sgs.CreateTriggerSkill {
             end
             -- 自书弃牌完毕后移除所有玩家的自书弃牌标记
             for _, p in sgs.qlist(room:getAlivePlayers()) do
-                for _, mark in sgs.list(p:getMarkNames()) do
-                    if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
-                        room:setPlayerMark(p, mark, 0)
-                    end
-                end
+                rinsanFuncModule.clearAllMarksContains(room, p, self:objectName())
             end
         end
         return false
@@ -699,11 +695,7 @@ LuaYingyuan = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                for _, mark in sgs.list(player:getMarkNames()) do
-                    if string.find(mark, 'LuaYingyuan') and player:getMark(mark) > 0 then
-                        room:setPlayerMark(player, mark, 0)
-                    end
-                end
+                rinsanFuncModule.clearAllMarksContains(room, player, self:objectName())
             end
         else
             local effect = data:toCardUse()
@@ -2698,11 +2690,7 @@ LuaZhiyi = sgs.CreateTriggerSkill {
                                 end
                             end
                         end
-                        for _, mark in sgs.list(sp:getMarkNames()) do
-                            if string.find(mark, self:objectName()) and sp:getMark(mark) > 0 then
-                                room:setPlayerMark(sp, mark, 0)
-                            end
-                        end
+                        rinsanFuncModule.clearAllMarksContains(room, sp, self:objectName())
                     end
                 end
             end
@@ -3223,11 +3211,7 @@ LuaFenyin = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    for _, mark in sgs.list(p:getMarkNames()) do
-                        if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
-                            room:setPlayerMark(p, mark, 0)
-                        end
-                    end
+                    rinsanFuncModule.clearAllMarksContains(room, p ,self:objectName())
                 end
             end
         end
@@ -3302,11 +3286,7 @@ LuaLiji = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    for _, mark in sgs.list(p:getMarkNames()) do
-                        if string.find(mark, self:objectName()) and p:getMark(mark) > 0 then
-                            room:setPlayerMark(p, mark, 0)
-                        end
-                    end
+                    rinsanFuncModule.clearAllMarksContains(room, p, self:objectName())
                 end
             end
         end
