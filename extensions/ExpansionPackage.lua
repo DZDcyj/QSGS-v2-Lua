@@ -6680,7 +6680,6 @@ LuaQixi = sgs.CreateTriggerSkill {
     view_as_skill = LuaQixiVS,
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
-        local source = effect.from
         local card = effect.card
         if card:isKindOf('Dismantlement') and (not card:isVirtualCard()) then
             if not effect.from:hasSkill(self:objectName()) then
