@@ -3211,7 +3211,7 @@ LuaFenyin = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    rinsanFuncModule.clearAllMarksContains(room, p ,self:objectName())
+                    rinsanFuncModule.clearAllMarksContains(room, p, self:objectName())
                 end
             end
         end
@@ -6655,3 +6655,53 @@ LuaLiegongAttackMod = sgs.CreateTargetModSkill {
 ExMouHuangzhong:addSkill(LuaLiegong)
 SkillAnjiang:addSkill(LuaLiegongAttackMod)
 SkillAnjiang:addSkill(LuaLiegongMark)
+
+ExMouGanning = sgs.General(extension, 'ExMouGanning', 'wu', '4', true, true)
+
+LuaQixiVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaQixiVS',
+    view_filter = function(self, card)
+        return card:isBlack()
+    end,
+    view_as = function(self, card)
+        local acard = sgs.Sanguosha:cloneCard('dismantlement', card:getSuit(), card:getNumber())
+        acard:addSubcard(card:getId())
+        acard:setSkillName(self:objectName())
+        return acard
+    end,
+    enabled_at_play = function(self, player)
+        return true
+    end
+}
+
+LuaQixi = sgs.CreateTriggerSkill {
+    name = 'LuaQixi',
+    events = {sgs.TrickEffect},
+    view_as_skill = LuaQixiVS,
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        local source = effect.from
+        local card = effect.card
+        if card:isKindOf('Dismantlement') and (not card:isVirtualCard()) then
+            if not effect.from:hasSkill(self:objectName()) then
+                return false
+            end
+            if (room:askForSkillInvoke(effect.from, self:objectName(), data)) then
+                local dummy = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, -1)
+                for _, cd in sgs.qlist(effect.to:getCards('hej')) do
+                    if (effect.from:canDiscard(effect.to, cd:getId())) then
+                        dummy:addSubcard(cd)
+                    end
+                end
+                room:throwCard(dummy, effect.to, effect.from)
+                return true
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+ExMouGanning:addSkill(LuaQixi)
