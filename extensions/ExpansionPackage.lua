@@ -6764,7 +6764,7 @@ LuaFenwei = sgs.CreateTriggerSkill {
                 use.nullified_list = nullified_list
                 data:setValue(use)
                 math.randomseed(os.time())
-                room:broadcastSkillInvoke('fenwei')
+                room:broadcastSkillInvoke(self:objectName())
                 room:setEmotion(splayer, 'skill/ganning_fenwei')
                 while targetCount > 0 do
                     local checker = function(card)
