@@ -6658,14 +6658,14 @@ SkillAnjiang:addSkill(LuaLiegongMark)
 
 ExMouGanning = sgs.General(extension, 'ExMouGanning', 'wu', '4', true, true)
 
-LuaQixiVS = sgs.CreateOneCardViewAsSkill {
-    name = 'LuaQixiVS',
-    view_filter = function(self, card)
-        return card:isBlack()
+LuaQixi = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaQixi',
+    view_filter = function(self, to_select)
+        return to_select:isBlack()
     end,
     view_as = function(self, card)
         local acard = sgs.Sanguosha:cloneCard('dismantlement', card:getSuit(), card:getNumber())
-        acard:addSubcard(card:getId())
+        acard:addSubcard(card)
         acard:setSkillName(self:objectName())
         return acard
     end,
@@ -6674,19 +6674,19 @@ LuaQixiVS = sgs.CreateOneCardViewAsSkill {
     end
 }
 
-LuaQixi = sgs.CreateTriggerSkill {
-    name = 'LuaQixi',
+LuaQixiTrigger = sgs.CreateTriggerSkill {
+    name = 'LuaQixiTrigger',
     events = {sgs.TrickEffect},
-    view_as_skill = LuaQixiVS,
+    global = true,
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
         local card = effect.card
         if card:isKindOf('Dismantlement') and (not card:isVirtualCard()) then
-            if not effect.from:hasSkill(self:objectName()) then
+            if not effect.from:hasSkill('LuaQixi') then
                 return false
             end
-            if (room:askForSkillInvoke(effect.from, self:objectName(), data)) then
-                local dummy = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, -1)
+            if (room:askForSkillInvoke(effect.from, 'LuaQixi', data)) then
+                local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
                 for _, cd in sgs.qlist(effect.to:getCards('hej')) do
                     if (effect.from:canDiscard(effect.to, cd:getId())) then
                         dummy:addSubcard(cd)
@@ -6703,4 +6703,93 @@ LuaQixi = sgs.CreateTriggerSkill {
     end
 }
 
+LuaFenweiCard = sgs.CreateSkillCard {
+    name = 'LuaFenweiCard',
+    target_fixed = false,
+    filter = function(self, targets, to_select, player)
+        return to_select:hasFlag('trickcardtarget')
+    end,
+    on_use = function(self, room, source, targets)
+        source:loseMark('@fenwei')
+        for _, p in ipairs(targets) do
+            room:setPlayerFlag(p, 'luafenwei')
+        end
+    end
+}
+
+LuaFenweiVS = sgs.CreateViewAsSkill {
+    name = 'LuaFenwei',
+    n = 0,
+    view_as = function(self, cards)
+        return LuaFenweiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return player:getMark('@fenwei') > 0 and pattern == '@@LuaFenwei'
+    end
+}
+
+LuaFenwei = sgs.CreateTriggerSkill {
+    name = 'LuaFenwei',
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@fenwei',
+    events = {sgs.CardUsed},
+    view_as_skill = LuaFenweiVS,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if not use.card:isKindOf('TrickCard') then
+            return false
+        end
+        if use.to:length() < 2 then
+            return false
+        end
+        local splayer = room:findPlayerBySkillName(self:objectName())
+        if splayer then
+            for _, dest in sgs.qlist(use.to) do
+                room:setPlayerFlag(dest, 'trickcardtarget')
+            end
+            if room:askForUseCard(splayer, '@@LuaFenwei', '@LuaFenwei') then
+                local targetCount = 0
+                local nullified_list = use.nullified_list
+                for _, dest in sgs.qlist(use.to) do
+                    if dest:hasFlag('luafenwei') then
+                        table.insert(nullified_list, dest:objectName())
+                        room:setPlayerFlag(dest, '-luafenwei')
+                        targetCount = targetCount + 1
+                    end
+                end
+                targetCount = math.min(4, targetCount)
+                use.nullified_list = nullified_list
+                data:setValue(use)
+                math.randomseed(os.time())
+                room:broadcastSkillInvoke('fenwei')
+                room:setEmotion(splayer, 'skill/ganning_fenwei')
+                while targetCount > 0 do
+                    local checker = function(card)
+                        return card:isKindOf('Dismantlement')
+                    end
+                    local dismantlement = rinsanFuncModule.obtainCardFromPile(checker, room:getDrawPile())
+                    if dismantlement then
+                        splayer:obtainCard(dismantlement)
+                    else
+                        break
+                    end
+                    targetCount = targetCount - 1
+                end
+            end
+            for _, target in sgs.qlist(room:getAllPlayers()) do
+                room:setPlayerFlag(target, '-trickcardtarget')
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
 ExMouGanning:addSkill(LuaQixi)
+ExMouGanning:addSkill(LuaFenwei)
+SkillAnjiang:addSkill(LuaQixiTrigger)
