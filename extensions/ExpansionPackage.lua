@@ -6688,6 +6688,7 @@ LuaQixiTrigger = sgs.CreateTriggerSkill {
                     end
                 end
                 room:throwCard(dummy, effect.to, effect.from)
+                room:broadcastSkillInvoke('LuaQixi')
                 return true
             end
         end
@@ -6758,7 +6759,6 @@ LuaFenwei = sgs.CreateTriggerSkill {
                 targetCount = math.min(4, targetCount)
                 use.nullified_list = nullified_list
                 data:setValue(use)
-                math.randomseed(os.time())
                 room:broadcastSkillInvoke(self:objectName())
                 room:setEmotion(splayer, 'skill/ganning_fenwei')
                 local checker = function(card)

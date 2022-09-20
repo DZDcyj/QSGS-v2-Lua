@@ -277,5 +277,11 @@ return {
     -- 谋黄忠
     ['$LuaLiegong1'] = '矢贯坚石，劲冠三军！',
     ['$LuaLiegong2'] = '吾虽年迈，箭矢犹锋！',
-    ['~ExMouHuangzhong'] = '弦断弓藏，将老孤亡…'
+    ['~ExMouHuangzhong'] = '弦断弓藏，将老孤亡…',
+    -- 谋甘宁
+    ['$LuaQixi1'] = '击敌不备，奇袭拔寨！',
+    ['$LuaQixi2'] = '轻羽透重铠，奇袭溃坚城！',
+    ['$LuaFenwei1'] = '舍身护主，扬吴将之风！',
+    ['$LuaFenwei2'] = '袭军挫阵，奋江东之威！',
+    ['~ExMouGanning'] = '蛮将休得猖狂！呃啊！'
 }
