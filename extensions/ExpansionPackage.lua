@@ -6660,17 +6660,12 @@ ExMouGanning = sgs.General(extension, 'ExMouGanning', 'wu', '4', true, true)
 
 LuaQixi = sgs.CreateOneCardViewAsSkill {
     name = 'LuaQixi',
-    view_filter = function(self, to_select)
-        return to_select:isBlack()
-    end,
+    filter_pattern = '.|black',
     view_as = function(self, card)
         local acard = sgs.Sanguosha:cloneCard('dismantlement', card:getSuit(), card:getNumber())
         acard:addSubcard(card)
         acard:setSkillName(self:objectName())
         return acard
-    end,
-    enabled_at_play = function(self, player)
-        return true
     end
 }
 
@@ -6766,10 +6761,10 @@ LuaFenwei = sgs.CreateTriggerSkill {
                 math.randomseed(os.time())
                 room:broadcastSkillInvoke(self:objectName())
                 room:setEmotion(splayer, 'skill/ganning_fenwei')
+                local checker = function(card)
+                    return card:isKindOf('Dismantlement')
+                end
                 while targetCount > 0 do
-                    local checker = function(card)
-                        return card:isKindOf('Dismantlement')
-                    end
                     local dismantlement = rinsanFuncModule.obtainCardFromPile(checker, room:getDrawPile())
                     if dismantlement then
                         splayer:obtainCard(dismantlement)
