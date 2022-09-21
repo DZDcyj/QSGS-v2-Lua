@@ -734,6 +734,46 @@ function clearAllMarksContains(room, player, content)
     end
 end
 
+-- 统一的 canDiscard 接口，处理奇才问题
+function canDiscard(from, to, flags)
+    if string.find('h', flags) and not to:isKongcheng() then
+        return true
+    end
+    if string.find('j', flags) and not to:getJudgingArea():isEmpty() then
+        return true
+    end
+    if string.find('e', flags) then
+        if to:getOffensiveHorse() or to:getDefensiveHorse() then
+            return true
+        end
+        if to:getWeapon() or to:getArmor() or to:getTreasure() then
+            if from:objectName() == to:objectName() or (not to:hasSkill('qicai')) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- from 是否可以弃置 to 的某一张牌
+function canDiscardCard(from, to, card_id)
+    if not to then
+        return false
+    end
+    if to:hasSkill('qicai') and from:objectName() ~= to:objectName() then
+        if (to:getWeapon() and card_id == to:getWeapon():getEffectiveId()) or
+            (to:getArmor() and card_id == to:getArmor():getEffectiveId()) or
+            (to:getTreasure() and card_id == to:getTreasure():getEffectiveId()) then
+            return false
+        end
+    elseif from:objectName() == to:objectName() then
+        if (not from:getJudgingAreaID():contains(card_id) and from:isJilei(sgs.Sanguosha:getCard(card_id))) then
+            return false
+        end
+    end
+    return true
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
