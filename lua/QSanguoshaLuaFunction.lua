@@ -736,13 +736,13 @@ end
 
 -- 统一的 canDiscard 接口，处理奇才问题
 function canDiscard(from, to, flags)
-    if string.find('h', flags) and not to:isKongcheng() then
+    if string.find(flags, 'h') and not to:isKongcheng() then
         return true
     end
-    if string.find('j', flags) and not to:getJudgingArea():isEmpty() then
+    if string.find(flags, 'j') and not to:getJudgingArea():isEmpty() then
         return true
     end
-    if string.find('e', flags) then
+    if string.find(flags, 'e') then
         if to:getOffensiveHorse() or to:getDefensiveHorse() then
             return true
         end
