@@ -80,7 +80,8 @@ LuaFeiyang = sgs.CreateTriggerSkill {
     view_as_skill = LuaFeiyangVS,
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
-            if player:getJudgingArea():length() > 0 and player:canDiscard(player, 'h') and player:getHandcardNum() >= 2 then
+            if player:getJudgingArea():length() > 0 and rinsanFuncModule.canDiscard(player, player, 'h') and
+                player:getHandcardNum() >= 2 then
                 room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
             end
         end

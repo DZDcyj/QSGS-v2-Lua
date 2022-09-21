@@ -2035,7 +2035,7 @@ LuaXuanfengCard = sgs.CreateSkillCard {
         if to_select:objectName() == sgs.Self:objectName() then
             return false
         end
-        return sgs.Self:canDiscard(to_select, 'he')
+        return rinsanFuncModule.canDiscard(sgs.Self, to_select, 'he')
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, 'LuaXuanfeng')
@@ -2053,7 +2053,7 @@ LuaXuanfengCard = sgs.CreateSkillCard {
         end
         for _, sp in ipairs(targets) do
             while map[sp] > 0 do
-                if source:isAlive() and sp:isAlive() and source:canDiscard(sp, 'he') then
+                if source:isAlive() and sp:isAlive() and rinsanFuncModule.canDiscard(source, sp, 'he') then
                     local card_id =
                         room:askForCardChosen(source, sp, 'he', 'LuaXuanfeng', false, sgs.Card_MethodDiscard)
                     room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, source:objectName(), sp:objectName())
@@ -2117,7 +2117,7 @@ LuaXuanfeng = sgs.CreateTriggerSkill {
                 move.from_places:contains(sgs.Player_PlaceEquip) then
                 local targets = sgs.SPlayerList()
                 for _, target in sgs.qlist(room:getOtherPlayers(player)) do
-                    if player:canDiscard(target, 'he') then
+                    if rinsanFuncModule.canDiscard(player, target, 'he') then
                         targets:append(target)
                     end
                 end
@@ -2293,7 +2293,7 @@ LuaLiezhiCard = sgs.CreateSkillCard {
     will_throw = true,
     filter = function(self, selected, to_select)
         return #selected <= 1 and to_select:objectName() ~= sgs.Self:objectName() and
-                   sgs.Self:canDiscard(to_select, 'hej')
+                   rinsanFuncModule.canDiscard(sgs.Self, to_select, 'hej')
     end,
     on_use = function(self, room, source, targets)
         room:broadcastSkillInvoke('LuaLiezhi')
@@ -2330,7 +2330,7 @@ LuaLiezhi = sgs.CreateTriggerSkill {
             if player:getPhase() == sgs.Player_Start then
                 if player:getMark(self:objectName()) == 0 then
                     for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                        if player:canDiscard(p, 'hej') then
+                        if rinsanFuncModule.canDiscard(player, p, 'hej') then
                             room:askForUseCard(player, '@@LuaLiezhi', '@LuaLiezhi')
                             break
                         end
@@ -2868,7 +2868,7 @@ LuaFenchengCard = sgs.CreateSkillCard {
         for _, p in sgs.qlist(room:getOtherPlayers(source)) do
             if p:isAlive() then
                 local length = room:getTag('LuaFenchengDiscard'):toInt() + 1
-                if not p:canDiscard(p, 'he') or p:getCardCount(true) < length or
+                if not rinsanFuncModule.canDiscard(p, p, 'he') or p:getCardCount(true) < length or
                     not room:askForDiscard(p, 'fencheng', 10000, length, true, true, '@fencheng:::' .. length) then
                     room:setTag('LuaFenchengDiscard', sgs.QVariant(0))
                     rinsanFuncModule.doDamage(room, source, p, 2, sgs.DamageStruct_Fire)
@@ -2974,7 +2974,7 @@ LuaYuce = sgs.CreateTriggerSkill {
             local typeName = {'BasicCard', 'TrickCard', 'EquipCard'}
             local toRemove = rinsanFuncModule.firstToUpper(rinsanFuncModule.replaceUnderline(card:getType())) .. 'Card'
             table.removeOne(typeName, toRemove)
-            if not damage.from:canDiscard(damage.from, 'h') or
+            if not rinsanFuncModule.canDiscard(damage.from, damage.from, 'h') or
                 not room:askForCard(damage.from, table.concat(typeName, ',') .. '|.|.|hand', '@yuce-discard:' ..
                     player:objectName() .. '::' .. typeName[1] .. ':' .. typeName[2], data) then
                 room:getThread():delay(1500)
@@ -3128,10 +3128,10 @@ LuaJieyueCard = sgs.CreateSkillCard {
         if choice == 'luajieyuediscard' then
             local hand_card_id
             local equip_card_id
-            if target:canDiscard(target, 'h') then
+            if rinsanFuncModule.canDiscard(target, target, 'h') then
                 hand_card_id = room:askForCardChosen(target, target, 'h', 'LuaJieyue', false, sgs.Card_MethodNone)
             end
-            if target:canDiscard(target, 'e') then
+            if rinsanFuncModule.canDiscard(target, target, 'e') then
                 equip_card_id = room:askForCardChosen(target, target, 'e', 'LuaJieyue', false, sgs.Card_MethodNone)
             end
             local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
@@ -3211,7 +3211,7 @@ LuaFenyin = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    rinsanFuncModule.clearAllMarksContains(room, p ,self:objectName())
+                    rinsanFuncModule.clearAllMarksContains(room, p, self:objectName())
                 end
             end
         end
@@ -5468,7 +5468,8 @@ LuaGaoyuan = sgs.CreateTriggerSkill {
     events = {sgs.TargetConfirming},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) and player:canDiscard(player, 'he') then
+        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) and
+            rinsanFuncModule.canDiscard(player, player, 'he') then
             if use.from:getMark('LuaZhengjian' .. player:objectName()) == 0 and
                 player:getMark('LuaZhengjian' .. player:objectName()) == 0 then
                 local target
@@ -5642,7 +5643,7 @@ LuaLonghun = sgs.CreateTriggerSkill {
             if use.card and use.card:isBlack() and use.card:getSkillName() == self:objectName() and
                 use.card:subcardsLength() > 1 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                if player:canDiscard(room:getCurrent(), 'he') then
+                if rinsanFuncModule.canDiscard(player, room:getCurrent(), 'he') then
                     room:throwCard(room:askForCardChosen(player, room:getCurrent(), 'he', self:objectName(), false,
                         sgs.Card_MethodDiscard), room:getCurrent(), player)
                 end
@@ -6371,7 +6372,7 @@ LuaNeifaCard = sgs.CreateSkillCard {
             source:obtainCard(sgs.Sanguosha:getCard(card_id), false)
         end
         room:broadcastSkillInvoke('LuaNeifa')
-        if source:canDiscard(source, 'he') then
+        if rinsanFuncModule.canDiscard(source, source, 'he') then
             local card = room:askForCard(source, '..!', '@LuaNeifa-discard', sgs.QVariant(), sgs.Card_MethodDiscard)
             if card then
                 local flag = 'LuaNeifa-NonBasic'
@@ -6655,3 +6656,189 @@ LuaLiegongAttackMod = sgs.CreateTargetModSkill {
 ExMouHuangzhong:addSkill(LuaLiegong)
 SkillAnjiang:addSkill(LuaLiegongAttackMod)
 SkillAnjiang:addSkill(LuaLiegongMark)
+
+ExMouGanning = sgs.General(extension, 'ExMouGanning', 'wu', '4', true, true)
+
+LuaQixi = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaQixi',
+    filter_pattern = '.|black',
+    view_as = function(self, card)
+        local acard = sgs.Sanguosha:cloneCard('dismantlement', card:getSuit(), card:getNumber())
+        acard:addSubcard(card)
+        acard:setSkillName(self:objectName())
+        return acard
+    end
+}
+
+LuaQixiTrigger = sgs.CreateTriggerSkill {
+    name = 'LuaQixiTrigger',
+    events = {sgs.TrickEffect},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        local card = effect.card
+        -- 替代的【过河拆桥】判断
+        if (card:isKindOf('Dismantlement') or card:objectName() == 'dismantlement') and (not card:isVirtualCard()) then
+            if not effect.from:hasSkill('LuaQixi') then
+                return false
+            end
+            if (room:askForSkillInvoke(effect.from, 'LuaQixi', data)) then
+                local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
+                for _, cd in sgs.qlist(effect.to:getCards('hej')) do
+                    if (rinsanFuncModule.canDiscardCard(effect.from, effect.to, cd:getId())) then
+                        dummy:addSubcard(cd)
+                    end
+                end
+                if dummy:subcardsLength() > 0 then
+                    room:throwCard(dummy, effect.to, effect.from)
+                end
+                room:broadcastSkillInvoke('LuaQixi')
+                return true
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaFenweiCard = sgs.CreateSkillCard {
+    name = 'LuaFenweiCard',
+    target_fixed = false,
+    filter = function(self, targets, to_select, player)
+        return to_select:hasFlag('trickcardtarget')
+    end,
+    on_use = function(self, room, source, targets)
+        source:loseMark('@fenwei')
+        for _, p in ipairs(targets) do
+            room:setPlayerFlag(p, 'luafenwei')
+        end
+    end
+}
+
+LuaFenweiVS = sgs.CreateViewAsSkill {
+    name = 'LuaFenwei',
+    n = 0,
+    view_as = function(self, cards)
+        return LuaFenweiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return player:getMark('@fenwei') > 0 and pattern == '@@LuaFenwei'
+    end
+}
+
+LuaFenwei = sgs.CreateTriggerSkill {
+    name = 'LuaFenwei',
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@fenwei',
+    events = {sgs.CardUsed},
+    view_as_skill = LuaFenweiVS,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if not use.card:isKindOf('TrickCard') then
+            return false
+        end
+        if use.to:length() < 2 then
+            return false
+        end
+        local splayer = room:findPlayerBySkillName(self:objectName())
+        if splayer then
+            for _, dest in sgs.qlist(use.to) do
+                room:setPlayerFlag(dest, 'trickcardtarget')
+            end
+            if room:askForUseCard(splayer, '@@LuaFenwei', '@LuaFenwei') then
+                local targetCount = 0
+                local nullified_list = use.nullified_list
+                for _, dest in sgs.qlist(use.to) do
+                    if dest:hasFlag('luafenwei') then
+                        table.insert(nullified_list, dest:objectName())
+                        room:setPlayerFlag(dest, '-luafenwei')
+                        targetCount = targetCount + 1
+                    end
+                end
+                targetCount = math.min(4, targetCount)
+                use.nullified_list = nullified_list
+                data:setValue(use)
+                room:broadcastSkillInvoke(self:objectName())
+                room:setEmotion(splayer, 'skill/ganning_fenwei')
+                local checker = function(card)
+                    return card:isKindOf('Dismantlement')
+                end
+                while targetCount > 0 do
+                    local dismantlement = rinsanFuncModule.obtainCardFromPile(checker, room:getDrawPile())
+                    if dismantlement then
+                        splayer:obtainCard(dismantlement)
+                    else
+                        break
+                    end
+                    targetCount = targetCount - 1
+                end
+            end
+            for _, target in sgs.qlist(room:getAllPlayers()) do
+                room:setPlayerFlag(target, '-trickcardtarget')
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+-- 替换原版【过河拆桥】
+LuaDismantlement = sgs.CreateTrickCard {
+    name = 'dismantlement',
+    subtype = 'single_target_trick',
+    filter = function(self, targets, to_select, player)
+        local total_num = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, player, self)
+        return
+            targets:length() < total_num and to_select ~= player:objectName() and to_select:getCards('hej'):length() > 0
+    end,
+    on_effect = function(self, effect)
+        if effect.from:isDead() then
+            return
+        end
+        local room = effect.to:getRoom()
+        if (not rinsanFuncModule.canDiscard(effect.from, effect.to, 'hej')) then
+            return
+        end
+        local card_id = room:askForCardChosen(effect.from, effect.to, 'hej', self:objectName(), false, sgs.Card_MethodDiscard)
+        local place = effect.to
+        if room:getCardPlace(card_id) == sgs.Player_PlaceDelayedTrick then
+            place = nil
+        end
+        room:throwCard(card_id, place, effect.from)
+    end
+}
+
+LuaQicaiHotfix = sgs.CreateTriggerSkill {
+    name = 'LuaQicaiHotfix',
+    frequency = sgs.Skill_Compulsory,
+    priority = 10000,
+    global = true,
+    events = {sgs.CardEffected},
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        if effect.to:hasSkill('qicai') and effect.card and effect.card:isKindOf('Dismantlement') then
+            local dismantlement = LuaDismantlement:clone()
+            dismantlement:setSuit(effect.card:getSuit())
+            dismantlement:setNumber(effect.card:getNumber())
+            dismantlement:setId(effect.card:getId())
+            effect.card = dismantlement
+            data:setValue(effect)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+ExMouGanning:addSkill(LuaQixi)
+ExMouGanning:addSkill(LuaFenwei)
+SkillAnjiang:addSkill(LuaQixiTrigger)
+SkillAnjiang:addSkill(LuaQicaiHotfix)
