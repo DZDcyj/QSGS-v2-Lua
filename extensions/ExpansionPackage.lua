@@ -6806,8 +6806,7 @@ LuaDismantlement = sgs.CreateTrickCard {
         if (not rinsanFuncModule.canDiscard(effect.from, effect.to, 'hej')) then
             return
         end
-        local card_id = -1
-        card_id = room:askForCardChosen(effect.from, effect.to, 'hej', self:objectName(), false, sgs.Card_MethodDiscard)
+        local card_id = room:askForCardChosen(effect.from, effect.to, 'hej', self:objectName(), false, sgs.Card_MethodDiscard)
         local place = effect.to
         if room:getCardPlace(card_id) == sgs.Player_PlaceDelayedTrick then
             place = nil
