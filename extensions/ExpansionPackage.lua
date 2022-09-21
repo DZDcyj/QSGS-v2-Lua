@@ -6676,7 +6676,8 @@ LuaQixiTrigger = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
         local card = effect.card
-        if card:isKindOf('Dismantlement') and (not card:isVirtualCard()) then
+        -- 替代的【过河拆桥】判断
+        if (card:isKindOf('Dismantlement') or card:objectName() == 'dismantlement') and (not card:isVirtualCard()) then
             if not effect.from:hasSkill('LuaQixi') then
                 return false
             end
@@ -6785,6 +6786,71 @@ LuaFenwei = sgs.CreateTriggerSkill {
     end
 }
 
+-- 替换原版【过河拆桥】
+LuaDismantlement = sgs.CreateTrickCard {
+    name = 'dismantlement',
+    subtype = 'single_target_trick',
+    filter = function(self, targets, to_select, player)
+        local total_num = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, player, self)
+        return targets:length() < total_num and to_select ~= player:objectName() and to_select:getCards('hej'):length() > 0
+    end,
+    on_effect = function(self, effect)
+        if effect.from:isDead() then
+            return
+        end
+        local room = effect.to:getRoom()
+        if(not effect.from:canDiscard(effect.to, 'hej')) then
+            return
+        end
+        if(effect.to:hasSkill('qicai')) then
+            local min = 0
+            if effect.to:getWeapon() then
+                min = min + 1
+            end
+            if effect.to:getArmor() then
+                min = min + 1
+            end
+            if effect.to:getTreasure() then
+                min = min + 1
+            end
+            if effect.to:getCards('hej'):length() <= min then
+                return
+            end
+        end
+        local card_id = -1
+        card_id = room:askForCardChosen(effect.from, effect.to, 'hej', self:objectName(), false, sgs.Card_MethodDiscard)
+        local place = effect.to
+        if room:getCardPlace(card_id) == sgs.Player_PlaceDelayedTrick then
+            place = nil
+        end
+        room:throwCard(card_id, place, effect.from)
+    end
+}
+
+LuaQicaiHotfix = sgs.CreateTriggerSkill {
+    name = 'LuaQicaiHotfix',
+    frequency = sgs.Skill_Compulsory,
+    priority = 10000,
+    global = true,
+    events = {sgs.CardEffected},
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        if effect.to:hasSkill('qicai') and effect.card and effect.card:isKindOf('Dismantlement') then
+            local dismantlement = LuaDismantlement:clone()
+            dismantlement:setSuit(effect.card:getSuit())
+            dismantlement:setNumber(effect.card:getNumber())
+            dismantlement:setId(effect.card:getId())
+            effect.card = dismantlement
+            data:setValue(effect)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
 ExMouGanning:addSkill(LuaQixi)
 ExMouGanning:addSkill(LuaFenwei)
 SkillAnjiang:addSkill(LuaQixiTrigger)
+SkillAnjiang:addSkill(LuaQicaiHotfix)
