@@ -786,6 +786,7 @@ function doJiemingDrawDiscard(skillName, player, room)
     end
     local target = room:askForPlayerChosen(player, alives, skillName, 'jieming-invoke', true, true)
     if target then
+        room:broadcastSkillInvoke(skillName)
         local x = math.min(5, target:getMaxHp())
         target:drawCards(x, skillName)
         local diff = target:getHandcardNum() - x

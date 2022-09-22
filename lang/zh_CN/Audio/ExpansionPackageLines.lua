@@ -291,5 +291,9 @@ return {
     ['$LuaWansha2'] = '斩草务尽，以绝后患',
     ['$LuaJiejiaxuWeimu1'] = '此伤与我无关',
     ['$LuaJiejiaxuWeimu2'] = '还是另寻他法吧！',
-    ['~JieJiaxu'] = '此劫…我亦有所算！'
+    ['~JieJiaxu'] = '此劫…我亦有所算！',
+    -- OL界荀彧
+    ['$LuaOLJieming1'] = '杀身成仁，不负皇恩',
+    ['$LuaOLJieming2'] = '因势利导，是为良计',
+    ['~OLJieXunyu'] = '命不由人，徒叹奈何……'
 }
