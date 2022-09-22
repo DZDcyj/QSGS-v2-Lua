@@ -137,8 +137,11 @@ function getBackPindianCardByJici(room, pindian, isFrom)
 end
 
 -- 封装好的 RIGHT 函数，判断技能能否发动的默认条件
-function RIGHT(self, player)
-    return player and player:isAlive() and player:hasSkill(self:objectName())
+function RIGHT(self, player, skillName)
+    if not skillName then
+        skillName = self:objectName()
+    end
+    return player and player:isAlive() and player:hasSkill(skillName)
 end
 
 -- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得

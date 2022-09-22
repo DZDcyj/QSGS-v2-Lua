@@ -283,5 +283,13 @@ return {
     ['$LuaQixi2'] = '轻羽透重铠，奇袭溃坚城！',
     ['$LuaFenwei1'] = '舍身护主，扬吴将之风！',
     ['$LuaFenwei2'] = '袭军挫阵，奋江东之威！',
-    ['~ExMouGanning'] = '蛮将休得猖狂！呃啊！'
+    ['~ExMouGanning'] = '蛮将休得猖狂！呃啊！',
+    -- 界贾诩
+    ['$LuaLuanwu1'] = '一切…都在我的掌控中！',
+    ['$LuaLuanwu2'] = '这乱世还不够乱！',
+    ['$LuaWansha1'] = '有谁敢试试？',
+    ['$LuaWansha2'] = '斩草务尽，以绝后患',
+    ['$LuaJiejiaxuWeimu1'] = '此伤与我无关',
+    ['$LuaJiejiaxuWeimu2'] = '还是另寻他法吧！',
+    ['~JieJiaxu'] = '此劫…我亦有所算！'
 }
