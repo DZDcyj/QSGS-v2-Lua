@@ -6806,7 +6806,8 @@ LuaDismantlement = sgs.CreateTrickCard {
         if (not rinsanFuncModule.canDiscard(effect.from, effect.to, 'hej')) then
             return
         end
-        local card_id = room:askForCardChosen(effect.from, effect.to, 'hej', self:objectName(), false, sgs.Card_MethodDiscard)
+        local card_id = room:askForCardChosen(effect.from, effect.to, 'hej', self:objectName(), false,
+            sgs.Card_MethodDiscard)
         local place = effect.to
         if room:getCardPlace(card_id) == sgs.Player_PlaceDelayedTrick then
             place = nil
@@ -6847,61 +6848,70 @@ JieJiaxu = sgs.General(extension, 'JieJiaxu', 'qun', '3', true, true)
 
 LuaWansha = sgs.CreateTriggerSkill {
     name = 'LuaWansha',
-    events = {sgs.Dying, sgs.EventPhaseChanging, sgs.Death, sgs.QuitDying},
+    events = {sgs.Dying},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.Dying then
-            local dying = data:toDying()
+        local dying = data:toDying()
+        local current = room:getCurrent()
+        if rinsanFuncModule.RIGHT(self, current) then
+            if current:getPhase() ~= sgs.Player_NotActive then
+                local from = current
+                local to = dying.who
+                if dying.who:objectName() ~= player:objectName() and current:objectName() ~= player:objectName() then
+                    -- 现在是以 Mark 而非 Flag 形式标记 Global_PreventPeach
+                    room:addPlayerMark(player, 'Global_PreventPeach')
+                    room:addPlayerMark(player, '@skill_invalidity')
+                    room:addPlayerMark(player, 'LuaWanshaInvokeTime')
+                end
+                if player:objectName() == current:objectName() then
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:setPlayerFlag(to, 'wansha')
+                    local type = '#LuaWanshaTwo'
+                    if from:objectName() == to:objectName() then
+                        type = '#LuaWanshaOne'
+                    end
+                    rinsanFuncModule.sendLogMessage(room, type, {
+                        ['from'] = from,
+                        ['to'] = to,
+                        ['arg'] = self:objectName()
+                    })
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaWanshaClear = sgs.CreateTriggerSkill {
+    name = 'LuaWanshaClear',
+    global = true,
+    events = {sgs.EventPhaseChanging, sgs.Death, sgs.QuitDying},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseChanging then
+            local change = data:toPhaseChange()
+            if change.to ~= sgs.Player_NotActive then
+                return false
+            end
+        elseif event == sgs.Death then
+            local death = data:toDeath()
+            if death.who:objectName() ~= room:getCurrent():objectName() or death.who:getPhase() == sgs.Player_NotActive then
+                return false
+            end
+        elseif event == sgs.QuitDying then
             local current = room:getCurrent()
-            if rinsanFuncModule.RIGHT(self, current) then
-                if current:getPhase() ~= sgs.Player_NotActive then
-                    local from = current
-                    local to = dying.who
-                    if dying.who:objectName() ~= player:objectName() and current:objectName() ~= player:objectName() then
-                        -- 现在是以 Mark 而非 Flag 形式标记 Global_PreventPeach
-                        room:addPlayerMark(player, 'Global_PreventPeach')
-                        room:addPlayerMark(player, '@skill_invalidity')
-                        room:addPlayerMark(player, 'LuaWanshaInvokeTime')
-                    end
-                    if player:objectName() == current:objectName() then
-                        room:broadcastSkillInvoke(self:objectName())
-                        room:setPlayerFlag(to, 'wansha')
-                        local type = '#LuaWanshaTwo'
-                        if from:objectName() == to:objectName() then
-                            type = '#LuaWanshaOne'
-                        end
-                        rinsanFuncModule.sendLogMessage(room, type, {
-                            ['from'] = from,
-                            ['to'] = to,
-                            ['arg'] = self:objectName()
-                        })
-                    end
-                end
+            if (not rinsanFuncModule.RIGHT(self, current, 'LuaWansha')) or current:getPhase() == sgs.Player_NotActive then
+                return false
             end
-        else
-            if event == sgs.EventPhaseChanging then
-                local change = data:toPhaseChange()
-                if change.to ~= sgs.Player_NotActive then
-                    return false
-                end
-            elseif event == sgs.Death then
-                local death = data:toDeath()
-                if death.who:objectName() ~= player:objectName() or death.who:getPhase() == sgs.Player_NotActive then
-                    return false
-                end
-            elseif event == sgs.QuitDying then
-                local current = room:getCurrent()
-                if (not rinsanFuncModule.RIGHT(self, current)) or current:getPhase() == sgs.Player_NotActive then
-                    return false
-                end
-            end
-            for _, p in sgs.qlist(room:getAllPlayers()) do
-                local x = p:getMark('LuaWanshaInvokeTime')
-                if x > 0 then
-                    room:removePlayerMark(p, 'Global_PreventPeach', x)
-                    room:removePlayerMark(p, '@skill_invalidity', x)
-                    room:setPlayerMark(p, 'LuaWanshaInvokeTime', 0)
-                end
+        end
+        for _, p in sgs.qlist(room:getAllPlayers()) do
+            local x = p:getMark('LuaWanshaInvokeTime')
+            if x > 0 then
+                room:removePlayerMark(p, 'Global_PreventPeach', x)
+                room:removePlayerMark(p, '@skill_invalidity', x)
+                room:setPlayerMark(p, 'LuaWanshaInvokeTime', 0)
             end
         end
     end,
@@ -7000,4 +7010,5 @@ LuaJiejiaxuWeimuDamagePrevent = sgs.CreateTriggerSkill {
 JieJiaxu:addSkill(LuaWansha)
 JieJiaxu:addSkill(LuaLuanwu)
 JieJiaxu:addSkill(LuaJiejiaxuWeimu)
+SkillAnjiang:addSkill(LuaWanshaClear)
 SkillAnjiang:addSkill(LuaJiejiaxuWeimuDamagePrevent)
