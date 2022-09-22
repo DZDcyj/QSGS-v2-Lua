@@ -777,6 +777,26 @@ function canDiscardCard(from, to, card_id)
     return true
 end
 
+-- 封装函数【节命】OL
+-- 返回值代表是否成功发动【节命】
+function doJiemingDrawDiscard(skillName, player, room)
+    local alives = room:getAlivePlayers()
+    if alives:isEmpty() then
+        return false
+    end
+    local target = room:askForPlayerChosen(player, alives, skillName, 'jieming-invoke', true, true)
+    if target then
+        room:broadcastSkillInvoke(skillName)
+        local x = math.min(5, target:getMaxHp())
+        target:drawCards(x, skillName)
+        local diff = target:getHandcardNum() - x
+        if diff > 0 then
+            room:askForDiscard(target, skillName, diff, diff)
+        end
+    end
+    return target ~= nil
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
