@@ -6864,6 +6864,7 @@ LuaWansha = sgs.CreateTriggerSkill {
                         room:addPlayerMark(player, 'LuaWanshaInvokeTime')
                     end
                     if player:objectName() == current:objectName() then
+                        room:broadcastSkillInvoke(self:objectName())
                         room:setPlayerFlag(to, 'wansha')
                         local type = '#LuaWanshaTwo'
                         if from:objectName() == to:objectName() then
@@ -6913,6 +6914,7 @@ LuaLuanwuCard = sgs.CreateSkillCard {
     name = 'LuaLuanwuCard',
     target_fixed = true,
     on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaLuanwu')
         room:removePlayerMark(source, '@chaos')
         room:setEmotion(source, 'skill/luanwu')
         local players = room:getOtherPlayers(source)
@@ -6985,6 +6987,7 @@ LuaJiejiaxuWeimuDamagePrevent = sgs.CreateTriggerSkill {
                 ['arg'] = x,
                 ['arg2'] = 'LuaJiejiaxuWeimu'
             })
+            room:broadcastSkillInvoke('LuaJiejiaxuWeimu')
             room:notifySkillInvoked(player, 'LuaJiejiaxuWeimu')
             return true
         end
