@@ -1,6 +1,5 @@
 -- 扩展包 AI
 -- Created by DZDcyj at 2021/8/21
-
 -- 灭计弃牌
 sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional, include_equip)
     min_num = min_num or discard_num
@@ -160,11 +159,8 @@ sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets)
     for _, target in ipairs(targets) do
-        if
-            self:isFriend(target) and not target:hasSkill('zishu') and not target:hasSkill('manjuan') and
-                not target:hasSkill('LuaZishu') and
-                not self:needKongcheng(target, true)
-         then
+        if self:isFriend(target) and not target:hasSkill('zishu') and not target:hasSkill('manjuan') and
+            not target:hasSkill('LuaZishu') and not self:needKongcheng(target, true) then
             return target
         end
     end
@@ -189,10 +185,8 @@ sgs.ai_skill_invoke.LuaZhiman = function(self, data)
         if self:doNotDiscard(target, 'e', true) then
             return false
         end
-        if
-            self:getDamagedEffects(target, self.player, true) or
-                (target:getArmor() and not target:getArmor():isKindOf('SilverLion'))
-         then
+        if self:getDamagedEffects(target, self.player, true) or
+            (target:getArmor() and not target:getArmor():isKindOf('SilverLion')) then
             return true
         end
         if self:getDangerousCard(target) then
@@ -328,10 +322,8 @@ sgs.ai_skill_use['@@LuaQiaosi!'] = function(self, prompt, method)
     local target
     self:sort(self.friends_noself)
     for _, friend in ipairs(self.friends_noself) do
-        if
-            not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
-                not self:needKongcheng(friend, true)
-         then
+        if not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
+            not self:needKongcheng(friend, true) then
             target = friend
             break
         end
@@ -604,7 +596,11 @@ end
 sgs.ai_skill_use_func['#LuaFenchengCard'] = function(card, use, self)
     local value = 0
     local neutral = 0
-    local damage = {from = self.player, damage = 2, nature = sgs.DamageStruct_Fire}
+    local damage = {
+        from = self.player,
+        damage = 2,
+        nature = sgs.DamageStruct_Fire
+    }
     local lastPlayer = self.player
     for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
         damage.to = p
@@ -613,15 +609,11 @@ sgs.ai_skill_use_func['#LuaFenchengCard'] = function(card, use, self)
                 neutral = neutral + 1
             end
             local v = 4
-            if
-                (self:getDamagedEffects(p, self.player) or self:needToLoseHp(p, self.player)) and
-                    self:getCardsNum('Peach', p, self.player) + p:getHp() > 2
-             then
+            if (self:getDamagedEffects(p, self.player) or self:needToLoseHp(p, self.player)) and
+                self:getCardsNum('Peach', p, self.player) + p:getHp() > 2 then
                 v = v - 6
-            elseif
-                lastPlayer:objectName() ~= self.player:objectName() and
-                    lastPlayer:getCardCount(true) < p:getCardCount(true)
-             then
+            elseif lastPlayer:objectName() ~= self.player:objectName() and lastPlayer:getCardCount(true) <
+                p:getCardCount(true) then
                 v = v - 4
             elseif lastPlayer:objectName() == self.player:objectName() and not p:isNude() then
                 v = v - 4
@@ -631,12 +623,9 @@ sgs.ai_skill_use_func['#LuaFenchengCard'] = function(card, use, self)
             elseif self:isEnemy(p) then
                 value = value + v + p:getLostHp() - 1
             end
-            if
-                p:isLord() and p:getHp() <= 2 and
-                    (self:isEnemy(p, lastPlayer) and p:getCardCount(true) <= lastPlayer:getCardCount(true) or
-                        lastPlayer:objectName() == self.player:objectName() and
-                            (not p:canDiscard(p, 'he') or p:isNude()))
-             then
+            if p:isLord() and p:getHp() <= 2 and
+                (self:isEnemy(p, lastPlayer) and p:getCardCount(true) <= lastPlayer:getCardCount(true) or
+                    lastPlayer:objectName() == self.player:objectName() and (not p:canDiscard(p, 'he') or p:isNude())) then
                 if not self:isEnemy(p) then
                     if self:getCardsNum('Peach') + self:getCardsNum('Peach', p, self.player) + p:getHp() <= 2 then
                         return
@@ -789,10 +778,8 @@ sgs.ai_skill_use_func['#LuaGusheCard'] = function(_card, use, self)
         end
     end
     for _, card in ipairs(cards) do
-        if
-            not card:isKindOf('Peach') and not card:isKindOf('ExNihilo') and not card:isKindOf('Jink') or
-                (card:getNumber() <= self.player:getMark('@LuaGushe'))
-         then
+        if not card:isKindOf('Peach') and not card:isKindOf('ExNihilo') and not card:isKindOf('Jink') or
+            (card:getNumber() <= self.player:getMark('@LuaGushe')) then
             use.card = sgs.Card_Parse('#LuaGusheCard:' .. card:getId() .. ':')
         end
     end
@@ -817,12 +804,10 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                     source = friend
                     for _, enemy in ipairs(self.enemies) do
                         -- 敌人必须有对应的判定区
-                        if
-                            enemy:hasJudgeArea() and not enemy:containsTrick(judge:objectName()) and
-                                not enemy:containsTrick('YanxiaoCard') and
-                                not self.room:isProhibited(self.player, enemy, judge) and
-                                not (enemy:hasSkill('hongyan') or judge:isKindOf('Lightning'))
-                         then
+                        if enemy:hasJudgeArea() and not enemy:containsTrick(judge:objectName()) and
+                            not enemy:containsTrick('YanxiaoCard') and
+                            not self.room:isProhibited(self.player, enemy, judge) and
+                            not (enemy:hasSkill('hongyan') or judge:isKindOf('Lightning')) then
                             target = enemy
                             break
                         end
@@ -847,11 +832,9 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
             for _, judge in sgs.qlist(judges) do
                 if judge:isKindOf('YanxiaoCard') then
                     for _, friend in ipairs(self.friends) do
-                        if
-                            friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
-                                not self.room:isProhibited(self.player, friend, judge) and
-                                not friend:getJudgingArea():isEmpty()
-                         then
+                        if friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
+                            not self.room:isProhibited(self.player, friend, judge) and
+                            not friend:getJudgingArea():isEmpty() then
                             target = friend
                             break
                         end
@@ -860,10 +843,8 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                         break
                     end
                     for _, friend in ipairs(self.friends) do
-                        if
-                            friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
-                                not self.room:isProhibited(self.player, friend, judge)
-                         then
+                        if friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
+                            not self.room:isProhibited(self.player, friend, judge) then
                             target = friend
                             break
                         end
@@ -889,14 +870,11 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
     end
 
     for _, friend in ipairs(self.friends) do
-        if
-            source and
-                ((source:getWeapon() and not friend:getWeapon() and friend:hasEquipArea(0)) or
-                    (source:getArmor() and not friend:getArmor() and friend:hasEquipArea(1)) or
-                    (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasEquipArea(2)) or
-                    (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasEquipArea(3)) or
-                    (source:getTreasure() and not friend:getTreasure() and friend:hasEquipArea(4)))
-         then
+        if source and ((source:getWeapon() and not friend:getWeapon() and friend:hasEquipArea(0)) or
+            (source:getArmor() and not friend:getArmor() and friend:hasEquipArea(1)) or
+            (source:getDefensiveHorse() and not friend:getDefensiveHorse() and friend:hasEquipArea(2)) or
+            (source:getOffensiveHorse() and not friend:getOffensiveHorse() and friend:hasEquipArea(3)) or
+            (source:getTreasure() and not friend:getTreasure() and friend:hasEquipArea(4))) then
             target = friend
         end
     end
@@ -964,11 +942,8 @@ sgs.ai_skill_choice['LuaRangjie'] = function(self, choices)
 
     -- 如果当前回合角色有离魂且未发动，同时自身比较虚弱，则不摸牌
     for _, enemy in ipairs(self.enemies) do
-        if
-            enemy:hasSkill('lihun') and self.room:getCurrent():objectName() == enemy:objectName() and
-                not enemy:hasUsed('LihunCard') and
-                self:isWeak()
-         then
+        if enemy:hasSkill('lihun') and self.room:getCurrent():objectName() == enemy:objectName() and
+            not enemy:hasUsed('LihunCard') and self:isWeak() then
             return 'cancel'
         end
     end
@@ -1023,11 +998,9 @@ sgs.ai_skill_playerchosen['LuaJijie'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets)
     for _, target in ipairs(targets) do
-        if
-            self:isFriend(target) and
-                (not target:hasSkill('zishu') and not target:hasSkill('manjuan') and not target:hasSkill('LuaZishu')) and
-                not self:needKongcheng(target, true)
-         then
+        if self:isFriend(target) and
+            (not target:hasSkill('zishu') and not target:hasSkill('manjuan') and not target:hasSkill('LuaZishu')) and
+            not self:needKongcheng(target, true) then
             return target
         end
     end
@@ -1076,10 +1049,8 @@ sgs.ai_skill_playerchosen['LuaTaomie'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     -- 除去会丢掉牌的、不是队友的
     for _, p in ipairs(targets) do
-        if
-            not self:isFriend(p) or p:hasSkill('LuaZishu') or p:hasSkill('manjuan') or p:hasSkill('zishu') or
-                self:needKongcheng(p, true)
-         then
+        if not self:isFriend(p) or p:hasSkill('LuaZishu') or p:hasSkill('manjuan') or p:hasSkill('zishu') or
+            self:needKongcheng(p, true) then
             table.removeOne(targets, p)
         end
     end
@@ -1132,10 +1103,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
 
         -- 如果队友有掉装备的技能且没有漫卷，例如枭姬，则选他
         for _, friend in ipairs(self.friends_noself) do
-            if
-                self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
-                    not friend:hasSkill('manjuan')
-             then
+            if self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
+                not friend:hasSkill('manjuan') then
                 target = friend
                 break
             end
@@ -1167,10 +1136,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
             end
         end
 
-        if
-            not target and assistTarget and not assistTarget:hasSkill('manjuan') and assistTarget:getCardCount(true) > 0 and
-                not self:needKongcheng(assistTarget, true)
-         then
+        if not target and assistTarget and not assistTarget:hasSkill('manjuan') and assistTarget:getCardCount(true) > 0 and
+            not self:needKongcheng(assistTarget, true) then
             target = assistTarget
         end
 
@@ -1196,10 +1163,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
     elseif #self.friends > 1 then
         self:sort(self.friends_noself, 'chaofeng')
         for _, friend in ipairs(self.friends_noself) do
-            if
-                self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
-                    not friend:hasSkill('manjuan')
-             then
+            if self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
+                not friend:hasSkill('manjuan') then
                 target = friend
                 break
             end
@@ -1246,10 +1211,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
                 end
                 if not target then
                     for _, enemy in ipairs(self.enemies) do
-                        if
-                            enemy:getCards('he'):length() >= n and not self:doNotDiscard(enemy, 'nil', true, n) and
-                                self:hasSkills(sgs.cardneed_skill, enemy)
-                         then
+                        if enemy:getCards('he'):length() >= n and not self:doNotDiscard(enemy, 'nil', true, n) and
+                            self:hasSkills(sgs.cardneed_skill, enemy) then
                             target = enemy
                             break
                         end
@@ -1258,10 +1221,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
             end
         end
     end
-    if
-        not target and assistTarget and not assistTarget:hasSkill('manjuan') and
-            not self:needKongcheng(assistTarget, true)
-     then
+    if not target and assistTarget and not assistTarget:hasSkill('manjuan') and
+        not self:needKongcheng(assistTarget, true) then
         target = assistTarget
     end
 
@@ -1289,24 +1250,19 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         if not target then
             self.enemies = sgs.reverse(self.enemies)
             for _, enemy in ipairs(self.enemies) do
-                if
-                    not enemy:isNude() and
-                        not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
-                        not self:needToThrowArmor(enemy) and
-                        not enemy:hasSkills('tuntian+zaoxian')
-                 then
+                if not enemy:isNude() and
+                    not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
+                    not self:needToThrowArmor(enemy) and not enemy:hasSkills('tuntian+zaoxian') then
                     target = enemy
                     break
                 end
             end
             if not target then
                 for _, enemy in ipairs(self.enemies) do
-                    if
-                        not enemy:isNude() and
-                            not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
-                            not self:needToThrowArmor(enemy) and
-                            not (enemy:hasSkills('tuntian+zaoxian') and x < 3 and enemy:getCards('he'):length() < 2)
-                     then
+                    if not enemy:isNude() and
+                        not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
+                        not self:needToThrowArmor(enemy) and
+                        not (enemy:hasSkills('tuntian+zaoxian') and x < 3 and enemy:getCards('he'):length() < 2) then
                         target = enemy
                         break
                     end
@@ -1423,16 +1379,16 @@ sgs.ai_skill_invoke.LuaShuangxiong = function(self, data)
     if self:needBear() then
         return false
     end
-    if
-        self.player:isSkipped(sgs.Player_Play) or
-            (self.player:getHp() < 2 and not (self:getCardsNum('Slash') > 1 and self.player:getHandcardNum() >= 3)) or
-            #self.enemies == 0
-     then
+    if self.player:isSkipped(sgs.Player_Play) or
+        (self.player:getHp() < 2 and not (self:getCardsNum('Slash') > 1 and self.player:getHandcardNum() >= 3)) or
+        #self.enemies == 0 then
         return false
     end
     local duel = sgs.Sanguosha:cloneCard('duel')
 
-    local dummy_use = {isDummy = true}
+    local dummy_use = {
+        isDummy = true
+    }
     self:useTrickCard(duel, dummy_use)
 
     return self.player:getHandcardNum() >= 3 and dummy_use.card
@@ -1527,10 +1483,8 @@ sgs.ai_skill_discard['LuaDanshou'] = function(self, discard_num, min_num, option
     end
 
     -- 如果需要空城，且正好全弃牌
-    if
-        self.player:getCards('he'):length() >= discard_num and self.player:getHandcardNum() <= discard_num and
-            self:needKongcheng(self.player, true)
-     then
+    if self.player:getCards('he'):length() >= discard_num and self.player:getHandcardNum() <= discard_num and
+        self:needKongcheng(self.player, true) then
         local to_discard = {}
         local cards = sgs.QList2Table(self.player:getCards('he'))
         self:sortByKeepValue(cards)

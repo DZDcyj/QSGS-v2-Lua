@@ -6,10 +6,8 @@ sgs.ai_skill_use['@@LuaFeiyang'] = function(self, prompt, method)
         return '.'
     end
     -- 引用“修罗”逻辑
-    if
-        not self.player:containsTrick('indulgence') and not self.player:containsTrick('supply_shortage') and
-            not (self.player:containsTrick('lightning') and not self:hasWizard(self.enemies))
-     then
+    if not self.player:containsTrick('indulgence') and not self.player:containsTrick('supply_shortage') and
+        not (self.player:containsTrick('lightning') and not self:hasWizard(self.enemies)) then
         return '.'
     end
     -- 丢弃使用价值最低的两张手牌
@@ -29,5 +27,5 @@ sgs.ai_skill_choice['LuaNongmin'] = function(self, choices)
         return items[1]
     end
     -- 选倒数第二个摸牌
-    return items[#items-1]
+    return items[#items - 1]
 end

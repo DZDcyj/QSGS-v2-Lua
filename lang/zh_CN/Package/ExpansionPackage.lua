@@ -568,5 +568,18 @@ return {
     [':LuaFenwei'] = '限定技，当一张锦囊牌指定至少两个目标后，你可以令此牌对其中任意名目标角色无效，然后你从牌堆中获得X张【过河拆桥】（X为你以此法选择的角色数，且至多为4）',
     ['luafenwei'] = '奋威',
     ['@LuaFenwei'] = '你可以发动“奋威”',
-    ['~LuaFenwei'] = '选择若干名角色→点击确定'
+    ['~LuaFenwei'] = '选择若干名角色→点击确定',
+    ['JieJiaxu'] = '界贾诩',
+    ['&JieJiaxu'] = '界贾诩',
+    ['#JieJiaxu'] = '冷酷的毒士',
+    ['LuaWansha'] = '完杀',
+    [':LuaWansha'] = '锁定技，你的回合内，只有你和处于濒死状态的角色才能使用【桃】；一名角色的濒死结算中，除你和濒死角色外的其他角色非锁定技无效',
+    ['#LuaWanshaOne'] = '%from 的“%arg”被触发，只能 %from 自救',
+    ['#LuaWanshaTwo'] = '%from 的“%arg”被触发，只有 %from 和 %to 才能救 %to',
+    ['LuaLuanwu'] = '乱武',
+    [':LuaLuanwu'] = '限定技，出牌阶段，你可以令所有其他角色除非对各自距离最小的另一名角色使用一张【杀】，否则失去1点体力',
+    ['lualuanwu'] = '乱武',
+    ['LuaJiejiaxuWeimu'] = '帷幕',
+    [':LuaJiejiaxuWeimu'] = '锁定技，你不能成为黑色锦囊牌的目标；当你于回合内受到伤害时，防止此伤害',
+    ['#LuaJiejiaxuWeimu'] = '%from 的“%arg2”被触发，防止了 %arg 点伤害'
 }

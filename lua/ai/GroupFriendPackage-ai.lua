@@ -15,10 +15,8 @@ sgs.ai_skill_discard['LuaShaika'] = function(self, discard_num, min_num, optiona
     -- 如果当前角色没有绝情
     if not room:getCurrent():hasSkill('jueqing') then
         -- 如果可以卖血
-        if
-            self:hasSkills(sgs.masochism_skill, self.player) and
-                (self.player:getHp() > 1 or self:getCardsNum('Peach') > 0 or self:getCardsNum('Analeptic') > 0)
-         then
+        if self:hasSkills(sgs.masochism_skill, self.player) and
+            (self.player:getHp() > 1 or self:getCardsNum('Peach') > 0 or self:getCardsNum('Analeptic') > 0) then
             return {}
         end
     end
@@ -270,7 +268,9 @@ LuaZhixie_skill.getTurnUseCard = function(self)
     self:sortByUseValue(cards, true)
     local slash = self:getCard('FireSlash') or self:getCard('ThunderSlash') or self:getCard('Slash')
     if slash then
-        local dummy_use = {isDummy = true}
+        local dummy_use = {
+            isDummy = true
+        }
         self:useBasicCard(slash, dummy_use)
         if not dummy_use.card then
             slash = nil
@@ -281,7 +281,9 @@ LuaZhixie_skill.getTurnUseCard = function(self)
         if acard:getTypeId() == sgs.Card_TypeTrick then
             local shouldUse = true
             if self:getUseValue(acard) > sgs.ai_use_value.IronChain then
-                local dummy_use = {isDummy = true}
+                local dummy_use = {
+                    isDummy = true
+                }
                 self:useTrickCard(acard, dummy_use)
                 if dummy_use.card then
                     shouldUse = false

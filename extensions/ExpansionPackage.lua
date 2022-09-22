@@ -6842,3 +6842,159 @@ ExMouGanning:addSkill(LuaQixi)
 ExMouGanning:addSkill(LuaFenwei)
 SkillAnjiang:addSkill(LuaQixiTrigger)
 SkillAnjiang:addSkill(LuaQicaiHotfix)
+
+JieJiaxu = sgs.General(extension, 'JieJiaxu', 'qun', '3', true, true)
+
+LuaWansha = sgs.CreateTriggerSkill {
+    name = 'LuaWansha',
+    events = {sgs.Dying, sgs.EventPhaseChanging, sgs.Death, sgs.QuitDying},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Dying then
+            local dying = data:toDying()
+            local current = room:getCurrent()
+            if rinsanFuncModule.RIGHT(self, current) then
+                if current:getPhase() ~= sgs.Player_NotActive then
+                    local from = current
+                    local to = dying.who
+                    if dying.who:objectName() ~= player:objectName() and current:objectName() ~= player:objectName() then
+                        -- 现在是以 Mark 而非 Flag 形式标记 Global_PreventPeach
+                        room:addPlayerMark(player, 'Global_PreventPeach')
+                        room:addPlayerMark(player, '@skill_invalidity')
+                        room:addPlayerMark(player, 'LuaWanshaInvokeTime')
+                    end
+                    if player:objectName() == current:objectName() then
+                        room:setPlayerFlag(to, 'wansha')
+                        local type = '#LuaWanshaTwo'
+                        if from:objectName() == to:objectName() then
+                            type = '#LuaWanshaOne'
+                        end
+                        rinsanFuncModule.sendLogMessage(room, type, {
+                            ['from'] = from,
+                            ['to'] = to,
+                            ['arg'] = self:objectName()
+                        })
+                    end
+                end
+            end
+        else
+            if event == sgs.EventPhaseChanging then
+                local change = data:toPhaseChange()
+                if change.to ~= sgs.Player_NotActive then
+                    return false
+                end
+            elseif event == sgs.Death then
+                local death = data:toDeath()
+                if death.who:objectName() ~= player:objectName() or death.who:getPhase() == sgs.Player_NotActive then
+                    return false
+                end
+            elseif event == sgs.QuitDying then
+                local current = room:getCurrent()
+                if (not rinsanFuncModule.RIGHT(self, current)) or current:getPhase() == sgs.Player_NotActive then
+                    return false
+                end
+            end
+            for _, p in sgs.qlist(room:getAllPlayers()) do
+                local x = p:getMark('LuaWanshaInvokeTime')
+                if x > 0 then
+                    room:removePlayerMark(p, 'Global_PreventPeach', x)
+                    room:removePlayerMark(p, '@skill_invalidity', x)
+                    room:setPlayerMark(p, 'LuaWanshaInvokeTime', 0)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaLuanwuCard = sgs.CreateSkillCard {
+    name = 'LuaLuanwuCard',
+    target_fixed = true,
+    on_use = function(self, room, source, targets)
+        room:removePlayerMark(source, '@chaos')
+        room:setEmotion(source, 'skill/luanwu')
+        local players = room:getOtherPlayers(source)
+        for _, p in sgs.qlist(players) do
+            room:doAnimate(rinsanFuncModule.ANIMATE_INDICATE, source:objectName(), p:objectName())
+        end
+        for _, p in sgs.qlist(players) do
+            if p:isAlive() then
+                room:cardEffect(self, source, p)
+            end
+            room:getThread():delay()
+        end
+    end,
+    on_effect = function(self, effect)
+        local room = effect.to:getRoom()
+        local players = room:getOtherPlayers(effect.to)
+        local distance_list = sgs.IntList()
+        local nearest = 1000
+        for _, player in sgs.qlist(players) do
+            local distance = effect.to:distanceTo(player)
+            distance_list:append(distance)
+            nearest = math.min(nearest, distance)
+        end
+        local luanwu_targets = sgs.SPlayerList()
+        for i = 0, distance_list:length() - 1, 1 do
+            if distance_list:at(i) == nearest and effect.to:canSlash(players:at(i), nil, false) then
+                luanwu_targets:append(players:at(i))
+            end
+        end
+        if luanwu_targets:length() == 0 or not room:askForUseSlashTo(effect.to, luanwu_targets, '@luanwu-slash') then
+            room:loseHp(effect.to)
+        end
+    end
+}
+LuaLuanwuVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaLuanwu',
+    view_as = function(self, cards)
+        return LuaLuanwuCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('@chaos') >= 1
+    end
+}
+LuaLuanwu = sgs.CreateTriggerSkill {
+    name = 'LuaLuanwu',
+    frequency = sgs.Skill_Limited,
+    view_as_skill = LuaLuanwuVS,
+    limit_mark = '@chaos',
+    on_trigger = function()
+    end
+}
+
+LuaJiejiaxuWeimu = sgs.CreateProhibitSkill {
+    name = 'LuaJiejiaxuWeimu',
+    is_prohibited = function(self, from, to, card)
+        return to:hasSkill(self:objectName()) and card:isKindOf('TrickCard') and card:isBlack()
+    end
+}
+
+LuaJiejiaxuWeimuDamagePrevent = sgs.CreateTriggerSkill {
+    name = 'LuaJiejiaxuWeimuDamagePrevent',
+    events = {sgs.DamageInflicted},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if room:getCurrent():objectName() == player:objectName() then
+            local x = data:toDamage().damage
+            rinsanFuncModule.sendLogMessage(room, '#LuaJiejiaxuWeimu', {
+                ['from'] = player,
+                ['arg'] = x,
+                ['arg2'] = 'LuaJiejiaxuWeimu'
+            })
+            room:notifySkillInvoked(player, 'LuaJiejiaxuWeimu')
+            return true
+        end
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:hasSkill('LuaJiejiaxuWeimu')
+    end
+}
+
+JieJiaxu:addSkill(LuaWansha)
+JieJiaxu:addSkill(LuaLuanwu)
+JieJiaxu:addSkill(LuaJiejiaxuWeimu)
+SkillAnjiang:addSkill(LuaJiejiaxuWeimuDamagePrevent)
