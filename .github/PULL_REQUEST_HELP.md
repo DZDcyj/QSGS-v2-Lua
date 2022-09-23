@@ -29,7 +29,7 @@ Git 是基于分支进行开发的，这也给予了各个分支的独立性，�
 
 |代码所有者|负责目录|对应内容|
 |--|--|--|
-|[Rinsan](http://https://github.com/DZDcyj)|*|所有代码与资源|
+|[Rinsan](https://github.com/DZDcyj)|*|所有代码与资源|
 |[仙人掌](https://github.com/Cactusssssssss)|/lang、/image|文本与图片资源|
 
 因此对应部分的修改至少需要获得以上负责人的同意才可合入。

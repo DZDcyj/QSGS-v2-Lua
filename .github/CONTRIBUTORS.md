@@ -7,7 +7,7 @@
 
 ## 特别感谢迄今为止帮助过这个项目的所有人
 
-* [Rinsan](http://https://github.com/DZDcyj)
+* [Rinsan](https://github.com/DZDcyj)
 * [仙人掌](https://github.com/Cactusssssssss)
 * 或许更多...
 
