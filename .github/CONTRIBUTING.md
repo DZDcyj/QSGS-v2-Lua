@@ -8,7 +8,7 @@
 
 以下是我们常用的一些议题或拉取请求模板，敬请参阅
 
-* [拉取请求模板](PULL_REQUEST_TEMPLATE.md)
+* [拉取请求模板](pull_request_template.md)
 * [Bug 议题模板](ISSUE_TEMPLATE/bug_report.md)
 * [通用修正议题模板](ISSUE_TEMPLATE/fix_general_request.md)
 * [新武将议题模板](ISSUE_TEMPLATE/new_general_request.md)
