@@ -46,40 +46,7 @@ $ brew install git
 
 如果有新的想法、建议，抑或是发现当前存在的一些 bug，请在`Issue`里提出，我会尽快回复以推进进程。
 
-同时，本仓库启用了**保护分支**，因此任何对`master`分支的直接推送都是会被拒绝的，请在开发时新建相应的分支，开发完毕后 push 到仓库，在可以合并时创建 Pull Request。
-
-### 仓库设置
-本仓库的 Pull Request 有如下设定：
-- Require pull request reviews before merging（合并前必需拉取请求审查）
-    - Dismiss stale pull request approvals when new commits are pushed（推送新提交时忽略旧拉取请求批准）
-    - Require review from Code Owners（需要代码所有者审查）
-
-这意味着如果要进行合并，您的最后一次提交必须通过代码所有者的审查，并且通过的审查将会在下一次提交之后失效。
-
-- Require status checks to pass before merging（合并前必需状态检查通过）
-    - Require branches to be up to date before merging（要求分支在合并前保持最新）
-
-这意味着如果要进行合并，最新的提交需要通过状态检查，也即是内置的 Actions 里的 Lua-Check 和基于 luacheck 的代码规范检查。
-
-现在也引入了新的规范检查，可能的话，将会对代码的圈复杂度做出要求，但目前并不影响流水线的通过
-
-新的规范检查相较于 Github Action，对规范的要求会更高，还请知悉
-
-除此之外，对于拉取请求的规范也做出了要求，至少需要关联一个 Issue，同时标题需要符合 commit 规范，必须包含至少一个对应标签
-
-请确保在可以合并时，所有的检查已经通过，且标题没有包含 WIP 等单词，所有的 task 已经被完成（打上勾）
-
-- Require conversation resolution before merging（在合并前需要对话解决）
-
-这意味着如果要进行合并，您必须解决掉所有 Review 提出的问题。在 Review 的过程中，审查员可能会对您提交的代码的部分进行评论，要求做出对应的修改，请在解决对应问题之后，将对应的问题标记为已解决，以进行后续的合并检查。
-
-- Require signed commits（必需签名提交）
-
-这意味着如果要进行合并，您的这条分支上的所有提交必须经过签名认证。关于这一步，请在您`Account Settings`里的`SSH and GPG keys`里设置对应的 GPG 密钥，并在每次 commit 时进行签名。如果正常签名，在您的提交记录上将会显示出`Verified`的标志，任何一次没有签名的提交都会阻拦合并的流程。
-
-- Require linear history（必需线性历史记录）
-
-这意味着在进行合并时，我们使用了压缩提交的方式（Squash Merge），这意味着将会把该分支上的所有提交压缩为一次提交，您可以在没有冲突的情况下自行进行合并。在合并完成之后，请务必删除源分支。如果存在冲突或者您希望由我来进行合并，请在评论进行说明。
+关于详细的贡献指南，请参考[这里](.github/CONTRIBUTING.md)
 
 ## 文件目录
 ### .github
