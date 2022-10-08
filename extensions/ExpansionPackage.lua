@@ -7241,7 +7241,13 @@ LuaZuoxingCard = sgs.CreateSkillCard {
         local source = card_use.from
         local room = source:getRoom()
         local to_use = self:getUserString()
-        local splayer = room:findPlayer('ExShenGuojia')
+        local splayer
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if rinsanFuncModule.canInvokeZuoxing(p) then
+                splayer = p
+                break
+            end
+        end
         if splayer then
             room:loseMaxHp(splayer)
         end
