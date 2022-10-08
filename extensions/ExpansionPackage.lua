@@ -7120,7 +7120,8 @@ LuaTianyi = sgs.CreateTriggerSkill {
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName())
-            local target = room:askForPlayerChosen(player, room:getAlivePlayers(), self:objectName(), 'LuaTianyi-choose')
+            local target =
+                room:askForPlayerChosen(player, room:getAlivePlayers(), self:objectName(), 'LuaTianyi-choose')
             if target then
                 room:acquireSkill(target, 'LuaZuoxing')
             end
@@ -7135,7 +7136,8 @@ LuaTianyi = sgs.CreateTriggerSkill {
                 return false
             end
         end
-        return rinsanFuncModule.RIGHT(self, target) and target:getMark(self:objectName()) == 0 and target:getPhase() == sgs.Player_Start
+        return rinsanFuncModule.RIGHT(self, target) and target:getMark(self:objectName()) == 0 and target:getPhase() ==
+                   sgs.Player_Start
     end
 }
 
@@ -7339,11 +7341,11 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         if pattern ~= 'nullification' then
             return false
         end
-        if (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() > 1 then
+        if rinsanFuncModule.canInvokeZuoxing(player) then
             return not player:hasFlag('LuaZuoxing') and player:getPhase() == sgs.Player_Play
         end
         for _, p in sgs.qlist(player:getAliveSiblings()) do
-            if (p:getGeneralName() == 'ExShenGuojia' or p:getGeneral2Name() == 'ExShenGuojia') and p:getMaxHp() > 1 then
+            if rinsanFuncModule.canInvokeZuoxing(p) then
                 return not player:hasFlag('LuaZuoxing') and player:getPhase() == sgs.Player_Play
             end
         end
@@ -7365,11 +7367,11 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
             return false
         end
-        if (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() > 1 then
+        if rinsanFuncModule.canInvokeZuoxing(player) then
             return true
         end
         for _, p in sgs.qlist(player:getAliveSiblings()) do
-            if (p:getGeneralName() == 'ExShenGuojia' or p:getGeneral2Name() == 'ExShenGuojia') and p:getMaxHp() > 1 then
+            if rinsanFuncModule.canInvokeZuoxing(p) then
                 return true
             end
         end
@@ -7391,11 +7393,11 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
             return false
         end
-        if (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() > 1 then
+        if rinsanFuncModule.canInvokeZuoxing(player) then
             return true
         end
         for _, p in sgs.qlist(player:getAliveSiblings()) do
-            if (p:getGeneralName() == 'ExShenGuojia' or p:getGeneral2Name() == 'ExShenGuojia') and p:getMaxHp() > 1 then
+            if rinsanFuncModule.canInvokeZuoxing(p) then
                 return true
             end
         end

@@ -810,6 +810,12 @@ function addPlayerMaxHp(player, value)
     })
 end
 
+-- 是否可以发动【佐幸】
+function canInvokeZuoxing(player)
+    return (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and
+    player:getMaxHp() > 1
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
