@@ -797,6 +797,19 @@ function doJiemingDrawDiscard(skillName, player, room)
     return target ~= nil
 end
 
+-- 增加角色体力上限
+-- player 要增加的角色
+-- value 增加值
+function addPlayerMaxHp(player, value)
+    local room = player:getRoom()
+    local newValue = sgs.QVariant(player:getMaxHp() + value)
+    room:setPlayerProperty(player, 'maxhp', newValue)
+    sendLogMessage(room, '#addMaxHp', {
+        ['from'] = player,
+        ['arg'] = value
+    })
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线

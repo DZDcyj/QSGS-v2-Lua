@@ -7046,3 +7046,391 @@ LuaOLJieming = sgs.CreateTriggerSkill {
 
 OLJieXunyu:addSkill('LuaQuhu')
 OLJieXunyu:addSkill(LuaOLJieming)
+
+ExShenGuojia = sgs.General(extension, 'ExShenGuojia', 'god', '3', true, true)
+
+LuaHuishiCard = sgs.CreateSkillCard {
+    name = 'LuaHuishiCard',
+    target_fixed = true,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        local suits = {}
+        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
+        room:broadcastSkillInvoke('LuaHuishi')
+        while source:getMaxHp() < 10 do
+            local pattern = '.'
+            if #suits > 0 then
+                pattern = table.concat(suits, ',')
+            end
+            local judge = rinsanFuncModule.createJudgeStruct({
+                ['play_animation'] = true,
+                ['who'] = source,
+                ['reason'] = 'LuaHuishi',
+                ['good'] = (#suits == 0),
+                ['pattern'] = '.|' .. pattern .. '|.'
+            })
+            room:judge(judge)
+            local card = judge.card
+            dummy:addSubcard(card)
+            rinsanFuncModule.addPlayerMaxHp(source, 1)
+            if table.contains(suits, string.lower(card:getSuitString())) then
+                break
+            else
+                table.insert(suits, string.lower(card:getSuitString()))
+            end
+            if source:getMaxHp() < 10 and not room:askForSkillInvoke(source, 'LuaHuishi') then
+                break
+            end
+        end
+        local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), 'LuaHuishi-choose',
+            true)
+        if target then
+            target:obtainCard(dummy)
+            local isMaxCard = true
+            for _, p in sgs.qlist(room:getOtherPlayers(target)) do
+                if p:getHandcardNum() > target:getHandcardNum() then
+                    isMaxCard = false
+                    break
+                end
+            end
+            if isMaxCard then
+                room:loseMaxHp(target)
+            end
+        end
+    end
+}
+
+LuaHuishi = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaHuishi',
+    view_as = function(self)
+        return LuaHuishiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return (not player:hasUsed('#LuaHuishiCard')) and player:getMaxHp() < 10
+    end
+}
+
+LuaTianyi = sgs.CreateTriggerSkill {
+    name = 'LuaTianyi',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Wake,
+    on_trigger = function(self, event, player, data, room)
+        if room:changeMaxHpForAwakenSkill(player, 2) then
+            room:recover(player, sgs.RecoverStruct(nil, nil, 1))
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            room:addPlayerMark(player, self:objectName())
+            local target = room:askForPlayerChosen(player, room:getAlivePlayers(), self:objectName(), 'LuaTianyi-choose')
+            if target then
+                room:acquireSkill(target, 'LuaZuoxing')
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        if target:getMark('LuaTianyiDamaged') == 0 then
+            return false
+        end
+        for _, p in sgs.qlist(target:getSiblings()) do
+            if p:getMark('LuaTianyiDamaged') == 0 then
+                return false
+            end
+        end
+        return rinsanFuncModule.RIGHT(self, target) and target:getMark(self:objectName()) == 0 and target:getPhase() == sgs.Player_Start
+    end
+}
+
+LuaTianyiDamaged = sgs.CreateTriggerSkill {
+    name = 'LuaTianyiDamaged',
+    events = {sgs.Damaged},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        room:addPlayerMark(player, self:objectName())
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaHuishiLimitCard = sgs.CreateSkillCard {
+    name = 'LuaHuishiLimitCard',
+    target_fixed = false,
+    filter = function(self, selected, to_select)
+        return #selected == 0
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        source:loseMark('@LuaHuishiLimit')
+        target:drawCards(4, 'LuaHuishiLimit')
+        room:broadcastSkillInvoke('LuaHuishiLimit')
+        room:loseMaxHp(source, 2)
+    end
+}
+
+LuaHuishiLimitVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaHuishiLimit',
+    view_as = function(self, cards)
+        return LuaHuishiLimitCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('@LuaHuishiLimit') >= 1
+    end
+}
+
+LuaHuishiLimit = sgs.CreateTriggerSkill {
+    name = 'LuaHuishiLimit',
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@LuaHuishiLimit',
+    view_as_skill = LuaHuishiLimitVS,
+    on_trigger = function()
+    end
+}
+
+LuaZuoxingCard = sgs.CreateSkillCard {
+    name = 'LuaZuoxingCard',
+    will_throw = false,
+    handling_method = sgs.Card_MethodNone,
+    filter = function(self, targets, to_select)
+        local players = sgs.PlayerList()
+        for i = 1, #targets do
+            players:append(targets[i])
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card
+            if self:getUserString() and self:getUserString() ~= '' then
+                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+                return card and card:targetFilter(players, to_select, sgs.Self) and
+                           not sgs.Self:isProhibited(to_select, card, players)
+            end
+        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+            return false
+        end
+        local _card = sgs.Self:getTag('LuaZuoxing'):toCard()
+        if _card == nil then
+            return false
+        end
+        local card = sgs.Sanguosha:cloneCard(_card)
+        card:deleteLater()
+        return card and card:targetFilter(players, to_select, sgs.Self) and
+                   not sgs.Self:isProhibited(to_select, card, players)
+    end,
+    feasible = function(self, targets)
+        local players = sgs.PlayerList()
+        for i = 1, #targets do
+            players:append(targets[i])
+        end
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card
+            if self:getUserString() and self:getUserString() ~= '' then
+                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+                return card and card:targetsFeasible(players, sgs.Self)
+            end
+        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+            return true
+        end
+        local _card = sgs.Self:getTag('LuaZuoxing'):toCard()
+        if _card == nil then
+            return false
+        end
+        local card = sgs.Sanguosha:cloneCard(_card)
+        card:deleteLater()
+        return card and card:targetsFeasible(players, sgs.Self)
+    end,
+    on_validate = function(self, card_use)
+        local source = card_use.from
+        local room = source:getRoom()
+        local to_use = self:getUserString()
+        local splayer = room:findPlayer('ExShenGuojia')
+        if splayer then
+            room:loseMaxHp(splayer)
+        end
+        room:setPlayerFlag(source, 'LuaZuoxing')
+        if to_use == 'slash' and sgs.Sanguosha:getCurrentCardUseReason() ==
+            sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local use_list = {}
+            table.insert(use_list, 'slash')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'normal_slash')
+                table.insert(use_list, 'thunder_slash')
+                table.insert(use_list, 'fire_slash')
+            end
+            to_use = room:askForChoice(source, 'zuoxing_slash', table.concat(use_list, '+'))
+            source:setTag('ZuoxingSlash', sgs.QVariant(to_use))
+        end
+        local user_str = to_use
+        -- source:setTag("ZuoxingSlash", sgs.QVariant(user_str))
+        local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
+        if use_card == nil then
+            use_card = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        end
+        use_card:setSkillName('LuaZuoxing')
+        use_card:deleteLater()
+        local tos = card_use.to
+        for _, to in sgs.qlist(tos) do
+            local skill = room:isProhibited(source, to, use_card)
+            if skill then
+                card_use.to:removeOne(to)
+            end
+        end
+        return use_card
+    end,
+    on_validate_in_response = function(self, source)
+        local room = source:getRoom()
+        local to_use
+        local splayer = room:findPlayer('ExShenGuojia')
+        if splayer then
+            room:loseMaxHp(splayer)
+        end
+        room:setPlayerFlag(source, 'LuaZuoxing')
+        if self:getUserString() == 'peach+analeptic' then
+            local use_list = {}
+            table.insert(use_list, 'peach')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'analeptic')
+            end
+            to_use = room:askForChoice(source, 'zuoxing_saveself', table.concat(use_list, '+'))
+            source:setTag('ZuoxingSaveSelf', sgs.QVariant(to_use))
+        elseif self:getUserString() == 'slash' then
+            local use_list = {}
+            table.insert(use_list, 'slash')
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(use_list, 'normal_slash')
+                table.insert(use_list, 'thunder_slash')
+                table.insert(use_list, 'fire_slash')
+            end
+            to_use = room:askForChoice(source, 'zuoxing_slash', table.concat(use_list, '+'))
+            source:setTag('ZuoxingSlash', sgs.QVariant(to_use))
+        else
+            to_use = self:getUserString()
+        end
+        local user_str
+        if to_use == 'slash' then
+            user_str = 'slash'
+        elseif to_use == 'normal_slash' then
+            user_str = 'slash'
+        else
+            user_str = to_use
+        end
+        local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
+        use_card:setSkillName('LuaZuoxing')
+        use_card:deleteLater()
+        return use_card
+    end
+}
+
+LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaZuoxing',
+    response_or_use = true,
+    enabled_at_response = function(self, player, pattern)
+        local current = false
+        local players = player:getAliveSiblings()
+        players:append(player)
+        for _, p in sgs.qlist(players) do
+            if p:getPhase() ~= sgs.Player_NotActive then
+                current = true
+                break
+            end
+        end
+        if not current then
+            return false
+        end
+        if pattern ~= 'nullification' then
+            return false
+        end
+        if (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() > 1 then
+            return not player:hasFlag('LuaZuoxing') and player:getPhase() == sgs.Player_Play
+        end
+        for _, p in sgs.qlist(player:getAliveSiblings()) do
+            if (p:getGeneralName() == 'ExShenGuojia' or p:getGeneral2Name() == 'ExShenGuojia') and p:getMaxHp() > 1 then
+                return not player:hasFlag('LuaZuoxing') and player:getPhase() == sgs.Player_Play
+            end
+        end
+        return false
+    end,
+    enabled_at_play = function(self, player)
+        local current = false
+        local players = player:getAliveSiblings()
+        players:append(player)
+        for _, p in sgs.qlist(players) do
+            if p:getPhase() ~= sgs.Player_NotActive then
+                current = true
+                break
+            end
+        end
+        if not current then
+            return false
+        end
+        if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
+            return false
+        end
+        if (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() > 1 then
+            return true
+        end
+        for _, p in sgs.qlist(player:getAliveSiblings()) do
+            if (p:getGeneralName() == 'ExShenGuojia' or p:getGeneral2Name() == 'ExShenGuojia') and p:getMaxHp() > 1 then
+                return true
+            end
+        end
+        return false
+    end,
+    enabled_at_nullification = function(self, player)
+        local current = false
+        local players = player:getAliveSiblings()
+        players:append(player)
+        for _, p in sgs.qlist(players) do
+            if p:getPhase() ~= sgs.Player_NotActive then
+                current = true
+                break
+            end
+        end
+        if not current then
+            return false
+        end
+        if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
+            return false
+        end
+        if (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() > 1 then
+            return true
+        end
+        for _, p in sgs.qlist(player:getAliveSiblings()) do
+            if (p:getGeneralName() == 'ExShenGuojia' or p:getGeneral2Name() == 'ExShenGuojia') and p:getMaxHp() > 1 then
+                return true
+            end
+        end
+        return false
+    end,
+    view_as = function(self, cards)
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or
+            sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            local card = LuaZuoxingCard:clone()
+            card:setUserString(sgs.Sanguosha:getCurrentCardUsePattern())
+            return card
+        end
+        local c = sgs.Self:getTag('LuaZuoxing'):toCard()
+        if c then
+            local card = LuaZuoxingCard:clone()
+            card:setUserString(c:objectName())
+            return card
+        else
+            return nil
+        end
+    end
+}
+
+LuaZuoxing = sgs.CreateTriggerSkill {
+    name = 'LuaZuoxing',
+    view_as_skill = LuaZuoxingVS,
+    on_trigger = function()
+    end
+}
+
+LuaZuoxing:setGuhuoDialog('r')
+
+ExShenGuojia:addSkill(LuaHuishi)
+ExShenGuojia:addSkill(LuaTianyi)
+SkillAnjiang:addSkill(LuaTianyiDamaged)
+ExShenGuojia:addSkill(LuaHuishiLimit)
+SkillAnjiang:addSkill(LuaZuoxing)
+ExShenGuojia:addRelateSkill('LuaZuoxing')
