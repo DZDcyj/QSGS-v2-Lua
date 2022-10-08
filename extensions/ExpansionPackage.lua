@@ -7094,7 +7094,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
                 end
             end
             if isMaxCard then
-                room:loseMaxHp(target)
+                room:loseMaxHp(source)
             end
         end
     end
