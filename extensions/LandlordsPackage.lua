@@ -6,7 +6,7 @@ extension = sgs.Package('LandlordsPackage')
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
 -- 引入封装函数包
-local rinsanFuncModule = require('QSanguoshaLuaFunction')
+local rinsan = require('QSanguoshaLuaFunction')
 
 LuaBahu = sgs.CreateTriggerSkill {
     name = 'LuaBahu',
@@ -80,7 +80,7 @@ LuaFeiyang = sgs.CreateTriggerSkill {
     view_as_skill = LuaFeiyangVS,
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
-            if player:getJudgingArea():length() > 0 and rinsanFuncModule.canDiscard(player, player, 'h') and
+            if player:getJudgingArea():length() > 0 and rinsan.canDiscard(player, player, 'h') and
                 player:getHandcardNum() >= 2 then
                 room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
             end
@@ -104,21 +104,17 @@ LuaDizhu = sgs.CreateTriggerSkill {
 
         -- 设置初始血量，主要针对不满血的武将
         for _, p in sgs.qlist(room:getAlivePlayers()) do
-            local start_hp = rinsanFuncModule.getStartHp(p)
+            local start_hp = rinsan.getStartHp(p)
             room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
         end
 
         -- 为自己增加一点体力上限
         room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
-        local msg = sgs.LogMessage()
-        msg.type = '#addmaxhp'
-        msg.arg = 1
-        msg.from = player
-        room:sendLog(msg)
-        local theRecover = sgs.RecoverStruct()
-        theRecover.recover = 1
-        theRecover.who = player
-        room:recover(player, theRecover)
+        rinsan.sendLogMessage(room, '#addmaxhp', {
+            ['from'] = player,
+            ['arg'] = 1
+        })
+        rinsan.recover(room, player, 1, player)
 
         -- 初始技能触发
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -143,7 +139,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
             for _, skill in sgs.qlist(skills) do
                 room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
             end
-            rinsanFuncModule.askForLuckCard(room, p)
+            rinsan.askForLuckCard(room, p)
             -- 恢复所有技能
             for _, skill in sgs.qlist(skills) do
                 room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
@@ -165,7 +161,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return rinsanFuncModule.RIGHT(self, target) and target:getMark(self:objectName()) == 0
+        return rinsan.RIGHT(self, target) and target:getMark(self:objectName()) == 0
     end
 }
 
@@ -193,7 +189,7 @@ LuaDoudizhuScenario = sgs.CreateTriggerSkill {
                     table.insert(choices, 'cancel')
                     local choice = room:askForChoice(target, 'LuaNongmin', table.concat(choices, '+'))
                     if choice == 'LuaNongminChoice1' then
-                        room:recover(target, sgs.RecoverStruct(player, nil, 1))
+                        rinsan.recover(room, target, 1, player)
                     elseif choice == 'LuaNongminChoice2' then
                         target:drawCards(2)
                     end

@@ -7,7 +7,7 @@ extension = sgs.Package('ImpassePackage')
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
 -- 引入封装函数包
-local rinsanFuncModule = require('QSanguoshaLuaFunction')
+local rinsan = require('QSanguoshaLuaFunction')
 
 -- 暴走标记
 BaozouMark = '@baozou'
@@ -19,7 +19,7 @@ BossMark = 'LuaBoss'
 BaozouStatusMark = 'LuaBaozou'
 
 local boss_can_trigger = function(self, target)
-    return target and target:isAlive() and rinsanFuncModule.bossSkillEnabled(target, self:objectName(), BossMark)
+    return target and target:isAlive() and rinsan.bossSkillEnabled(target, self:objectName(), BossMark)
 end
 
 -- BOSS 技能
@@ -33,7 +33,7 @@ LuaSilve =
     events = {sgs.DrawNCards},
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
-        if rinsanFuncModule.isBaozou(player) then
+        if rinsan.isBaozou(player) then
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if not p:isNude() then
                     local id = room:askForCardChosen(player, p, 'he', self:objectName())
@@ -60,7 +60,7 @@ LuaKedi =
     events = {sgs.Damaged},
     on_trigger = function(self, event, player, data, room)
         local x = player:getHp()
-        if rinsanFuncModule.isBaozou(player) then
+        if rinsan.isBaozou(player) then
             x = room:alivePlayerCount()
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
@@ -85,7 +85,7 @@ LuaJishi =
         if player:getPhase() == sgs.Player_Start then
             local x = player:getHp()
             local loseHpNum = 1
-            if rinsanFuncModule.isBaozou(player) then
+            if rinsan.isBaozou(player) then
                 x = player:getMaxHp() + room:alivePlayerCount()
                 loseHpNum = 2
             end
@@ -110,7 +110,7 @@ LuaJishiMaxCards =
     sgs.CreateMaxCardsSkill {
     name = '#LuaJishiMaxCards',
     fixed_func = function(self, target)
-        if rinsanFuncModule.bossSkillEnabled(target, 'LuaJishi', BossMark) and rinsanFuncModule.isBaozou(target) then
+        if rinsan.bossSkillEnabled(target, 'LuaJishi', BossMark) and rinsan.isBaozou(target) then
             return target:getAliveSiblings():length() + 1
         end
         return -1
@@ -134,7 +134,7 @@ LuaDaji =
             if player:getPhase() == sgs.Player_Finish then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local x = player:getHp()
-                if rinsanFuncModule.isBaozou(player) then
+                if rinsan.isBaozou(player) then
                     x = room:alivePlayerCount()
                 end
                 player:drawCards(x, self:objectName())
@@ -147,7 +147,7 @@ LuaDaji =
                 data:setValue(damage)
             end
         elseif event == sgs.TargetConfirmed then
-            if (not rinsanFuncModule.isBaozou(player)) or (not player:isWounded()) then
+            if (not rinsan.isBaozou(player)) or (not player:isWounded()) then
                 return false
             end
             local use = data:toCardUse()
@@ -175,7 +175,7 @@ LuaGuzhan =
     name = 'LuaGuzhan',
     residue_func = function(self, player)
         if
-            rinsanFuncModule.bossSkillEnabled(player, self:objectName(), BossMark) and rinsanFuncModule.isBaozou(player) and
+            rinsan.bossSkillEnabled(player, self:objectName(), BossMark) and rinsan.isBaozou(player) and
                 not player:getWeapon()
          then
             return 1000
@@ -200,7 +200,7 @@ LuaJizhan =
                 local damage = data:toDamage()
                 if damage.to:objectName() ~= player:objectName() and player:isWounded() then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
-                    room:recover(player, sgs.RecoverStruct(nil, nil, damage.damage))
+                    rinsan.recover(room, player, damage.damage)
                 end
             end
         else
@@ -226,7 +226,7 @@ LuaJizhan =
         return false
     end,
     can_trigger = function(self, target)
-        return boss_can_trigger(self, target) and rinsanFuncModule.isBaozou(target)
+        return boss_can_trigger(self, target) and rinsan.isBaozou(target)
     end
 }
 
@@ -238,7 +238,7 @@ LuaDuduan =
     sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
     is_prohibited = function(self, from, to, card)
-        if rinsanFuncModule.bossSkillEnabled(to, self:objectName(), BossMark) and rinsanFuncModule.isBaozou(to) then
+        if rinsan.bossSkillEnabled(to, self:objectName(), BossMark) and rinsan.isBaozou(to) then
             return card:isKindOf('DelayedTrick')
         end
     end
@@ -300,13 +300,13 @@ LuaBoss =
 
         -- 调整 BOSS 武将
         if table.contains(LuaBannedGenerals, player:getGeneralName()) then
-            local to_change = rinsanFuncModule.getRandomGeneral(LuaBannedGenerals)
+            local to_change = rinsan.getRandomGeneral(LuaBannedGenerals)
             room:changeHero(player, to_change, true, false, false, true)
         end
 
         -- 设置初始血量，主要针对不满血的武将
         for _, p in sgs.qlist(room:getAlivePlayers()) do
-            local start_hp = rinsanFuncModule.getStartHp(p)
+            local start_hp = rinsan.getStartHp(p)
             room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
         end
 
@@ -323,12 +323,12 @@ LuaBoss =
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             room:acquireSkill(
                 p,
-                rinsanFuncModule.getRandomGeneralSkill(room, LuaBannedSkills, LuaBannedBossSkills, p:isLord())
+                rinsan.getRandomGeneralSkill(room, LuaBannedSkills, LuaBannedBossSkills, p:isLord())
             )
         end
 
         -- BOSS 获取技能
-        local skill_pair = rinsanFuncModule.random(0, 1)
+        local skill_pair = rinsan.random(0, 1)
         if skill_pair == 1 then
             room:acquireSkill(player, 'LuaSilve')
             room:acquireSkill(player, 'LuaKedi')
@@ -359,7 +359,7 @@ LuaBoss =
             for _, skill in sgs.qlist(skills) do
                 room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
             end
-            rinsanFuncModule.askForLuckCard(room, p)
+            rinsan.askForLuckCard(room, p)
             -- 恢复所有技能
             for _, skill in sgs.qlist(skills) do
                 room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
@@ -381,7 +381,7 @@ LuaBoss =
         end
     end,
     can_trigger = function(self, target)
-        return rinsanFuncModule.RIGHT(self, target) and target:getMark(self:objectName()) == 0
+        return rinsan.RIGHT(self, target) and target:getMark(self:objectName()) == 0
     end
 }
 
@@ -422,7 +422,7 @@ LuaBaozou =
                         room:sendCompulsoryTriggerLog(player, self:objectName())
                         for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                             local judge =
-                                rinsanFuncModule.createJudgeStruct(
+                                rinsan.createJudgeStruct(
                                 {
                                     ['who'] = p,
                                     ['pattern'] = 'Peach,Analeptic|.|.|.',
@@ -435,7 +435,7 @@ LuaBaozou =
                                 local x = p:getHp()
                                 room:loseHp(p, x)
                                 if x > 1 then
-                                    room:recover(p, sgs.RecoverStruct(nil, nil, x - 1))
+                                    rinsan.recover(room, p, x - 1)
                                 end
                             end
                         end
@@ -464,10 +464,10 @@ LuaBaozou =
                     room:acquireSkill(player, 'LuaDuduan')
 
                     -- 修正技能效果
-                    rinsanFuncModule.modifySkillDescription(':LuaSilve', ':LuaSilveBaozou')
-                    rinsanFuncModule.modifySkillDescription(':LuaKedi', ':LuaKediBaozou')
-                    rinsanFuncModule.modifySkillDescription(':LuaJishi', ':LuaJishiBaozou')
-                    rinsanFuncModule.modifySkillDescription(':LuaDaji', ':LuaDajiBaozou')
+                    rinsan.modifySkillDescription(':LuaSilve', ':LuaSilveBaozou')
+                    rinsan.modifySkillDescription(':LuaKedi', ':LuaKediBaozou')
+                    rinsan.modifySkillDescription(':LuaJishi', ':LuaJishiBaozou')
+                    rinsan.modifySkillDescription(':LuaDaji', ':LuaDajiBaozou')
                     room:setPlayerProperty(player, 'maxhp', sgs.QVariant(3))
                     player:gainMark(BaozouMark, room:alivePlayerCount())
                 end
@@ -502,14 +502,14 @@ LuaImpasseDeath =
             end
             if killer then
                 if killer:isLord() then
-                    rinsanFuncModule.sendLogMessage(
+                    rinsan.sendLogMessage(
                         room,
                         '#LuaImpasseLordKill',
                         {['from'] = killer, ['to'] = death.who, ['arg'] = 2}
                     )
                     killer:drawCards(2, self:objectName())
                     if killer:getMaxHp() > 3 then
-                        rinsanFuncModule.sendLogMessage(
+                        rinsan.sendLogMessage(
                             room,
                             '#LuaImpasseLordLoseMaxHp',
                             {['from'] = killer, ['to'] = death.who, ['arg'] = 1}
@@ -518,7 +518,7 @@ LuaImpasseDeath =
                     end
                     -- 如果标记大于场上反贼数，失去一个
                     if killer:getMark(BaozouMark) > room:alivePlayerCount() - 1 then
-                        rinsanFuncModule.sendLogMessage(
+                        rinsan.sendLogMessage(
                             room,
                             '#LuaImpasseLordLoseMark',
                             {
@@ -530,7 +530,7 @@ LuaImpasseDeath =
                         killer:loseMark(BaozouMark)
                     end
                 else
-                    rinsanFuncModule.sendLogMessage(
+                    rinsan.sendLogMessage(
                         room,
                         '#LuaImpasseRebelKill',
                         {['from'] = killer, ['to'] = death.who}
