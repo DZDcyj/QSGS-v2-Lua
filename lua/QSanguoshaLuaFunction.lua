@@ -839,7 +839,7 @@ end
 -- card 体力回复来源卡牌，默认为 nil
 function recover(room, target, value, source, card)
     value = value or 1
-    room:recover(target, sgs.RecoverStrcuct(source, card, value))
+    room:recover(target, sgs.RecoverStruct(source, card, value))
 end
 
 -- Animate 参数，用于 doAnimate 方法
