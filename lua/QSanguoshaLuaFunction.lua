@@ -832,16 +832,6 @@ function canWakeAtPhase(player, wakeSkillMark, eventPhase)
     return false
 end
 
--- 是否是可以发动的阶段
-function isTriggerablePhase(player, eventPhaseTable)
-    for _, phase in ipairs(eventPhaseTable) do
-        if player:getPhase() == phase then
-            return true
-        end
-    end
-    return false
-end
-
 -- 体力回复函数封装
 -- target 要回复体力的角色
 -- value 要回复的体力值，默认为1
