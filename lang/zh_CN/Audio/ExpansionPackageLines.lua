@@ -295,5 +295,15 @@ return {
     -- OL界荀彧
     ['$LuaOLJieming1'] = '杀身成仁，不负皇恩',
     ['$LuaOLJieming2'] = '因势利导，是为良计',
-    ['~OLJieXunyu'] = '命不由人，徒叹奈何……'
+    ['~OLJieXunyu'] = '命不由人，徒叹奈何……',
+    -- 神郭嘉
+    ['$LuaHuishi1'] = '聪以知远，明以察微',
+    ['$LuaHuishi2'] = '见微知著，识人心志',
+    ['$LuaTianyi1'] = '天命靡常，惟德是辅',
+    ['$LuaTianyi2'] = '可承吾志者，必此人也！',
+    ['$LuaHuishiLimit1'] = '丧家之犬，主公实不足虑也',
+    ['$LuaHuishiLimit2'] = '时事兼备，主公复有何忧？',
+    ['$LuaZuoxing1'] = '以聪虑难，悉咨于上',
+    ['$LuaZuoxing2'] = '奉孝不才，愿献勤心',
+    ['~ExShenGuojia'] = '可叹桢干命也迂'
 }

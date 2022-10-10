@@ -797,6 +797,51 @@ function doJiemingDrawDiscard(skillName, player, room)
     return target ~= nil
 end
 
+-- 增加角色体力上限
+-- player 要增加的角色
+-- value 增加值
+function addPlayerMaxHp(player, value)
+    local room = player:getRoom()
+    local newValue = sgs.QVariant(player:getMaxHp() + value)
+    room:setPlayerProperty(player, 'maxhp', newValue)
+    sendLogMessage(room, '#addMaxHp', {
+        ['from'] = player,
+        ['arg'] = value
+    })
+end
+
+-- 是否存在可以发动【佐幸】的神郭嘉
+function availableShenGuojiaExists(player)
+    return (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and
+               player:getMaxHp() > 1
+end
+
+-- 是否可以在对应阶段觉醒
+-- player 对应的角色
+-- wakeSkillMark 对应的判断标记
+-- eventPhase 对应的阶段，可以为单个时机或多个时机的table
+function canWakeAtPhase(player, wakeSkillMark, eventPhase)
+    if player:getMark(wakeSkillMark) ~= 0 then
+        return false
+    end
+    if type(eventPhase) == 'number' then
+        return player:getPhase() == eventPhase
+    elseif type(eventPhase) == 'table' then
+        return table.contains(eventPhase, player:getPhase())
+    end
+    return false
+end
+
+-- 体力回复函数封装
+-- target 要回复体力的角色
+-- value 要回复的体力值，默认为1
+-- source 体力回复来源，默认为 nil
+-- card 体力回复来源卡牌，默认为 nil
+function recover(room, target, value, source, card)
+    value = value or 1
+    room:recover(target, sgs.RecoverStruct(source, card, value))
+end
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
