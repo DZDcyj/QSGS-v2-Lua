@@ -1859,8 +1859,12 @@ LuaLongyuan = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Wake,
     on_trigger = function(self, event, player, data, room)
+        rinsan.sendLogMessage(room, '#LuaLongyuan', {
+            ['from'] = player,
+            ['arg'] = player:getMark('LuaYizanUse'),
+            ['arg2'] = self:objectName()
+        })
         if room:changeMaxHpForAwakenSkill(player, 0) then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, 'LuaLongyuan')
         end
@@ -3645,9 +3649,10 @@ LuaHunzi = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Wake,
     on_trigger = function(self, event, player, data, room)
         room:addPlayerMark(player, 'LuaHunzi')
-        rinsan.sendLogMessage(room, '#Hunzi', {
+        rinsan.sendLogMessage(room, '#LuaHunzi', {
             ['from'] = player,
-            ['arg'] = player:getHp()
+            ['arg'] = player:getHp(),
+            ['arg2'] = self:objectName()
         })
         if room:changeMaxHpForAwakenSkill(player) then
             room:broadcastSkillInvoke(self:objectName())
@@ -3700,7 +3705,11 @@ LuaSanchen = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Wake,
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
-        room:sendCompulsoryTriggerLog(player, self:objectName())
+        rinsan.sendLogMessage(room, '#LuaSanchen', {
+            ['from'] = player,
+            ['arg'] = player:getMark('@wuku'),
+            ['arg2'] = self:objectName()
+        })
         if room:changeMaxHpForAwakenSkill(player, 1) then
             room:broadcastSkillInvoke(self:objectName())
             rinsan.recover(room, player, 1, player)
@@ -5213,7 +5222,11 @@ LuaChengzhang = sgs.CreateTriggerSkill {
             room:addPlayerMark(player, '@' .. self:objectName() .. 'damage', data:toDamage().damage)
         else
             if player:getPhase() == sgs.Player_Start and player:getMark('@' .. self:objectName() .. 'damage') >= 7 then
-                room:sendCompulsoryTriggerLog(player, self:objectName())
+                rinsan.sendLogMessage(room, '#LuaChengzhang', {
+                    ['from'] = player,
+                    ['arg'] = player:getMark('@' .. self:objectName() .. 'damage'),
+                    ['arg2'] = self:objectName()
+                })
                 if room:changeMaxHpForAwakenSkill(player, 0) then
                     rinsan.recover(room, player)
                     room:setPlayerMark(player, '@' .. self:objectName() .. 'damage', 0)
@@ -6228,7 +6241,8 @@ LuaZaoxian = sgs.CreateTriggerSkill {
                 room:addPlayerMark(player, self:objectName() .. 'ExtraTurn')
                 room:broadcastSkillInvoke(self:objectName())
                 rinsan.sendLogMessage(room, '#LuaZaoxianExtraTurn', {
-                    ['from'] = player
+                    ['from'] = player,
+                    ['arg'] = self:objectName()
                 })
                 player:gainAnExtraTurn()
             end
@@ -7105,9 +7119,12 @@ LuaTianyi = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Wake,
     on_trigger = function(self, event, player, data, room)
+        rinsan.sendLogMessage(room, '#LuaTianyi', {
+            ['from'] = player,
+            ['arg'] = self:objectName()
+        })
         if room:changeMaxHpForAwakenSkill(player, 2) then
             rinsan.recover(room, player)
-            room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName())
             local target =
