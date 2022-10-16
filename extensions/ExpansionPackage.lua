@@ -7448,3 +7448,137 @@ SkillAnjiang:addSkill(LuaTianyiDamaged)
 ExShenGuojia:addSkill(LuaHuishiLimit)
 SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
+
+-- 【贪污】存牌
+LuaTanwuStoCard = sgs.CreateSkillCard {
+    name = 'LuaTanwuStoCard',
+    target_fixed = true,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        local subs = self:getSubcards()
+        for _, card_id in sgs.qlist(subs) do
+            source:addToPile('LuaTanwu', card_id)
+            room:addPlayerMark(source, 'LuaTanwuCardStorage' .. card_id)
+        end
+    end
+}
+
+-- 【贪污】给牌
+LuaTanwuGiveCard = sgs.CreateSkillCard {
+    name = 'LuaTanwuGiveCard',
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:objectName() ~= sgs.Self:objectName() and
+                   not to_select:hasFlag('LuaTanwuGiven')
+    end,
+    on_use = function(self, room, source, targets)
+        local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        for _, cd in sgs.qlist(self:getSubcards()) do
+            to_goback:addSubcard(cd)
+            room:setPlayerMark(source, 'LuaTanwuCardStorage' .. cd, 0)
+        end
+        local target = targets[1]
+        room:setPlayerFlag(target, 'LuaTanwuGiven')
+        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, source:objectName(), target:objectName(),
+            'LuaTanwu', nil)
+        room:broadcastSkillInvoke('LuaTanwu')
+        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
+        if self:subcardsLength() > 1 then
+            source:drawCards(1, 'LuaTanwu')
+        end
+        local needTanwuAgain = (source:getPile('LuaTanwu'):length() > 0)
+        if not needTanwuAgain then
+            return
+        end
+        for _, p in sgs.qlist(room:getOtherPlayers(source)) do
+            if not p:hasFlag('LuaTanwuGiven') then
+                needTanwuAgain = true
+            end
+        end
+        if needTanwuAgain then
+            room:askForUseCard(source, '@@LuaTanwu!', 'LuaTanwu-Give:::' .. source:getPile('LuaTanwu'):length(), -1,
+                sgs.Card_MethodNone)
+        end
+    end
+}
+
+LuaTanwuVS = sgs.CreateViewAsSkill {
+    name = 'LuaTanwu',
+    n = 999,
+    expand_pile = 'LuaTanwu',
+    view_filter = function(self, selected, to_select)
+        if sgs.Self:hasFlag('LuaTanwuGive') then
+            return sgs.Self:getMark('LuaTanwuCardStorage' .. to_select:getEffectiveId()) > 0
+        end
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        if sgs.Self:hasFlag('LuaTanwuGive') then
+            local give = LuaTanwuGiveCard:clone()
+            for _, cd in ipairs(cards) do
+                give:addSubcard(cd)
+            end
+            return give
+        end
+        if sgs.Self:hasFlag('LuaTanwuStorage') then
+            local sto = LuaTanwuStoCard:clone()
+            for _, cd in ipairs(cards) do
+                sto:addSubcard(cd)
+            end
+            return sto
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return string.startsWith(pattern, '@@LuaTanwu')
+    end
+}
+
+LuaTanwu = sgs.CreateTriggerSkill {
+    name = 'LuaTanwu',
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    view_as_skill = LuaTanwuVS,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            if room:getTag('FirstRound'):toBool() then
+                return false
+            end
+            local move = data:toMoveOneTime()
+            if move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceHand and
+                rinsan.RIGHT(self, player) then
+                if player:getPhase() ~= sgs.Player_Draw and not player:hasFlag('LuaTanwuStorage') then
+                    room:setPlayerFlag(player, 'LuaTanwuStorage')
+                    if not room:askForUseCard(player, '@@LuaTanwu', 'LuaTanwu-Storage', -1, sgs.Card_MethodNone) then
+                        room:setPlayerFlag(player, '-LuaTanwuStorage')
+                    end
+                end
+            end
+        else
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if p:getPile('LuaTanwu'):length() > 0 then
+                        room:setPlayerFlag(p, 'LuaTanwuGive')
+                        room:askForUseCard(p, '@@LuaTanwu!', 'LuaTanwu-Give:::' .. p:getPile('LuaTanwu'):length(), -1,
+                            sgs.Card_MethodNone)
+                        room:setPlayerFlag(p, '-LuaTanwuGive')
+                    end
+                end
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerFlag(p, '-LuaTanwuGiven')
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+SkillAnjiang:addSkill(LuaTanwu)
