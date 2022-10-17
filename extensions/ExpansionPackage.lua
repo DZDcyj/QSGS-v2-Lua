@@ -7076,11 +7076,11 @@ LuaHuishiCard = sgs.CreateSkillCard {
             room:judge(judge)
             local card = judge.card
             dummy:addSubcard(card)
-            rinsan.addPlayerMaxHp(source, 1)
             if table.contains(suits, string.lower(card:getSuitString())) then
                 break
             else
                 table.insert(suits, string.lower(card:getSuitString()))
+                rinsan.addPlayerMaxHp(source, 1)
             end
             if source:getMaxHp() < 10 and not room:askForSkillInvoke(source, 'LuaHuishi') then
                 break
