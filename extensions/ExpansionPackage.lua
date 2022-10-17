@@ -7449,6 +7449,8 @@ ExShenGuojia:addSkill(LuaHuishiLimit)
 SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
 
+JieXiahoudun = sgs.General(extension, 'JieXiahoudun', 'wei', '4', true, true)
+
 -- 【贪污】存牌
 LuaTanwuStoCard = sgs.CreateSkillCard {
     name = 'LuaTanwuStoCard',
@@ -7460,6 +7462,8 @@ LuaTanwuStoCard = sgs.CreateSkillCard {
             source:addToPile('LuaTanwu', card_id)
             room:addPlayerMark(source, 'LuaTanwuCardStorage' .. card_id)
         end
+        room:broadcastSkillInvoke('LuaTanwu')
+        room:notifySkillInvoked(source, 'LuaTanwu')
     end
 }
 
@@ -7482,6 +7486,7 @@ LuaTanwuGiveCard = sgs.CreateSkillCard {
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, source:objectName(), target:objectName(),
             'LuaTanwu', nil)
         room:broadcastSkillInvoke('LuaTanwu')
+        room:notifySkillInvoked(source, 'LuaTanwu')
         room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
         if self:subcardsLength() > 1 then
             source:drawCards(1, 'LuaTanwu')
@@ -7572,6 +7577,7 @@ LuaTanwu = sgs.CreateTriggerSkill {
                 end
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     room:setPlayerFlag(p, '-LuaTanwuGiven')
+                    room:setPlayerFlag(p, '-LuaTanwuStorage')
                 end
             end
         end
@@ -7581,4 +7587,5 @@ LuaTanwu = sgs.CreateTriggerSkill {
     end
 }
 
-SkillAnjiang:addSkill(LuaTanwu)
+JieXiahoudun:addSkill('ganglie')
+JieXiahoudun:addSkill(LuaTanwu)
