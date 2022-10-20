@@ -548,46 +548,37 @@ ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, false, false, 4)
 
 LuaYisuan = sgs.CreateTriggerSkill {
     name = 'LuaYisuan',
-    events = {sgs.CardFinished, sgs.EventPhaseChanging},
+    events = {sgs.CardFinished},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.EventPhaseChanging then
-            if data:toPhaseChange().to == sgs.Player_NotActive then
-                room:removePlayerMark(player, self:objectName())
+        local card = data:toCardUse().card
+        if card and card:isKindOf('TrickCard') then
+            if room:getCardPlace(card:getEffectiveId()) ~= sgs.Player_DiscardPile then
+                return false
             end
-        else
-            local effect = data:toCardUse()
-            local card = effect.card
-            if effect.from:hasSkill(self:objectName()) then
-                if effect.from:objectName() ~= room:getCurrent():objectName() then
-                    return false
+            local togain
+            if card:isVirtualCard() then
+                togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                for _, id in sgs.qlist(card:getSubcards()) do
+                    togain:addSubcard(id)
                 end
-                if card and card:isKindOf('TrickCard') then
-                    if room:getCardPlace(card:getEffectiveId()) ~= sgs.Player_DiscardPile then
-                        return false
-                    end
-                    local togain
-                    if card:isVirtualCard() then
-                        togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        for _, id in sgs.qlist(card:getSubcards()) do
-                            togain:addSubcard(id)
-                        end
-                    else
-                        togain = sgs.Sanguosha:getCard(card:getSubcards():first())
-                    end
-                    if togain then
-                        if effect.from:getMark(self:objectName()) == 0 then
-                            if room:askForSkillInvoke(effect.from, self:objectName(), data) then
-                                room:addPlayerMark(effect.from, self:objectName())
-                                room:broadcastSkillInvoke(self:objectName())
-                                room:loseMaxHp(effect.from)
-                                effect.from:obtainCard(togain)
-                            end
-                        end
+            else
+                togain = sgs.Sanguosha:getCard(card:getSubcards():first())
+            end
+            if togain then
+                if not player:hasFlag(self:objectName()) then
+                    if room:askForSkillInvoke(player, self:objectName(), data) then
+                        room:setPlayerFlag(player, self:objectName())
+                        room:broadcastSkillInvoke(self:objectName())
+                        room:loseMaxHp(player)
+                        player:obtainCard(togain)
                     end
                 end
             end
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Play
     end
 }
 
