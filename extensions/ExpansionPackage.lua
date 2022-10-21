@@ -7458,10 +7458,12 @@ LuaTanwuStoCard = sgs.CreateSkillCard {
     will_throw = false,
     on_use = function(self, room, source, targets)
         local subs = self:getSubcards()
+        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         for _, card_id in sgs.qlist(subs) do
-            source:addToPile('LuaTanwu', card_id)
+            dummy:addSubcard(card_id)
             room:addPlayerMark(source, 'LuaTanwuCardStorage' .. card_id)
         end
+        source:addToPile('LuaTanwu', dummy)
         room:broadcastSkillInvoke('LuaTanwu')
         room:notifySkillInvoked(source, 'LuaTanwu')
     end
