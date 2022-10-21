@@ -682,56 +682,63 @@ LuaZishu = sgs.CreateTriggerSkill {
 
 LuaYingyuan = sgs.CreateTriggerSkill {
     name = 'LuaYingyuan',
-    events = {sgs.CardFinished, sgs.EventPhaseChanging},
+    events = {sgs.CardFinished},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.EventPhaseChanging then
-            if data:toPhaseChange().to == sgs.Player_NotActive then
-                rinsan.clearAllMarksContains(room, player, self:objectName())
+        local card = data:toCardUse().card
+        if card:isKindOf('SkillCard') then
+            return false
+        end
+        if card and player:getMark('LuaYingyuan' .. card:objectName() .. '-Clear') == 0 then
+            if room:getCardPlace(card:getEffectiveId()) ~= sgs.Player_DiscardPile then
+                return false
             end
-        else
-            local effect = data:toCardUse()
-            local card = effect.card
-            if effect.from:hasSkill(self:objectName()) then
-                if effect.from:objectName() ~= room:getCurrent():objectName() then
-                    return false
-                end
-                if card:isKindOf('SkillCard') then
-                    return false
-                end
-                if card and effect.from:getMark('LuaYingyuan' .. card:objectName() .. '-Clear') == 0 then
-                    if room:getCardPlace(card:getEffectiveId()) ~= sgs.Player_DiscardPile then
-                        return false
-                    end
 
-                    local togain
-                    if card:isVirtualCard() then
-                        togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        for _, id in sgs.qlist(card:getSubcards()) do
-                            togain:addSubcard(id)
-                        end
-                    else
-                        togain = card
-                    end
-                    if togain then
-                        local target = room:askForPlayerChosen(effect.from, room:getOtherPlayers(effect.from),
-                            'LuaYingyuan', '@LuaYingyuanTo:' .. card:objectName(), true, true)
-                        if target then
-                            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE,
-                                effect.from:objectName(), target:objectName(), self:objectName(), nil)
-                            room:broadcastSkillInvoke(self:objectName())
-                            room:moveCardTo(togain, effect.from, target, sgs.Player_PlaceHand, reason, false)
-                            room:addPlayerMark(effect.from, 'LuaYingyuan' .. card:objectName() .. '-Clear')
-                        end
-                    end
+            local togain
+            if card:isVirtualCard() then
+                togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                for _, id in sgs.qlist(card:getSubcards()) do
+                    togain:addSubcard(id)
+                end
+            else
+                togain = card
+            end
+            if togain then
+                local target = room:askForPlayerChosen(player, room:getOtherPlayers(player), 'LuaYingyuan',
+                    '@LuaYingyuanTo:' .. card:objectName(), true, true)
+                if target then
+                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, player:objectName(),
+                        target:objectName(), self:objectName(), nil)
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:moveCardTo(togain, player, target, sgs.Player_PlaceHand, reason, false)
+                    room:addPlayerMark(player, 'LuaYingyuan' .. card:objectName() .. '-Clear')
                 end
             end
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getPhase() ~= sgs.Player_NotActive
+    end
+}
+
+LuaYingyuanClear = sgs.CreateTriggerSkill {
+    name = 'LuaYingyuanClear',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to == sgs.Player_NotActive then
+            rinsan.clearAllMarksContains(room, player, self:objectName())
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
     end
 }
 
 ExMaliang:addSkill(LuaZishu)
 ExMaliang:addSkill(LuaYingyuan)
+SkillAnjiang:addSkill(LuaYingyuanClear)
 
 ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true)
 
