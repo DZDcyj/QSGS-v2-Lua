@@ -7488,8 +7488,10 @@ LuaTanwuGiveCard = sgs.CreateSkillCard {
         room:broadcastSkillInvoke('LuaTanwu')
         room:notifySkillInvoked(source, 'LuaTanwu')
         room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
-        if self:subcardsLength() > 1 then
+        room:addPlayerMark(source, 'LuaTanwuGiveOut', self:subcardsLength())
+        if not source:hasFlag('LuaTanwuGiveOutFlag') and source:getMark('LuaTanwuGiveOut') > 1 then
             source:drawCards(1, 'LuaTanwu')
+            room:setPlayerFlag(source, 'LuaTanwuGiveOutFlag')
         end
         local needTanwuAgain = (source:getPile('LuaTanwu'):length() > 0)
         if not needTanwuAgain then
@@ -7578,6 +7580,8 @@ LuaTanwu = sgs.CreateTriggerSkill {
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     room:setPlayerFlag(p, '-LuaTanwuGiven')
                     room:setPlayerFlag(p, '-LuaTanwuStorage')
+                    room:setPlayerFlag(p, '-LuaTanwuGiveOutFlag')
+                    room:setPlayerMark(p, 'LuaTanwuGiveOut', 0)
                 end
             end
         end
