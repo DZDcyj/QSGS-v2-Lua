@@ -2,7 +2,7 @@
 
 请在此部分添加处理的议题，以特殊词开头，例如 fix、resolve 等，注意数字后需要带空格，也可以通过 Github 自动补全完成这一步骤
 
-fixes # (issue)
+Fixes # (issue)
 
 ## 是否经过测试？
 
