@@ -307,7 +307,7 @@ return {
     ['$LuaZuoxing2'] = '奉孝不才，愿献勤心',
     ['~ExShenGuojia'] = '可叹桢干命也迂',
     -- 界夏侯惇
-    ['$LuaTanwu1'] = '福生于清俭，德生于卑退！',
-    ['$LuaTanwu2'] = '钱财，乃身外之物！',
+    ['$LuaQingjian1'] = '福生于清俭，德生于卑退！',
+    ['$LuaQingjian2'] = '钱财，乃身外之物！',
     ['~JieXiahoudun'] = '诸多败绩，有负丞相重托！'
 }
