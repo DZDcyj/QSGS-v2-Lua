@@ -7057,6 +7057,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
         local suits = {}
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         room:broadcastSkillInvoke('LuaHuishi')
+        room:setPlayerFlag(source, 'Fake_Move')
         while source:getMaxHp() < 10 do
             local pattern = '.'
             if #suits > 0 then
@@ -7076,6 +7077,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
             room:judge(judge)
             local card = judge.card
             dummy:addSubcard(card)
+            source:addToPile('LuaHuishi', card)
             if table.contains(suits, string.lower(card:getSuitString())) then
                 break
             else
@@ -7086,6 +7088,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
                 break
             end
         end
+        room:setPlayerFlag(source, '-Fake_Move')
         local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), 'LuaHuishi-choose',
             true)
         if target then
@@ -7100,6 +7103,10 @@ LuaHuishiCard = sgs.CreateSkillCard {
             if isMaxCard then
                 room:loseMaxHp(source)
             end
+        else
+            local _move = sgs.CardsMoveStruct(dummy:getSubcards(), source, nil, sgs.Player_PlaceHand, sgs.Player_DiscardPile,
+                sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_JUDGEDONE, source:objectName(), 'LuaHuishi', ''))
+            room:moveCardsAtomic(_move, true)
         end
     end
 }
