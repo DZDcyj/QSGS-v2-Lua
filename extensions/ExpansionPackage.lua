@@ -339,7 +339,7 @@ LuaXionghuoHelper = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return target
+        return true
     end
 }
 
