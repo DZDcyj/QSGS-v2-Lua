@@ -373,75 +373,80 @@ ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false, true)
 
 LuaLingren = sgs.CreateTriggerSkill {
     name = 'LuaLingren',
-    events = {sgs.TargetConfirmed, sgs.DamageCaused, sgs.CardEffected, sgs.TurnStart},
-    on_trigger = function(self, event, player, data)
-        local room = player:getRoom()
-        if event == sgs.TargetConfirmed then
-            if room:getCurrent():objectName() ~= player:objectName() then
-                return false
-            end
-            local use = data:toCardUse()
-            local card = use.card
-            if use.from:objectName() ~= player:objectName() then
-                return false
-            end
-            if not (card:isKindOf('Slash') or card:isKindOf('Duel') or card:isKindOf('SavageAssault') or
-                card:isKindOf('ArcheryAttack') or card:isKindOf('FireAttack')) then
-                return false
-            end
-            if not player:hasFlag(self:objectName()) then
-                local splayers = sgs.SPlayerList()
-                for _, p in sgs.qlist(use.to) do
-                    splayers:append(p)
-                end
-                local target = room:askForPlayerChosen(player, splayers, self:objectName(), 'LuaLingren-choose', true,
-                    true)
-                if target then
-                    room:broadcastSkillInvoke(self:objectName())
-                    room:setPlayerFlag(player, self:objectName())
-                    local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave')
-                    local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave')
-                    local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave')
-                    local basic = false
-                    local trick = false
-                    local equip = false
-                    for _, handcard in sgs.qlist(target:getHandcards()) do
-                        if handcard:isKindOf('BasicCard') then
-                            basic = true
-                        elseif handcard:isKindOf('TrickCard') then
-                            trick = true
-                        elseif handcard:isKindOf('EquipCard') then
-                            equip = true
-                        end
-                    end
-                    local totalRight = 0
-                    if (basic and choice1 == 'Have') or (not basic and choice1 == 'NotHave') then
-                        totalRight = totalRight + 1
-                    end
-                    if (trick and choice2 == 'Have') or (not trick and choice2 == 'NotHave') then
-                        totalRight = totalRight + 1
-                    end
-                    if (equip and choice3 == 'Have') or (not equip and choice3 == 'NotHave') then
-                        totalRight = totalRight + 1
-                    end
-                    if totalRight > 0 then
-                        if totalRight > 1 then
-                            if totalRight > 2 then
-                                room:handleAcquireDetachSkills(player, 'LuaJianxiong|LuaXingshang')
-                                room:addPlayerMark(player, 'LuaLingrenSkills')
-                            end
-                            player:drawCards(2, self:objectName())
-                        end
-                        room:setCardFlag(use.card, 'LuaLingrenAddDamage')
-                    end
+    events = {sgs.TargetConfirmed},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        local card = use.card
+        if use.from:objectName() ~= player:objectName() then
+            return false
+        end
+        if not (card:isKindOf('Slash') or card:isKindOf('Duel') or card:isKindOf('SavageAssault') or
+            card:isKindOf('ArcheryAttack') or card:isKindOf('FireAttack')) then
+            return false
+        end
+        local splayers = sgs.SPlayerList()
+        for _, p in sgs.qlist(use.to) do
+            splayers:append(p)
+        end
+        local target = room:askForPlayerChosen(player, splayers, self:objectName(), 'LuaLingren-choose', true, true)
+        if target then
+            room:broadcastSkillInvoke(self:objectName())
+            room:setPlayerFlag(player, self:objectName())
+            local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave')
+            local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave')
+            local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave')
+            local basic = false
+            local trick = false
+            local equip = false
+            for _, handcard in sgs.qlist(target:getHandcards()) do
+                if handcard:isKindOf('BasicCard') then
+                    basic = true
+                elseif handcard:isKindOf('TrickCard') then
+                    trick = true
+                elseif handcard:isKindOf('EquipCard') then
+                    equip = true
                 end
             end
-        elseif event == sgs.DamageCaused then
+            local totalRight = 0
+            if (basic and choice1 == 'Have') or (not basic and choice1 == 'NotHave') then
+                totalRight = totalRight + 1
+            end
+            if (trick and choice2 == 'Have') or (not trick and choice2 == 'NotHave') then
+                totalRight = totalRight + 1
+            end
+            if (equip and choice3 == 'Have') or (not equip and choice3 == 'NotHave') then
+                totalRight = totalRight + 1
+            end
+            if totalRight > 0 then
+                if totalRight > 1 then
+                    if totalRight > 2 then
+                        room:handleAcquireDetachSkills(player, 'LuaJianxiong|LuaXingshang')
+                        room:addPlayerMark(player, 'LuaLingrenSkills')
+                    end
+                    player:drawCards(2, self:objectName())
+                end
+                room:setCardFlag(use.card, 'LuaLingrenAddDamage')
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Play and
+                   not target:hasFlag(self:objectName())
+    end
+}
+
+LuaLingrenHelper = sgs.CreateTriggerSkill {
+    name = 'LuaLingrenHelper',
+    events = {sgs.DamageCaused, sgs.CardEffected, sgs.TurnStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DamageCaused then
             local damage = data:toDamage()
             local card = damage.card
             if damage.from and damage.from:objectName() == player:objectName() then
                 if card and card:hasFlag('LuaLingrenAddDamage') then
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    room:sendCompulsoryTriggerLog(player, 'LuaLingren')
                     damage.damage = damage.damage + 1
                     data:setValue(damage)
                 end
@@ -452,7 +457,7 @@ LuaLingren = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.TurnStart then
             if player:getMark('LuaLingrenSkills') > 0 then
-                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:sendCompulsoryTriggerLog(player, 'LuaLingren')
                 room:removePlayerMark(player, 'LuaLingrenSkills')
                 room:handleAcquireDetachSkills(player, '-LuaJianxiong|-LuaXingshang')
             end
@@ -460,7 +465,7 @@ LuaLingren = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target)
+        return rinsan.RIGHT(self, target, 'LuaLingren')
     end
 }
 
@@ -543,6 +548,7 @@ SkillAnjiang:addSkill(LuaJianxiong)
 SkillAnjiang:addSkill(LuaXingshang)
 ExCaoying:addRelateSkill('LuaJianxiong')
 ExCaoying:addRelateSkill('LuaXingshang')
+SkillAnjiang:addSkill(LuaLingrenHelper)
 
 ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, false, false, 4)
 
