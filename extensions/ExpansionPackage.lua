@@ -7077,7 +7077,6 @@ LuaHuishiCard = sgs.CreateSkillCard {
             room:judge(judge)
             local card = judge.card
             dummy:addSubcard(card)
-            source:addToPile('LuaHuishi', card)
             if table.contains(suits, string.lower(card:getSuitString())) then
                 break
             else
@@ -7089,24 +7088,21 @@ LuaHuishiCard = sgs.CreateSkillCard {
             end
         end
         room:setPlayerFlag(source, '-Fake_Move')
-        local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), 'LuaHuishi-choose',
+        local target = room:askForPlayerChosen(source, room:getOtherPlayers(source), self:objectName(), 'LuaHuishi-choose',
             true)
-        if target then
-            target:obtainCard(dummy)
-            local isMaxCard = true
-            for _, p in sgs.qlist(room:getOtherPlayers(target)) do
-                if p:getHandcardNum() > target:getHandcardNum() then
-                    isMaxCard = false
-                    break
-                end
+        if not target then
+            target = source
+        end
+        target:obtainCard(dummy)
+        local isMaxCard = true
+        for _, p in sgs.qlist(room:getOtherPlayers(target)) do
+            if p:getHandcardNum() > target:getHandcardNum() then
+                isMaxCard = false
+                break
             end
-            if isMaxCard then
-                room:loseMaxHp(source)
-            end
-        else
-            local _move = sgs.CardsMoveStruct(dummy:getSubcards(), source, nil, sgs.Player_PlaceHand, sgs.Player_DiscardPile,
-                sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_JUDGEDONE, source:objectName(), 'LuaHuishi', ''))
-            room:moveCardsAtomic(_move, true)
+        end
+        if isMaxCard then
+            room:loseMaxHp(source)
         end
     end
 }
