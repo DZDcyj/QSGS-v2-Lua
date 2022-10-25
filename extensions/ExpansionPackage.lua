@@ -1032,41 +1032,48 @@ JieMadai = sgs.General(extension, 'JieMadai', 'shu', '4', true, true)
 LuaMashu = sgs.CreateTriggerSkill {
     name = 'LuaMashu',
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.Damage, sgs.EventPhaseEnd},
+    events = {sgs.EventPhaseEnd},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.Damage then
-            if player:getPhase() == sgs.Player_Play and player:hasSkill(self:objectName()) then
-                local damage = data:toDamage()
-                if damage and damage.card then
-                    if damage.card:isKindOf('Slash') then
-                        room:addPlayerMark(damage.from, 'MashuSlashDamage')
-                    end
-                end
-            end
-        elseif event == sgs.EventPhaseEnd then
-            if player:getPhase() == sgs.Player_Finish then
-                if player:getMark('MashuSlashDamage') == 0 then
-                    local victims = sgs.SPlayerList()
-                    for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                        if player:canSlash(p, nil, false) then
-                            victims:append(p)
-                        end
-                    end
-                    if victims:isEmpty() then
-                        return false
-                    end
-                    local victim = room:askForPlayerChosen(player, victims, self:objectName(), '@LuaMashuSlashTo', true,
-                        true)
-                    if victim then
-                        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        slash:setSkillName(self:objectName())
-                        room:useCard(sgs.CardUseStruct(slash, player, victim))
-                    end
-                end
-                room:setPlayerMark(player, 'MashuSlashDamage', 0)
+        local victims = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if player:canSlash(p, nil, false) then
+                victims:append(p)
             end
         end
+        if victims:isEmpty() then
+            return false
+        end
+        local victim = room:askForPlayerChosen(player, victims, self:objectName(), '@LuaMashuSlashTo', true, true)
+        if victim then
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName(self:objectName())
+            room:useCard(sgs.CardUseStruct(slash, player, victim))
+        end
         return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Finish and
+                   not target:hasFlag('MashuSlashDamage')
+    end
+}
+
+LuaMashuHelper = sgs.CreateTriggerSkill {
+    name = 'LuaMashuHelper',
+    events = {sgs.Damage},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if (not damage.from) or damage.from:objectName() ~= player:objectName() then
+            return false
+        end
+        if damage and damage.from and damage.card then
+            if damage.card:isKindOf('Slash') then
+                room:setPlayerFlag(damage.from, 'MashuSlashDamage')
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaMashu') and target:getPhase() == sgs.Player_Play
     end
 }
 
@@ -1175,6 +1182,7 @@ LuaQianxi = sgs.CreateTriggerSkill {
 }
 
 SkillAnjiang:addSkill(LuaMashuDistance)
+SkillAnjiang:addSkill(LuaMashuHelper)
 JieMadai:addSkill(LuaMashu)
 JieMadai:addSkill(LuaQianxi)
 
