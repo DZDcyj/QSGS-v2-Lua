@@ -437,8 +437,7 @@ LuaLingren = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Play and
-                   not target:hasFlag(self:objectName())
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play) and not target:hasFlag(self:objectName())
     end
 }
 
@@ -590,7 +589,7 @@ LuaYisuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Play
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
     end
 }
 
@@ -729,7 +728,7 @@ LuaYingyuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() ~= sgs.Player_NotActive
+        return rinsan.RIGHTNOTATPHASE(self, target, sgs.Player_NotActive)
     end
 }
 
@@ -1032,41 +1031,48 @@ JieMadai = sgs.General(extension, 'JieMadai', 'shu', '4', true, true)
 LuaMashu = sgs.CreateTriggerSkill {
     name = 'LuaMashu',
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.Damage, sgs.EventPhaseEnd},
+    events = {sgs.EventPhaseEnd},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.Damage then
-            if player:getPhase() == sgs.Player_Play and player:hasSkill(self:objectName()) then
-                local damage = data:toDamage()
-                if damage and damage.card then
-                    if damage.card:isKindOf('Slash') then
-                        room:addPlayerMark(damage.from, 'MashuSlashDamage')
-                    end
-                end
+        local victims = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if player:canSlash(p, nil, false) then
+                victims:append(p)
             end
-        elseif event == sgs.EventPhaseEnd then
-            if player:getPhase() == sgs.Player_Finish then
-                if player:getMark('MashuSlashDamage') == 0 then
-                    local victims = sgs.SPlayerList()
-                    for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                        if player:canSlash(p, nil, false) then
-                            victims:append(p)
-                        end
-                    end
-                    if victims:isEmpty() then
-                        return false
-                    end
-                    local victim = room:askForPlayerChosen(player, victims, self:objectName(), '@LuaMashuSlashTo', true,
-                        true)
-                    if victim then
-                        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        slash:setSkillName(self:objectName())
-                        room:useCard(sgs.CardUseStruct(slash, player, victim))
-                    end
-                end
-                room:setPlayerMark(player, 'MashuSlashDamage', 0)
+        end
+        if victims:isEmpty() then
+            return false
+        end
+        local victim = room:askForPlayerChosen(player, victims, self:objectName(), '@LuaMashuSlashTo', true, true)
+        if victim then
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName(self:objectName())
+            room:useCard(sgs.CardUseStruct(slash, player, victim))
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish) and not target:hasFlag('MashuSlashDamage')
+    end
+}
+
+LuaMashuHelper = sgs.CreateTriggerSkill {
+    name = 'LuaMashuHelper',
+    events = {sgs.Damage},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if (not damage.from) or damage.from:objectName() ~= player:objectName() then
+            return false
+        end
+        if damage and damage.from and damage.card then
+            if damage.card:isKindOf('Slash') then
+                room:setPlayerFlag(damage.from, 'MashuSlashDamage')
             end
         end
         return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play, 'LuaMashu')
     end
 }
 
@@ -1082,89 +1088,98 @@ LuaMashuDistance = sgs.CreateDistanceSkill {
 
 LuaQianxi = sgs.CreateTriggerSkill {
     name = 'LuaQianxi',
-    events = {sgs.EventPhaseChanging, sgs.EventPhaseStart, sgs.Death},
+    events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.EventPhaseStart then
-            if player:getPhase() == sgs.Player_Start then
-                for _, sp in sgs.qlist(room:getAlivePlayers()) do
-                    if sp:distanceTo(player) <= 1 and sp:hasSkill(self:objectName()) then
-                        if room:askForSkillInvoke(sp, self:objectName()) then
-                            local userData = sgs.QVariant()
-                            userData:setValue(sp)
-                            if room:askForSkillInvoke(room:getCurrent(), 'LuaQianxiDraw', userData) then
-                                rinsan.sendLogMessage(room, '#LuaQianxiDrawAccept', {
-                                    ['from'] = room:getCurrent(),
-                                    ['to'] = sp
-                                })
-                                room:doAnimate(rinsan.ANIMATE_INDICATE, room:getCurrent():objectName(), sp:objectName())
-                                sp:drawCards(1, self:objectName())
-                            else
-                                rinsan.sendLogMessage(room, '#LuaQianxiDrawRefuse', {
-                                    ['from'] = room:getCurrent(),
-                                    ['to'] = sp
-                                })
-                            end
-
-                            if not sp:isKongcheng() then
-                                local card = room:askForCard(sp, '.|.|.|hand!', '@LuaQianxi-discard', sgs.QVariant(),
-                                    sgs.Card_MethodDiscard)
-                                if card then
-                                    local color = '.'
-                                    if card:isRed() then
-                                        color = 'red'
-                                    elseif card:isBlack() then
-                                        color = 'black'
-                                    end
-                                    local victims = sgs.SPlayerList()
-                                    for _, p in sgs.qlist(room:getOtherPlayers(sp)) do
-                                        if sp:distanceTo(p) == 1 then
-                                            victims:append(p)
-                                        end
-                                    end
-                                    if not victims:isEmpty() then
-                                        local victim = room:askForPlayerChosen(sp, victims, self:objectName(),
-                                            '@LuaQianxi-choose', false, true)
-                                        if victim then
-                                            local pattern = '.|' .. color .. '|.|hand'
-                                            if player:getMark('@qianxi_red') > 0 and color == 'black' then
-                                                pattern = '.|' .. '.' .. '|.|hand'
-                                            end
-                                            if player:getMark('@qianxi_black') > 0 and color == 'red' then
-                                                pattern = '.|' .. '.' .. '|.|hand'
-                                            end
-                                            room:doAnimate(rinsan.ANIMATE_INDICATE, sp:objectName(), victim:objectName())
-                                            room:broadcastSkillInvoke(self:objectName())
-                                            room:addPlayerMark(victim, '@qianxi_' .. color)
-                                            room:setPlayerCardLimitation(victim, 'use, response', pattern, false)
-                                            rinsan.sendLogMessage(room, '#Qianxi', {
-                                                ['from'] = victim,
-                                                ['arg'] = color
-                                            })
-                                        end
-                                    end
-                                end
-                            end
+        for _, sp in sgs.qlist(room:getAlivePlayers()) do
+            if sp:distanceTo(player) <= 1 and sp:hasSkill(self:objectName()) then
+                if room:askForSkillInvoke(sp, self:objectName()) then
+                    local userData = sgs.QVariant()
+                    userData:setValue(sp)
+                    if room:askForSkillInvoke(room:getCurrent(), 'LuaQianxiDraw', userData) then
+                        rinsan.sendLogMessage(room, '#LuaQianxiDrawAccept', {
+                            ['from'] = room:getCurrent(),
+                            ['to'] = sp
+                        })
+                        room:doAnimate(rinsan.ANIMATE_INDICATE, room:getCurrent():objectName(), sp:objectName())
+                        sp:drawCards(1, self:objectName())
+                    else
+                        rinsan.sendLogMessage(room, '#LuaQianxiDrawRefuse', {
+                            ['from'] = room:getCurrent(),
+                            ['to'] = sp
+                        })
+                    end
+                    if sp:isKongcheng() then
+                        return false
+                    end
+                    local card = room:askForCard(sp, '.|.|.|hand!', '@LuaQianxi-discard', sgs.QVariant(),
+                        sgs.Card_MethodDiscard)
+                    if not card then
+                        return false
+                    end
+                    local color = '.'
+                    if card:isRed() then
+                        color = 'red'
+                    elseif card:isBlack() then
+                        color = 'black'
+                    end
+                    local victims = sgs.SPlayerList()
+                    for _, p in sgs.qlist(room:getOtherPlayers(sp)) do
+                        if sp:distanceTo(p) == 1 then
+                            victims:append(p)
                         end
+                    end
+                    if victims:isEmpty() then
+                        return false
+                    end
+                    local victim = room:askForPlayerChosen(sp, victims, self:objectName(), '@LuaQianxi-choose', false,
+                        true)
+                    if victim then
+                        local pattern = '.|' .. color .. '|.|hand'
+                        if player:getMark('@qianxi_red') > 0 and color == 'black' then
+                            pattern = '.|' .. '.' .. '|.|hand'
+                        end
+                        if player:getMark('@qianxi_black') > 0 and color == 'red' then
+                            pattern = '.|' .. '.' .. '|.|hand'
+                        end
+                        room:doAnimate(rinsan.ANIMATE_INDICATE, sp:objectName(), victim:objectName())
+                        room:broadcastSkillInvoke(self:objectName())
+                        room:addPlayerMark(victim, '@qianxi_' .. color)
+                        room:setPlayerCardLimitation(victim, 'use, response', pattern, false)
+                        rinsan.sendLogMessage(room, '#Qianxi', {
+                            ['from'] = victim,
+                            ['arg'] = color
+                        })
                     end
                 end
             end
-        else
-            if event == sgs.EventPhaseChanging then
-                if data:toPhaseChange().to ~= sgs.Player_NotActive then
-                    return false
-                end
-            elseif event == sgs.Death then
-                if data:toDeath().who:objectName() ~= player:objectName() or
-                    not data:toDeath().who:hasSkill(self:objectName()) then
-                    return false
-                end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:getPhase() == sgs.Player_Start
+    end
+}
+
+LuaQianxiClear = sgs.CreateTriggerSkill {
+    name = 'LuaQianxiClear',
+    events = {sgs.EventPhaseChanging, sgs.Death},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to ~= sgs.Player_NotActive then
+                return false
             end
-            for _, p in sgs.qlist(room:getAlivePlayers()) do
-                if p:getMark('@qianxi_red') > 0 or p:getMark('@qianxi_black') > 0 then
-                    p:clearCardLimitation(false)
-                    room:setPlayerMark(p, '@qianxi_red', 0)
-                    room:setPlayerMark(p, '@qianxi_black', 0)
-                end
+        elseif event == sgs.Death then
+            if data:toDeath().who:objectName() ~= player:objectName() or
+                not data:toDeath().who:hasSkill(self:objectName()) then
+                return false
+            end
+        end
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:getMark('@qianxi_red') > 0 or p:getMark('@qianxi_black') > 0 then
+                p:clearCardLimitation(false)
+                room:setPlayerMark(p, '@qianxi_red', 0)
+                room:setPlayerMark(p, '@qianxi_black', 0)
             end
         end
         return false
@@ -1175,6 +1190,8 @@ LuaQianxi = sgs.CreateTriggerSkill {
 }
 
 SkillAnjiang:addSkill(LuaMashuDistance)
+SkillAnjiang:addSkill(LuaMashuHelper)
+SkillAnjiang:addSkill(LuaQianxiClear)
 JieMadai:addSkill(LuaMashu)
 JieMadai:addSkill(LuaQianxi)
 
@@ -3644,12 +3661,7 @@ LuaYinghun = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        if rinsan.RIGHT(self, target) then
-            if target:getPhase() == sgs.Player_Start then
-                return target:isWounded()
-            end
-        end
-        return false
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start) and target:isWounded()
     end
 }
 
