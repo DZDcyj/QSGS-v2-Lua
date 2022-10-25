@@ -10,6 +10,25 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
+
+LuaFakeMove = sgs.CreateTriggerSkill{
+	name = 'LuaFakeMove',
+	events = {sgs.BeforeCardsMove, sgs.CardsMoveOneTime},
+	priority = 10,
+	global = true,
+	on_trigger = function(self, event, player, data, room)
+		for _, p in sgs.qlist(room:getAllPlayers()) do
+			if p:hasFlag('LuaFakeMove') then return true end
+		end
+		return false
+	end,
+	can_trigger = function(self, target)
+		return target
+	end
+}
+
+SkillAnjiang:addSkill(LuaFakeMove)
+
 ExWangyuanji = sgs.General(extension, 'ExWangyuanji', 'wei', '3', false)
 
 LuaQianchong = sgs.CreateTriggerSkill {
@@ -7079,6 +7098,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
         local suits = {}
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         room:broadcastSkillInvoke('LuaHuishi')
+        room:setPlayerFlag(source, 'LuaFakeMove')
         while source:getMaxHp() < 10 do
             local pattern = '.'
             if #suits > 0 then
@@ -7108,20 +7128,22 @@ LuaHuishiCard = sgs.CreateSkillCard {
                 break
             end
         end
-        local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), 'LuaHuishi-choose',
+        room:setPlayerFlag(source, '-LuaFakeMove')
+        local target = room:askForPlayerChosen(source, room:getOtherPlayers(source), self:objectName(), 'LuaHuishi-choose',
             true)
-        if target then
-            target:obtainCard(dummy)
-            local isMaxCard = true
-            for _, p in sgs.qlist(room:getOtherPlayers(target)) do
-                if p:getHandcardNum() > target:getHandcardNum() then
-                    isMaxCard = false
-                    break
-                end
+        if not target then
+            target = source
+        end
+        target:obtainCard(dummy)
+        local isMaxCard = true
+        for _, p in sgs.qlist(room:getOtherPlayers(target)) do
+            if p:getHandcardNum() > target:getHandcardNum() then
+                isMaxCard = false
+                break
             end
-            if isMaxCard then
-                room:loseMaxHp(source)
-            end
+        end
+        if isMaxCard then
+            room:loseMaxHp(source)
         end
     end
 }
@@ -7294,7 +7316,6 @@ LuaZuoxingCard = sgs.CreateSkillCard {
             source:setTag('ZuoxingSlash', sgs.QVariant(to_use))
         end
         local user_str = to_use
-        -- source:setTag("ZuoxingSlash", sgs.QVariant(user_str))
         local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
         if use_card == nil then
             use_card = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
