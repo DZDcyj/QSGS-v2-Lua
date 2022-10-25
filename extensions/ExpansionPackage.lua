@@ -437,8 +437,7 @@ LuaLingren = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Play and
-                   not target:hasFlag(self:objectName())
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play) and not target:hasFlag(self:objectName())
     end
 }
 
@@ -590,7 +589,7 @@ LuaYisuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Play
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
     end
 }
 
@@ -729,7 +728,7 @@ LuaYingyuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() ~= sgs.Player_NotActive
+        return rinsan.RIGHTNOTATPHASE(self, target, sgs.Player_NotActive)
     end
 }
 
@@ -1052,8 +1051,7 @@ LuaMashu = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getPhase() == sgs.Player_Finish and
-                   not target:hasFlag('MashuSlashDamage')
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish) and not target:hasFlag('MashuSlashDamage')
     end
 }
 
@@ -1073,7 +1071,7 @@ LuaMashuHelper = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target, 'LuaMashu') and target:getPhase() == sgs.Player_Play
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play, 'LuaMashu')
     end
 }
 
@@ -3652,12 +3650,7 @@ LuaYinghun = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        if rinsan.RIGHT(self, target) then
-            if target:getPhase() == sgs.Player_Start then
-                return target:isWounded()
-            end
-        end
-        return false
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start) and target:isWounded()
     end
 }
 
