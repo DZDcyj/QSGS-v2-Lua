@@ -17,10 +17,8 @@ LuaFakeMove = sgs.CreateTriggerSkill {
     priority = 10,
     global = true,
     on_trigger = function(self, event, player, data, room)
-        for _, p in sgs.qlist(room:getAllPlayers()) do
-            if p:hasFlag('LuaFakeMove') then
-                return true
-            end
+        if room:getTag('LuaFakeMove'):toBool() then
+            return true
         end
         return false
     end,
@@ -975,7 +973,7 @@ LuaPojun = sgs.CreateTriggerSkill {
                     if discard_n > 0 then
                         local orig_places = {}
                         local cards = sgs.IntList()
-                        room:setPlayerFlag(t, 'LuaFakeMove')
+                        room:setTag('LuaFakeMove', sgs.QVariant(true))
                         for i = 0, discard_n - 1, 1 do
                             local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
                                 sgs.Card_MethodNone)
@@ -987,7 +985,7 @@ LuaPojun = sgs.CreateTriggerSkill {
                         for i = 0, discard_n - 1, 1 do
                             room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), t, orig_places[i], false)
                         end
-                        room:setPlayerFlag(t, '-LuaFakeMove')
+                        room:removeTag('LuaFakeMove')
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         dummy:addSubcards(cards)
                         t:addToPile('LuaPojun', dummy, false)
@@ -7107,7 +7105,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
         local suits = {}
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         room:broadcastSkillInvoke('LuaHuishi')
-        room:setPlayerFlag(source, 'LuaFakeMove')
+        room:setTag('LuaFakeMove')
         while source:getMaxHp() < 10 do
             local pattern = '.'
             if #suits > 0 then
@@ -7137,9 +7135,9 @@ LuaHuishiCard = sgs.CreateSkillCard {
                 break
             end
         end
-        room:setPlayerFlag(source, '-LuaFakeMove')
-        local target = room:askForPlayerChosen(source, room:getOtherPlayers(source), self:objectName(),
-            'LuaHuishi-choose', true)
+        room:removeTag('LuaFakeMove')
+        local others = room:getOtherPlayers(source)
+        local target = room:askForPlayerChosen(source, others, self:objectName(), 'LuaHuishi-choose', true)
         if not target then
             target = source
         end
