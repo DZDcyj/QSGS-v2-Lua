@@ -7113,7 +7113,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
         local suits = {}
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         room:broadcastSkillInvoke('LuaHuishi')
-        room:setTag('LuaFakeMove')
+        room:setTag('LuaFakeMove', sgs.QVariant(true))
         while source:getMaxHp() < 10 do
             local pattern = '.'
             if #suits > 0 then
