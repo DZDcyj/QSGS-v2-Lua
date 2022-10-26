@@ -1569,18 +1569,16 @@ LuaTunchuVS = sgs.CreateViewAsSkill {
 LuaTunchu = sgs.CreateTriggerSkill {
     name = 'LuaTunchu',
     view_as_skill = LuaTunchuVS,
-    events = {sgs.DrawNCards, sgs.EventPhaseEnd, sgs.EventLoseSkill, sgs.EventAcquireSkill, sgs.CardsMoveOneTime},
+    events = {sgs.DrawNCards, sgs.EventPhaseEnd},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.DrawNCards then
-            if player:hasSkill(self:objectName()) then
-                if player:getPile('LuaLiang'):length() == 0 then
-                    if room:askForSkillInvoke(player, self:objectName()) then
-                        room:broadcastSkillInvoke(self:objectName())
-                        local x = data:toInt()
-                        x = x + 2
-                        player:setFlags('LuaTunchuInvoked')
-                        data:setValue(x)
-                    end
+            if player:getPile('LuaLiang'):length() == 0 then
+                if room:askForSkillInvoke(player, self:objectName()) then
+                    room:broadcastSkillInvoke(self:objectName())
+                    local x = data:toInt()
+                    x = x + 2
+                    player:setFlags('LuaTunchuInvoked')
+                    data:setValue(x)
                 end
             end
         elseif event == sgs.EventPhaseEnd then
@@ -1588,7 +1586,17 @@ LuaTunchu = sgs.CreateTriggerSkill {
                 room:askForUseCard(player, '@@LuaTunchu', '@LuaTunchu', -1, sgs.Card_MethodNone)
                 player:setFlags('-LuaTunchuInvoked')
             end
-        elseif event == sgs.EventLoseSkill then
+        end
+        return false
+    end
+}
+
+LuaTunchuHelper = sgs.CreateTriggerSkill {
+    name = 'LuaTunchuHelper',
+    events = {sgs.EventLoseSkill, sgs.EventAcquireSkill, sgs.CardsMoveOneTime},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventLoseSkill then
             if data:toString() == 'LuaTunchu' then
                 room:removePlayerCardLimitation(player, 'use', 'Slash|.|.|.$0')
             end
@@ -1598,7 +1606,7 @@ LuaTunchu = sgs.CreateTriggerSkill {
                     room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', false)
                 end
             end
-        elseif event == sgs.CardsMoveOneTime and player:hasSkill(self:objectName()) and player:isAlive() then
+        elseif event == sgs.CardsMoveOneTime and rinsan.RIGHT(self, player, 'LuaTunchu') then
             local move = data:toMoveOneTime()
             if move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceSpecial and
                 move.to_pile_name == 'LuaLiang' then
@@ -1612,10 +1620,9 @@ LuaTunchu = sgs.CreateTriggerSkill {
                 end
             end
         end
-        return false
     end,
     can_trigger = function(self, target)
-        return target
+        return true
     end
 }
 
@@ -1668,6 +1675,7 @@ LuaShuliang = sgs.CreateTriggerSkill {
 
 ExLifeng:addSkill(LuaTunchu)
 ExLifeng:addSkill(LuaShuliang)
+SkillAnjiang:addSkill(LuaTunchuHelper)
 
 ExZhaotongZhaoguang = sgs.General(extension, 'ExZhaotongZhaoguang', 'shu', '4', true, true)
 
