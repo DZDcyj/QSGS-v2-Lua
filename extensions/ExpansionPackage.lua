@@ -11,20 +11,20 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
-LuaFakeMove = sgs.CreateTriggerSkill{
-	name = 'LuaFakeMove',
-	events = {sgs.BeforeCardsMove, sgs.CardsMoveOneTime},
-	priority = 10,
-	global = true,
-	on_trigger = function(self, event, player, data, room)
-		for _, p in sgs.qlist(room:getAllPlayers()) do
-			if p:hasFlag('LuaFakeMove') then return true end
-		end
-		return false
-	end,
-	can_trigger = function(self, target)
-		return target
-	end
+LuaFakeMove = sgs.CreateTriggerSkill {
+    name = 'LuaFakeMove',
+    events = {sgs.BeforeCardsMove, sgs.CardsMoveOneTime},
+    priority = 10,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if room:getTag('LuaFakeMove'):toBool() then
+            return true
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
 }
 
 SkillAnjiang:addSkill(LuaFakeMove)
@@ -953,97 +953,104 @@ JieXusheng = sgs.General(extension, 'JieXusheng', 'wu', '4', true)
 LuaPojun = sgs.CreateTriggerSkill {
     name = 'LuaPojun',
     frequency = sgs.Skill_NotFrequent,
-    events = {sgs.TargetSpecified, sgs.EventPhaseStart, sgs.Death, sgs.DamageCaused, sgs.BeforeCardsMove,
-              sgs.CardsMoveOneTime},
+    events = {sgs.TargetSpecified},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.TargetSpecified then
-            local use = data:toCardUse()
-            if use.card and use.card:isKindOf('Slash') and rinsan.RIGHT(self, player) then
-                for _, t in sgs.qlist(use.to) do
-                    local n = math.min(t:getCards('he'):length(), t:getHp())
-                    local data2 = sgs.QVariant()
-                    data2:setValue(t)
-                    if n > 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
-                        room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), t:objectName())
-                        room:broadcastSkillInvoke(self:objectName())
-                        local dis_num = {}
-                        for i = 1, n, 1 do
-                            table.insert(dis_num, tostring(i))
-                        end
-                        local discard_n = tonumber(room:askForChoice(player, self:objectName(),
-                            table.concat(dis_num, '+')))
-                        room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), t:objectName())
-                        if discard_n > 0 then
-                            local orig_places = {}
-                            local cards = sgs.IntList()
-                            t:setFlags('olpojun_InTempMoving')
-                            for i = 0, discard_n - 1, 1 do
-                                local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
-                                    sgs.Card_MethodNone)
-                                local place = room:getCardPlace(id)
-                                orig_places[i] = place
-                                cards:append(id)
-                                t:addToPile('#LuaPojun', id, false)
-                            end
-                            for i = 0, discard_n - 1, 1 do
-                                room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), t, orig_places[i], false)
-                            end
-                            t:setFlags('-olpojun_InTempMoving')
-
-                            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                            dummy:addSubcards(cards)
-                            t:addToPile('LuaPojun', dummy, false)
-                        end
-                    end
-                end
-            end
-        elseif event == sgs.DamageCaused then
-            local damage = data:toDamage()
-            if damage.from and damage.card and damage.card:isKindOf('Slash') and damage.from:hasSkill(self:objectName()) then
-                if damage.from:getHandcardNum() >= damage.to:getHandcardNum() and damage.from:getEquips():length() >=
-                    damage.to:getEquips():length() then
-                    damage.damage = damage.damage + 1
-                    room:doAnimate(rinsan.ANIMATE_INDICATE, damage.from:objectName(), damage.to:objectName())
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') then
+            for _, t in sgs.qlist(use.to) do
+                local n = math.min(t:getCards('he'):length(), t:getHp())
+                local data2 = sgs.QVariant()
+                data2:setValue(t)
+                if n > 0 and room:askForSkillInvoke(player, self:objectName(), data2) then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), t:objectName())
                     room:broadcastSkillInvoke(self:objectName())
-                    room:notifySkillInvoked(player, self:objectName())
-                    rinsan.sendLogMessage(room, '#LuaPojunDamageUp', {
-                        ['from'] = damage.from,
-                        ['card_str'] = damage.card:toString()
-                    })
-                    data:setValue(damage)
-                end
-            end
-        elseif event == sgs.BeforeCardsMove or event == sgs.CardsMoveOneTime then
-            for _, p in sgs.qlist(room:getAllPlayers()) do
-                if p:hasFlag('olpojun_InTempMoving') then
-                    return true
-                end
-            end
-            return false
-        elseif rinsan.cardGoBack(event, player, data, self:objectName()) then
-            -- 消除“自书”影响
-            room:setTag('FirstRound', sgs.QVariant(true))
-            for _, p in sgs.qlist(room:getAllPlayers()) do
-                if p:getPile('LuaPojun'):length() > 0 then
-                    local to_obtain = sgs.IntList()
-                    for _, id in sgs.qlist(p:getPile('LuaPojun')) do
-                        to_obtain:append(id)
+                    local dis_num = {}
+                    for i = 1, n, 1 do
+                        table.insert(dis_num, tostring(i))
                     end
-                    local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                    dummy:addSubcards(to_obtain)
-                    room:obtainCard(p, dummy, false)
+                    local discard_n = tonumber(room:askForChoice(player, self:objectName(), table.concat(dis_num, '+')))
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), t:objectName())
+                    if discard_n > 0 then
+                        local orig_places = {}
+                        local cards = sgs.IntList()
+                        room:setTag('LuaFakeMove', sgs.QVariant(true))
+                        for i = 0, discard_n - 1, 1 do
+                            local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
+                                sgs.Card_MethodNone)
+                            local place = room:getCardPlace(id)
+                            orig_places[i] = place
+                            cards:append(id)
+                            t:addToPile('#LuaPojun', id, false)
+                        end
+                        for i = 0, discard_n - 1, 1 do
+                            room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), t, orig_places[i], false)
+                        end
+                        room:removeTag('LuaFakeMove')
+                        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                        dummy:addSubcards(cards)
+                        t:addToPile('LuaPojun', dummy, false)
+                    end
                 end
             end
-            room:setTag('FirstRound', sgs.QVariant(false))
         end
         return false
+    end
+}
+
+LuaPojunBack = sgs.CreateTriggerSkill {
+    name = 'LuaPojunBack',
+    events = {sgs.EventPhaseStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:getPile('LuaPojun'):length() > 0 then
+                local to_obtain = sgs.IntList()
+                for _, id in sgs.qlist(p:getPile('LuaPojun')) do
+                    to_obtain:append(id)
+                end
+                local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                dummy:addSubcards(to_obtain)
+                room:obtainCard(p, dummy, false)
+            end
+        end
     end,
     can_trigger = function(self, target)
-        return true
+        return target and target:getPhase() == sgs.Player_Finish
+    end
+}
+
+LuaPojunDamage = sgs.CreateTriggerSkill {
+    name = 'LuaPojunDamage',
+    events = {sgs.DamageCaused},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if (not damage.from) or (damage.from:objectName() ~= player:objectName()) then
+            return false
+        end
+        if damage.card and damage.card:isKindOf('Slash') then
+            if player:getHandcardNum() >= damage.to:getHandcardNum() and player:getEquips():length() >=
+                damage.to:getEquips():length() then
+                damage.damage = damage.damage + 1
+                room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
+                room:broadcastSkillInvoke('LuaPojun')
+                room:notifySkillInvoked(player, 'LuaPojun')
+                rinsan.sendLogMessage(room, '#LuaPojunDamageUp', {
+                    ['from'] = player,
+                    ['card_str'] = damage.card:toString()
+                })
+                data:setValue(damage)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaPojun')
     end
 }
 
 JieXusheng:addSkill(LuaPojun)
+SkillAnjiang:addSkill(LuaPojunBack)
+SkillAnjiang:addSkill(LuaPojunDamage)
 
 JieMadai = sgs.General(extension, 'JieMadai', 'shu', '4', true, true)
 
@@ -7098,7 +7105,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
         local suits = {}
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         room:broadcastSkillInvoke('LuaHuishi')
-        room:setPlayerFlag(source, 'LuaFakeMove')
+        room:setTag('LuaFakeMove')
         while source:getMaxHp() < 10 do
             local pattern = '.'
             if #suits > 0 then
@@ -7128,9 +7135,9 @@ LuaHuishiCard = sgs.CreateSkillCard {
                 break
             end
         end
-        room:setPlayerFlag(source, '-LuaFakeMove')
-        local target = room:askForPlayerChosen(source, room:getOtherPlayers(source), self:objectName(), 'LuaHuishi-choose',
-            true)
+        room:removeTag('LuaFakeMove')
+        local others = room:getOtherPlayers(source)
+        local target = room:askForPlayerChosen(source, others, self:objectName(), 'LuaHuishi-choose', true)
         if not target then
             target = source
         end
