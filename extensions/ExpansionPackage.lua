@@ -2291,62 +2291,72 @@ ExShenpei = sgs.General(extension, 'ExShenpei', 'qun', 3, true, true, false, 2)
 
 LuaShouye = sgs.CreateTriggerSkill {
     name = 'LuaShouye',
-    events = {sgs.TargetSpecified, sgs.EventPhaseChanging},
-    frequency = sgs.Skill_NotFrequent,
+    events = {sgs.TargetSpecified},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.TargetSpecified then
-            local use = data:toCardUse()
-            if use.card:isKindOf('SkillCard') or use.to:length() > 1 or use.to:contains(use.from) then
-                return false
-            end
-            for _, p in sgs.qlist(use.to) do
-                if p:getMark(self:objectName()) == 0 and p:hasSkill(self:objectName()) then
-                    local data2 = sgs.QVariant()
-                    data2:setValue(use.from)
-                    if room:askForSkillInvoke(p, self:objectName(), data2) then
-                        room:addPlayerMark(p, self:objectName())
-                        room:broadcastSkillInvoke(self:objectName())
-                        room:doAnimate(rinsan.ANIMATE_INDICATE, p:objectName(), use.from:objectName())
-                        local choice1 = room:askForChoice(use.from, 'LuaShouye', 'syjg1+syjg2')
-                        local choice2 = room:askForChoice(p, 'LuaShouye', 'syfy1+syfy2')
-                        ChoiceLog(use.from, choice1, nil)
-                        ChoiceLog(p, choice2, nil)
-                        if (choice1 == 'syjg1' and choice2 == 'syfy1') or (choice1 == 'syjg2' and choice2 == 'syfy2') then
-                            rinsan.sendLogMessage(room, '#ShouyeSucceed', {
-                                ['from'] = p
-                            })
-                            local nullified_list = use.nullified_list
-                            table.insert(nullified_list, p:objectName())
-                            use.nullified_list = nullified_list
-                            data:setValue(use)
-                            local togain
-                            if use.card:isVirtualCard() then
-                                togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                                for _, id in sgs.qlist(use.card:getSubcards()) do
-                                    togain:addSubcard(id)
-                                end
-                            else
-                                togain = use.card
-                            end
-                            room:obtainCard(p, togain)
-                        else
-                            rinsan.sendLogMessage(room, '#ShouyeFailed', {
-                                ['from'] = p
-                            })
-                        end
+        local use = data:toCardUse()
+        if use.card:isKindOf('SkillCard') or use.to:length() > 1 or use.to:contains(use.from) then
+            return false
+        end
+        for _, p in sgs.qlist(use.to) do
+            if p:getMark(self:objectName()) == 0 and p:hasSkill(self:objectName()) then
+                local data2 = sgs.QVariant()
+                data2:setValue(use.from)
+                if room:askForSkillInvoke(p, self:objectName(), data2) then
+                    room:addPlayerMark(p, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, p:objectName(), use.from:objectName())
+                    local choice1 = room:askForChoice(use.from, 'LuaShouye', 'syjg1+syjg2')
+                    local choice2 = room:askForChoice(p, 'LuaShouye', 'syfy1+syfy2')
+                    ChoiceLog(use.from, choice1, nil)
+                    ChoiceLog(p, choice2, nil)
+                    local success1 = (choice1 == 'syjg1' and choice2 == 'syfy1')
+                    local success2 = (choice1 == 'syjg2' and choice2 == 'syfy2')
+                    local shouyeSuccess = (success1 or success2)
+                    if not shouyeSuccess then
+                        rinsan.sendLogMessage(room, '#ShouyeFailed', {
+                            ['from'] = p
+                        })
+                        return false
                     end
-                end
-            end
-        else
-            if data:toPhaseChange().to == sgs.Player_NotActive then
-                for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    room:setPlayerMark(p, self:objectName(), 0)
+                    rinsan.sendLogMessage(room, '#ShouyeSucceed', {
+                        ['from'] = p
+                    })
+                    local nullified_list = use.nullified_list
+                    table.insert(nullified_list, p:objectName())
+                    use.nullified_list = nullified_list
+                    data:setValue(use)
+                    local togain
+                    if use.card:isVirtualCard() then
+                        togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                        for _, id in sgs.qlist(use.card:getSubcards()) do
+                            togain:addSubcard(id)
+                        end
+                    else
+                        togain = use.card
+                    end
+                    room:obtainCard(p, togain)
                 end
             end
         end
     end,
     can_trigger = function(self, target)
         return target
+    end
+}
+
+LuaShouyeClear = sgs.CreateTriggerSkill {
+    name = 'LuaShouyeClear',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to == sgs.Player_NotActive then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerMark(p, 'LuaShouye', 0)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
     end
 }
 
@@ -2384,30 +2394,40 @@ LuaLiezhiVS = sgs.CreateViewAsSkill {
 
 LuaLiezhi = sgs.CreateTriggerSkill {
     name = 'LuaLiezhi',
-    events = {sgs.Damaged, sgs.EventPhaseStart},
+    events = {sgs.EventPhaseStart},
     view_as_skill = LuaLiezhiVS,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.Damaged then
-            room:addPlayerMark(player, self:objectName())
-        else
-            if player:getPhase() == sgs.Player_Start then
-                if player:getMark(self:objectName()) == 0 then
-                    for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                        if rinsan.canDiscard(player, p, 'hej') then
-                            room:askForUseCard(player, '@@LuaLiezhi', '@LuaLiezhi')
-                            break
-                        end
-                    end
-                end
-            elseif player:getPhase() == sgs.Player_Finish then
-                room:setPlayerMark(player, self:objectName(), 0)
+        if player:hasFlag(self:objectName()) then
+            return false
+        end
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if rinsan.canDiscard(player, p, 'hej') then
+                room:askForUseCard(player, '@@LuaLiezhi', '@LuaLiezhi')
+                break
             end
         end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start)
+    end
+}
+
+LuaLiezhiDamaged = sgs.CreateTriggerSkill {
+    name = 'LuaLiezhiDamaged',
+    events = {sgs.Damaged},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        room:setPlayerFlag(player, 'LuaLiezhi')
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaLiezhi')
     end
 }
 
 ExShenpei:addSkill(LuaShouye)
+SkillAnjiang:addSkill(LuaShouyeClear)
 ExShenpei:addSkill(LuaLiezhi)
+SkillAnjiang:addSkill(LuaLiezhiDamaged)
 
 ExYangbiao = sgs.General(extension, 'ExYangbiao', 'qun', '3', true)
 
