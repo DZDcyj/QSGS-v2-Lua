@@ -2397,18 +2397,18 @@ LuaLiezhi = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     view_as_skill = LuaLiezhiVS,
     on_trigger = function(self, event, player, data, room)
-        if player:getPhase() == sgs.Player_Start then
-            if player:getMark(self:objectName()) == 0 then
-                for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                    if rinsan.canDiscard(player, p, 'hej') then
-                        room:askForUseCard(player, '@@LuaLiezhi', '@LuaLiezhi')
-                        break
-                    end
-                end
-            end
-        elseif player:getPhase() == sgs.Player_Finish then
-            room:setPlayerMark(player, self:objectName(), 0)
+        if player:hasFlag(self:objectName()) then
+            return false
         end
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if rinsan.canDiscard(player, p, 'hej') then
+                room:askForUseCard(player, '@@LuaLiezhi', '@LuaLiezhi')
+                break
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start)
     end
 }
 
@@ -2417,7 +2417,7 @@ LuaLiezhiDamaged = sgs.CreateTriggerSkill {
     events = {sgs.Damaged},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        room:addPlayerMark(player, 'LuaLiezhi')
+        room:setPlayerFlag(player, 'LuaLiezhi')
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target, 'LuaLiezhi')
