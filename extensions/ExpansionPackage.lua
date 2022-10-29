@@ -1948,11 +1948,10 @@ LuaShuangxiongVS = sgs.CreateOneCardViewAsSkill {
         if to_select:isEquipped() then
             return false
         end
-        local value = sgs.Self:getMark('LuaShuangxiong')
-        if value == 1 then
+        if sgs.Self:hasFlag('LuaShuangxiongRed') then
             -- Black
             return to_select:isBlack()
-        elseif value == 2 then
+        elseif sgs.Self:hasFlag('LuaShuangxiongBlack') then
             -- Red
             return to_select:isRed()
         end
@@ -1965,82 +1964,97 @@ LuaShuangxiongVS = sgs.CreateOneCardViewAsSkill {
         return duel
     end,
     enabled_at_play = function(self, player)
-        return player:getMark('LuaShuangxiong') > 0 and not player:isKongcheng()
+        if player:hasFlag('LuaShuangxiongRed') or player:hasFlag('LuaShuangxiongBlack') then
+            return not player:isKongcheng()
+        end
+        return false
     end
 }
 
 LuaShuangxiong = sgs.CreateTriggerSkill {
     name = 'LuaShuangxiong',
     view_as_skill = LuaShuangxiongVS,
-    events = {sgs.EventPhaseStart, sgs.Damaged, sgs.CardResponded, sgs.CardUsed, sgs.CardFinished},
+    events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.EventPhaseStart then
-            if player:getPhase() == sgs.Player_Start then
-                room:setPlayerMark(player, 'LuaShuangxiong', 0)
-            elseif player:getPhase() == sgs.Player_Draw then
-                if player:hasSkill(self:objectName()) then
-                    if room:askForSkillInvoke(player, self:objectName(), data) then
-                        room:broadcastSkillInvoke(self:objectName())
-                        local card_ids = room:getNCards(2)
-                        local to_get = sgs.IntList()
-                        local to_throw = sgs.IntList()
-                        room:fillAG(card_ids)
-                        while not card_ids:isEmpty() do
-                            local card_id = room:askForAG(player, card_ids, false, self:objectName())
-                            card_ids:removeOne(card_id)
-                            to_get:append(card_id)
-                            local card = sgs.Sanguosha:getCard(card_id)
-                            if card:isRed() then
-                                room:setPlayerMark(player, 'LuaShuangxiong', 1)
-                            else
-                                room:setPlayerMark(player, 'LuaShuangxiong', 2)
-                            end
-                            room:takeAG(player, card_id, false)
-                            local _card_ids = card_ids
-                            for _, id in sgs.qlist(_card_ids) do
-                                card_ids:removeOne(id)
-                                to_throw:append(id)
-                                room:takeAG(nil, id, false)
-                            end
-                        end
-                        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        if not to_get:isEmpty() then
-                            dummy:addSubcards(rinsan.getCardList(to_get))
-                            player:obtainCard(dummy)
-                        end
-                        dummy:clearSubcards()
-                        if not to_throw:isEmpty() then
-                            dummy:addSubcards(rinsan.getCardList(to_throw))
-                            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER,
-                                player:objectName(), self:objectName(), '')
-                            room:throwCard(dummy, reason, nil)
-                        end
-                        dummy:deleteLater()
-                        room:clearAG()
-                        return true
-                    end
+        if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            local card_ids = room:getNCards(2)
+            local to_get = sgs.IntList()
+            local to_throw = sgs.IntList()
+            room:fillAG(card_ids)
+            while not card_ids:isEmpty() do
+                local card_id = room:askForAG(player, card_ids, false, self:objectName())
+                card_ids:removeOne(card_id)
+                to_get:append(card_id)
+                local card = sgs.Sanguosha:getCard(card_id)
+                if card:isRed() then
+                    room:setPlayerFlag(player, 'LuaShuangxiongRed')
+                else
+                    room:setPlayerFlag(player, 'LuaShuangxiongBlack')
+                end
+                room:takeAG(player, card_id, false)
+                local _card_ids = card_ids
+                for _, id in sgs.qlist(_card_ids) do
+                    card_ids:removeOne(id)
+                    to_throw:append(id)
+                    room:takeAG(nil, id, false)
                 end
             end
-        elseif event == sgs.Damaged then
-            local damage = data:toDamage()
-            if damage.card and damage.card:getSkillName() == self:objectName() then
-                if damage.to:hasSkill(self:objectName()) then
-                    -- For AI
-                    room:setPlayerFlag(player, 'LuaShuangxiongDamaged')
-                    if room:askForSkillInvoke(player, self:objectName(), data) then
-                        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        for _, id in sgs.qlist(room:getDiscardPile()) do
-                            local card = sgs.Sanguosha:getCard(id)
-                            if card:hasFlag('LuaShuangxiongResponded') then
-                                dummy:addSubcard(card)
-                            end
-                        end
-                        damage.to:obtainCard(dummy)
-                    end
-                    room:setPlayerFlag(player, '-LuaShuangxiongDamaged')
-                end
+            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            if not to_get:isEmpty() then
+                dummy:addSubcards(rinsan.getCardList(to_get))
+                player:obtainCard(dummy)
             end
-        elseif event == sgs.CardResponded then
+            dummy:clearSubcards()
+            if not to_throw:isEmpty() then
+                dummy:addSubcards(rinsan.getCardList(to_throw))
+                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER, player:objectName(),
+                    self:objectName(), '')
+                room:throwCard(dummy, reason, nil)
+            end
+            dummy:deleteLater()
+            room:clearAG()
+            return true
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Draw)
+    end
+}
+
+LuaShuangxiongDamaged = sgs.CreateTriggerSkill {
+    name = 'LuaShuangxiongDamaged',
+    events = {sgs.Damaged},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card and damage.card:getSkillName() == 'LuaShuangxiong' then
+            -- For AI
+            room:setPlayerFlag(player, 'LuaShuangxiongDamaged')
+            if room:askForSkillInvoke(player, 'LuaShuangxiong', data) then
+                local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                for _, id in sgs.qlist(room:getDiscardPile()) do
+                    local card = sgs.Sanguosha:getCard(id)
+                    if card:hasFlag('LuaShuangxiongResponded') then
+                        dummy:addSubcard(card)
+                    end
+                end
+                player:obtainCard(dummy)
+            end
+            room:setPlayerFlag(player, '-LuaShuangxiongDamaged')
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaShuangxiong')
+    end
+}
+
+LuaShuangxiongCardHandler = sgs.CreateTriggerSkill {
+    name = 'LuaShuangxiongCardHandler',
+    events = {sgs.CardResponded, sgs.CardUsed, sgs.CardFinished},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardResponded then
             local resp = data:toCardResponse()
             if resp.m_who and resp.m_who:hasFlag('LuaShuangxiongInvoke') then
                 if resp.m_card:isVirtualCard() then
@@ -2053,13 +2067,13 @@ LuaShuangxiong = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.CardUsed then
             local use = data:toCardUse()
-            if use.card and use.card:getSkillName() == self:objectName() then
+            if use.card and use.card:getSkillName() == 'LuaShuangxiong' then
                 use.from:setFlags('LuaShuangxiongInvoke')
             end
-        elseif event == sgs.CardFinished then
+        else
             local use = data:toCardUse()
             -- Clear all card flags
-            if use.card and use.card:getSkillName() == self:objectName() then
+            if use.card and use.card:getSkillName() == 'LuaShuangxiong' then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     for _, card in sgs.qlist(p:getHandcards()) do
                         room:clearCardFlag(card)
@@ -2081,11 +2095,13 @@ LuaShuangxiong = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return target
+        return true
     end
 }
 
 JieYanliangWenchou:addSkill(LuaShuangxiong)
+SkillAnjiang:addSkill(LuaShuangxiongDamaged)
+SkillAnjiang:addSkill(LuaShuangxiongCardHandler)
 
 JieLingtong = sgs.General(extension, 'JieLingtong', 'wu', '4', true)
 
