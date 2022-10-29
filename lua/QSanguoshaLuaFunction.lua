@@ -144,6 +144,16 @@ function RIGHT(self, player, skillName)
     return player and player:isAlive() and player:hasSkill(skillName)
 end
 
+-- 封装好的 RIGHTATPHASE 函数，在 RIGHT 基础上判断是否在对应的阶段
+function RIGHTATPHASE(self, player, phase, skillName)
+    return RIGHT(self, player, skillName) and player:getPhase() == phase
+end
+
+-- 封装好的 RIGHTNOTATPHASE 函数，在 RIGHT 函数基础上判断是否不处于对应阶段
+function RIGHTNOTATPHASE(self, player, phase, skillName)
+    return RIGHT(self, player, skillName) and player:getPhase() ~= phase
+end
+
 -- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
 function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
     local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())

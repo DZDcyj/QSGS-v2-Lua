@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - develop-refactor
 
 jobs:
   Lua-Format-Check:

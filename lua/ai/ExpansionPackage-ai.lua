@@ -154,6 +154,13 @@ sgs.ai_skill_choice.LuaPojun = function(self, choices)
     return items[#items]
 end
 
+-- 界马岱
+-- 是否给队友摸牌
+sgs.ai_skill_invoke.LuaQianxiDraw = function(self, data)
+    local target = data:toPlayer()
+    return self:isFriend(target)
+end
+
 -- 应援选择目标
 sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
     targets = sgs.QList2Table(targets)
