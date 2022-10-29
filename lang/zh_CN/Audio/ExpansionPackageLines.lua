@@ -305,5 +305,9 @@ return {
     ['$LuaHuishiLimit2'] = '时事兼备，主公复有何忧？',
     ['$LuaZuoxing1'] = '以聪虑难，悉咨于上',
     ['$LuaZuoxing2'] = '奉孝不才，愿献勤心',
-    ['~ExShenGuojia'] = '可叹桢干命也迂'
+    ['~ExShenGuojia'] = '可叹桢干命也迂',
+    -- 界夏侯惇
+    ['$LuaQingjian1'] = '福生于清俭，德生于卑退！',
+    ['$LuaQingjian2'] = '钱财，乃身外之物！',
+    ['~JieXiahoudun'] = '诸多败绩，有负丞相重托！'
 }

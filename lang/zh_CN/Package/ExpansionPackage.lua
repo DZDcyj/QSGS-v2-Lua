@@ -609,5 +609,16 @@ return {
     ['@LuaHuishiLimit'] = '辉逝',
     ['LuaZuoxing'] = '佐幸',
     ['luazuoxing'] = '佐幸',
-    [':LuaZuoxing'] = '出牌阶段限一次，若神郭嘉存活且体力上限大于1，你可令神郭嘉减1点体力上限。然后你可视为使用一张普通锦囊牌'
+    [':LuaZuoxing'] = '出牌阶段限一次，若神郭嘉存活且体力上限大于1，你可令神郭嘉减1点体力上限。然后你可视为使用一张普通锦囊牌',
+    ['JieXiahoudun'] = '界夏侯惇',
+    ['&JieXiahoudun'] = '界夏侯惇',
+    ['#JieXiahoudun'] = '独眼的罗刹',
+    ['LuaQingjian'] = '清俭',
+    [':LuaQingjian'] = '<font color="green"><b>每回合限一次</b></font>，当你于摸牌阶段外获得牌后，你可将任意张手牌扣置于武将牌上；\
+    下个任意角色的结束阶段，你将这些牌交给其他角色，然后若你以此法交出的牌大于一张，则你摸一张牌',
+    ['LuaQingjian-Storage'] = '你可以发动“清俭”，将任意张手牌置于武将牌上',
+    ['LuaQingjian-Give'] = '你须发动“清俭”，将剩余的 %arg 张“清俭”牌交给其他角色',
+    ['~LuaQingjian'] = '选择合适的牌→选择合适的目标→点击“确定”',
+    ['luaqingjiansto'] = '清俭',
+    ['luaqingjiangive'] = '清俭'
 }
