@@ -7619,7 +7619,7 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
         if #cards == 0 then
             return nil
         end
-        if sgs.Self:hasFlag('LuaQingjianStorage') then
+        if sgs.Self:getPile('LuaQingjian'):length() == 0 and sgs.Self:hasFlag('LuaQingjianStorage') then
             local sto = LuaQingjianStoCard:clone()
             for _, cd in ipairs(cards) do
                 sto:addSubcard(cd)
