@@ -7599,8 +7599,8 @@ LuaQingjianGiveCard = sgs.CreateSkillCard {
             end
         end
         if needTanwuAgain then
-            room:askForUseCard(source, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. source:getPile('LuaQingjian'):length(), -1,
-                sgs.Card_MethodNone)
+            room:askForUseCard(source, '@@LuaQingjian!',
+                'LuaQingjian-Give:::' .. source:getPile('LuaQingjian'):length(), -1, sgs.Card_MethodNone)
         end
     end
 }
@@ -7668,8 +7668,8 @@ LuaQingjian = sgs.CreateTriggerSkill {
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     if p:getPile('LuaQingjian'):length() > 0 then
                         room:setPlayerFlag(p, 'LuaQingjianGive')
-                        room:askForUseCard(p, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. p:getPile('LuaQingjian'):length(), -1,
-                            sgs.Card_MethodNone)
+                        room:askForUseCard(p, '@@LuaQingjian!',
+                            'LuaQingjian-Give:::' .. p:getPile('LuaQingjian'):length(), -1, sgs.Card_MethodNone)
                         room:setPlayerFlag(p, '-LuaQingjianGive')
                     end
                 end
