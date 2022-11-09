@@ -1581,7 +1581,6 @@ sgs.ai_skill_use_func['#LuaLuanwuCard'] = function(card, use, self)
             if self:hasSkills(sgs.masochism_skill, player) then
                 lost_value = player:getHp() / 2
             end
-            local hp = math.max(player:getHp(), 1)
             if self:isFriend(player) then
                 bad = bad + (lost_value + 1) / hp
             else
