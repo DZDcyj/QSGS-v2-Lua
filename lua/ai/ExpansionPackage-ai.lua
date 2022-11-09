@@ -1547,7 +1547,6 @@ sgs.ai_skill_use_func['#LuaLuanwuCard'] = function(card, use, self)
     if good == 0 then
         return
     end
-
     for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
         local hp = math.max(player:getHp(), 1)
         if self:getCardsNum('Analeptic', player) > 0 then
@@ -1557,7 +1556,6 @@ sgs.ai_skill_use_func['#LuaLuanwuCard'] = function(card, use, self)
                 bad = bad + 1.0 / hp
             end
         end
-
         local has_slash = (self:getCardsNum('Slash', player) > 0)
         local can_slash = false
         if not can_slash then
@@ -1575,7 +1573,6 @@ sgs.ai_skill_use_func['#LuaLuanwuCard'] = function(card, use, self)
                 bad = bad + math.max(self:getCardsNum('Peach', player), 1)
             end
         end
-
         if self:getCardsNum('Jink', player) == 0 then
             local lost_value = 0
             if self:hasSkills(sgs.masochism_skill, player) then
@@ -1588,7 +1585,6 @@ sgs.ai_skill_use_func['#LuaLuanwuCard'] = function(card, use, self)
             end
         end
     end
-
     if good > bad then
         use.card = card
     end
