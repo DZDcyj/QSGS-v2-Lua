@@ -6937,7 +6937,7 @@ ExMouGanning:addSkill(LuaFenwei)
 SkillAnjiang:addSkill(LuaQixiTrigger)
 SkillAnjiang:addSkill(LuaQicaiHotfix)
 
-JieJiaxu = sgs.General(extension, 'JieJiaxu', 'qun', '3', true, true)
+JieJiaxu = sgs.General(extension, 'JieJiaxu', 'qun', '3', true)
 
 LuaWansha = sgs.CreateTriggerSkill {
     name = 'LuaWansha',
