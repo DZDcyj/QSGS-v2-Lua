@@ -6937,33 +6937,36 @@ LuaWansha = sgs.CreateTriggerSkill {
     name = 'LuaWansha',
     events = {sgs.Dying},
     frequency = sgs.Skill_Compulsory,
+    priority = 10000,
+    global = true,
     on_trigger = function(self, event, player, data, room)
         local dying = data:toDying()
-        local current = room:getCurrent()
-        if rinsan.RIGHT(self, current) then
-            if current:getPhase() ~= sgs.Player_NotActive then
-                local from = current
-                local to = dying.who
-                if dying.who:objectName() ~= player:objectName() and current:objectName() ~= player:objectName() then
-                    -- 现在是以 Mark 而非 Flag 形式标记 Global_PreventPeach
-                    room:addPlayerMark(player, 'Global_PreventPeach')
-                    room:addPlayerMark(player, '@skill_invalidity')
-                    room:addPlayerMark(player, 'LuaWanshaInvokeTime')
-                end
-                if player:objectName() == current:objectName() then
-                    room:broadcastSkillInvoke(self:objectName())
-                    room:setPlayerFlag(to, 'wansha')
-                    local type = '#LuaWanshaTwo'
-                    if from:objectName() == to:objectName() then
-                        type = '#LuaWanshaOne'
-                    end
-                    rinsan.sendLogMessage(room, type, {
-                        ['from'] = from,
-                        ['to'] = to,
-                        ['arg'] = self:objectName()
-                    })
-                end
+        local splayer = room:findPlayerBySkillName(self:objectName())
+        if not splayer then
+            return false
+        end
+        local from = splayer
+        local to = dying.who
+        -- 以是否拥有【完杀】进行判断
+        if to:objectName() ~= player:objectName() and not player:hasSkill(self:objectName()) then
+            -- 现在是以 Mark 而非 Flag 形式标记 Global_PreventPeach
+            room:addPlayerMark(player, 'Global_PreventPeach')
+            room:addPlayerMark(player, '@skill_invalidity')
+            room:addPlayerMark(player, 'LuaWanshaInvokeTime')
+        end
+        if player:objectName() == splayer:objectName() then
+            room:broadcastSkillInvoke(self:objectName())
+            room:notifySkillInvoked(splayer, self:objectName())
+            room:setPlayerFlag(to, 'wansha')
+            local type = '#LuaWanshaTwo'
+            if from:objectName() == to:objectName() then
+                type = '#LuaWanshaOne'
             end
+            rinsan.sendLogMessage(room, type, {
+                ['from'] = from,
+                ['to'] = to,
+                ['arg'] = self:objectName()
+            })
         end
     end,
     can_trigger = function(self, target)
