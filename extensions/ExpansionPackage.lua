@@ -7583,17 +7583,17 @@ LuaQingjianGiveCard = sgs.CreateSkillCard {
             source:drawCards(1, 'LuaQingjian')
             room:setPlayerFlag(source, 'LuaQingjianGiveOutFlag')
         end
-        local needTanwuAgain = (source:getPile('LuaQingjian'):length() > 0)
-        if not needTanwuAgain then
+        local needInvokeAgain = (source:getPile('LuaQingjian'):length() > 0)
+        if not needInvokeAgain then
             return
         end
-        needTanwuAgain = false
+        needInvokeAgain = false
         for _, p in sgs.qlist(room:getOtherPlayers(source)) do
             if not p:hasFlag('LuaQingjianGiven') then
-                needTanwuAgain = true
+                needInvokeAgain = true
             end
         end
-        if needTanwuAgain then
+        if needInvokeAgain then
             local len = source:getPile('LuaQingjian'):length()
             room:askForUseCard(source, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. len, -1, sgs.Card_MethodNone)
         end
@@ -7608,7 +7608,10 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
         if sgs.Self:hasFlag('LuaQingjianGive') and not sgs.Self:hasFlag('LuaQingjianStoraging') then
             return sgs.Self:getMark('LuaQingjianCardStorage' .. to_select:getEffectiveId()) > 0
         end
-        return not to_select:isEquipped() and sgs.Self:getMark('LuaQingjianCardStorage' .. to_select:getEffectiveId()) == 0
+        if not to_select:isEquipped() then
+            return sgs.Self:getMark('LuaQingjianCardStorage' .. to_select:getEffectiveId()) == 0
+        end
+        return false
     end,
     view_as = function(self, cards)
         if #cards == 0 then
