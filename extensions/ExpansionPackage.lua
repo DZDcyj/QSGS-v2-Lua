@@ -6937,33 +6937,56 @@ LuaWansha = sgs.CreateTriggerSkill {
     name = 'LuaWansha',
     events = {sgs.Dying},
     frequency = sgs.Skill_Compulsory,
+    priority = 10000,
+    global = true,
     on_trigger = function(self, event, player, data, room)
         local dying = data:toDying()
+        local splayer = room:findPlayerBySkillName(self:objectName())
+        if not splayer then
+            return false
+        end
+        local to = dying.who
+        -- 死亡事件询问从当前回合角色开始，因此从此开始，以避免技能封锁不够及时
         local current = room:getCurrent()
-        if rinsan.RIGHT(self, current) then
-            if current:getPhase() ~= sgs.Player_NotActive then
-                local from = current
-                local to = dying.who
-                if dying.who:objectName() ~= player:objectName() and current:objectName() ~= player:objectName() then
+        if current:objectName() ~= player:objectName() then
+            return false
+        end
+        local victims = sgs.SPlayerList()
+        -- 以是否拥有【完杀】进行判断
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:objectName() ~= to:objectName() and not p:hasSkill(self:objectName()) then
+                -- 只有当前回合角色拥有完杀时才会封锁桃
+                if current:hasSkill(self:objectName()) then
                     -- 现在是以 Mark 而非 Flag 形式标记 Global_PreventPeach
-                    room:addPlayerMark(player, 'Global_PreventPeach')
-                    room:addPlayerMark(player, '@skill_invalidity')
-                    room:addPlayerMark(player, 'LuaWanshaInvokeTime')
+                    room:addPlayerMark(p, 'Global_PreventPeach')
                 end
-                if player:objectName() == current:objectName() then
-                    room:broadcastSkillInvoke(self:objectName())
-                    room:setPlayerFlag(to, 'wansha')
-                    local type = '#LuaWanshaTwo'
-                    if from:objectName() == to:objectName() then
-                        type = '#LuaWanshaOne'
-                    end
-                    rinsan.sendLogMessage(room, type, {
-                        ['from'] = from,
-                        ['to'] = to,
-                        ['arg'] = self:objectName()
-                    })
-                end
+                room:addPlayerMark(p, '@skill_invalidity')
+                room:addPlayerMark(p, 'LuaWanshaInvokeTime')
+                victims:append(p)
             end
+        end
+        room:broadcastSkillInvoke(self:objectName())
+        room:notifySkillInvoked(splayer, self:objectName())
+        if not victims:isEmpty() then
+            rinsan.sendLogMessage(room, '#LuaWanshaSkillInvalid', {
+                ['from'] = splayer,
+                ['tos'] = victims,
+                ['arg'] = self:objectName()
+            })
+        end
+        if current:hasSkill(self:objectName()) then
+            local from = current
+            -- 为源码所需要
+            room:setPlayerFlag(to, 'wansha')
+            local type = '#LuaWanshaTwo'
+            if from:objectName() == to:objectName() then
+                type = '#LuaWanshaOne'
+            end
+            rinsan.sendLogMessage(room, type, {
+                ['from'] = from,
+                ['to'] = to,
+                ['arg'] = self:objectName()
+            })
         end
     end,
     can_trigger = function(self, target)
@@ -6974,25 +6997,9 @@ LuaWansha = sgs.CreateTriggerSkill {
 LuaWanshaClear = sgs.CreateTriggerSkill {
     name = 'LuaWanshaClear',
     global = true,
-    events = {sgs.EventPhaseChanging, sgs.Death, sgs.QuitDying},
+    events = {sgs.Death, sgs.QuitDying},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.EventPhaseChanging then
-            local change = data:toPhaseChange()
-            if change.to ~= sgs.Player_NotActive then
-                return false
-            end
-        elseif event == sgs.Death then
-            local death = data:toDeath()
-            if death.who:objectName() ~= room:getCurrent():objectName() or death.who:getPhase() == sgs.Player_NotActive then
-                return false
-            end
-        elseif event == sgs.QuitDying then
-            local current = room:getCurrent()
-            if (not rinsan.RIGHT(self, current, 'LuaWansha')) or current:getPhase() == sgs.Player_NotActive then
-                return false
-            end
-        end
         for _, p in sgs.qlist(room:getAllPlayers()) do
             local x = p:getMark('LuaWanshaInvokeTime')
             if x > 0 then

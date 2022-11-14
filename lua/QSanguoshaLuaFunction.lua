@@ -415,8 +415,15 @@ function sendLogMessage(room, type, params)
         msg.from = from
     end
     local to = params['to']
+    local tos = params['tos']
+    assert(to == nil or tos == nil)
     if to then
         msg.to:append(to)
+    end
+    if tos then
+        for _, p in sgs.qlist(tos) do
+            msg.to:append(p)
+        end
     end
     local arg = params['arg']
     if arg then
