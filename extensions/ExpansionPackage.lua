@@ -6945,7 +6945,6 @@ LuaWansha = sgs.CreateTriggerSkill {
         if not splayer then
             return false
         end
-        local from = splayer
         local to = dying.who
         -- 死亡事件询问从当前回合角色开始，因此从此开始，以避免技能封锁不够及时
         local current = room:getCurrent()
@@ -6976,7 +6975,7 @@ LuaWansha = sgs.CreateTriggerSkill {
             })
         end
         if current:hasSkill(self:objectName()) then
-            from = current
+            local from = current
             -- 为源码所需要
             room:setPlayerFlag(to, 'wansha')
             local type = '#LuaWanshaTwo'
