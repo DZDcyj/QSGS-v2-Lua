@@ -2622,7 +2622,7 @@ LuaRangjie = sgs.CreateTriggerSkill {
 LuaYizhengCard = sgs.CreateSkillCard {
     name = 'LuaYizhengCard',
     filter = function(self, selected, to_select)
-        if rinsan.checkFilter(selected, to_select, rinsan.LESS_OR_EQUAL, 1) then
+        if rinsan.checkFilter(selected, to_select, rinsan.LESS, 1) then
             return to_select:getHp() <= sgs.Self:getHp() and sgs.Self:canPindian(to_select, 'LuaYizheng')
         end
         return false
