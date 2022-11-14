@@ -579,6 +579,7 @@ return {
     [':LuaWansha'] = '锁定技，你的回合内，只有你和处于濒死状态的角色才能使用【桃】；一名角色的濒死结算中，除你和濒死角色外的其他角色非锁定技无效',
     ['#LuaWanshaOne'] = '%from 的“%arg”被触发，只能 %from 自救',
     ['#LuaWanshaTwo'] = '%from 的“%arg”被触发，只有 %from 和 %to 才能救 %to',
+    ['#LuaWanshaSkillInvalid'] = '%from 的“%arg”被触发，%to 的非锁定技失效',
     ['LuaLuanwu'] = '乱武',
     [':LuaLuanwu'] = '限定技，出牌阶段，你可以令所有其他角色除非对各自距离最小的另一名角色使用一张【杀】，否则失去1点体力',
     ['lualuanwu'] = '乱武',
