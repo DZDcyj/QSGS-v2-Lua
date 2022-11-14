@@ -6240,7 +6240,7 @@ LuaZunwei = sgs.CreateZeroCardViewAsSkill {
 ExGuozhao:addSkill(LuaPianchong)
 ExGuozhao:addSkill(LuaZunwei)
 
-JieDengai = sgs.General(extension, 'JieDengai', 'wei', '4', true, true)
+JieDengai = sgs.General(extension, 'JieDengai', 'wei', '4', true)
 
 LuaTuntian = sgs.CreateTriggerSkill {
     name = 'LuaTuntian',

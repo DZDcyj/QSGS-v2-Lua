@@ -1119,7 +1119,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         if not target then
             -- 配合邓艾等屯田
             for _, friend in ipairs(self.friends_noself) do
-                if friend:hasSkills('tuntian+zaoxian') and not friend:hasSkill('manjuan') then
+                if (friend:hasSkills('LuaTuntian+LuaZaoxian') or friend:hasSkills('tuntian+zaoxian')) and
+                    not friend:hasSkill('manjuan') then
                     target = friend
                     break
                 end
@@ -1178,7 +1179,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         end
         if not target then
             for _, friend in ipairs(self.friends_noself) do
-                if friend:hasSkills('tuntian+zaoxian') and not friend:hasSkill('manjuan') then
+                if (friend:hasSkills('LuaTuntian+LuaZaoxian') or friend:hasSkills('tuntian+zaoxian')) and
+                    not friend:hasSkill('manjuan') then
                     target = friend
                     break
                 end
@@ -1259,7 +1261,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
             for _, enemy in ipairs(self.enemies) do
                 if not enemy:isNude() and
                     not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
-                    not self:needToThrowArmor(enemy) and not enemy:hasSkills('tuntian+zaoxian') then
+                    not self:needToThrowArmor(enemy) and
+                    not (enemy:hasSkills('LuaTuntian+LuaZaoxian') or enemy:hasSkills('tuntian+zaoxian')) then
                     target = enemy
                     break
                 end
@@ -1269,7 +1272,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
                     if not enemy:isNude() and
                         not (self:hasSkills(sgs.lose_equip_skill, enemy) and enemy:getCards('e'):length() > 0) and
                         not self:needToThrowArmor(enemy) and
-                        not (enemy:hasSkills('tuntian+zaoxian') and x < 3 and enemy:getCards('he'):length() < 2) then
+                        not ((enemy:hasSkills('LuaTuntian+LuaZaoxian') or enemy:hasSkills('tuntian+zaoxian')) and x < 3 and
+                            enemy:getCards('he'):length() < 2) then
                         target = enemy
                         break
                     end
@@ -1601,3 +1605,80 @@ LuaWeimuDamageEffect = function(self, to, nature, from, damageValue)
 end
 
 table.insert(sgs.ai_damage_effect, LuaWeimuDamageEffect)
+
+-- 界邓艾
+-- 屯田
+sgs.ai_skill_invoke.LuaTuntian = function(self, data)
+    if self.player:hasSkill('LuaZaoxian') and #self.enemies == 1 and self.room:alivePlayerCount() == 2 and
+        self.player:getMark('LuaZaoxian') == 0 and self:hasSkills('noswuyan|qianxun', self.enemies[1]) then
+        return false
+    end
+    return true
+end
+
+sgs.ai_slash_prohibit.LuaTuntian = function(self, from, to, card)
+    if self:isFriend(to) then
+        return false
+    end
+    if not to:hasSkill('LuaZaoxian') then
+        return false
+    end
+    if from:hasSkill('tieji') or self:canLiegong(to, from) then
+        return false
+    end
+    local enemies = self:getEnemies(to)
+    if #enemies == 1 and self.room:alivePlayerCount() == 2 and
+        self:hasSkills('noswuyan|qianxun|weimu|LuaWeimu|LuaJiejiaxuWeimu', enemies[1]) then
+        return false
+    end
+    if getCardsNum('Jink', to, from) < 1 or sgs.card_lack[to:objectName()]['Jink'] == 1 or self:isWeak(to) then
+        return false
+    end
+    if to:getHandcardNum() >= 3 and to:hasSkill('LuaZaoxian') then
+        return true
+    end
+    return false
+end
+
+-- 急袭
+local LuaJixi_skill = {}
+LuaJixi_skill.name = 'LuaJixi'
+table.insert(sgs.ai_skills, LuaJixi_skill)
+LuaJixi_skill.getTurnUseCard = function(self)
+    if self.player:getPile('field'):isEmpty() or
+        (self.player:getHandcardNum() >= self.player:getHp() + 2 and self.player:getPile('field'):length() <=
+            self.room:getAlivePlayers():length() / 2 - 1) then
+        return
+    end
+    for i = 0, self.player:getPile('field'):length() - 1, 1 do
+        local snatch = sgs.Sanguosha:getCard(self.player:getPile('field'):at(i))
+        local snatch_str = ('snatch:LuaJixi[%s:%s]=%d'):format(snatch:getSuitString(), snatch:getNumberString(),
+            self.player:getPile('field'):at(i))
+        local LuaJixisnatch = sgs.Card_Parse(snatch_str)
+
+        for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+            if (self.player:distanceTo(player, 1) <= 1 +
+                sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, LuaJixisnatch)) and
+                not self.room:isProhibited(self.player, player, LuaJixisnatch) and
+                self:hasTrickEffective(LuaJixisnatch, player) then
+
+                local suit = snatch:getSuitString()
+                local number = snatch:getNumberString()
+                local card_id = snatch:getEffectiveId()
+                local card_str = ('snatch:LuaJixi[%s:%s]=%d'):format(suit, number, card_id)
+                local newSnatch = sgs.Card_Parse(card_str)
+                assert(newSnatch)
+                return newSnatch
+            end
+        end
+    end
+end
+
+sgs.ai_view_as.LuaJixi = function(card, player, card_place)
+    local suit = card:getSuitString()
+    local number = card:getNumberString()
+    local card_id = card:getEffectiveId()
+    if card_place == sgs.Player_PlaceSpecial and player:getPileName(card_id) == 'field' then
+        return ('snatch:LuaJixi[%s:%s]=%d'):format(suit, number, card_id)
+    end
+end
