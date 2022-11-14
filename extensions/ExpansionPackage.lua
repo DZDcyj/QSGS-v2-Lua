@@ -256,7 +256,7 @@ LuaXionghuoCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)
-        return #selected == 0 and to_select:getMark('@baoli') == 0 and to_select:objectName() ~= sgs.Self:objectName()
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and to_select:getMark('@baoli') == 0
     end,
     on_effect = function(self, effect)
         effect.from:loseMark('@baoli')
@@ -1365,7 +1365,7 @@ LuaQiaosiCard = sgs.CreateSkillCard {
     will_throw = false,
     target_fixed = false,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
     end,
     feasible = function(self, targets)
         return #targets >= 0
@@ -2381,8 +2381,10 @@ LuaLiezhiCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)
-        return #selected <= 1 and to_select:objectName() ~= sgs.Self:objectName() and
-                   rinsan.canDiscard(sgs.Self, to_select, 'hej')
+        if rinsan.checkFilter(selected, to_select, rinsan.LESS_OR_EQUAL, 1) then
+            return rinsan.canDiscard(sgs.Self, to_select, 'hej')
+        end
+        return false
     end,
     on_use = function(self, room, source, targets)
         room:broadcastSkillInvoke('LuaLiezhi')
@@ -2620,9 +2622,8 @@ LuaRangjie = sgs.CreateTriggerSkill {
 LuaYizhengCard = sgs.CreateSkillCard {
     name = 'LuaYizhengCard',
     filter = function(self, selected, to_select)
-        if #selected < 1 then
-            return to_select:getHp() <= sgs.Self:getHp() and sgs.Self:canPindian(to_select, 'LuaYizheng') and
-                       to_select:objectName() ~= sgs.Self:objectName()
+        if rinsan.checkFilter(selected, to_select, rinsan.LESS, 1) then
+            return to_select:getHp() <= sgs.Self:getHp() and sgs.Self:canPindian(to_select, 'LuaYizheng')
         end
         return false
     end,
@@ -2867,10 +2868,7 @@ LuaMiejiCard = sgs.CreateSkillCard {
     name = 'LuaMiejiCard',
     will_throw = false,
     filter = function(self, selected, to_select)
-        if #selected == 0 then
-            return to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude()
-        end
-        return false
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and not to_select:isNude()
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
@@ -3012,10 +3010,7 @@ JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true)
 LuaJunxingCard = sgs.CreateSkillCard {
     name = 'LuaJunxingCard',
     filter = function(self, selected, to_select)
-        if #selected == 0 then
-            return to_select:objectName() ~= sgs.Self:objectName()
-        end
-        return false
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
         room:broadcastSkillInvoke('LuaJunxing')
@@ -3210,7 +3205,7 @@ LuaJieyueCard = sgs.CreateSkillCard {
     will_throw = false,
     target_fixed = false,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
@@ -3333,7 +3328,7 @@ LuaLijiVS = sgs.CreateViewAsSkill {
     name = 'LuaLiji',
     n = 1,
     filter = function(self, selected, to_select)
-        return #selected == 0 and to_select:objectName() ~= sgs.Self:objectName()
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     view_filter = function(self, selected, to_select)
         return not to_select:isEquipped()
@@ -3528,8 +3523,7 @@ LuaChuhaiCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName() and
-                   sgs.Self:canPindian(to_select, 'LuaChuhai')
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) and sgs.Self:canPindian(to_select, 'LuaChuhai')
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
@@ -4051,7 +4045,7 @@ LuaShamengCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = true,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
     end,
     on_effect = function(self, effect)
         local sourse = effect.from
@@ -4929,7 +4923,7 @@ LuaZhiyanGiveCard = sgs.CreateSkillCard {
     will_throw = false,
     target_fixed = false,
     filter = function(self, targets, to_select)
-        return #targets == 0 and to_select:objectName() ~= sgs.Self:objectName()
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
@@ -6144,7 +6138,7 @@ LuaPianchong = sgs.CreateTriggerSkill {
 LuaZunweiCard = sgs.CreateSkillCard {
     name = 'LuaZunweiCard',
     filter = function(self, selected, to_select)
-        if #selected == 0 and to_select:objectName() ~= sgs.Self:objectName() then
+        if rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) then
             -- 分别代表三个选项是否可用
 
             -- 选项一：摸牌至与对应角色相同
@@ -7551,6 +7545,7 @@ LuaQingjianStoCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:setPlayerFlag(source, 'LuaQingjianStorage')
         local subs = self:getSubcards()
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         for _, card_id in sgs.qlist(subs) do
@@ -7568,8 +7563,7 @@ LuaQingjianGiveCard = sgs.CreateSkillCard {
     name = 'LuaQingjianGiveCard',
     will_throw = false,
     filter = function(self, selected, to_select)
-        return #selected == 0 and to_select:objectName() ~= sgs.Self:objectName() and
-                   not to_select:hasFlag('LuaQingjianGiven')
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and not to_select:hasFlag('LuaQingjianGiven')
     end,
     on_use = function(self, room, source, targets)
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
@@ -7589,18 +7583,19 @@ LuaQingjianGiveCard = sgs.CreateSkillCard {
             source:drawCards(1, 'LuaQingjian')
             room:setPlayerFlag(source, 'LuaQingjianGiveOutFlag')
         end
-        local needTanwuAgain = (source:getPile('LuaQingjian'):length() > 0)
-        if not needTanwuAgain then
+        local needInvokeAgain = (source:getPile('LuaQingjian'):length() > 0)
+        if not needInvokeAgain then
             return
         end
+        needInvokeAgain = false
         for _, p in sgs.qlist(room:getOtherPlayers(source)) do
             if not p:hasFlag('LuaQingjianGiven') then
-                needTanwuAgain = true
+                needInvokeAgain = true
             end
         end
-        if needTanwuAgain then
-            room:askForUseCard(source, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. source:getPile('LuaQingjian'):length(), -1,
-                sgs.Card_MethodNone)
+        if needInvokeAgain then
+            local len = source:getPile('LuaQingjian'):length()
+            room:askForUseCard(source, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. len, -1, sgs.Card_MethodNone)
         end
     end
 }
@@ -7610,14 +7605,24 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
     n = 999,
     expand_pile = 'LuaQingjian',
     view_filter = function(self, selected, to_select)
-        if sgs.Self:hasFlag('LuaQingjianGive') then
+        if sgs.Self:hasFlag('LuaQingjianGive') and not sgs.Self:hasFlag('LuaQingjianStoraging') then
             return sgs.Self:getMark('LuaQingjianCardStorage' .. to_select:getEffectiveId()) > 0
         end
-        return not to_select:isEquipped()
+        if not to_select:isEquipped() then
+            return sgs.Self:getMark('LuaQingjianCardStorage' .. to_select:getEffectiveId()) == 0
+        end
+        return false
     end,
     view_as = function(self, cards)
         if #cards == 0 then
             return nil
+        end
+        if sgs.Self:hasFlag('LuaQingjianStoraging') then
+            local sto = LuaQingjianStoCard:clone()
+            for _, cd in ipairs(cards) do
+                sto:addSubcard(cd)
+            end
+            return sto
         end
         if sgs.Self:hasFlag('LuaQingjianGive') then
             local give = LuaQingjianGiveCard:clone()
@@ -7625,13 +7630,6 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
                 give:addSubcard(cd)
             end
             return give
-        end
-        if sgs.Self:hasFlag('LuaQingjianStorage') then
-            local sto = LuaQingjianStoCard:clone()
-            for _, cd in ipairs(cards) do
-                sto:addSubcard(cd)
-            end
-            return sto
         end
         return nil
     end,
@@ -7645,47 +7643,52 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
 
 LuaQingjian = sgs.CreateTriggerSkill {
     name = 'LuaQingjian',
-    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    events = {sgs.CardsMoveOneTime},
     view_as_skill = LuaQingjianVS,
+    on_trigger = function(self, event, player, data, room)
+        if room:getTag('FirstRound'):toBool() then
+            return false
+        end
+        local move = data:toMoveOneTime()
+        if move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceHand then
+            if player:getPhase() ~= sgs.Player_Draw and not player:hasFlag('LuaQingjianStorage') then
+                room:setPlayerFlag(player, 'LuaQingjianStoraging')
+                room:askForUseCard(player, '@@LuaQingjian', 'LuaQingjian-Storage', -1, sgs.Card_MethodNone)
+                room:setPlayerFlag(player, '-LuaQingjianStoraging')
+            end
+        end
+    end
+}
+
+LuaQingjianClear = sgs.CreateTriggerSkill {
+    name = 'LuaQingjianClear',
+    events = {sgs.EventPhaseEnd},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.CardsMoveOneTime then
-            if room:getTag('FirstRound'):toBool() then
-                return false
-            end
-            local move = data:toMoveOneTime()
-            if move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceHand and
-                rinsan.RIGHT(self, player) then
-                if player:getPhase() ~= sgs.Player_Draw and not player:hasFlag('LuaQingjianStorage') then
-                    room:setPlayerFlag(player, 'LuaQingjianStorage')
-                    if not room:askForUseCard(player, '@@LuaQingjian', 'LuaQingjian-Storage', -1, sgs.Card_MethodNone) then
-                        room:setPlayerFlag(player, '-LuaQingjianStorage')
-                    end
+        if player:getPhase() == sgs.Player_Finish then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:getPile('LuaQingjian'):length() > 0 then
+                    room:setPlayerFlag(p, 'LuaQingjianGive')
+                    local len = p:getPile('LuaQingjian'):length()
+                    room:askForUseCard(p, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. len, -1, sgs.Card_MethodNone)
+                    room:setPlayerFlag(p, '-LuaQingjianGive')
                 end
             end
-        else
-            if data:toPhaseChange().to == sgs.Player_NotActive then
-                for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    if p:getPile('LuaQingjian'):length() > 0 then
-                        room:setPlayerFlag(p, 'LuaQingjianGive')
-                        room:askForUseCard(p, '@@LuaQingjian!', 'LuaQingjian-Give:::' .. p:getPile('LuaQingjian'):length(), -1,
-                            sgs.Card_MethodNone)
-                        room:setPlayerFlag(p, '-LuaQingjianGive')
-                    end
-                end
-                for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    room:setPlayerFlag(p, '-LuaQingjianGiven')
-                    room:setPlayerFlag(p, '-LuaQingjianStorage')
-                    room:setPlayerFlag(p, '-LuaQingjianGiveOutFlag')
-                    room:setPlayerMark(p, 'LuaQingjianGiveOut', 0)
-                end
+        elseif player:getPhase() == sgs.Player_Start then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerFlag(p, '-LuaQingjianGiven')
+                room:setPlayerFlag(p, '-LuaQingjianStorage')
+                room:setPlayerFlag(p, '-LuaQingjianStoraging')
+                room:setPlayerFlag(p, '-LuaQingjianGiveOutFlag')
+                room:setPlayerMark(p, 'LuaQingjianGiveOut', 0)
             end
         end
     end,
     can_trigger = function(self, target)
-        return target
+        return true
     end
 }
 
 JieXiahoudun:addSkill('ganglie')
 JieXiahoudun:addSkill(LuaQingjian)
+SkillAnjiang:addSkill(LuaQingjianClear)

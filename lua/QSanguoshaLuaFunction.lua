@@ -852,6 +852,31 @@ function recover(room, target, value, source, card)
     room:recover(target, sgs.RecoverStruct(source, card, value))
 end
 
+-- 封装 filter 函数判断，选取对应数量的其他角色
+-- selected 已选择角色
+-- to_select 将要选取角色
+-- compareType 判断类型，由下面的参数列表决定
+-- compareValue 对应的判断值
+function checkFilter(selected, to_select, compareType, compareValue)
+    if to_select:objectName() == sgs.Self:objectName() then
+        return false
+    end
+    compareValue = compareValue or 0
+    if compareType < EQUAL then
+        return (#selected < compareValue) or (#selected == compareValue and compareType == LESS_OR_EQUAL)
+    elseif compareType > EQUAL then
+        return (#selected > compareValue) or (#selected == compareValue and compareType == GREATER_OR_EQUAL)
+    end
+    return compareValue == #selected
+end
+
+-- Compare 参数，用于 checkFilter 方法
+LESS = 0
+LESS_OR_EQUAL = 1
+EQUAL = 2
+GREATER_OR_EQUAL = 3
+GREATER = 4
+
 -- Animate 参数，用于 doAnimate 方法
 ANIMATE_NULL = 0 -- 空
 ANIMATE_INDICATE = 1 -- 指示线
