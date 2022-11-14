@@ -7545,6 +7545,7 @@ LuaQingjianStoCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:setPlayerFlag(source, 'LuaQingjianStorage')
         local subs = self:getSubcards()
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
         for _, card_id in sgs.qlist(subs) do
@@ -7586,6 +7587,7 @@ LuaQingjianGiveCard = sgs.CreateSkillCard {
         if not needTanwuAgain then
             return
         end
+        needTanwuAgain = false
         for _, p in sgs.qlist(room:getOtherPlayers(source)) do
             if not p:hasFlag('LuaQingjianGiven') then
                 needTanwuAgain = true
@@ -7603,7 +7605,7 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
     n = 999,
     expand_pile = 'LuaQingjian',
     view_filter = function(self, selected, to_select)
-        if sgs.Self:hasFlag('LuaQingjianGive') then
+        if sgs.Self:hasFlag('LuaQingjianGive') and not sgs.Self:hasFlag('LuaQingjianStoraging') then
             return sgs.Self:getMark('LuaQingjianCardStorage' .. to_select:getEffectiveId()) > 0
         end
         return not to_select:isEquipped()
@@ -7612,7 +7614,7 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
         if #cards == 0 then
             return nil
         end
-        if sgs.Self:hasFlag('LuaQingjianStorage') then
+        if sgs.Self:hasFlag('LuaQingjianStoraging') then
             local sto = LuaQingjianStoCard:clone()
             for _, cd in ipairs(cards) do
                 sto:addSubcard(cd)
@@ -7638,7 +7640,7 @@ LuaQingjianVS = sgs.CreateViewAsSkill {
 
 LuaQingjian = sgs.CreateTriggerSkill {
     name = 'LuaQingjian',
-    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseEnd},
     view_as_skill = LuaQingjianVS,
     global = true,
     on_trigger = function(self, event, player, data, room)
@@ -7650,14 +7652,13 @@ LuaQingjian = sgs.CreateTriggerSkill {
             if move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceHand and
                 rinsan.RIGHT(self, player) then
                 if player:getPhase() ~= sgs.Player_Draw and not player:hasFlag('LuaQingjianStorage') then
-                    room:setPlayerFlag(player, 'LuaQingjianStorage')
-                    if not room:askForUseCard(player, '@@LuaQingjian', 'LuaQingjian-Storage', -1, sgs.Card_MethodNone) then
-                        room:setPlayerFlag(player, '-LuaQingjianStorage')
-                    end
+                    room:setPlayerFlag(player, 'LuaQingjianStoraging')
+                    room:askForUseCard(player, '@@LuaQingjian', 'LuaQingjian-Storage', -1, sgs.Card_MethodNone)
+                    room:setPlayerFlag(player, '-LuaQingjianStoraging')
                 end
             end
         else
-            if data:toPhaseChange().to == sgs.Player_NotActive then
+            if player:getPhase() == sgs.Player_Finish then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     if p:getPile('LuaQingjian'):length() > 0 then
                         room:setPlayerFlag(p, 'LuaQingjianGive')
@@ -7666,9 +7667,11 @@ LuaQingjian = sgs.CreateTriggerSkill {
                         room:setPlayerFlag(p, '-LuaQingjianGive')
                     end
                 end
+            elseif player:getPhase() == sgs.Player_Start then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     room:setPlayerFlag(p, '-LuaQingjianGiven')
                     room:setPlayerFlag(p, '-LuaQingjianStorage')
+                    room:setPlayerFlag(p, '-LuaQingjianStoraging')
                     room:setPlayerFlag(p, '-LuaQingjianGiveOutFlag')
                     room:setPlayerMark(p, 'LuaQingjianGiveOut', 0)
                 end
