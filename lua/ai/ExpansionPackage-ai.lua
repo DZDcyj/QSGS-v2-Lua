@@ -1710,7 +1710,7 @@ sgs.ai_skill_invoke.LuaShouye = function(self, data)
     local use = data:toCardUse()
     local card = use.card
     -- 判断牌是否为好牌，不是就发动
-    if card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') then
+    if card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
         return false
     end
     return true
@@ -1859,10 +1859,12 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
         end
     end
 
+    local goodSkills = {'jijiu', 'qingnang', 'xinzhan', 'leiji', 'jieyin', 'beige', 'kanpo', 'liuli', 'qiaobian',
+                        'zhiheng', 'guidao', 'longhun', 'xuanfeng', 'tianxiang', 'noslijian', 'lijian'}
+
     for i = 1, #self.enemies, 1 do
         local p = self.enemies[i]
-        if p:hasSkills(
-            'jijiu|qingnang|xinzhan|leiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian') then
+        if p:hasSkills(table.concat(goodSkills, '|')) then
             if add_player(p) == LuaLiezhi_mark then
                 return parseLuaLiezhiCard()
             end
@@ -1885,16 +1887,6 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
         if good_target and add_player(p) == LuaLiezhi_mark then
             return parseLuaLiezhiCard()
         end
-    end
-
-    if luxun and add_player(luxun, (self:isFriend(luxun) and 1 or nil)) == LuaLiezhi_mark then
-        return parseLuaLiezhiCard()
-    end
-
-    if dengai and self:isFriend(dengai) and dengai:hasSkill('zaoxian') and
-        (not self:isWeak(dengai) or self:getEnemyNumBySeat(self.player, dengai) == 0) and add_player(dengai, 1) ==
-        LuaLiezhi_mark then
-        return parseLuaLiezhiCard()
     end
 
     local others = self.room:getOtherPlayers(self.player)
@@ -1927,10 +1919,9 @@ sgs.ai_card_intention.LuaLiezhiCard = function(self, card, from, tos)
     end
     if from:getState() == 'online' then
         for _, to in ipairs(tos) do
-            if to:hasSkill('kongcheng') or to:hasSkill('lianying') or to:hasSkill('zhiji') or
+            if not (to:hasSkill('kongcheng') or to:hasSkill('lianying') or to:hasSkill('zhiji') or
                 (to:hasSkill('tuntian') and to:hasSkill('zaoxian')) or
-                ((to:hasSkill('LuaTuntian') and to:hasSkill('LuaZaoxian'))) then
-            else
+                ((to:hasSkill('LuaTuntian') and to:hasSkill('LuaZaoxian')))) then
                 sgs.updateIntention(from, to, 80)
             end
         end
