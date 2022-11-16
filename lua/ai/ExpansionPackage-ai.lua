@@ -1682,3 +1682,24 @@ sgs.ai_view_as.LuaJixi = function(card, player, card_place)
         return ('snatch:LuaJixi[%s:%s]=%d'):format(suit, number, card_id)
     end
 end
+
+-- 李丰
+-- 始终发动屯储
+sgs.ai_skill_invoke.LuaTunchu = function(self, data)
+    return true
+end
+
+-- 始终不置于武将牌上
+sgs.ai_skill_use['@@LuaTunchu'] = function(self, prompt, method)
+    return '.'
+end
+
+-- 输粮
+-- 仅向队友发动
+sgs.ai_skill_use['@@LuaShuliang'] = function(self, prompt, method)
+    local current = self.room:getCurrent()
+    if current:isFriend() then
+        return '#LuaYinghunCard:.:->' .. current:objectName()
+    end
+    return '.'
+end
