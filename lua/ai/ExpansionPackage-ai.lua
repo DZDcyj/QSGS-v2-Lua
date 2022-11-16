@@ -1699,7 +1699,7 @@ end
 sgs.ai_skill_use['@@LuaShuliang'] = function(self, prompt, method)
     local current = self.room:getCurrent()
     if current:isFriend() then
-        return '#LuaYinghunCard:.:->' .. current:objectName()
+        return '#LuaShuliangCard:.:->' .. current:objectName()
     end
     return '.'
 end
