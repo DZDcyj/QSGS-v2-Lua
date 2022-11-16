@@ -2303,7 +2303,7 @@ LuaYongjin = sgs.CreateTriggerSkill {
 JieLingtong:addSkill(LuaXuanfeng)
 JieLingtong:addSkill(LuaYongjin)
 
-ExShenpei = sgs.General(extension, 'ExShenpei', 'qun', 3, true, true, false, 2)
+ExShenpei = sgs.General(extension, 'ExShenpei', 'qun', 3, true, false, false, 2)
 
 LuaShouye = sgs.CreateTriggerSkill {
     name = 'LuaShouye',
@@ -2315,9 +2315,7 @@ LuaShouye = sgs.CreateTriggerSkill {
         end
         for _, p in sgs.qlist(use.to) do
             if p:getMark(self:objectName()) == 0 and p:hasSkill(self:objectName()) then
-                local data2 = sgs.QVariant()
-                data2:setValue(use.from)
-                if room:askForSkillInvoke(p, self:objectName(), data2) then
+                if room:askForSkillInvoke(p, self:objectName(), data) then
                     room:addPlayerMark(p, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     room:doAnimate(rinsan.ANIMATE_INDICATE, p:objectName(), use.from:objectName())
@@ -2377,7 +2375,7 @@ LuaShouyeClear = sgs.CreateTriggerSkill {
 }
 
 LuaLiezhiCard = sgs.CreateSkillCard {
-    name = 'LuaLiezhicard',
+    name = 'LuaLiezhiCard',
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)

@@ -1703,3 +1703,231 @@ sgs.ai_skill_use['@@LuaShuliang'] = function(self, prompt, method)
     end
     return '.'
 end
+
+-- 审配
+-- 守邺发动
+sgs.ai_skill_invoke.LuaShouye = function(self, data)
+    local use = data:toCardUse()
+    local card = use.card
+    -- 判断牌是否为好牌，不是就发动
+    if card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
+        return false
+    end
+    return true
+end
+
+-- 守邺选项
+sgs.ai_skill_choice.LuaShouye = function(self, choices)
+    local items = choices:split('+')
+    return items[math.random(1, #items)]
+end
+
+-- 烈直
+sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
+    self:sort(self.enemies, 'defense')
+    local LuaLiezhi_mark = math.min(2, self.room:getOtherPlayers(self.player):length())
+    local targets = {}
+
+    local zhugeliang = self.room:findPlayerBySkillName('kongcheng')
+    local luxun = self.room:findPlayerBySkillName('lianying') or self.room:findPlayerBySkillName('noslianying')
+    local dengai = self.room:findPlayerBySkillName('tuntian')
+    local jiedengai = self.room:findPlayerBySkillName('LuaTuntian')
+    local jiangwei = self.room:findPlayerBySkillName('zhiji')
+    local zhijiangwei = self.room:findPlayerBySkillName('beifa')
+
+    local add_player = function(player, isfriend)
+        if player:isNude() or player:objectName() == self.player:objectName() then
+            return #targets
+        end
+        if self:objectiveLevel(player) == 0 and player:isLord() and sgs.current_mode_players['rebel'] > 1 then
+            return #targets
+        end
+
+        local f = false
+        for _, c in ipairs(targets) do
+            if c == player:objectName() then
+                f = true
+                break
+            end
+        end
+
+        if not f then
+            table.insert(targets, player:objectName())
+        end
+
+        if isfriend and isfriend == 1 then
+            self.player:setFlags('LuaLiezhi_isfriend_' .. player:objectName())
+        end
+        return #targets
+    end
+
+    local parseLuaLiezhiCard = function()
+        if #targets == 0 then
+            return '.'
+        end
+        local s = table.concat(targets, '+')
+        return '#LuaLiezhiCard:.:->' .. s
+    end
+
+    local lord = self.room:getLord()
+    if lord and self:isEnemy(lord) and sgs.turncount <= 1 and not lord:isKongcheng() then
+        if add_player(lord) == LuaLiezhi_mark then
+            return parseLuaLiezhiCard()
+        end
+    end
+
+    if jiangwei and self:isFriend(jiangwei) and jiangwei:getMark('zhiji') == 0 and jiangwei:getHandcardNum() == 1 and
+        self:getEnemyNumBySeat(self.player, jiangwei) <= (jiangwei:getHp() >= 3 and 1 or 0) then
+        if add_player(jiangwei, 1) == LuaLiezhi_mark then
+            return parseLuaLiezhiCard()
+        end
+    end
+
+    if dengai and self:isFriend(dengai) and
+        (not self:isWeak(dengai) or self:getEnemyNumBySeat(self.player, dengai) == 0) and dengai:hasSkill('zaoxian') and
+        dengai:getMark('zaoxian') == 0 and dengai:getPile('field'):length() == 2 and add_player(dengai, 1) ==
+        LuaLiezhi_mark then
+        return parseLuaLiezhiCard()
+    end
+
+    if jiedengai and self:isFriend(jiedengai) and
+        (not self:isWeak(jiedengai) or self:getEnemyNumBySeat(self.player, jiedengai) == 0) and
+        jiedengai:hasSkill('LuaZaoxian') and jiedengai:getMark('zaoxian') == 0 and jiedengai:getPile('field'):length() ==
+        2 and add_player(jiedengai, 1) == LuaLiezhi_mark then
+        return parseLuaLiezhiCard()
+    end
+
+    if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and
+        self:getEnemyNumBySeat(self.player, zhugeliang) > 0 then
+        if zhugeliang:getHp() <= 2 then
+            if add_player(zhugeliang, 1) == LuaLiezhi_mark then
+                return parseLuaLiezhiCard()
+            end
+        else
+            local flag = string.format('%s_%s_%s', 'visible', self.player:objectName(), zhugeliang:objectName())
+            local cards = sgs.QList2Table(zhugeliang:getHandcards())
+            if #cards == 1 and (cards[1]:hasFlag('visible') or cards[1]:hasFlag(flag)) then
+                if cards[1]:isKindOf('TrickCard') or cards[1]:isKindOf('Slash') or cards[1]:isKindOf('EquipCard') then
+                    if add_player(zhugeliang, 1) == LuaLiezhi_mark then
+                        return parseLuaLiezhiCard()
+                    end
+                end
+            end
+        end
+    end
+
+    if luxun and self:isFriend(luxun) and luxun:getHandcardNum() == 1 and self:getEnemyNumBySeat(self.player, luxun) > 0 then
+        local flag = string.format('%s_%s_%s', 'visible', self.player:objectName(), luxun:objectName())
+        local cards = sgs.QList2Table(luxun:getHandcards())
+        if #cards == 1 and (cards[1]:hasFlag('visible') or cards[1]:hasFlag(flag)) then
+            if cards[1]:isKindOf('TrickCard') or cards[1]:isKindOf('Slash') or cards[1]:isKindOf('EquipCard') then
+                if add_player(luxun, 1) == LuaLiezhi_mark then
+                    return parseLuaLiezhiCard()
+                end
+            end
+        end
+    end
+
+    if zhijiangwei and self:isFriend(zhijiangwei) and zhijiangwei:getHandcardNum() == 1 and
+        self:getEnemyNumBySeat(self.player, zhijiangwei) <= (zhijiangwei:getHp() >= 3 and 1 or 0) then
+        local isGood
+        for _, enemy in ipairs(self.enemies) do
+            local def = sgs.getDefenseSlash(enemy)
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            local eff = self:slashIsEffective(slash, enemy, zhijiangwei) and sgs.isGoodTarget(enemy, self.enemies, self)
+            if zhijiangwei:canSlash(enemy, slash) and not self:slashProhibit(slash, enemy, zhijiangwei) and eff and def <
+                4 then
+                isGood = true
+            end
+        end
+        if isGood and add_player(zhijiangwei, 1) == LuaLiezhi_mark then
+            return parseLuaLiezhiCard()
+        end
+    end
+
+    local goodSkills = {'jijiu', 'qingnang', 'xinzhan', 'leiji', 'jieyin', 'beige', 'kanpo', 'liuli', 'qiaobian',
+                        'zhiheng', 'guidao', 'longhun', 'xuanfeng', 'tianxiang', 'noslijian', 'lijian'}
+
+    for i = 1, #self.enemies, 1 do
+        local p = self.enemies[i]
+        local x = p:getHandcardNum()
+        local good_target = true
+        local cards = sgs.QList2Table(p:getHandcards())
+        local flag = string.format('%s_%s_%s', 'visible', self.player:objectName(), p:objectName())
+        for _, card in ipairs(cards) do
+            if (card:hasFlag('visible') or card:hasFlag(flag)) and
+                (card:isKindOf('Peach') or card:isKindOf('Nullification') or card:isKindOf('Analeptic')) then
+                if add_player(p) == LuaLiezhi_mark then
+                    return parseLuaLiezhiCard()
+                end
+            end
+        end
+        if p:hasSkills(table.concat(goodSkills, '|')) then
+            if add_player(p) == LuaLiezhi_mark then
+                return parseLuaLiezhiCard()
+            end
+        end
+        if x == 1 and self:needKongcheng(p) then
+            good_target = false
+        end
+        if x >= 2 and p:hasSkill('tuntian') and p:hasSkill('zaoxian') then
+            good_target = false
+        end
+        if x >= 2 and p:hasSkill('LuaTuntian') and p:hasSkill('LuaZaoxian') then
+            good_target = false
+        end
+        if good_target and add_player(p) == LuaLiezhi_mark then
+            return parseLuaLiezhiCard()
+        end
+    end
+
+    local others = self.room:getOtherPlayers(self.player)
+    for _, other in sgs.qlist(others) do
+        if self:objectiveLevel(other) >= 0 and not (other:hasSkill('tuntian') and other:hasSkill('zaoxian')) and
+            add_player(other) == LuaLiezhi_mark then
+            return parseLuaLiezhiCard()
+        end
+    end
+
+    for _, other in sgs.qlist(others) do
+        if self:objectiveLevel(other) >= 0 and not (other:hasSkill('tuntian') and other:hasSkill('zaoxian')) and
+            math.random(0, 5) <= 1 and not self:hasSkills('qiaobian') then
+            add_player(other)
+        end
+    end
+
+    return parseLuaLiezhiCard()
+end
+
+sgs.ai_card_intention.LuaLiezhiCard = function(self, card, from, tos)
+    local lord = getLord(self.player)
+    local LuaLiezhi_lord = false
+    if sgs.evaluatePlayerRole(from) == 'neutral' and sgs.evaluatePlayerRole(tos[1]) == 'neutral' and
+        (not tos[2] or sgs.evaluatePlayerRole(tos[2]) == 'neutral') and lord and not lord:isKongcheng() and
+        not (self:needKongcheng(lord) and lord:getHandcardNum() == 1) and self:hasLoseHandcardEffective(lord) and
+        not (lord:hasSkill('tuntian') and lord:hasSkill('zaoxian')) and from:aliveCount() >= 4 then
+        sgs.updateIntention(from, lord, -80)
+        return
+    end
+    if from:getState() == 'online' then
+        for _, to in ipairs(tos) do
+            if not (to:hasSkill('kongcheng') or to:hasSkill('lianying') or to:hasSkill('zhiji') or
+                (to:hasSkill('tuntian') and to:hasSkill('zaoxian')) or
+                ((to:hasSkill('LuaTuntian') and to:hasSkill('LuaZaoxian')))) then
+                sgs.updateIntention(from, to, 80)
+            end
+        end
+    else
+        for _, to in ipairs(tos) do
+            if lord and to:objectName() == lord:objectName() then
+                LuaLiezhi_lord = true
+            end
+            local intention = from:hasFlag('LuaLiezhi_isfriend_' .. to:objectName()) and -5 or 80
+            sgs.updateIntention(from, to, intention)
+        end
+        if sgs.turncount == 1 and not LuaLiezhi_lord and lord and not lord:isKongcheng() and
+            from:getRoom():alivePlayerCount() > 2 then
+            sgs.updateIntention(from, lord, -80)
+        end
+    end
+end
