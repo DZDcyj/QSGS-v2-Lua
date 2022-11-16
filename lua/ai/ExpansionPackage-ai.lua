@@ -1845,8 +1845,13 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
         end
     end
 
+    local goodSkills = {'jijiu', 'qingnang', 'xinzhan', 'leiji', 'jieyin', 'beige', 'kanpo', 'liuli', 'qiaobian',
+                        'zhiheng', 'guidao', 'longhun', 'xuanfeng', 'tianxiang', 'noslijian', 'lijian'}
+
     for i = 1, #self.enemies, 1 do
         local p = self.enemies[i]
+        local x = p:getHandcardNum()
+        local good_target = true
         local cards = sgs.QList2Table(p:getHandcards())
         local flag = string.format('%s_%s_%s', 'visible', self.player:objectName(), p:objectName())
         for _, card in ipairs(cards) do
@@ -1857,24 +1862,11 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
                 end
             end
         end
-    end
-
-    local goodSkills = {'jijiu', 'qingnang', 'xinzhan', 'leiji', 'jieyin', 'beige', 'kanpo', 'liuli', 'qiaobian',
-                        'zhiheng', 'guidao', 'longhun', 'xuanfeng', 'tianxiang', 'noslijian', 'lijian'}
-
-    for i = 1, #self.enemies, 1 do
-        local p = self.enemies[i]
         if p:hasSkills(table.concat(goodSkills, '|')) then
             if add_player(p) == LuaLiezhi_mark then
                 return parseLuaLiezhiCard()
             end
         end
-    end
-
-    for i = 1, #self.enemies, 1 do
-        local p = self.enemies[i]
-        local x = p:getHandcardNum()
-        local good_target = true
         if x == 1 and self:needKongcheng(p) then
             good_target = false
         end
