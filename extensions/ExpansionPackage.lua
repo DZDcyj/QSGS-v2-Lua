@@ -1528,7 +1528,7 @@ LuaJiyuan = sgs.CreateTriggerSkill {
 ExYiji:addSkill(LuaJijie)
 ExYiji:addSkill(LuaJiyuan)
 
-ExLifeng = sgs.General(extension, 'ExLifeng', 'shu', '3', true, true)
+ExLifeng = sgs.General(extension, 'ExLifeng', 'shu', '3', true)
 
 LuaTunchuCard = sgs.CreateSkillCard {
     name = 'LuaTunchuCard',
