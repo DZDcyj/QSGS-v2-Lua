@@ -192,4 +192,23 @@ on_phasechange = function(self, player)
     end
 end
 ```
+### 张绣【从谏】部分时候不发动
+#### 原因
+系源代码中限定使用目标大于2所致
 
+#### 参考修改方案
+在`extra.lua`的相关代码中调整条件即可：
+```
+-- 这里限定了 use.to length 必须大于二才询问
+if use.card:isKindOf("TrickCard") and use.to and use.to:contains(player) and use.to:length() > 2 then
+	local targets = use.to
+	targets:removeOne(player)
+	for _, p in sgs.qlist(targets) do
+		room:addPlayerMark(p, self:objectName())
+	end
+	room:askForUseCard(player, "@congjian", "@congjian", -1, sgs.Card_MethodNone)
+	for _, p in sgs.qlist(targets) do
+		room:removePlayerMark(p, self:objectName())
+	end
+end
+```
