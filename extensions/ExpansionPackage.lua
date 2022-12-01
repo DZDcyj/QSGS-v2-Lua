@@ -3196,7 +3196,7 @@ LuaDanshou = sgs.CreateTriggerSkill {
 
 JieZhuran:addSkill(LuaDanshou)
 
-JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true, true)
+JieYujin = sgs.General(extension, 'JieYujin', 'wei', '4', true)
 
 LuaJieyueCard = sgs.CreateSkillCard {
     name = 'LuaJieyueCard',

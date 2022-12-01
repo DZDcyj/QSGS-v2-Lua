@@ -38,6 +38,48 @@ sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional
     return to_discard
 end
 
+-- 节钺
+sgs.ai_skill_use['@@LuaJieyue'] = function(self, prompt, method)
+    local player = self.player
+    local final_card
+    local min_value = 999
+    for _, cd in sgs.qlist(player:getCards('he')) do
+        local curr_value = self:getUseValue(cd)
+        if curr_value < min_value then
+            final_card = cd
+            min_value = curr_value
+        end
+    end
+    if not final_card then
+        return '.'
+    end
+
+    local target
+    if #self.friends_noself > 0 then
+        -- 给最弱的友方
+        self:sort(self.friends_noself, 'defense')
+        target = self.friends_noself[1]
+    end
+    if target then
+        return '#LuaJieyueCard:' .. final_card:getEffectiveId() .. ':->' .. target:objectName()
+    end
+
+    if #self.enemies > 0 then
+        -- 给最强的敌方
+        self:sort(self.enemies, 'defense', true)
+        target = self.enemies[1]
+    end
+    if target then
+        -- 如果对面牌很少就别送了
+        if target:getHandcardNum() <= 1 and target:getEquips():length() <= 1 then
+            return '.'
+        end
+        return '#LuaJieyueCard:' .. final_card:getEffectiveId() .. ':->' .. target:objectName()
+    end
+
+    return '.'
+end
+
 -- 节钺选择
 sgs.ai_skill_choice['LuaJieyue'] = function(self, choices, data)
     local items = choices:split('+')
