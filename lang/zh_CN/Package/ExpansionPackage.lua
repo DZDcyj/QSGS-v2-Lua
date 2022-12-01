@@ -278,6 +278,8 @@ return {
     ['luajieyue'] = '节钺',
     ['@LuaJieyue'] = '你可以发动“节钺”，令一名其他角色选择弃牌或者让你摸牌',
     ['~LuaJieyue'] = '选择一张牌→选择一名其他角色→点击确定',
+    ['luajieyuediscard'] = '保留一张手牌和一张装备区内的牌',
+    ['luajieyuedraw'] = '令发动“节钺”的角色摸三张牌',
     ['ExTenYearLiuzan'] = '留赞-十周年',
     ['&ExTenYearLiuzan'] = '留赞',
     ['#ExTenYearLiuzan'] = '啸天亢声',
