@@ -1,6 +1,13 @@
 -- 扩展包 AI
 -- Created by DZDcyj at 2021/8/21
 -- 灭计弃牌
+-- 漫卷效果技能组
+local LuaManjuanEffectSkills = {'manjuan', 'zishu', 'LuaZishu'}
+
+function playerHasManjuanEffect(player)
+    return player:hasSkills(table.concat(LuaManjuanEffectSkills, '|'))
+end
+
 sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional, include_equip)
     min_num = min_num or discard_num
     local exchange = self.player:hasFlag('Global_AIDiscardExchanging')
@@ -208,8 +215,7 @@ sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets)
     for _, target in ipairs(targets) do
-        if self:isFriend(target) and not target:hasSkill('zishu') and not target:hasSkill('manjuan') and
-            not target:hasSkill('LuaZishu') and not self:needKongcheng(target, true) then
+        if self:isFriend(target) and not playerHasManjuanEffect(target) and not self:needKongcheng(target, true) then
             return target
         end
     end
@@ -371,8 +377,7 @@ sgs.ai_skill_use['@@LuaQiaosi!'] = function(self, prompt, method)
     local target
     self:sort(self.friends_noself)
     for _, friend in ipairs(self.friends_noself) do
-        if not friend:hasSkill('zishu') and not friend:hasSkill('manjuan') and not friend:hasSkill('LuaZishu') and
-            not self:needKongcheng(friend, true) then
+        if not playerHasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
             target = friend
             break
         end
@@ -1047,9 +1052,7 @@ sgs.ai_skill_playerchosen['LuaJijie'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets)
     for _, target in ipairs(targets) do
-        if self:isFriend(target) and
-            (not target:hasSkill('zishu') and not target:hasSkill('manjuan') and not target:hasSkill('LuaZishu')) and
-            not self:needKongcheng(target, true) then
+        if self:isFriend(target) and (not playerHasManjuanEffect(target)) and not self:needKongcheng(target, true) then
             return target
         end
     end
@@ -1098,8 +1101,7 @@ sgs.ai_skill_playerchosen['LuaTaomie'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     -- 除去会丢掉牌的、不是队友的
     for _, p in ipairs(targets) do
-        if not self:isFriend(p) or p:hasSkill('LuaZishu') or p:hasSkill('manjuan') or p:hasSkill('zishu') or
-            self:needKongcheng(p, true) then
+        if not self:isFriend(p) or playerHasManjuanEffect(p) or self:needKongcheng(p, true) then
             table.removeOne(targets, p)
         end
     end
@@ -1136,7 +1138,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
     -- 摸1弃1，如果对面有漫卷，就安排
     if x == 1 and #self.friends_noself == 0 then
         for _, enemy in ipairs(self.enemies) do
-            if enemy:hasSkill('manjuan') then
+            if playerHasManjuanEffect(enemy) then
                 return '#LuaYinghunCard:.:->' .. enemy:objectName()
             end
         end
@@ -1150,10 +1152,10 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         self:sort(self.friends_noself, 'handcard')
         self.friends_noself = sgs.reverse(self.friends_noself)
 
-        -- 如果队友有掉装备的技能且没有漫卷，例如枭姬，则选他
+        -- 如果队友有掉装备的技能且没有漫卷类型技能，例如枭姬，则选他
         for _, friend in ipairs(self.friends_noself) do
             if self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
-                not friend:hasSkill('manjuan') then
+                not playerHasManjuanEffect(friend) then
                 target = friend
                 break
             end
@@ -1162,7 +1164,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
             -- 配合邓艾等屯田
             for _, friend in ipairs(self.friends_noself) do
                 if (friend:hasSkills('LuaTuntian+LuaZaoxian') or friend:hasSkills('tuntian+zaoxian')) and
-                    not friend:hasSkill('manjuan') then
+                    not playerHasManjuanEffect(friend) then
                     target = friend
                     break
                 end
@@ -1171,7 +1173,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         if not target then
             -- 如果队友要掉装备则可以，例如藤甲、白银狮子
             for _, friend in ipairs(self.friends_noself) do
-                if self:needToThrowArmor(friend) and not friend:hasSkill('manjuan') then
+                if self:needToThrowArmor(friend) and not playerHasManjuanEffect(friend) then
                     target = friend
                     break
                 end
@@ -1180,14 +1182,14 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         if not target then
             -- 选择敌方有漫卷的安排
             for _, enemy in ipairs(self.enemies) do
-                if enemy:hasSkill('manjuan') then
+                if playerHasManjuanEffect(enemy) then
                     return enemy
                 end
             end
         end
 
-        if not target and assistTarget and not assistTarget:hasSkill('manjuan') and assistTarget:getCardCount(true) > 0 and
-            not self:needKongcheng(assistTarget, true) then
+        if not target and assistTarget and not playerHasManjuanEffect(assistTarget) and assistTarget:getCardCount(true) >
+            0 and not self:needKongcheng(assistTarget, true) then
             target = assistTarget
         end
 
@@ -1195,7 +1197,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         -- 小制衡总归有好处
         if not target then
             for _, friend in ipairs(self.friends_noself) do
-                if friend:getCards('he'):length() > 0 and not friend:hasSkill('manjuan') then
+                if friend:getCards('he'):length() > 0 and not playerHasManjuanEffect(friend) then
                     target = friend
                     break
                 end
@@ -1204,7 +1206,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
 
         if not target then
             for _, friend in ipairs(self.friends_noself) do
-                if not friend:hasSkill('manjuan') then
+                if not playerHasManjuanEffect(friend) then
                     target = friend
                     break
                 end
@@ -1214,7 +1216,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         self:sort(self.friends_noself, 'chaofeng')
         for _, friend in ipairs(self.friends_noself) do
             if self:hasSkills(sgs.lose_equip_skill, friend) and friend:getCards('e'):length() > 0 and
-                not friend:hasSkill('manjuan') then
+                not playerHasManjuanEffect(friend) then
                 target = friend
                 break
             end
@@ -1222,7 +1224,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         if not target then
             for _, friend in ipairs(self.friends_noself) do
                 if (friend:hasSkills('LuaTuntian+LuaZaoxian') or friend:hasSkills('tuntian+zaoxian')) and
-                    not friend:hasSkill('manjuan') then
+                    not playerHasManjuanEffect(friend) then
                     target = friend
                     break
                 end
@@ -1230,7 +1232,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
         end
         if not target then
             for _, friend in ipairs(self.friends_noself) do
-                if self:needToThrowArmor(friend) and not friend:hasSkill('manjuan') then
+                if self:needToThrowArmor(friend) and not playerHasManjuanEffect(friend) then
                     target = friend
                     break
                 end
@@ -1272,7 +1274,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
             end
         end
     end
-    if not target and assistTarget and not assistTarget:hasSkill('manjuan') and
+    if not target and assistTarget and not playerHasManjuanEffect(assistTarget) and
         not self:needKongcheng(assistTarget, true) then
         target = assistTarget
     end
@@ -1283,7 +1285,7 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
 
     if not target then
         for _, friend in ipairs(self.friends_noself) do
-            if not friend:hasSkill('manjuan') then
+            if not playerHasManjuanEffect(friend) then
                 target = friend
                 break
             end
@@ -1977,4 +1979,160 @@ sgs.ai_card_intention.LuaLiezhiCard = function(self, card, from, tos)
             sgs.updateIntention(from, lord, -80)
         end
     end
+end
+
+-- 界钟会
+-- 权计发动
+sgs.ai_skill_invoke.LuaQuanji = function(self, data)
+    local current = self.room:getCurrent()
+    local current_available = current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive
+    if not current_available then
+        return true
+    end
+    local juece_effect = (not self:isFriend(current)) and current:hasSkill('juece')
+    local manjuan_effect = hasManjuanEffect(self.player) or playerHasManjuanEffect(self.player)
+    if self.player:isKongcheng() then
+        if manjuan_effect or juece_effect then
+            return false
+        end
+    elseif self.player:getHandcardNum() == 1 then
+        if manjuan_effect and juece_effect then
+            return false
+        end
+    end
+    return true
+end
+
+sgs.ai_skill_discard.LuaQuanji = function(self)
+    local to_discard = {}
+    local cards = self.player:getHandcards()
+    cards = sgs.QList2Table(cards)
+    self:sortByKeepValue(cards)
+
+    table.insert(to_discard, cards[1]:getEffectiveId())
+
+    return to_discard
+end
+
+sgs.ai_skill_choice.LuaZili = function(self, choice)
+    -- 列表项
+    -- zilirecover 回血
+    -- zilidraw 摸牌
+    local items = choice:split('+')
+    if self.player:getHp() < self.player:getMaxHp() - 1 then
+        return items[1]
+    end
+    return items[2]
+end
+
+-- 排异
+local LuaPaiyi_skill = {}
+LuaPaiyi_skill.name = 'LuaPaiyi'
+table.insert(sgs.ai_skills, LuaPaiyi_skill)
+LuaPaiyi_skill.getTurnUseCard = function(self)
+    if self.player:getPile('power'):isEmpty() then
+        return nil
+    end
+    local room = self.room
+    local all_used = true
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        if p:getMark('LuaPaiyiUsed') == 0 then
+            all_used = false
+            break
+        end
+    end
+    if all_used then
+        return nil
+    end
+    -- 保留一定的权数量
+    local extraMaxCard = self.player:getHandcardNum() > self.player:getHp() and 1 or 0
+    local maxCards = self.player:getMaxCards() + extraMaxCard
+    if not (self.player:getPile('power'):length() > maxCards) then
+        return sgs.Card_Parse('#LuaPaiyiCard:' .. self.player:getPile('power'):first() .. ':')
+    end
+    return nil
+end
+
+sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
+    local target
+    self:sort(self.friends_noself, 'defense')
+    for _, friend in ipairs(self.friends_noself) do
+        if friend:getHandcardNum() < 2 and friend:getHandcardNum() + 1 < self.player:getHandcardNum() and
+            not self:needKongcheng(friend, true) and not playerHasManjuanEffect(friend) and not friend:hasFlag('LuaPaiyiUsedFlag') then
+            target = friend
+        end
+        if target then
+            break
+        end
+    end
+    if not target then
+        if not self.player:hasFlag('LuaPaiyiUsedFlag') and self.player:getHandcardNum() < self.player:getHp() + self.player:getPile('power'):length() - 1 then
+            target = self.player
+        end
+    end
+    self:sort(self.friends_noself, 'hp')
+    self.friends_noself = sgs.reverse(self.friends_noself)
+    if not target then
+        for _, friend in ipairs(self.friends_noself) do
+            if friend:getHandcardNum() + 2 > self.player:getHandcardNum() and
+                (self:getDamagedEffects(friend, self.player) or self:needToLoseHp(friend, self.player, nil, true)) and
+                not playerHasManjuanEffect(friend) and not friend:hasFlag('LuaPaiyiUsedFlag') then
+                target = friend
+            end
+            if target then
+                break
+            end
+        end
+    end
+    self:sort(self.enemies, 'defense')
+    if not target then
+        for _, enemy in ipairs(self.enemies) do
+            if playerHasManjuanEffect(enemy) and
+                not (self:hasSkills(sgs.masochism_skill, enemy) and not self.player:hasSkill('jueqing')) and
+                self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and
+                not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and enemy:getHandcardNum() >
+                self.player:getHandcardNum() and not enemy:hasFlag('LuaPaiyiUsedFlag') then
+                target = enemy
+            end
+            if target then
+                break
+            end
+        end
+        if not target then
+            for _, enemy in ipairs(self.enemies) do
+                if not (self:hasSkills(sgs.masochism_skill, enemy) and not self.player:hasSkill('jueqing')) and
+                    not enemy:hasSkills(sgs.cardneed_skill .. '|jijiu|tianxiang|buyi') and
+                    self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and not self:cantbeHurt(enemy) and
+                    not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and
+                    enemy:getHandcardNum() + 2 > self.player:getHandcardNum() and not enemy:hasSkill('manjuan') and not enemy:hasFlag('LuaPaiyiUsedFlag') then
+                    target = enemy
+                end
+                if target then
+                    break
+                end
+            end
+        end
+    end
+
+    if target then
+        use.card = sgs.Card_Parse('#LuaPaiyiCard:' .. self.player:getPile('power'):first() .. ':')
+        if use.to then
+            use.to:append(target)
+        end
+    end
+end
+
+sgs.ai_card_intention.LuaPaiyiCard = function(self, card, from, tos)
+    local to = tos[1]
+    if to:objectName() == from:objectName() then
+        return
+    end
+    if not playerHasManjuanEffect(to) and
+        ((to:getHandcardNum() < 2 and to:getHandcardNum() + 1 < from:getHandcardNum() and
+            not self:needKongcheng(to, true)) or
+            (to:getHandcardNum() + 2 > from:getHandcardNum() and
+                (self:getDamagedEffects(to, from) or self:needToLoseHp(to, from)))) then
+        return
+    end
+    sgs.updateIntention(from, to, 60)
 end
