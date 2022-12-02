@@ -1535,6 +1535,11 @@ sgs.ai_skill_discard['LuaDanshou'] = function(self, discard_num, min_num, option
         return {}
     end
 
+    -- 如果造成不了伤害也别丢牌了
+    if not self:damageIsEffective(current, sgs.DamageStruct_Normal, self.player) then
+        return {}
+    end
+
     -- 如果需要空城，且正好全弃牌
     if self.player:getCards('he'):length() >= discard_num and self.player:getHandcardNum() <= discard_num and
         self:needKongcheng(self.player, true) then
