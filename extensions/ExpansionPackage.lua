@@ -2325,7 +2325,7 @@ LuaShouye = sgs.CreateTriggerSkill {
                     ChoiceLog(p, choice2, nil)
                     local success1 = (choice1 == 'syjg1' and choice2 == 'syfy1')
                     local success2 = (choice1 == 'syjg2' and choice2 == 'syfy2')
-                    local shouyeSuccess = true --(success1 or success2)
+                    local shouyeSuccess = (success1 or success2)
                     if not shouyeSuccess then
                         rinsan.sendLogMessage(room, '#ShouyeFailed', {
                             ['from'] = p
@@ -2390,7 +2390,7 @@ LuaShouyeRecycle = sgs.CreateTriggerSkill {
                 return false
             end
             local card_ids = sgs.IntList()
-            for index, card_id in sgs.qlist(move.card_ids) do
+            for _, card_id in sgs.qlist(move.card_ids) do
                 if table.contains(shouye_ids, tostring(card_id)) then
                     card_ids:append(card_id)
                 end
