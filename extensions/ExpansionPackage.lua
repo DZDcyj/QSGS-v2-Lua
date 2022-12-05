@@ -2339,21 +2339,21 @@ LuaShouye = sgs.CreateTriggerSkill {
                     table.insert(nullified_list, p:objectName())
                     use.nullified_list = nullified_list
                     data:setValue(use)
-                    local shouye_ids = {}
+                    local shouye_ids = sgs.IntList()
                     local card = use.card
                     if card:isVirtualCard() then
                         for _, id in sgs.qlist(card:getSubcards()) do
-                            table.insert(shouye_ids, id)
+                            shouye_ids:append(id)
                         end
                     else
-                        table.insert(shouye_ids, card:getEffectiveId())
+                        shouye_ids:append(card:getEffectiveId())
                     end
-                    if #shouye_ids > 0 then
+                    if shouye_ids:length() > 0 then
                         -- 以 Tag 形式存储【守邺】涉及到的牌
                         -- 存储内容为 id，若有多张，则以加号分隔
                         -- 为了避免在 card 上存储 Flag，效仿【化身】
                         local shouye_data = sgs.QVariant()
-                        shouye_data:setValue(table.concat(shouye_ids, '+'))
+                        shouye_data:setValue(shouye_ids)
                         p:setTag('LuaShouyeIds', shouye_data)
                     end
                 end
@@ -2388,13 +2388,13 @@ LuaShouyeRecycle = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
         if move.to_place == sgs.Player_DiscardPile then
-            local shouye_ids = player:getTag('LuaShouyeIds'):toString():split('+')
-            if #shouye_ids <= 0 then
+            local shouye_ids = player:getTag('LuaShouyeIds'):toIntList()
+            if shouye_ids:length() <= 0 then
                 return false
             end
             local card_ids = sgs.IntList()
             for _, card_id in sgs.qlist(move.card_ids) do
-                if table.contains(shouye_ids, tostring(card_id)) then
+                if shouye_ids:contains(card_id) then
                     card_ids:append(card_id)
                 end
             end
@@ -2432,22 +2432,20 @@ LuaShouyeEffected = sgs.CreateTriggerSkill {
     events = {sgs.CardEffected},
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
-        local shouye_ids = player:getTag('LuaShouyeIds'):toString():split('+')
+        local shouye_ids = player:getTag('LuaShouyeIds'):toIntList()
         local can_invoke
         if effect.card:isVirtualCard() then
             for _, id in sgs.qlist(effect.card:getSubcards()) do
-                -- 注意，取出来的 shouye_ids 是字符串形式，所以要进行转换
-                if table.contains(shouye_ids, tostring(id)) then
+                if shouye_ids:contains(id) then
                     can_invoke = true
                     break
                 end
             end
         else
-            can_invoke = table.contains(shouye_ids, tostring(effect.card:getEffectiveId()))
+            can_invoke = shouye_ids:contains(effect.card:getEffectiveId())
         end
         if can_invoke then
-            -- 使用 BGMPackage 包现成的
-            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard',{
+            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
                 ['from'] = player,
                 ['arg'] = effect.card:objectName(),
                 ['arg2'] = 'LuaShouye'
