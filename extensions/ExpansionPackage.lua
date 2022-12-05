@@ -2349,6 +2349,9 @@ LuaShouye = sgs.CreateTriggerSkill {
                         table.insert(shouye_ids, card:getEffectiveId())
                     end
                     if #shouye_ids > 0 then
+                        -- 以 Tag 形式存储【守邺】涉及到的牌
+                        -- 存储内容为 id，若有多张，则以加号分隔
+                        -- 为了避免在 card 上存储 Flag，效仿【化身】
                         local shouye_data = sgs.QVariant()
                         shouye_data:setValue(table.concat(shouye_ids, '+'))
                         p:setTag('LuaShouyeIds', shouye_data)
@@ -2433,6 +2436,7 @@ LuaShouyeEffected = sgs.CreateTriggerSkill {
         local can_invoke
         if effect.card:isVirtualCard() then
             for _, id in sgs.qlist(effect.card:getSubcards()) do
+                -- 注意，取出来的 shouye_ids 是字符串形式，所以要进行转换
                 if table.contains(shouye_ids, tostring(id)) then
                     can_invoke = true
                     break
@@ -2443,7 +2447,7 @@ LuaShouyeEffected = sgs.CreateTriggerSkill {
         end
         if can_invoke then
             -- 使用 BGMPackage 包现成的
-            rinsan.sendLogMessage(room, '#ZuiXiang2',{
+            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard',{
                 ['from'] = player,
                 ['arg'] = effect.card:objectName(),
                 ['arg2'] = 'LuaShouye'

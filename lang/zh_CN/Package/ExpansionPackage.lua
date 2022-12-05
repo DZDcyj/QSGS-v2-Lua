@@ -2,6 +2,10 @@
 
 return {
     ['ExpansionPackage'] = '扩展武将包',
+    -- 通用
+    ['#choose'] = '%from 选择了 %arg',
+    ['#LuaSkillInvalidateCard'] = '%from 的“%arg2”效果被触发，【%arg】对其无效',
+    -- 武将相关
     ['ExWangyuanji'] = '王元姬',
     ['&ExWangyuanji'] = '王元姬',
     ['#ExWangyuanji'] = '清雅抑华',
@@ -362,7 +366,6 @@ return {
     ['addDamage'] = '令此伤害+1',
     ['getOneCard'] = '获得其区域内的一张牌',
     ['removeMark'] = '执行前两项并移除其讨灭标记',
-    ['#choose'] = '%from 选择了 %arg',
     ['ExZhangji'] = '张济',
     ['&ExZhangji'] = '张济',
     ['#ExZhangji'] = '平阳侯',
