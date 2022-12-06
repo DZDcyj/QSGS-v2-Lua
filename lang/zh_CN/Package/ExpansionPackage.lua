@@ -2,6 +2,10 @@
 
 return {
     ['ExpansionPackage'] = '扩展武将包',
+    -- 通用
+    ['#choose'] = '%from 选择了 %arg',
+    ['#LuaSkillInvalidateCard'] = '%from 的“%arg2”效果被触发，【%arg】对其无效',
+    -- 武将相关
     ['ExWangyuanji'] = '王元姬',
     ['&ExWangyuanji'] = '王元姬',
     ['#ExWangyuanji'] = '清雅抑华',
@@ -194,7 +198,7 @@ return {
     ['@LuaLiezhi'] = '你可以发动“烈直”，弃置至多两名其他角色区域内各一张牌',
     ['~LuaLiezhi'] = '选择一至两名其他角色→点击确定',
     ['LuaShouye'] = '守邺',
-    [':LuaShouye'] = '<font color="green"><b>每回合限一次</b></font>，当你成为其他角色使用牌的唯一目标后，你可以与其进行对策：若你对策成功，则此牌对你无效，且你获得此牌',
+    [':LuaShouye'] = '<font color="green"><b>每回合限一次</b></font>，当你成为其他角色使用牌的唯一目标后，你可以与其进行对策：若你对策成功，则此牌对你无效，且此牌进入弃牌堆时改为由你获得',
     ['syjg1'] = '全力攻城',
     ['syjg2'] = '分兵围城',
     ['syfy1'] = '开城诱敌',
@@ -362,7 +366,6 @@ return {
     ['addDamage'] = '令此伤害+1',
     ['getOneCard'] = '获得其区域内的一张牌',
     ['removeMark'] = '执行前两项并移除其讨灭标记',
-    ['#choose'] = '%from 选择了 %arg',
     ['ExZhangji'] = '张济',
     ['&ExZhangji'] = '张济',
     ['#ExZhangji'] = '平阳侯',

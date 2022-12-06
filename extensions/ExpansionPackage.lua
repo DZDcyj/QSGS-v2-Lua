@@ -2339,16 +2339,23 @@ LuaShouye = sgs.CreateTriggerSkill {
                     table.insert(nullified_list, p:objectName())
                     use.nullified_list = nullified_list
                     data:setValue(use)
-                    local togain
-                    if use.card:isVirtualCard() then
-                        togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                        for _, id in sgs.qlist(use.card:getSubcards()) do
-                            togain:addSubcard(id)
+                    local shouye_ids = sgs.IntList()
+                    local card = use.card
+                    if card:isVirtualCard() then
+                        for _, id in sgs.qlist(card:getSubcards()) do
+                            shouye_ids:append(id)
                         end
                     else
-                        togain = use.card
+                        shouye_ids:append(card:getEffectiveId())
                     end
-                    room:obtainCard(p, togain)
+                    if shouye_ids:length() > 0 then
+                        -- 以 Tag 形式存储【守邺】涉及到的牌
+                        -- 存储内容为 id，若有多张，则以加号分隔
+                        -- 为了避免在 card 上存储 Flag，效仿【化身】
+                        local shouye_data = sgs.QVariant()
+                        shouye_data:setValue(shouye_ids)
+                        p:setTag('LuaShouyeIds', shouye_data)
+                    end
                 end
             end
         end
@@ -2371,6 +2378,84 @@ LuaShouyeClear = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return true
+    end
+}
+
+LuaShouyeRecycle = sgs.CreateTriggerSkill {
+    name = 'LuaShouyeRecycle',
+    events = {sgs.BeforeCardsMove},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if move.to_place == sgs.Player_DiscardPile then
+            local shouye_ids = player:getTag('LuaShouyeIds'):toIntList()
+            if shouye_ids:length() <= 0 then
+                return false
+            end
+            local card_ids = sgs.IntList()
+            for _, card_id in sgs.qlist(move.card_ids) do
+                if shouye_ids:contains(card_id) then
+                    card_ids:append(card_id)
+                end
+            end
+            if card_ids:isEmpty() then
+                return false
+            end
+            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            for _, id in sgs.qlist(card_ids) do
+                if move.card_ids:contains(id) then
+                    move.from_places:removeAt(listIndexOf(move.card_ids, id))
+                    move.card_ids:removeOne(id)
+                    dummy:addSubcard(id)
+                    data:setValue(move)
+                end
+                if not player:isAlive() then
+                    return false
+                end
+            end
+            if player:isAlive() then
+                room:obtainCard(player, dummy)
+            end
+            player:removeTag('LuaShouyeIds')
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaShouye')
+    end
+}
+
+LuaShouyeEffected = sgs.CreateTriggerSkill {
+    name = 'LuaShouyeEffected',
+    frequency = sgs.Skill_Compulsory,
+    priority = 1000,
+    global = true,
+    events = {sgs.CardEffected},
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        local shouye_ids = player:getTag('LuaShouyeIds'):toIntList()
+        local can_invoke
+        if effect.card:isVirtualCard() then
+            for _, id in sgs.qlist(effect.card:getSubcards()) do
+                if shouye_ids:contains(id) then
+                    can_invoke = true
+                    break
+                end
+            end
+        else
+            can_invoke = shouye_ids:contains(effect.card:getEffectiveId())
+        end
+        if can_invoke then
+            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
+                ['from'] = player,
+                ['arg'] = effect.card:objectName(),
+                ['arg2'] = 'LuaShouye'
+            })
+            return true
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
     end
 }
 
@@ -2442,6 +2527,8 @@ LuaLiezhiDamaged = sgs.CreateTriggerSkill {
 
 ExShenpei:addSkill(LuaShouye)
 SkillAnjiang:addSkill(LuaShouyeClear)
+SkillAnjiang:addSkill(LuaShouyeEffected)
+SkillAnjiang:addSkill(LuaShouyeRecycle)
 ExShenpei:addSkill(LuaLiezhi)
 SkillAnjiang:addSkill(LuaLiezhiDamaged)
 
