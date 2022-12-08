@@ -2036,7 +2036,7 @@ LuaPaiyi_skill.getTurnUseCard = function(self)
     local room = self.room
     local all_used = true
     for _, p in sgs.qlist(room:getAlivePlayers()) do
-        if p:getMark('LuaPaiyiUsed') == 0 then
+        if not p:hasFlag('LuaPaiyiUsed') then
             all_used = false
             break
         end

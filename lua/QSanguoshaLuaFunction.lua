@@ -67,21 +67,27 @@ function skill(self, room, player, open, n)
 end
 
 -- 权计摸牌放牌
-function doQuanji(self, player, room)
-    if player:askForSkillInvoke(self:objectName()) then
-        room:drawCards(player, 1, self:objectName())
-        room:broadcastSkillInvoke(self:objectName())
-        if not player:isKongcheng() then
-            local card_id
-            if player:getHandcardNum() == 1 then
-                card_id = player:handCards():first()
-                room:getThread():delay()
-            else
-                card_id = room:askForExchange(player, self:objectName(), 1, 1, false, 'QuanjiPush'):getSubcards()
-                    :first()
+function doQuanji(skillName, player, room, times)
+    times = times or 1
+    local index = 0
+    while index < times do
+        if player:askForSkillInvoke(skillName) then
+            room:drawCards(player, 1, skillName)
+            room:broadcastSkillInvoke(skillName)
+            if not player:isKongcheng() then
+                local card_id
+                if player:getHandcardNum() == 1 then
+                    card_id = player:handCards():first()
+                    room:getThread():delay()
+                else
+                    card_id = room:askForExchange(player, skillName, 1, 1, false, 'QuanjiPush'):getSubcards():first()
+                end
+                player:addToPile('power', card_id)
             end
-            player:addToPile('power', card_id)
+        else
+            break
         end
+        index = index + 1
     end
 end
 
