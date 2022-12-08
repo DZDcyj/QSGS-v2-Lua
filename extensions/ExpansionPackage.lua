@@ -4881,16 +4881,11 @@ LuaQuanji = sgs.CreateTriggerSkill {
         if event == sgs.EventPhaseEnd then
             if player:getPhase() == sgs.Player_Play then
                 if player:getHp() < player:getHandcardNum() then
-                    rinsan.doQuanji(self, player, room)
+                    rinsan.doQuanji(self:objectName(), player, room)
                 end
             end
         else
-            local x = data:toDamage().damage
-            local i = 0
-            while i < x do
-                i = i + 1
-                rinsan.doQuanji(self, player, room)
-            end
+            rinsan.doQuanji(self:objectName(), player, room, data:toDamage().damage)
         end
     end
 }
