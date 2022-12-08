@@ -4871,7 +4871,7 @@ LuaFuhan = sgs.CreateTriggerSkill {
 ExTenYearZhaoxiang:addSkill(LuaFanghun)
 ExTenYearZhaoxiang:addSkill(LuaFuhan)
 
-JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true, true)
+JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true)
 
 LuaQuanji = sgs.CreateTriggerSkill {
     name = 'LuaQuanji',
@@ -4936,7 +4936,7 @@ LuaZili = sgs.CreateTriggerSkill {
 LuaPaiyiCard = sgs.CreateSkillCard {
     name = 'LuaPaiyiCard',
     filter = function(self, selected, to_select)
-        return #selected == 0 and to_select:getMark('LuaPaiyiUsed') == 0
+        return #selected == 0 and not to_select:hasFlag('LuaPaiyiUsedFlag')
     end,
     on_effect = function(self, effect)
         local source = effect.from
@@ -4944,14 +4944,14 @@ LuaPaiyiCard = sgs.CreateSkillCard {
         local room = source:getRoom()
         room:broadcastSkillInvoke('LuaPaiyi')
         room:drawCards(target, 2, 'LuaPaiyi')
-        room:addPlayerMark(target, 'LuaPaiyiUsed')
+        room:setPlayerFlag(target, 'LuaPaiyiUsedFlag')
         if target:getHandcardNum() > source:getHandcardNum() then
             rinsan.doDamage(room, source, target, 1)
         end
     end
 }
 
-LuaPaiyiVS = sgs.CreateOneCardViewAsSkill {
+LuaPaiyi = sgs.CreateOneCardViewAsSkill {
     name = 'LuaPaiyi',
     filter_pattern = '.|.|.|power',
     expand_pile = 'power',
@@ -4962,19 +4962,6 @@ LuaPaiyiVS = sgs.CreateOneCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return not player:getPile('power'):isEmpty()
-    end
-}
-
-LuaPaiyi = sgs.CreateTriggerSkill {
-    name = 'LuaPaiyi',
-    events = {sgs.EventPhaseEnd},
-    view_as_skill = LuaPaiyiVS,
-    on_trigger = function(self, event, player, data, room)
-        if player:getPhase() == sgs.Player_Play then
-            for _, p in sgs.qlist(room:getAlivePlayers()) do
-                room:setPlayerMark(p, 'LuaPaiyiUsed', 0)
-            end
-        end
     end
 }
 
