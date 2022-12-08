@@ -2047,7 +2047,7 @@ LuaPaiyi_skill.getTurnUseCard = function(self)
     -- 保留一定的权数量
     local extraMaxCard = self.player:getHandcardNum() > self.player:getHp() and 1 or 0
     local maxCards = self.player:getMaxCards() + extraMaxCard
-    if not (self.player:getPile('power'):length() > maxCards) then
+    if self.player:getPile('power'):length() <= maxCards then
         return sgs.Card_Parse('#LuaPaiyiCard:' .. self.player:getPile('power'):first() .. ':')
     end
     return nil
@@ -2058,7 +2058,8 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
     self:sort(self.friends_noself, 'defense')
     for _, friend in ipairs(self.friends_noself) do
         if friend:getHandcardNum() < 2 and friend:getHandcardNum() + 1 < self.player:getHandcardNum() and
-            not self:needKongcheng(friend, true) and not playerHasManjuanEffect(friend) and not friend:hasFlag('LuaPaiyiUsedFlag') then
+            not self:needKongcheng(friend, true) and not playerHasManjuanEffect(friend) and
+            not friend:hasFlag('LuaPaiyiUsedFlag') then
             target = friend
         end
         if target then
@@ -2066,7 +2067,8 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
         end
     end
     if not target then
-        if not self.player:hasFlag('LuaPaiyiUsedFlag') and self.player:getHandcardNum() < self.player:getHp() + self.player:getPile('power'):length() - 1 then
+        if not self.player:hasFlag('LuaPaiyiUsedFlag') and self.player:getHandcardNum() < self.player:getHp() +
+            self.player:getPile('power'):length() - 1 then
             target = self.player
         end
     end
@@ -2104,7 +2106,8 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
                     not enemy:hasSkills(sgs.cardneed_skill .. '|jijiu|tianxiang|buyi') and
                     self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and not self:cantbeHurt(enemy) and
                     not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and
-                    enemy:getHandcardNum() + 2 > self.player:getHandcardNum() and not enemy:hasSkill('manjuan') and not enemy:hasFlag('LuaPaiyiUsedFlag') then
+                    enemy:getHandcardNum() + 2 > self.player:getHandcardNum() and not enemy:hasSkill('manjuan') and
+                    not enemy:hasFlag('LuaPaiyiUsedFlag') then
                     target = enemy
                 end
                 if target then
