@@ -3361,7 +3361,7 @@ LuaJieyue = sgs.CreateTriggerSkill {
 
 JieYujin:addSkill(LuaJieyue)
 
-ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true, true)
+ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true)
 
 LuaFenyin = sgs.CreateTriggerSkill {
     name = 'LuaFenyin',
