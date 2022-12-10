@@ -6645,7 +6645,7 @@ LuaNeifaTargetMod = sgs.CreateTargetModSkill {
 ExYuantanYuanshang:addSkill(LuaNeifa)
 SkillAnjiang:addSkill(LuaNeifaTargetMod)
 
-ExMouHuangzhong = sgs.General(extension, 'ExMouHuangzhong', 'shu', '4', true, true)
+ExMouHuangzhong = sgs.General(extension, 'ExMouHuangzhong', 'shu', '4', true)
 
 LuaLiegong = sgs.CreateTriggerSkill {
     name = 'LuaLiegong',
