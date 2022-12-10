@@ -1,6 +1,8 @@
 -- 扩展包 AI
 -- Created by DZDcyj at 2021/8/21
--- 灭计弃牌
+-- 引入封装函数包
+local rinsan = require('QSanguoshaLuaFunction')
+
 -- 漫卷效果技能组
 local LuaManjuanEffectSkills = {'manjuan', 'zishu', 'LuaZishu'}
 
@@ -8,6 +10,7 @@ function playerHasManjuanEffect(player)
     return player:hasSkills(table.concat(LuaManjuanEffectSkills, '|'))
 end
 
+-- 灭计弃牌
 sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional, include_equip)
     min_num = min_num or discard_num
     local exchange = self.player:hasFlag('Global_AIDiscardExchanging')
@@ -2184,3 +2187,207 @@ sgs.ai_card_intention.LuaLijiCard = function(self, card, from, tos)
     local to = tos[1]
     sgs.updateIntention(from, to, -80)
 end
+
+-- 神郭嘉
+-- 慧识
+local LuaHuishi_skill = {}
+LuaHuishi_skill.name = 'LuaHuishi'
+
+table.insert(sgs.ai_skills, LuaHuishi_skill)
+
+LuaHuishi_skill.getTurnUseCard = function(self, inclusive)
+    if not self.player:hasUsed('#LuaHuishiCard') then
+        return sgs.Card_Parse('#LuaHuishiCard:.:')
+    end
+end
+
+sgs.ai_skill_use_func['#LuaHuishiCard'] = function(card, use, self)
+    local card_str = '#LuaHuishiCard:.:'
+    local acard = sgs.Card_Parse(card_str)
+    assert(acard)
+    use.card = acard
+end
+
+-- 有什么不继续判定的必要吗
+sgs.ai_skill_invoke.LuaHuishi = function(self, data)
+    return true
+end
+
+-- 无脑给自己
+sgs.ai_skill_playerchosen['LuaHuishiCard'] = function(self, targets)
+    return nil
+end
+
+sgs.ai_use_value['LuaHuishiCard'] = 100
+sgs.ai_use_priority['LuaHuishiCard'] = 10
+
+-- 无脑给自己
+sgs.ai_skill_playerchosen['LuaTianyi'] = function(self, targets)
+    targets = sgs.QList2Table(targets)
+    self:sort(targets)
+    for _, target in ipairs(targets) do
+        if target:objectName() == self.player:objectName() then
+            return target
+        end
+    end
+end
+
+-- 辉逝
+-- 无脑给自己
+local LuaHuishiLimit_skill = {}
+LuaHuishiLimit_skill.name = 'LuaHuishiLimit'
+
+table.insert(sgs.ai_skills, LuaHuishiLimit_skill)
+
+LuaHuishiLimit_skill.getTurnUseCard = function(self, inclusive)
+    if self.player:getMaxHp() < 4 or self.player:getLostHp() < 2 then
+        return nil
+    end
+    if self.player:getMark('@LuaHuishiLimit') == 0 then
+        return nil
+    end
+    if (#self.friends <= #self.enemies and sgs.turncount > 2 and self.player:getLostHp() > 1) or
+        (sgs.turncount > 1 and self:isWeak()) or (not self:needBear()) then
+        return sgs.Card_Parse('#LuaHuishiLimitCard:.:')
+    end
+end
+
+sgs.ai_skill_use_func['#LuaHuishiLimitCard'] = function(card, use, self)
+    local card_str = '#LuaHuishiLimitCard:.:'
+    local acard = sgs.Card_Parse(card_str)
+    assert(acard)
+    use.card = acard
+    if use.to then
+        use.to:append(self.player)
+    end
+end
+
+-- 佐幸
+local LuaZuoxing_skill = {}
+LuaZuoxing_skill.name = 'LuaZuoxing'
+table.insert(sgs.ai_skills, LuaZuoxing_skill)
+LuaZuoxing_skill.getTurnUseCard = function(self)
+    local shenguojia = rinsan.availableShenGuojiaExists(self.player) and self.player or nil
+    if not shenguojia then
+        for _, p in sgs.qlist(self.player:getAliveSiblings()) do
+            if rinsan.availableShenGuojiaExists(p) then
+                shenguojia = p
+                break
+            end
+        end
+    end
+    if not shenguojia or (self:isFriend(shenguojia) and shenguojia:getMaxHp() < 3) then
+        return nil
+    end
+    local aoename = 'savage_assault|archery_attack'
+    local aoenames = aoename:split('|')
+    local aoe
+    local good, bad = 0, 0
+    local LuaZuoxingtrick = 'snatch|dismantlement|savage_assault|archery_attack|ex_nihilo|god_salvation'
+    local LuaZuoxingtricks = LuaZuoxingtrick:split('|')
+    local aoe_available, ge_available, ex_available = true, true, true
+    for i = 1, #LuaZuoxingtricks do
+        local forbiden = LuaZuoxingtricks[i]
+        forbid = sgs.Sanguosha:cloneCard(forbiden, sgs.Card_NoSuit)
+        if self.player:isCardLimited(forbid, sgs.Card_MethodUse, true) or not forbid:isAvailable(self.player) then
+            if forbid:isKindOf('AOE') then
+                aoe_available = false
+            end
+            if forbid:isKindOf('GlobalEffect') then
+                ge_available = false
+            end
+            if forbid:isKindOf('ExNihilo') then
+                ex_available = false
+            end
+        end
+    end
+    if self.player:hasUsed('#LuaZuoxingCard') then
+        return
+    end
+    for _, friend in ipairs(self.friends) do
+        if friend:isWounded() then
+            good = good + 10 / friend:getHp()
+            if friend:isLord() then
+                good = good + 10 / friend:getHp()
+            end
+        end
+    end
+
+    for _, enemy in ipairs(self.enemies) do
+        if enemy:isWounded() then
+            bad = bad + 10 / enemy:getHp()
+            if enemy:isLord() then
+                bad = bad + 10 / enemy:getHp()
+            end
+        end
+    end
+
+    local godsalvation = sgs.Sanguosha:cloneCard('god_salvation', sgs.Card_NoSuit, 0)
+    if self.player:getHandcardNum() < 3 then
+        if aoe_available then
+            for i = 1, #aoenames do
+                local newLuaZuoxing = aoenames[i]
+                aoe = sgs.Sanguosha:cloneCard(newLuaZuoxing)
+                if self:getAoeValue(aoe) > 0 then
+                    local parsed_card = sgs.Card_Parse('#LuaZuoxingCard:.:' .. newLuaZuoxing)
+                    return parsed_card
+                end
+            end
+        end
+        if ge_available and self:willUseGodSalvation(godsalvation) then
+            local parsed_card = sgs.Card_Parse('#LuaZuoxingCard:.:' .. 'god_salvation')
+            return parsed_card
+        end
+        if ex_available and self:getCardsNum('Jink') == 0 and self:getCardsNum('Peach') == 0 then
+            local parsed_card = sgs.Card_Parse('#LuaZuoxingCard:.:' .. 'ex_nihilo')
+            return parsed_card
+        end
+    end
+
+    if aoe_available then
+        for i = 1, #aoenames do
+            local newLuaZuoxing = aoenames[i]
+            aoe = sgs.Sanguosha:cloneCard(newLuaZuoxing)
+            if self:getAoeValue(aoe) > -5 then
+                local parsed_card = sgs.Card_Parse('#LuaZuoxingCard:.:' .. newLuaZuoxing)
+                return parsed_card
+            end
+        end
+    end
+
+    if self:getCardsNum('Jink') == 0 and self:getCardsNum('Peach') == 0 and self:getCardsNum('Analeptic') == 0 and
+        self:getCardsNum('Nullification') == 0 and self.player:getHandcardNum() <= 3 then
+        if ge_available and self:willUseGodSalvation(godsalvation) and self.player:isWounded() then
+            local parsed_card = sgs.Card_Parse('#LuaZuoxingCard:.:' .. 'god_salvation')
+            return parsed_card
+        end
+        if ex_available then
+            local parsed_card = sgs.Card_Parse('#LuaZuoxingCard:.:' .. 'ex_nihilo')
+            return parsed_card
+        end
+    end
+    local zuoxingCard = LuaZuoxingtricks[rinsan.random(1, #LuaZuoxingtricks)]
+    return sgs.Card_Parse('#LuaZuoxingCard:.:'..zuoxingCard)
+end
+
+sgs.ai_skill_use_func['#LuaZuoxingCard'] = function(card, use, self)
+    local userstring = card:toString()
+    userstring = (userstring:split(':'))[4]
+    local LuaZuoxingcard = sgs.Sanguosha:cloneCard(userstring, sgs.Card_NoSuit, 0)
+    LuaZuoxingcard:setSkillName('LuaZuoxing')
+    self:useTrickCard(LuaZuoxingcard, use)
+    if use.card then
+        for _, acard in sgs.qlist(self.player:getHandcards()) do
+            if isCard('Peach', acard, self.player) and self.player:getHandcardNum() > 1 and self.player:isWounded() and
+                not self:needToLoseHp(self.player) then
+                use.card = acard
+                return
+            end
+        end
+        use.card = card
+    end
+end
+
+-- 略高于慧识
+sgs.ai_use_value['LuaZuoxingCard'] = 110
+sgs.ai_use_priority['LuaZuoxingCard'] = 20

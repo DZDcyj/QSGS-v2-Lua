@@ -7207,7 +7207,7 @@ LuaOLJieming = sgs.CreateTriggerSkill {
 OLJieXunyu:addSkill('LuaQuhu')
 OLJieXunyu:addSkill(LuaOLJieming)
 
-ExShenGuojia = sgs.General(extension, 'ExShenGuojia', 'god', '3', true, true)
+ExShenGuojia = sgs.General(extension, 'ExShenGuojia', 'god', '3', true)
 
 LuaHuishiCard = sgs.CreateSkillCard {
     name = 'LuaHuishiCard',
