@@ -4268,8 +4268,24 @@ LuaTaomie = sgs.CreateTriggerSkill {
     end
 }
 
+LuaTaomieTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaTaomieTargetMod',
+    frequency = sgs.Skill_Compulsory,
+    pattern = 'Slash',
+    distance_limit_func = function(self, from, card, to)
+        if from:hasSkill('LuaTaomie') and to and to:getMark('@LuaTaomie') > 0 then
+            return 1000
+        end
+        if from:getMark('@LuaTaomie') > 0 and to and to:hasSkill('LuaTaomie') then
+            return 1000
+        end
+        return 0
+    end
+}
+
 ExGongsunkang:addSkill(LuaJuliao)
 ExGongsunkang:addSkill(LuaTaomie)
+SkillAnjiang:addSkill(LuaTaomieTargetMod)
 
 ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
 
