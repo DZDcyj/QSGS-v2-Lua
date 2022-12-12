@@ -2495,3 +2495,47 @@ sgs.ai_skill_invoke.LuaLiegong = function(self, data)
     end
     return shouldInvokeLiegong(self.room, self.player, target, slash)
 end
+
+-- 张济
+-- 暂不考虑屯军
+
+-- 掠命
+local LuaLveming_skill = {}
+LuaLveming_skill.name = 'LuaLveming'
+table.insert(sgs.ai_skills, LuaLveming_skill)
+LuaLveming_skill.getTurnUseCard = function(self, inclusive)
+    if self.player:hasUsed('#LuaLvemingCard') then
+        return nil
+    end
+    return sgs.Card_Parse('#LuaLvemingCard:.:')
+end
+
+sgs.ai_skill_use_func['#LuaLvemingCard'] = function(card, use, self)
+    local target
+    if #self.enemies <= 0 then
+        return
+    end
+    self:sort(self.enemies, 'defense')
+    local selfEquipLength = self.player:getEquips():length()
+    for _, enemy in ipairs(self.enemies) do
+        if self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and not enemy:isNude() and
+            enemy:getEquips():length() < selfEquipLength then
+            target = enemy
+            break
+        end
+    end
+    if target then
+        use.card = sgs.Card_Parse('#LuaLvemingCard:.:')
+        if use.to then
+            use.to:append(target)
+        end
+    end
+end
+
+sgs.ai_card_intention.LuaLvemingCard = function(self, card, from, tos)
+    local to = tos[1]
+    sgs.updateIntention(from, to, -80)
+end
+
+sgs.ai_use_value['LuaLvemingCard'] = 19.6
+sgs.ai_use_priority['LuaLvemingCard'] = 15.3
