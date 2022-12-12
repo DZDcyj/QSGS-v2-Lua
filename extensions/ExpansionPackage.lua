@@ -4268,8 +4268,32 @@ LuaTaomie = sgs.CreateTriggerSkill {
     end
 }
 
+LuaTaomieMark = sgs.CreateTriggerSkill {
+    name = 'LuaTaomieMark',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.MarkChanged},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local mark = data:toMark()
+        local markFunction = mark.who:getMark('@LuaTaomie') > 0 and rinsan.addToAttackRange or rinsan.removeFromAttackRange
+        if mark.name == '@LuaTaomie' then
+            local gongsunkangs = room:findPlayersBySkillName('LuaTaomie')
+            for _, gongsunkang in sgs.qlist(gongsunkangs) do
+                if gongsunkang:objectName() ~= mark.who:objectName() then
+                    markFunction(room, gongsunkang, mark.who)
+                    markFunction(room, mark.who, gongsunkang)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
 ExGongsunkang:addSkill(LuaJuliao)
 ExGongsunkang:addSkill(LuaTaomie)
+SkillAnjiang:addSkill(LuaTaomieMark)
 
 ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
 
