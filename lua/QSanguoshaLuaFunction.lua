@@ -164,7 +164,11 @@ end
 function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
     local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
     from:obtainCard(sgs.Sanguosha:getCard(card_id), false)
-    local togive = room:askForPlayerChosen(from, room:getOtherPlayers(card_source), self:objectName(),
+    local targets = room:getOtherPlayers(card_source)
+    if targets:contains(from) then
+        targets:removeOne(from)
+    end
+    local togive = room:askForPlayerChosen(from, targets, self:objectName(),
         '@LuaTaomie-give:' .. card_source:objectName(), true, true)
     if togive then
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, from:objectName(), togive:objectName(),
@@ -881,6 +885,16 @@ function checkFilter(selected, to_select, compareType, compareValue)
         return (#selected > compareValue) or (#selected == compareValue and compareType == GREATER_OR_EQUAL)
     end
     return compareValue == #selected
+end
+
+-- 封装方法，用于添加 to 到 from 的攻击范围
+function addToAttackRange(room, from, to)
+    room:insertAttackRangePair(from, to)
+end
+
+-- 封装方法，用于将 to 从 from 的攻击范围中移除（用于解除上一方法的问题）
+function removeFromAttackRange(room, from, to)
+    room:removeAttackRangePair(from, to)
 end
 
 -- Compare 参数，用于 checkFilter 方法
