@@ -4295,7 +4295,7 @@ ExGongsunkang:addSkill(LuaJuliao)
 ExGongsunkang:addSkill(LuaTaomie)
 SkillAnjiang:addSkill(LuaTaomieMark)
 
-ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true, true)
+ExZhangji = sgs.General(extension, 'ExZhangji', 'qun', '4', true)
 
 LuaLvemingCard = sgs.CreateSkillCard {
     name = 'LuaLvemingCard',
