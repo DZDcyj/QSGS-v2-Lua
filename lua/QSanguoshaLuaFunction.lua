@@ -477,11 +477,16 @@ end
 
 -- 从指定牌堆中获取对应卡牌
 function obtainCardFromPile(checker, pile)
+    local availableCards = {}
     for _, id in sgs.qlist(pile) do
         local card = sgs.Sanguosha:getCard(id)
         if checker(card) then
-            return card
+            table.insert(availableCards, card)
         end
+    end
+    -- 随机化，避免一直拿牌堆顶层牌
+    if #availableCards > 0 then
+        return availableCards[random(1, #availableCards)]
     end
     return nil
 end
