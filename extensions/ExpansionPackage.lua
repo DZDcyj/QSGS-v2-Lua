@@ -785,12 +785,12 @@ LuaShanjiaCard = sgs.CreateSkillCard {
             end
         end
         local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        slash:setSkillName('shanjia')
+        slash:setSkillName('LuaShanjia')
         for _, cd in sgs.qlist(self:getSubcards()) do
             slash:addSubcard(cd)
         end
         slash:deleteLater()
-        return slash:targetFilter(targets_list, to_select, sgs.Self)
+        return slash:targetFilter(targets_list, to_select, sgs.Self) and sgs.Self:canSlash(to_select)
     end,
     feasible = function(self, targets)
         for _, id in sgs.qlist(self:getSubcards()) do
@@ -803,7 +803,7 @@ LuaShanjiaCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local targets_list = sgs.SPlayerList()
         for _, target in ipairs(targets) do
-            if source:canSlash(target, nil, false) then
+            if source:canSlash(target) then
                 targets_list:append(target)
             end
         end
@@ -812,7 +812,7 @@ LuaShanjiaCard = sgs.CreateSkillCard {
             slash:setSkillName('LuaShanjia')
             room:useCard(sgs.CardUseStruct(slash, source, targets_list))
         else
-            room:broadcastSkillInvoke('LuaShanjia', rinsan.random(1, 2))
+            room:broadcastSkillInvoke('LuaShanjia')
         end
     end
 }
