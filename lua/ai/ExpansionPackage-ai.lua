@@ -2637,3 +2637,140 @@ sgs.ai_choicemade_filter.skillInvoke.LuaFaen = function(self, player, promptlist
         sgs.updateIntention(player, target, yes and -10 or 10)
     end
 end
+
+-- 陈震
+-- 歃盟
+local LuaShameng_skill = {}
+LuaShameng_skill.name = 'LuaShameng'
+table.insert(sgs.ai_skills, LuaShameng_skill)
+LuaShameng_skill.getTurnUseCard = function(self, inclusive)
+    if self.player:hasUsed('#LuaShamengCard') or self.player:getHandcardNum() < 2 then
+        return nil
+    end
+    local red, black = 0, 0
+    for _, cd in sgs.qlist(self.player:getHandcards()) do
+        if cd:isRed() then
+            red = red + 1
+        elseif cd:isBlack() then
+            black = black + 1
+        end
+    end
+    if red > 1 or black > 1 then
+        return sgs.Card_Parse('#LuaShamengCard:.:')
+    end
+    return nil
+end
+
+sgs.ai_skill_use_func['#LuaShamengCard'] = function(_card, use, self)
+    -- 选目标
+    self:sort(self.friends_noself)
+    local target
+    for _, friend in ipairs(self.friends_noself) do
+        if not playerHasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+            target = friend
+            break
+        end
+    end
+
+    if not target then
+        return
+    end
+
+    -- 首先判断整体
+    local cards = sgs.QList2Table(self.player:getHandcards())
+    self:sortByUseValue(cards, true)
+    if #cards >= 2 then
+        if cards[1]:sameColorWith(cards[2]) then
+            local use_cards = {}
+            table.insert(use_cards, cards[1]:getEffectiveId())
+            table.insert(use_cards, cards[2]:getEffectiveId())
+            use.card = sgs.Card_Parse(string.format('#LuaShamengCard:%s:', table.concat(use_cards, '+')))
+            if use.to then
+                use.to:append(target)
+                return
+            end
+        end
+    end
+
+    -- 单独判断红黑
+    local redCards, blackCards = {}, {}
+    for _, cd in sgs.qlist(self.player:getHandcards()) do
+        if cd:isRed() then
+            table.insert(redCards, cd)
+        elseif cd:isBlack() then
+            table.insert(blackCards, cd)
+        end
+    end
+    -- 都不满足条件，返回
+    if #redCards < 2 and #blackCards < 2 then
+        return
+    end
+
+    self:sortByUseValue(redCards, true)
+    self:sortByUseValue(blackCards, true)
+
+    -- 红色够牌
+    if #blackCards < 2 then
+        -- 最不值的都有价值，返回
+        if self:isValuableCard(redCards[1]) then
+            return
+        end
+        local use_cards = {}
+        table.insert(use_cards, redCards[1]:getEffectiveId())
+        table.insert(use_cards, redCards[2]:getEffectiveId())
+        use.card = sgs.Card_Parse(string.format('#LuaShamengCard:%s:', table.concat(use_cards, '+')))
+        if use.to then
+            use.to:append(target)
+            return
+        end
+    end
+    -- 黑色够牌
+    if #redCards < 2 then
+        -- 最不值的都有价值，返回
+        if self:isValuableCard(blackCards[1]) then
+            return
+        end
+        local use_cards = {}
+        table.insert(use_cards, blackCards[1]:getEffectiveId())
+        table.insert(use_cards, blackCards[2]:getEffectiveId())
+        use.card = sgs.Card_Parse(string.format('#LuaShamengCard:%s:', table.concat(use_cards, '+')))
+        if use.to then
+            use.to:append(target)
+            return
+        end
+    end
+    -- 单独处理两个都有
+    if #redCards < 2 or #blackCards < 2 then
+        return
+    end
+    local redValue = self:getUseValue(redCards[1]) + self:getUseValue(redCards[2])
+    local blackValue = self:getUseValue(blackCards[1]) + self:getUseValue(blackCards[2])
+    local useRed = (redValue < blackValue) and not self:isValuableCard(redCards[1])
+    local useBlack = (redValue >= blackValue) and not self:isValuableCard(blackCards[1])
+    if useRed and useBlack then
+        -- 一般而言红色牌更有价值
+        if redValue - blackValue > 1 then
+            useRed = false
+        end
+    end
+    if useBlack then
+        local use_cards = {}
+        table.insert(use_cards, blackCards[1]:getEffectiveId())
+        table.insert(use_cards, blackCards[2]:getEffectiveId())
+        use.card = sgs.Card_Parse(string.format('#LuaShamengCard:%s:', table.concat(use_cards, '+')))
+        if use.to then
+            use.to:append(target)
+            return
+        end
+    end
+    if useRed then
+        local use_cards = {}
+        table.insert(use_cards, redCards[1]:getEffectiveId())
+        table.insert(use_cards, redCards[2]:getEffectiveId())
+        use.card = sgs.Card_Parse(string.format('#LuaShamengCard:%s:', table.concat(use_cards, '+')))
+        if use.to then
+            use.to:append(target)
+            return
+        end
+    end
+end
