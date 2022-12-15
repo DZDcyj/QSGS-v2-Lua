@@ -4123,7 +4123,7 @@ ExDuyu:addSkill(LuaWuku)
 ExDuyu:addSkill(LuaSanchen)
 ExDuyu:addRelateSkill('LuaMiewu')
 
-ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true, true)
+ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true)
 
 LuaShamengCard = sgs.CreateSkillCard {
     name = 'LuaShamengCard',
