@@ -2571,7 +2571,7 @@ LuaDingpin_skill.getTurnUseCard = function(self, inclusive)
 
     end
 end
-sgs.ai_skill_use_func['#LuaDingpinCard'] = function(card, use, self)
+sgs.ai_skill_use_func['#LuaDingpinCard'] = function(_card, use, self)
     local cards = {}
     local cardType = {}
     for _, card in sgs.qlist(self.player:getHandcards()) do
