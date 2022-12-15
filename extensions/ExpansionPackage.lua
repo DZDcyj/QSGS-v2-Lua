@@ -5422,7 +5422,7 @@ JieCaozhi:addSkill(LuaLuoying)
 JieCaozhi:addSkill(LuaJiushi)
 JieCaozhi:addSkill(LuaChengzhang)
 
-JieChenqun = sgs.General(extension, 'JieChenqun', 'wei', '3', true, true)
+JieChenqun = sgs.General(extension, 'JieChenqun', 'wei', '3', true)
 
 LuaDingpinCard = sgs.CreateSkillCard {
     name = 'LuaDingpinCard',
@@ -5512,7 +5512,7 @@ LuaFaen = sgs.CreateTriggerSkill {
 JieChenqun:addSkill(LuaDingpin)
 JieChenqun:addSkill(LuaFaen)
 
-JieXunyu = sgs.General(extension, 'JieXunyu', 'wei', '3', true)
+JieXunyu = sgs.General(extension, 'JieXunyu', 'wei', '3', true, true)
 
 LuaQuhuCard = sgs.CreateSkillCard {
     name = 'LuaQuhuCard',
