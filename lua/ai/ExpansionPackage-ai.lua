@@ -2539,3 +2539,101 @@ end
 
 sgs.ai_use_value['LuaLvemingCard'] = 19.6
 sgs.ai_use_priority['LuaLvemingCard'] = 15.3
+
+-- 界陈群
+-- 定品
+local LuaDingpin_skill = {}
+LuaDingpin_skill.name = 'LuaDingpin'
+table.insert(sgs.ai_skills, LuaDingpin_skill)
+LuaDingpin_skill.getTurnUseCard = function(self, inclusive)
+    sgs.ai_use_priority['LuaDingpinCard'] = 0
+    local cardTypes = {'basic', 'trick', 'equip'}
+    local all_unavailable = true
+    for _, cardType in ipairs(cardTypes) do
+        if not self.player:hasFlag('LuaDingpinCard' .. cardType) then
+            all_unavailable = false
+            break
+        end
+    end
+    if all_unavailable then
+        return
+    end
+    if not self.player:canDiscard(self.player, 'h') then
+        return false
+    end
+    for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+        if not p:hasFlag('LuaDingpinSucceed') and p:getHp() >= 2 then
+            if not self:toTurnOver(self.player) then
+                sgs.ai_use_priority['LuaDingpinCard'] = 8.9
+            end
+            return sgs.Card_Parse('#LuaDingpinCard:.:')
+        end
+
+    end
+end
+sgs.ai_skill_use_func['#LuaDingpinCard'] = function(card, use, self)
+    local cards = {}
+    local cardType = {}
+    for _, card in sgs.qlist(self.player:getHandcards()) do
+        if not self.player:hasFlag('LuaDingpinCard' .. card:getType()) then
+            table.insert(cards, card)
+            if not table.contains(cardType, card:getTypeId()) then
+                table.insert(cardType, card:getTypeId())
+            end
+        end
+    end
+    for _, id in sgs.qlist(self.player:getPile('wooden_ox')) do
+        local card = sgs.Sanguosha:getCard(id)
+        if not self.player:hasFlag('LuaDingpinCard' .. card:getType()) then
+            table.insert(cards, card)
+            if not table.contains(cardType, card:getTypeId()) then
+                table.insert(cardType, card:getTypeId())
+            end
+        end
+    end
+    if #cards == 0 then
+        return
+    end
+    self:sortByUseValue(cards, true)
+    if self:isValuableCard(cards[1]) then
+        return
+    end
+
+    if #cardType > 1 or not self:toTurnOver(self.player) then
+        self:sort(self.friends)
+        for _, friend in ipairs(self.friends) do
+            if not friend:hasFlag('LuaDingpinSucceed') and friend:getHp() >= 2 then
+                use.card = sgs.Card_Parse('#LuaDingpinCard:' .. cards[1]:getEffectiveId() .. ':')
+                if use.to then
+                    use.to:append(friend)
+                end
+                return
+            end
+        end
+    end
+end
+
+sgs.ai_use_priority['LuaDingpinCard'] = 0
+sgs.ai_card_intention['LuaDingpinCard'] = -10
+
+-- 法恩
+sgs.ai_skill_invoke.LuaFaen = function(self, data)
+    local player = data:toPlayer()
+    if self:needKongcheng(player, true) then
+        return not self:isFriend(player)
+    end
+    return self:isFriend(player)
+end
+
+sgs.ai_choicemade_filter.skillInvoke.LuaFaen = function(self, player, promptlist)
+    local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+    if not target then
+        return
+    end
+    local yes = promptlist[#promptlist] == 'yes'
+    if self:needKongcheng(target, true) then
+        sgs.updateIntention(player, target, yes and 10 or -10)
+    else
+        sgs.updateIntention(player, target, yes and -10 or 10)
+    end
+end
