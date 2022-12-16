@@ -2865,3 +2865,7 @@ sgs.ai_skill_use_func['#LuaZhiyanDrawCard'] = function(_card, use, self)
     end
     use.card = sgs.Card_Parse('#LuaZhiyanDrawCard:.:')
 end
+
+-- 治严给牌
+sgs.ai_use_value['LuaZhiyanGiveCard'] = 9
+sgs.ai_use_priority['LuaZhiyanGiveCard'] = 8.3
