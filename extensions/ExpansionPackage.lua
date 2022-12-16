@@ -4990,7 +4990,7 @@ JieZhonghui:addRelateSkill('LuaPaiyi')
 SkillAnjiang:addSkill(LuaQuanjiKeep)
 SkillAnjiang:addSkill(LuaPaiyi)
 
-ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
+ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true)
 
 LuaZhiyanDrawCard = sgs.CreateSkillCard {
     name = 'LuaZhiyanDrawCard',
@@ -5025,7 +5025,8 @@ LuaZhiyanGiveCard = sgs.CreateSkillCard {
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, source:objectName(), target:objectName(),
             'LuaZhiyan', nil)
         room:broadcastSkillInvoke('LuaZhiyan')
-        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
+        -- 不需要可见
+        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason)
     end
 }
 
@@ -6560,7 +6561,7 @@ LuaNeifaCard = sgs.CreateSkillCard {
                 end
                 room:setPlayerFlag(source, flag)
                 room:setPlayerCardLimitation(source, 'use', limit_prompt .. '|.|.|.', true)
-                local x = rinsan.getNeifaUselessCardCount(source)
+                local x = rinsan.getNeifaUnavailableCardCount(source)
                 room:setPlayerMark(source, '@LuaNeifaCount', x)
             end
         end

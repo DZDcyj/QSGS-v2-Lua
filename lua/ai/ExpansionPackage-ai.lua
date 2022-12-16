@@ -2537,6 +2537,12 @@ sgs.ai_card_intention.LuaLvemingCard = function(self, card, from, tos)
     sgs.updateIntention(from, to, -80)
 end
 
+-- 掠命选项
+sgs.ai_skill_choice.LuaLveming = function(self, choices)
+    local items = choices:split('+')
+    return items[math.random(1, #items)]
+end
+
 sgs.ai_use_value['LuaLvemingCard'] = 19.6
 sgs.ai_use_priority['LuaLvemingCard'] = 15.3
 
@@ -2773,4 +2779,89 @@ sgs.ai_skill_use_func['#LuaShamengCard'] = function(_card, use, self)
             return
         end
     end
+end
+
+-- 星徐晃
+-- 治严
+local LuaZhiyan_skill = {}
+LuaZhiyan_skill.name = 'LuaZhiyan'
+table.insert(sgs.ai_skills, LuaZhiyan_skill)
+LuaZhiyan_skill.getTurnUseCard = function(self, inclusive)
+    local LuaZhiyanDrawAvailable = not self.player:hasUsed('#LuaZhiyanDrawCard') and self.player:getMaxHp() >
+                                       self.player:getHandcardNum()
+    local LuaZhiyanGiveAvailable = not self.player:hasUsed('#LuaZhiyanGiveCard') and self.player:getHandcardNum() >
+                                       self.player:getHp()
+    if (not LuaZhiyanDrawAvailable) and (not LuaZhiyanGiveAvailable) then
+        return nil
+    end
+
+    -- 可摸可给的情况下，优先给出去，因此先判断能不能给
+    if LuaZhiyanGiveAvailable and not self.player:isKongcheng() then
+        return sgs.Card_Parse('#LuaZhiyanGiveCard:.:')
+    elseif LuaZhiyanDrawAvailable then
+        return sgs.Card_Parse('#LuaZhiyanDrawCard:.:')
+    end
+    return nil
+end
+-- 治严给牌
+sgs.ai_skill_use_func['#LuaZhiyanGiveCard'] = function(_card, use, self)
+    -- 选目标
+    self:sort(self.friends_noself)
+    local target
+    local giveToNonFriend
+    -- 优先友军
+    for _, friend in ipairs(self.friends_noself) do
+        if not playerHasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+            target = friend
+            break
+        end
+    end
+    -- 其次扔废牌给马良或者星SP庞统一类的
+    if not target then
+        for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+            if not self:isFriend(p) and playerHasManjuanEffect(p) then
+                target = p
+                giveToNonFriend = true
+                break
+            end
+        end
+    end
+
+    if not target then
+        return
+    end
+    local cards = sgs.QList2Table(self.player:getHandcards())
+    self:sortByUseValue(cards, true)
+    if giveToNonFriend and self:isValuableCard(cards[1]) then
+        return
+    end
+    local x = self.player:getHandcardNum() - self.player:getHp()
+    if x <= 0 then
+        return
+    end
+    local i = 1
+    local use_cards = {}
+    while i <= x do
+        table.insert(use_cards, cards[i]:getEffectiveId())
+        i = i + 1
+    end
+    use.card = sgs.Card_Parse(string.format('#LuaZhiyanGiveCard:%s:', table.concat(use_cards, '+')))
+    if use.to then
+        use.to:append(target)
+    end
+end
+
+-- 治严摸牌
+sgs.ai_skill_use_func['#LuaZhiyanDrawCard'] = function(_card, use, self)
+    -- 要是还有会使用的手牌，就暂时不摸
+    for _, cd in sgs.qlist(self.player:getHandcards()) do
+        local dummy_use = {
+            isDummy = true
+        }
+        self:useCardByClassName(cd, dummy_use)
+        if dummy_use.card then
+            return
+        end
+    end
+    use.card = sgs.Card_Parse('#LuaZhiyanDrawCard:.:')
 end
