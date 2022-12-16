@@ -718,7 +718,7 @@ end
 function getNeifaUselessCardCount(player)
     local count = 0
     for _, cd in sgs.qlist(player:getHandcards()) do
-        if player:isLocked(cd) then
+        if not cd:isAvailable(player) then
             count = count + 1
         end
     end
