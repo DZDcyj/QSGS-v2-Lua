@@ -6560,7 +6560,7 @@ LuaNeifaCard = sgs.CreateSkillCard {
                 end
                 room:setPlayerFlag(source, flag)
                 room:setPlayerCardLimitation(source, 'use', limit_prompt .. '|.|.|.', true)
-                local x = rinsan.getNeifaUselessCardCount(source)
+                local x = rinsan.getNeifaUnavailableCardCount(source)
                 room:setPlayerMark(source, '@LuaNeifaCount', x)
             end
         end

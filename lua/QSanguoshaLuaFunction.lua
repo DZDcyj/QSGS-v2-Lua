@@ -715,14 +715,8 @@ function bossSkillEnabled(player, skill_name, mark_name)
 end
 
 -- 获取内伐不可使用手牌数
-function getNeifaUselessCardCount(player)
-    local count = 0
-    for _, cd in sgs.qlist(player:getHandcards()) do
-        if not cd:isAvailable(player) then
-            count = count + 1
-        end
-    end
-    return math.min(count, 5)
+function getNeifaUnavailableCardCount(player)
+    return math.min(getUnavailableHandcardCount(player), 5)
 end
 
 -- 获取烈弓花色数
@@ -900,6 +894,17 @@ end
 -- 封装方法，用于将 to 从 from 的攻击范围中移除（用于解除上一方法的问题）
 function removeFromAttackRange(room, from, to)
     room:removeAttackRangePair(from, to)
+end
+
+-- 获取不可使用卡牌数
+function getUnavailableHandcardCount(player)
+    local count = 0
+    for _, cd in sgs.qlist(player:getHandcards()) do
+        if not cd:isAvailable(player) then
+            count = count + 1
+        end
+    end
+    return count
 end
 
 -- Compare 参数，用于 checkFilter 方法
