@@ -4990,7 +4990,7 @@ JieZhonghui:addRelateSkill('LuaPaiyi')
 SkillAnjiang:addSkill(LuaQuanjiKeep)
 SkillAnjiang:addSkill(LuaPaiyi)
 
-ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true, true)
+ExStarXuhuang = sgs.General(extension, 'ExStarXuhuang', 'qun', '4', true)
 
 LuaZhiyanDrawCard = sgs.CreateSkillCard {
     name = 'LuaZhiyanDrawCard',
