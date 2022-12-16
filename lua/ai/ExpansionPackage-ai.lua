@@ -2537,6 +2537,12 @@ sgs.ai_card_intention.LuaLvemingCard = function(self, card, from, tos)
     sgs.updateIntention(from, to, -80)
 end
 
+-- 掠命选项
+sgs.ai_skill_choice.LuaLveming = function(self, choices)
+    local items = choices:split('+')
+    return items[math.random(1, #items)]
+end
+
 sgs.ai_use_value['LuaLvemingCard'] = 19.6
 sgs.ai_use_priority['LuaLvemingCard'] = 15.3
 

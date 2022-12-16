@@ -5025,7 +5025,8 @@ LuaZhiyanGiveCard = sgs.CreateSkillCard {
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, source:objectName(), target:objectName(),
             'LuaZhiyan', nil)
         room:broadcastSkillInvoke('LuaZhiyan')
-        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason, true)
+        -- 不需要可见
+        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason)
     end
 }
 
