@@ -2869,3 +2869,70 @@ end
 -- 治严给牌
 sgs.ai_use_value['LuaZhiyanGiveCard'] = 9
 sgs.ai_use_priority['LuaZhiyanGiveCard'] = 8.3
+
+-- 获取牌可造成伤害类型，暂不考虑其他技能造成的影响
+local function getDamageType(card)
+    if card:isKindOf('ThunderSlash') then
+        return sgs.DamageStruct_Thunder
+    elseif card:isKindOf('FireSlash') or card:isKindOf('FireAttack') then
+        return sgs.DamageStruct_Fire
+    end
+    return sgs.DamageStruct_Normal
+end
+
+-- 曹婴
+-- 凌人选择目标
+sgs.ai_skill_playerchosen['LuaLingren'] = function(self, targets)
+    local card = self.player:getTag('LuaLingrenAIData'):toCard()
+    targets = sgs.QList2Table(targets)
+    self:sort(targets, 'defense')
+    for _, target in ipairs(targets) do
+        if not self:isFriend(target) and self:damageIsEffective(target, getDamageType(card), self.player) then
+            return target
+        end
+    end
+    return nil
+end
+
+sgs.ai_skill_choice['BasicCardGuess'] = function(self, choices, data)
+    local target = data:toPlayer()
+    if target:isKongcheng() then
+        return 'NotHave'
+    end
+    if getKnownCard(target, self.player, 'BasicCard') > 0 then
+        return 'Have'
+    end
+    -- 基本牌七三开罢（心虚）
+    return rinsan.random(1, 10) <= 7 and 'Have' or 'NotHave'
+end
+
+sgs.ai_skill_choice['TrickCardGuess'] = function(self, choices, data)
+    local target = data:toPlayer()
+    if target:isKongcheng() then
+        return 'NotHave'
+    end
+    if getKnownCard(target, self.player, 'TrickCard') > 0 then
+        return 'Have'
+    end
+    -- 锦囊牌五五开罢（心虚）
+    return rinsan.random(1, 10) <= 5 and 'Have' or 'NotHave'
+end
+
+sgs.ai_skill_choice['EquipCardGuess'] = function(self, choices, data)
+    local target = data:toPlayer()
+    if target:isKongcheng() then
+        return 'NotHave'
+    end
+    if getKnownCard(target, self.player, 'EquipCard') > 0 then
+        return 'Have'
+    end
+    -- 装备牌二八开罢（心虚）
+    return rinsan.random(1, 10) <= 2 and 'Have' or 'NotHave'
+end
+
+-- 奸雄和行殇嗯造
+sgs.ai_skill_invoke.LuaJianxiong = function(self, data)
+    return not self:needKongcheng(self.player, true)
+end
+
+sgs.ai_skill_invoke.LuaXingshang = true

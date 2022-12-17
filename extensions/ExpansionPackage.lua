@@ -394,7 +394,7 @@ SkillAnjiang:addSkill(LuaXionghuoMaxCards)
 SkillAnjiang:addSkill(LuaXionghuoProSlash)
 SkillAnjiang:addSkill(LuaXionghuoHelper)
 
-ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false, true)
+ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false)
 
 LuaLingren = sgs.CreateTriggerSkill {
     name = 'LuaLingren',
@@ -413,13 +413,21 @@ LuaLingren = sgs.CreateTriggerSkill {
         for _, p in sgs.qlist(use.to) do
             splayers:append(p)
         end
+        -- For AI
+        local LuaLingrenAIData = sgs.QVariant()
+        LuaLingrenAIData:setValue(card)
+        player:setTag('LuaLingrenAIData', LuaLingrenAIData)
         local target = room:askForPlayerChosen(player, splayers, self:objectName(), 'LuaLingren-choose', true, true)
+        player:removeTag('LuaLingrenAIData')
         if target then
             room:broadcastSkillInvoke(self:objectName())
             room:setPlayerFlag(player, self:objectName())
-            local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave')
-            local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave')
-            local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave')
+            -- For AI
+            local targetData = sgs.QVariant()
+            targetData:setValue(target)
+            local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave', targetData)
+            local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave', targetData)
+            local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave', targetData)
             local basic = false
             local trick = false
             local equip = false
