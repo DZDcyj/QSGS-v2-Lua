@@ -2931,14 +2931,15 @@ sgs.ai_skill_choice['EquipCardGuess'] = function(self, choices, data)
     elseif unknown == 0 then
         return 'NotHave'
     end
-    -- 计算剩余牌中有锦囊牌概率
+    -- 计算剩余牌中有装备牌概率
     local probably = rinsan.calculateProbably(unknown, equipRemain, totalRemain)
     return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
--- 奸雄和行殇嗯造
+-- 奸雄在不需要空城时发动
 sgs.ai_skill_invoke.LuaJianxiong = function(self, data)
     return not self:needKongcheng(self.player, true)
 end
 
+-- 行殇默认发动
 sgs.ai_skill_invoke.LuaXingshang = true

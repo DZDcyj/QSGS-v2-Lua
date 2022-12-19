@@ -4301,7 +4301,8 @@ LuaTaomieMark = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         local mark = data:toMark()
-        local markFunction = mark.who:getMark('@LuaTaomie') > 0 and rinsan.addToAttackRange or rinsan.removeFromAttackRange
+        local markFunction = mark.who:getMark('@LuaTaomie') > 0 and rinsan.addToAttackRange or
+                                 rinsan.removeFromAttackRange
         if mark.name == '@LuaTaomie' then
             local gongsunkangs = room:findPlayersBySkillName('LuaTaomie')
             for _, gongsunkang in sgs.qlist(gongsunkangs) do

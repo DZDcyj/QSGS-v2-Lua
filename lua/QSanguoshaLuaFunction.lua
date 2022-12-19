@@ -914,7 +914,7 @@ end
 function calculateProbably(unknownCardNum, typeCardRemain, totalRemain)
     -- 考虑到概率是小于等于1的，所以如果我们拥有的牌数越多，不可能拥有该类型牌的概率就会下降
     -- 在这里我们取 8 作为一个极限值，认为如果超过了 8 张牌，就拥有
-    if unknownCardNum >=8 then
+    if unknownCardNum >= 8 then
         return 1
     end
     local probably = 1 - math.pow(typeCardRemain, unknownCardNum) / math.pow(totalRemain, unknownCardNum)
