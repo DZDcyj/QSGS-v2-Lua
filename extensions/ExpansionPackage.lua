@@ -394,7 +394,7 @@ SkillAnjiang:addSkill(LuaXionghuoMaxCards)
 SkillAnjiang:addSkill(LuaXionghuoProSlash)
 SkillAnjiang:addSkill(LuaXionghuoHelper)
 
-ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false, true)
+ExCaoying = sgs.General(extension, 'ExCaoying', 'wei', '4', false)
 
 LuaLingren = sgs.CreateTriggerSkill {
     name = 'LuaLingren',
@@ -413,13 +413,21 @@ LuaLingren = sgs.CreateTriggerSkill {
         for _, p in sgs.qlist(use.to) do
             splayers:append(p)
         end
+        -- For AI
+        local LuaLingrenAIData = sgs.QVariant()
+        LuaLingrenAIData:setValue(card)
+        player:setTag('LuaLingrenAIData', LuaLingrenAIData)
         local target = room:askForPlayerChosen(player, splayers, self:objectName(), 'LuaLingren-choose', true, true)
+        player:removeTag('LuaLingrenAIData')
         if target then
             room:broadcastSkillInvoke(self:objectName())
             room:setPlayerFlag(player, self:objectName())
-            local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave')
-            local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave')
-            local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave')
+            -- For AI
+            local targetData = sgs.QVariant()
+            targetData:setValue(rinsan.lingrenAIInitialize(player, target))
+            local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave', targetData)
+            local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave', targetData)
+            local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave', targetData)
             local basic = false
             local trick = false
             local equip = false
@@ -457,6 +465,23 @@ LuaLingren = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play) and not target:hasFlag(self:objectName())
+    end
+}
+
+-- 用于游戏开始时初始化总卡牌数量
+LuaLingrenAIInitializer = sgs.CreateTriggerSkill {
+    name = 'LuaLingrenAIInitializer',
+    events = {sgs.GameStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if room:getTag('LuaLingrenAIInitialized'):toBool() then
+            return false
+        end
+        rinsan.cardNumInitialize(room)
+        room:setTag('LuaLingrenAIInitialized', sgs.QVariant(true))
+    end,
+    can_trigger = function(self, target)
+        return true
     end
 }
 
@@ -573,6 +598,7 @@ SkillAnjiang:addSkill(LuaXingshang)
 ExCaoying:addRelateSkill('LuaJianxiong')
 ExCaoying:addRelateSkill('LuaXingshang')
 SkillAnjiang:addSkill(LuaLingrenHelper)
+SkillAnjiang:addSkill(LuaLingrenAIInitializer)
 
 ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, false, false, 4)
 
@@ -4275,7 +4301,8 @@ LuaTaomieMark = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         local mark = data:toMark()
-        local markFunction = mark.who:getMark('@LuaTaomie') > 0 and rinsan.addToAttackRange or rinsan.removeFromAttackRange
+        local markFunction = mark.who:getMark('@LuaTaomie') > 0 and rinsan.addToAttackRange or
+                                 rinsan.removeFromAttackRange
         if mark.name == '@LuaTaomie' then
             local gongsunkangs = room:findPlayersBySkillName('LuaTaomie')
             for _, gongsunkang in sgs.qlist(gongsunkangs) do

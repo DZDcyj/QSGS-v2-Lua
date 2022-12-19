@@ -2869,3 +2869,77 @@ end
 -- 治严给牌
 sgs.ai_use_value['LuaZhiyanGiveCard'] = 9
 sgs.ai_use_priority['LuaZhiyanGiveCard'] = 8.3
+
+-- 获取牌可造成伤害类型，暂不考虑其他技能造成的影响
+local function getDamageType(card)
+    if card:isKindOf('ThunderSlash') then
+        return sgs.DamageStruct_Thunder
+    elseif card:isKindOf('FireSlash') or card:isKindOf('FireAttack') then
+        return sgs.DamageStruct_Fire
+    end
+    return sgs.DamageStruct_Normal
+end
+
+-- 曹婴
+-- 凌人选择目标
+sgs.ai_skill_playerchosen['LuaLingren'] = function(self, targets)
+    local card = self.player:getTag('LuaLingrenAIData'):toCard()
+    targets = sgs.QList2Table(targets)
+    self:sort(targets, 'defense')
+    for _, target in ipairs(targets) do
+        if not self:isFriend(target) and self:damageIsEffective(target, getDamageType(card), self.player) then
+            return target
+        end
+    end
+    return nil
+end
+
+sgs.ai_skill_choice['BasicCardGuess'] = function(self, choices, data)
+    local result = data:toIntList()
+    local basic, unknown, basicRemain = result:at(0), result:at(3), result:at(4)
+    local totalRemain = result:at(4) + result:at(5) + result:at(6)
+    if basic > 0 then
+        return 'Have'
+    elseif unknown == 0 then
+        return 'NotHave'
+    end
+    -- 计算剩余牌中有基本牌概率
+    local probably = rinsan.calculateProbably(unknown, basicRemain, totalRemain)
+    return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
+end
+
+sgs.ai_skill_choice['TrickCardGuess'] = function(self, choices, data)
+    local result = data:toIntList()
+    local trick, unknown, trickRemain = result:at(1), result:at(3), result:at(5)
+    local totalRemain = result:at(4) + result:at(5) + result:at(6)
+    if trick > 0 then
+        return 'Have'
+    elseif unknown == 0 then
+        return 'NotHave'
+    end
+    -- 计算剩余牌中有锦囊牌概率
+    local probably = rinsan.calculateProbably(unknown, trickRemain, totalRemain)
+    return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
+end
+
+sgs.ai_skill_choice['EquipCardGuess'] = function(self, choices, data)
+    local result = data:toIntList()
+    local equip, unknown, equipRemain = result:at(2), result:at(3), result:at(6)
+    local totalRemain = result:at(4) + result:at(5) + result:at(6)
+    if equip > 0 then
+        return 'Have'
+    elseif unknown == 0 then
+        return 'NotHave'
+    end
+    -- 计算剩余牌中有装备牌概率
+    local probably = rinsan.calculateProbably(unknown, equipRemain, totalRemain)
+    return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
+end
+
+-- 奸雄在不需要空城时发动
+sgs.ai_skill_invoke.LuaJianxiong = function(self, data)
+    return not self:needKongcheng(self.player, true)
+end
+
+-- 行殇默认发动
+sgs.ai_skill_invoke.LuaXingshang = true
