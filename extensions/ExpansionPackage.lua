@@ -424,7 +424,7 @@ LuaLingren = sgs.CreateTriggerSkill {
             room:setPlayerFlag(player, self:objectName())
             -- For AI
             local targetData = sgs.QVariant()
-            targetData:setValue(target)
+            targetData:setValue(rinsan.lingrenAIInitialize(player, target))
             local choice1 = room:askForChoice(player, 'BasicCardGuess', 'Have+NotHave', targetData)
             local choice2 = room:askForChoice(player, 'TrickCardGuess', 'Have+NotHave', targetData)
             local choice3 = room:askForChoice(player, 'EquipCardGuess', 'Have+NotHave', targetData)

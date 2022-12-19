@@ -2895,36 +2895,36 @@ sgs.ai_skill_playerchosen['LuaLingren'] = function(self, targets)
 end
 
 sgs.ai_skill_choice['BasicCardGuess'] = function(self, choices, data)
-    local target = data:toPlayer()
-    if target:isKongcheng() then
-        return 'NotHave'
-    end
-    if getKnownCard(target, self.player, 'BasicCard') > 0 then
+    local result = data:toIntList()
+    local basic, unknown = result:at(0), result:at(3)
+    if basic > 0 then
         return 'Have'
+    elseif unknown == 0 then
+        return 'NotHave'
     end
     -- 基本牌七三开罢（心虚）
     return rinsan.random(1, 10) <= 7 and 'Have' or 'NotHave'
 end
 
 sgs.ai_skill_choice['TrickCardGuess'] = function(self, choices, data)
-    local target = data:toPlayer()
-    if target:isKongcheng() then
-        return 'NotHave'
-    end
-    if getKnownCard(target, self.player, 'TrickCard') > 0 then
+    local result = data:toIntList()
+    local trick, unknown = result:at(1), result:at(3)
+    if trick > 0 then
         return 'Have'
+    elseif unknown == 0 then
+        return 'NotHave'
     end
     -- 锦囊牌五五开罢（心虚）
     return rinsan.random(1, 10) <= 5 and 'Have' or 'NotHave'
 end
 
 sgs.ai_skill_choice['EquipCardGuess'] = function(self, choices, data)
-    local target = data:toPlayer()
-    if target:isKongcheng() then
-        return 'NotHave'
-    end
-    if getKnownCard(target, self.player, 'EquipCard') > 0 then
+    local result = data:toIntList()
+    local equip, unknown = result:at(2), result:at(3)
+    if equip > 0 then
         return 'Have'
+    elseif unknown == 0 then
+        return 'NotHave'
     end
     -- 装备牌二八开罢（心虚）
     return rinsan.random(1, 10) <= 2 and 'Have' or 'NotHave'

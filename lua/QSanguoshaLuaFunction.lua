@@ -907,6 +907,26 @@ function getUnavailableHandcardCount(player)
     return count
 end
 
+-- 曹婴【凌人】 AI 初始化
+-- 返回值为一个带有对应牌数的 IntList，顺序为基本、锦囊、装备、未知、剩余基本、剩余锦囊、剩余装备
+function lingrenAIInitialize(source, target)
+    local basic, trick, equip
+    basic = getKnownCard(target, source, 'BasicCard')
+    trick = getKnownCard(target, source, 'TrickCard')
+    equip = getKnownCard(target, source, 'EquipCard')
+    local unknown = target:getHandcardNum() - basic - trick - equip
+    -- 特殊处理未知一张牌，全选没有
+    if unknown == 1 and target:getHandcardNum() == 1 then
+        basic, trick, equip, unknown = 0, 0, 0, 0
+    end
+    local result = sgs.IntList()
+    result:append(basic)
+    result:append(trick)
+    result:append(equip)
+    result:append(unknown)
+    return result
+end
+
 -- Compare 参数，用于 checkFilter 方法
 LESS = 0
 LESS_OR_EQUAL = 1
