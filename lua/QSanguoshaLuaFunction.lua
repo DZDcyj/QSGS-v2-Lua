@@ -907,6 +907,74 @@ function getUnavailableHandcardCount(player)
     return count
 end
 
+-- 概率计算
+-- unknownCardNum 未知牌数
+-- typeCardRemain 现存对应类型牌数
+-- totalRemain 剩余所有牌数
+function calculateProbably(unknownCardNum, typeCardRemain, totalRemain)
+    -- 考虑到概率是小于等于1的，所以如果我们拥有的牌数越多，不可能拥有该类型牌的概率就会下降
+    -- 在这里我们取 8 作为一个极限值，认为如果超过了 8 张牌，就拥有
+    if unknownCardNum >=8 then
+        return 1
+    end
+    local probably = 1 - math.pow(typeCardRemain, unknownCardNum) / math.pow(totalRemain, unknownCardNum)
+    -- 取两位小数
+    return probably - probably % 0.01
+end
+
+-- 初始化三种牌数量
+function cardNumInitialize(room)
+    local totalBasic, totalTrick, totalEquip = 0, 0, 0
+    for _, cid in sgs.qlist(room:getDrawPile()) do
+        local cd = sgs.Sanguosha:getCard(cid)
+        if cd:isKindOf('BasicCard') then
+            totalBasic = totalBasic + 1
+        elseif cd:isKindOf('TrickCard') then
+            totalTrick = totalTrick + 1
+        elseif cd:isKindOf('EquipCard') then
+            totalEquip = totalEquip + 1
+        end
+    end
+    for _, cid in sgs.qlist(room:getDiscardPile()) do
+        local cd = sgs.Sanguosha:getCard(cid)
+        if cd:isKindOf('BasicCard') then
+            totalBasic = totalBasic + 1
+        elseif cd:isKindOf('TrickCard') then
+            totalTrick = totalTrick + 1
+        elseif cd:isKindOf('EquipCard') then
+            totalEquip = totalEquip + 1
+        end
+    end
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        for _, cd in sgs.qlist(p:getCards('hej')) do
+            if cd:isKindOf('BasicCard') then
+                totalBasic = totalBasic + 1
+            elseif cd:isKindOf('TrickCard') then
+                totalTrick = totalTrick + 1
+            elseif cd:isKindOf('EquipCard') then
+                totalEquip = totalEquip + 1
+            end
+        end
+        for _, pile in sgs.list(p:getPileNames()) do
+            for _, cid in sgs.qlist(p:getPile(pile)) do
+                local cd = sgs.Sanguosha:getCard(cid)
+                if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
+                    if cd:isKindOf('BasicCard') then
+                        totalBasic = totalBasic + 1
+                    elseif cd:isKindOf('TrickCard') then
+                        totalTrick = totalTrick + 1
+                    elseif cd:isKindOf('EquipCard') then
+                        totalEquip = totalEquip + 1
+                    end
+                end
+            end
+        end
+    end
+    room:setTag('LuaLingrenAIBasic', sgs.QVariant(totalBasic))
+    room:setTag('LuaLingrenAITrick', sgs.QVariant(totalTrick))
+    room:setTag('LuaLingrenAIEquip', sgs.QVariant(totalEquip))
+end
+
 -- 曹婴【凌人】 AI 初始化
 -- 返回值为一个带有对应牌数的 IntList，顺序为基本、锦囊、装备、未知、剩余基本、剩余锦囊、剩余装备
 function lingrenAIInitialize(source, target)
@@ -924,7 +992,59 @@ function lingrenAIInitialize(source, target)
     result:append(trick)
     result:append(equip)
     result:append(unknown)
+    unknownAnalyze(result, source, target, source:getRoom())
     return result
+end
+
+function unknownAnalyze(resultList, source, target, room)
+    local totalBasic = room:getTag('LuaLingrenAIBasic')
+    local totalTrick = room:getTag('LuaLingrenAITrick')
+    local totalEquip = room:getTag('LuaLingrenAIEquip')
+    while (not totalBasic) or (not totalTrick) or (not totalEquip) do
+        rinsan.cardNumInitialize(room)
+        totalBasic = room:getTag('LuaLingrenAIBasic')
+        totalTrick = room:getTag('LuaLingrenAITrick')
+        totalEquip = room:getTag('LuaLingrenAIEquip')
+    end
+    local basicRemain = totalBasic:toInt()
+    local trickRemain = totalTrick:toInt()
+    local equipRemain = totalEquip:toInt()
+    for _, cid in sgs.qlist(room:getDiscardPile()) do
+        local cd = sgs.Sanguosha:getCard(cid)
+        if cd:isKindOf('BasicCard') then
+            basicRemain = basicRemain - 1
+        elseif cd:isKindOf('TrickCard') then
+            trickRemain = trickRemain - 1
+        elseif cd:isKindOf('EquipCard') then
+            equipRemain = equipRemain - 1
+        end
+    end
+    for _, p in sgs.qlist(room:getOtherPlayers(target)) do
+        local basic, trick, equip
+        basic = getKnownCard(p, source, 'BasicCard')
+        trick = getKnownCard(p, source, 'TrickCard')
+        equip = getKnownCard(p, source, 'EquipCard')
+        for _, pile in sgs.list(p:getPileNames()) do
+            for _, cd in sgs.qlist(p:getPile(pile)) do
+                if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
+                    if cd:isKindOf('BasicCard') then
+                        basicRemain = basicRemain - 1
+                    elseif cd:isKindOf('TrickCard') then
+                        trickRemain = trickRemain - 1
+                    elseif cd:isKindOf('EquipCard') then
+                        equipRemain = equipRemain - 1
+                    end
+                end
+            end
+        end
+        basicRemain = basicRemain - basic
+        trickRemain = trickRemain - trick
+        equipRemain = equipRemain - equip
+    end
+
+    resultList:append(basicRemain)
+    resultList:append(trickRemain)
+    resultList:append(equipRemain)
 end
 
 -- Compare 参数，用于 checkFilter 方法

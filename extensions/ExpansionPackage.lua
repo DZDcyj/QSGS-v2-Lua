@@ -468,6 +468,23 @@ LuaLingren = sgs.CreateTriggerSkill {
     end
 }
 
+-- 用于游戏开始时初始化总卡牌数量
+LuaLingrenAIInitializer = sgs.CreateTriggerSkill {
+    name = 'LuaLingrenAIInitializer',
+    events = {sgs.GameStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if room:getTag('LuaLingrenAIInitialized'):toBool() then
+            return false
+        end
+        rinsan.cardNumInitialize(room)
+        room:setTag('LuaLingrenAIInitialized', sgs.QVariant(true))
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
 LuaLingrenHelper = sgs.CreateTriggerSkill {
     name = 'LuaLingrenHelper',
     events = {sgs.DamageCaused, sgs.CardEffected, sgs.TurnStart},
@@ -581,6 +598,7 @@ SkillAnjiang:addSkill(LuaXingshang)
 ExCaoying:addRelateSkill('LuaJianxiong')
 ExCaoying:addRelateSkill('LuaXingshang')
 SkillAnjiang:addSkill(LuaLingrenHelper)
+SkillAnjiang:addSkill(LuaLingrenAIInitializer)
 
 ExLijue = sgs.General(extension, 'ExLijue', 'qun', 6, true, false, false, 4)
 

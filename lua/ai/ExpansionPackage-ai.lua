@@ -2896,38 +2896,44 @@ end
 
 sgs.ai_skill_choice['BasicCardGuess'] = function(self, choices, data)
     local result = data:toIntList()
-    local basic, unknown = result:at(0), result:at(3)
+    local basic, unknown, basicRemain = result:at(0), result:at(3), result:at(4)
+    local totalRemain = result:at(4) + result:at(5) + result:at(6)
     if basic > 0 then
         return 'Have'
     elseif unknown == 0 then
         return 'NotHave'
     end
-    -- 基本牌七三开罢（心虚）
-    return rinsan.random(1, 10) <= 7 and 'Have' or 'NotHave'
+    -- 计算剩余牌中有基本牌概率
+    local probably = rinsan.calculateProbably(unknown, basicRemain, totalRemain)
+    return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
 sgs.ai_skill_choice['TrickCardGuess'] = function(self, choices, data)
     local result = data:toIntList()
-    local trick, unknown = result:at(1), result:at(3)
+    local trick, unknown, trickRemain = result:at(1), result:at(3), result:at(5)
+    local totalRemain = result:at(4) + result:at(5) + result:at(6)
     if trick > 0 then
         return 'Have'
     elseif unknown == 0 then
         return 'NotHave'
     end
-    -- 锦囊牌五五开罢（心虚）
-    return rinsan.random(1, 10) <= 5 and 'Have' or 'NotHave'
+    -- 计算剩余牌中有锦囊牌概率
+    local probably = rinsan.calculateProbably(unknown, trickRemain, totalRemain)
+    return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
 sgs.ai_skill_choice['EquipCardGuess'] = function(self, choices, data)
     local result = data:toIntList()
-    local equip, unknown = result:at(2), result:at(3)
+    local equip, unknown, equipRemain = result:at(2), result:at(3), result:at(6)
+    local totalRemain = result:at(4) + result:at(5) + result:at(6)
     if equip > 0 then
         return 'Have'
     elseif unknown == 0 then
         return 'NotHave'
     end
-    -- 装备牌二八开罢（心虚）
-    return rinsan.random(1, 10) <= 2 and 'Have' or 'NotHave'
+    -- 计算剩余牌中有锦囊牌概率
+    local probably = rinsan.calculateProbably(unknown, equipRemain, totalRemain)
+    return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
 -- 奸雄和行殇嗯造
