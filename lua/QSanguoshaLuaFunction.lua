@@ -907,19 +907,42 @@ function getUnavailableHandcardCount(player)
     return count
 end
 
+-- 获取对应卡牌极限值
+function getMaxCardMostProbably(cardType)
+    if cardType == BASIC_CARD then
+        return 4
+    elseif cardType == TRICK_CARD then
+        return 6
+    end
+    return 8
+end
+
+-- 获取对应卡牌修正系数
+function getCorrectionFactor(cardType, turnCount)
+    -- 回合数增加越多，越保留重要的牌概率越大，比如酒闪桃无懈
+    if cardType == BASIC_CARD then
+        return 1 + turnCount * 0.1
+    elseif cardType == TRICK_CARD then
+        return 0.5 + turnCount * 0.1
+    end
+    return 0.3 + turnCount * 0.1
+end
+
 -- 概率计算
 -- unknownCardNum 未知牌数
 -- typeCardRemain 现存对应类型牌数
 -- totalRemain 剩余所有牌数
-function calculateProbably(unknownCardNum, typeCardRemain, totalRemain)
+-- cardType 对应卡牌类型
+-- 经过的回合数
+function calculateProbably(unknownCardNum, typeCardRemain, totalRemain, cardType, turnCount)
     -- 考虑到概率是小于等于1的，所以如果我们拥有的牌数越多，不可能拥有该类型牌的概率就会下降
-    -- 在这里我们取 8 作为一个极限值，认为如果超过了 8 张牌，就拥有
-    if unknownCardNum >= 8 then
+    -- 在这里我们取一个极限值，认为如果超过了对应数量，就拥有
+    if unknownCardNum >= getMaxCardMostProbably(cardType) then
         return 1
     end
     local probably = 1 - math.pow(typeCardRemain, unknownCardNum) / math.pow(totalRemain, unknownCardNum)
     -- 取两位小数
-    return probably - probably % 0.01
+    return math.min((probably - probably % 0.01) * getCorrectionFactor(cardType, turnCount), 1)
 end
 
 -- 初始化三种牌数量
@@ -993,6 +1016,7 @@ function lingrenAIInitialize(source, target)
     result:append(equip)
     result:append(unknown)
     unknownAnalyze(result, source, target, source:getRoom())
+    result:append(target:getMark('Global_TurnCount'))
     return result
 end
 
@@ -1046,6 +1070,11 @@ function unknownAnalyze(resultList, source, target, room)
     resultList:append(trickRemain)
     resultList:append(equipRemain)
 end
+
+-- CardType 参数，用于 getCardMostProbably 方法
+BASIC_CARD = 1
+TRICK_CARD = 2
+EQUIP_CARD = 3
 
 -- Compare 参数，用于 checkFilter 方法
 LESS = 0

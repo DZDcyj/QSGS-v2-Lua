@@ -2196,9 +2196,13 @@ LuaHuishi_skill.name = 'LuaHuishi'
 table.insert(sgs.ai_skills, LuaHuishi_skill)
 
 LuaHuishi_skill.getTurnUseCard = function(self, inclusive)
+    if self.player:getMaxHp() >= 10 then
+        return nil
+    end
     if not self.player:hasUsed('#LuaHuishiCard') then
         return sgs.Card_Parse('#LuaHuishiCard:.:')
     end
+    return nil
 end
 
 sgs.ai_skill_use_func['#LuaHuishiCard'] = function(card, use, self)
@@ -2898,13 +2902,14 @@ sgs.ai_skill_choice['BasicCardGuess'] = function(self, choices, data)
     local result = data:toIntList()
     local basic, unknown, basicRemain = result:at(0), result:at(3), result:at(4)
     local totalRemain = result:at(4) + result:at(5) + result:at(6)
+    local turnCount = result:at(7)
     if basic > 0 then
         return 'Have'
     elseif unknown == 0 then
         return 'NotHave'
     end
     -- 计算剩余牌中有基本牌概率
-    local probably = rinsan.calculateProbably(unknown, basicRemain, totalRemain)
+    local probably = rinsan.calculateProbably(unknown, basicRemain, totalRemain, rinsan.BASIC_CARD, turnCount)
     return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
@@ -2912,13 +2917,14 @@ sgs.ai_skill_choice['TrickCardGuess'] = function(self, choices, data)
     local result = data:toIntList()
     local trick, unknown, trickRemain = result:at(1), result:at(3), result:at(5)
     local totalRemain = result:at(4) + result:at(5) + result:at(6)
+    local turnCount = result:at(7)
     if trick > 0 then
         return 'Have'
     elseif unknown == 0 then
         return 'NotHave'
     end
     -- 计算剩余牌中有锦囊牌概率
-    local probably = rinsan.calculateProbably(unknown, trickRemain, totalRemain)
+    local probably = rinsan.calculateProbably(unknown, trickRemain, totalRemain, rinsan.TRICK_CARD, turnCount)
     return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
@@ -2926,13 +2932,14 @@ sgs.ai_skill_choice['EquipCardGuess'] = function(self, choices, data)
     local result = data:toIntList()
     local equip, unknown, equipRemain = result:at(2), result:at(3), result:at(6)
     local totalRemain = result:at(4) + result:at(5) + result:at(6)
+    local turnCount = result:at(7)
     if equip > 0 then
         return 'Have'
     elseif unknown == 0 then
         return 'NotHave'
     end
     -- 计算剩余牌中有装备牌概率
-    local probably = rinsan.calculateProbably(unknown, equipRemain, totalRemain)
+    local probably = rinsan.calculateProbably(unknown, equipRemain, totalRemain, rinsan.EQUIP_CARD, turnCount)
     return rinsan.random(1, 100) <= (probably * 100) and 'Have' or 'NotHave'
 end
 
