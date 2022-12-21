@@ -2196,9 +2196,13 @@ LuaHuishi_skill.name = 'LuaHuishi'
 table.insert(sgs.ai_skills, LuaHuishi_skill)
 
 LuaHuishi_skill.getTurnUseCard = function(self, inclusive)
+    if self.player:getMaxHp() >= 10 then
+        return nil
+    end
     if not self.player:hasUsed('#LuaHuishiCard') then
         return sgs.Card_Parse('#LuaHuishiCard:.:')
     end
+    return nil
 end
 
 sgs.ai_skill_use_func['#LuaHuishiCard'] = function(card, use, self)
