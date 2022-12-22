@@ -2436,7 +2436,10 @@ end
 -- 是否可以用【闪】相应对应的【杀】
 local function targetCanUseJink(source, target)
     -- 【万能】和【卫境】可以出无色闪
-    if target:hasSkills('LuaWanneng|weijing') then
+    if target:hasSkill('LuaWanneng') and target:getMark('LuaWanneng') == 0 then
+        return true
+    end
+    if target:hasSkill('weijing') and target:getMark('weijing_lun') == 0 then
         return true
     end
     -- 【翊赞】在未觉醒状态下可以无色
