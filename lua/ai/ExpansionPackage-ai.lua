@@ -1349,10 +1349,19 @@ sgs.ai_skill_invoke.LuaShanjia = true
 
 sgs.ai_skill_use['@@LuaShanjia!'] = function(self, prompt, method)
     local x = 3 - self.player:getMark('@luashanjia')
+    local target
     if x == 0 then
         if #self.enemies > 0 then
             self:sort(self.enemies, 'defense')
-            return '#LuaShanjiaCard:.:->' .. self.enemies[1]:objectName()
+            for _, enemy in ipairs(self.enemies) do
+                if self.player:canSlash(enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) then
+                    target = enemy
+                    break
+                end
+            end
+            if target then
+                return string.format('#LuaShanjiaCard:.:->%s', target:objectName())
+            end
         end
         return '#LuaShanjiaCard:.:.'
     else
@@ -1379,10 +1388,17 @@ sgs.ai_skill_use['@@LuaShanjia!'] = function(self, prompt, method)
             end
         end
         if can_slash then
-            self:sort(self.enemies, 'defense')
-            return '#LuaShanjiaCard:' .. table.concat(to_discard, '+') .. ':->' .. self.enemies[1]:objectName()
+            for _, enemy in ipairs(self.enemies) do
+                if self.player:canSlash(enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) then
+                    target = enemy
+                    break
+                end
+            end
+            if target then
+                return string.format('#LuaShanjiaCard:%s:->%s', table.concat(to_discard, '+'), target:objectName())
+            end
         end
-        return '#LuaShanjiaCard:' .. table.concat(to_discard, '+') .. ':'
+        return string.format('#LuaShanjiaCard:%s:.', table.concat(to_discard, '+'))
     end
 end
 
