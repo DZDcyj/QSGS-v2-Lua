@@ -3500,7 +3500,7 @@ LuaLiji = sgs.CreateTriggerSkill {
 ExTenYearLiuzan:addSkill(LuaFenyin)
 ExTenYearLiuzan:addSkill(LuaLiji)
 
-ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true, true)
+ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true)
 
 LuaQiaiCard = sgs.CreateSkillCard {
     name = 'LuaQiaiCard',
@@ -3515,7 +3515,9 @@ LuaQiaiCard = sgs.CreateSkillCard {
         if source:isWounded() then
             choices = choices .. '+letrecover'
         end
-        local choice = room:askForChoice(target, 'LuaQiai', choices)
+        local data = sgs.QVariant()
+        data:setValue(source)
+        local choice = room:askForChoice(target, 'LuaQiai', choices, data)
         if choice == 'letdraw2' then
             source:drawCards(2, 'LuaQiai')
         else
