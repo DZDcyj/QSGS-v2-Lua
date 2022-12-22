@@ -2953,3 +2953,104 @@ end
 
 -- 行殇默认发动
 sgs.ai_skill_invoke.LuaXingshang = true
+
+-- 王粲
+-- 七哀
+local LuaQiai_skill = {}
+LuaQiai_skill.name = 'LuaQiai'
+table.insert(sgs.ai_skills, LuaQiai_skill)
+LuaQiai_skill.getTurnUseCard = function(self, inclusive)
+    if self.player:hasUsed('#LuaQiaiCard') then
+        return nil
+    end
+    return sgs.Card_Parse('#LuaQiaiCard:.:')
+end
+
+sgs.ai_skill_use_func['#LuaQiaiCard'] = function(_card, use, self)
+    local cards = {}
+    for _, cd in sgs.qlist(self.player:getHandcards()) do
+        if not cd:isKindOf('BasicCard') then
+            table.insert(cards, cd)
+        end
+    end
+    if #cards == 0 then
+        return
+    end
+    self:sortByUseValue(cards, true)
+    if self:isValuableCard(cards[1]) then
+        return
+    end
+
+    -- 优先扔队友
+    local target
+    for _, friend in ipairs(self.friends_noself) do
+        if not playerHasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+            target = friend
+            break
+        end
+    end
+    if target then
+        use.card = sgs.Card_Parse(string.format('#LuaQiaiCard:%s:', cards[1]:getEffectiveId()))
+        if use.to then
+            use.to:append(target)
+        end
+        return
+    end
+
+    -- 其次选中立
+    for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+        if not self:isEnemy(p) then
+            target = p
+            break
+        end
+    end
+    if target then
+        use.card = sgs.Card_Parse(string.format('#LuaQiaiCard:%s:', cards[1]:getEffectiveId()))
+        if use.to then
+            use.to:append(target)
+        end
+        return
+    end
+end
+
+-- 善檄选择目标
+sgs.ai_skill_playerchosen['LuaShanxi'] = function(self, targets)
+    local result
+    targets = sgs.QList2Table(targets)
+    self:sort(targets, 'hp')
+    for _, target in ipairs(targets) do
+        if self:isEnemy(target) then
+            result = target
+            break
+        end
+    end
+    if result then
+        return result
+    end
+    for _, target in ipairs(targets) do
+        if not self:isFriend(target) then
+            result = target
+            break
+        end
+    end
+    return result
+end
+
+-- 七哀选择
+sgs.ai_skill_choice['LuaQiai'] = function(self, choices, data)
+    local items = choices:split('+')
+    if #items == 1 then
+        return items[1]
+    end
+    -- 存在两个分别是摸牌和回血
+    local target = data:toPlayer()
+    if self:isFriend(target) then
+        -- 如果是队友，那么就在他不需要输出的时候让他回血
+        if target:getLostHp() > 1 and target:getHandcardNum() >= target:getMaxCards() / 2 then
+            return items[2]
+        end
+        return items[1]
+    end
+    -- 非友随机
+    return items[random(1, #items)]
+end
