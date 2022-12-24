@@ -479,7 +479,7 @@ LuaSoutuCard = sgs.CreateSkillCard {
     will_throw = false,
     handling_method = sgs.Card_MethodNone,
     filter = function(self, targets, to_select)
-        if checkFilter(targets, to_select, rinsan.EQUAL, 0) then
+        if rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) then
             return to_select:hasSkill('LuaSoutu') and not to_select:hasFlag('LuaSoutuInvoked')
         end
         return false
@@ -1226,7 +1226,7 @@ LuaJueding = sgs.CreateTriggerSkill {
 LuaShaikaCard = sgs.CreateSkillCard {
     name = 'LuaShaikaCard',
     filter = function(self, targets, to_select)
-        return checkFilter(targets, to_select, rinsan.EQUAL, 0) and to_select:getMark('LuaShaikaTarget') == 0
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) and to_select:getMark('LuaShaikaTarget') == 0
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
@@ -1744,7 +1744,7 @@ LuaTaoseCard = sgs.CreateSkillCard {
     name = 'LuaTaoseCard',
     will_throw = false,
     filter = function(self, selected, to_select)
-        return checkFilter(selected, to_select, rinsan.EQUAL, 0)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
