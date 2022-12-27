@@ -79,6 +79,11 @@ return {
     ['$poxi1-shenganning_1'] = '战胜勍敌，展江东豪杰之魄！',
     ['$poxi2-shenganning_1'] = '此次进击，定要丧敌胆魄！',
     ['~shenganning-shenganning_1'] = '神鸦不佑，此身竟陨……',
+    ['$jieyingy1-shenganning_2'] = '一骑劫魏营，何有所惧',
+    ['$jieyingy2-shenganning_2'] = '一人一乐一匹马，敌营尽驰骋',
+    ['$poxi1-shenganning_2'] = '龙战于野，其血玄黄',
+    ['$poxi2-shenganning_2'] = '匹马单枪出重围，英风锐气敌胆寒',
+    ['~shenganning-shenganning_2'] = '我亦有被乐不思蜀所伤之时',
     -- 马钧
     ['$LuaJingxie1-ExMajun_1'] = '吾所欲作者，国之精器、军之要用也',
     ['$LuaJingxie2-ExMajun_1'] = '路未尽，铸不止',

@@ -39,6 +39,7 @@ image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
 !@Lua[A-Z]*.png
 !shenganning_1*
+!shenganning_2*
 !quyi_1*
 !zhangsong_1*
 !guanyu_1*
