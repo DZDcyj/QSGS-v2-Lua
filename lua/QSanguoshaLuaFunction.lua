@@ -1071,6 +1071,23 @@ function unknownAnalyze(resultList, source, target, room)
     resultList:append(equipRemain)
 end
 
+function playerCanInvokeLingce(player, card)
+    -- 判断是否为固定可以发动的【无中生有】【过河拆桥】【无懈可击】【奇正相生】
+    local fixed_types = {'ExNihilo', 'Dismantlement', 'Nullification', 'IndirectCombination'}
+    for _, type in ipairs(fixed_types) do
+        if card:isKindOf(type) then
+            return true
+        end
+    end
+    local dinghan_cards = player:getTag('LuaDinghanCards'):toString():split('|')
+    for _, type in ipairs(dinghan_cards) do
+        if card:objectName() == type then
+            return true
+        end
+    end
+    return false
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
