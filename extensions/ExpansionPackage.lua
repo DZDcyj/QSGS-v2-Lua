@@ -7971,3 +7971,208 @@ SkillAnjiang:addSkill(LuaTianzuoStart)
 ExShenXunyu:addSkill(LuaLingce)
 ExShenXunyu:addSkill(LuaDinghan)
 SkillAnjiang:addSkill(LuaDinghanChange)
+
+ExShenSunce = sgs.General(extension, 'ExShenSunce', 'god', 6, true, false, false, 1)
+
+LuaYingbaCard = sgs.CreateSkillCard {
+    name = 'LuaYingbaCard',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.LESS, 1) and to_select:getMaxHp() > 1
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        room:loseMaxHp(target)
+        target:gainMark('@LuaPingding')
+        room:loseMaxHp(source)
+    end
+}
+
+LuaYingbaTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaYingbaTargetMod',
+    pattern = '.',
+    distance_limit_func = function(self, from, card, to)
+        if from:hasSkill('LuaYingba') and to and to:getMark('@LuaPingding') > 0 then
+            return 1000
+        end
+        return 0
+    end
+}
+
+LuaYingba = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaYingba',
+    view_as = function(self)
+        return LuaYingbaCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaYingbaCard')
+    end
+}
+
+LuaFuhai = sgs.CreateTriggerSkill {
+    name = 'LuaFuhai',
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardUsed then
+            local use = data:toCardUse()
+            local invoke = false
+            if use.from and use.from:hasSkill(self:objectName()) and
+                (use.card:isKindOf('Slash') or use.card:isNDTrick()) then
+                for _, p in sgs.qlist(use.to) do
+                    if p:getMark('@LuaPingding') > 0 then
+                        invoke = true
+                        room:addPlayerMark(p, 'LuaFuhaiTarget')
+                    end
+                end
+                if invoke and use.from:hasSkill(self:objectName()) then
+                    if use.from:getMark('LuaFuhaiDraw') < 2 then
+                        room:sendCompulsoryTriggerLog(use.from, self:objectName())
+                        use.from:drawCards(1, self:objectName())
+                    end
+                    room:sendCompulsoryTriggerLog(use.from, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:addPlayerMark(use.from, self:objectName() .. 'engine')
+                    if use.from:getMark(self:objectName() .. 'engine') > 0 then
+                        room:removePlayerMark(use.from, self:objectName() .. 'engine')
+                    end
+                end
+            end
+        elseif event == sgs.TargetConfirmed then
+            local use = data:toCardUse()
+            if use.card:isKindOf('Slash') then
+                use.from:setTag('FuhaiSlash', sgs.QVariant(use.from:getTag('FuhaiSlash'):toInt() + 1))
+                if rinsan.RIGHT(self, use.from) and player:getMark('@LuaPingding') > 0 then
+                    local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
+                    jink_table[use.from:getTag('FuhaiSlash'):toInt() - 1] = 0
+                    local jink_data = sgs.QVariant()
+                    jink_data:setValue(Table2IntList(jink_table))
+                    use.from:setTag('Jink_' .. use.card:toString(), jink_data)
+                end
+            end
+        elseif event == sgs.TrickCardCanceling then
+            local effect = data:toCardEffect()
+            if effect.from and rinsan.RIGHT(self, effect.from) and player:getMark('@LuaPingding') > 0 then
+                return true
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaFuhaiDraw = sgs.CreateTriggerSkill {
+    name = 'LuaFuhaiDraw',
+    events = {sgs.CardsMoveOneTime},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if move.reason and move.reason.m_skillName == 'LuaFuhai' and rinsan.RIGHT(self, player, 'LuaFuhai') then
+            room:addPlayerMark(player, 'LuaFuhaiDraw', move.card_ids:length())
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaFuhaiClear = sgs.CreateTriggerSkill {
+    name = 'LuaFuhaiClear',
+    events = {sgs.CardFinished, sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseChanging then
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    local x = p:getMark('LuaFuhai')
+                    if x > 0 then
+                        room:removePlayerMark(p, 'LuaFuhai', x)
+                    end
+                    room:setPlayerMark(p, 'LuaFuhaiDraw', 0)
+                end
+            end
+        else
+            local use = data:toCardUse()
+            if use.card:isKindOf('Slash') then
+                player:setTag('FuhaiSlash', sgs.QVariant(0))
+            end
+            for _, p in sgs.qlist(use.to) do
+                room:setPlayerMark(p, 'LuaFuhaiTarget', 0)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaFuhaiDeath = sgs.CreateTriggerSkill {
+    name = 'LuaFuhaiDeath',
+    events = {sgs.Death},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:objectName() ~= data:toDeath().who:objectName() then
+            return false
+        end
+        local x = player:getMark('@LuaPingding')
+        local splayers = room:findPlayersBySkillName('LuaFuhai')
+        for _, sp in sgs.qlist(splayers) do
+            room:sendCompulsoryTriggerLog(sp, 'LuaFuhai')
+            sp:drawCards(x, 'LuaFuhai')
+            rinsan.addPlayerMaxHp(sp, x)
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaPinghe = sgs.CreateTriggerSkill {
+    name = 'LuaPinghe',
+    events = {sgs.DamageInflicted},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if player:getMaxHp() > 1 and (not player:isKongcheng()) then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:loseMaxHp(player)
+            local card = room:askForCard(player, '.|.|.|hand!', '@LuaPinghe-give', sgs.QVariant(), sgs.Card_MethodNone)
+            if card then
+                local target = room:askForPlayerChosen(player, room:getOtherPlayers(player), self:objectName(),
+                    '@LuaPinghe-choose', false, true)
+                if target then
+                    room:obtainCard(target, card)
+                end
+            end
+            if damage.from and player:hasSkill('LuaYingba') then
+                damage.from:gainMark('@LuaPingding')
+            end
+            return true
+        end
+    end
+}
+
+LuaPingheMaxCards = sgs.CreateMaxCardsSkill {
+    name = '#LuaPingheMaxCards',
+    fixed_func = function(self, target)
+        if target:hasSkill('LuaPinghe') then
+            return target:getLostHp()
+        else
+            return -1
+        end
+    end
+}
+
+ExShenSunce:addSkill(LuaYingba)
+SkillAnjiang:addSkill(LuaYingbaTargetMod)
+ExShenSunce:addSkill(LuaFuhai)
+SkillAnjiang:addSkill(LuaFuhaiDraw)
+SkillAnjiang:addSkill(LuaFuhaiClear)
+SkillAnjiang:addSkill(LuaFuhaiDeath)
+ExShenSunce:addSkill(LuaPinghe)
+SkillAnjiang:addSkill(LuaPingheMaxCards)
