@@ -7831,7 +7831,7 @@ LuaTianzuo = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
         if effect.card:isKindOf('IndirectCombination') then
-            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard',{
+            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
                 ['from'] = player,
                 ['arg'] = effect.card:objectName(),
                 ['arg2'] = self:objectName()
@@ -7862,23 +7862,31 @@ LuaLingce = sgs.CreateTriggerSkill {
 
 LuaDinghan = sgs.CreateTriggerSkill {
     name = 'LuaDinghan',
-    events = {sgs.TargetConfirmed},
+    events = {sgs.TargetConfirming},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        local dinghan_str = player:getTag('LuaDinghanCards') and player:getTag('LuaDinghanCards'):toString() or ''
-        local dinghan_cards = dinghan_str:split('|')
+        local dinghan_cards = rinsan.getDinghanCardsTable(player)
         if not use.card:isKindOf('TrickCard') or table.contains(dinghan_cards, use.card:objectName()) then
             return false
         end
         if use.to:contains(player) then
             if room:askForSkillInvoke(player, self:objectName(), data) then
-                local nullified_list = use.nullified_list
-                table.insert(nullified_list, player:objectName())
-                use.nullified_list = nullified_list
+                local to_list = use.to
+                to_list:removeOne(player)
+                use.to = to_list
                 data:setValue(use)
+                local msgType = '$CancelTargetNoUser'
+                local params = {
+                    ['to'] = player,
+                    ['arg'] = use.card:objectName()
+                }
+                if use.from then
+                    params['from'] = use.from
+                    msgType = '$CancelTarget'
+                end
+                rinsan.sendLogMessage(room, msgType, params)
                 table.insert(dinghan_cards, use.card:objectName())
-                local dinghan_data = sgs.QVariant(table.concat(dinghan_cards, '|'))
-                player:setTag('LuaDinghanCards', dinghan_data)
+                rinsan.setDinghanCardsTable(player, dinghan_cards)
             end
         end
     end
@@ -7889,27 +7897,9 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
     events = {sgs.TurnStart},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local dinghan_str = player:getTag('LuaDinghanCards') and player:getTag('LuaDinghanCards'):toString() or ''
-        local dinghan_cards = dinghan_str:split('|')
-        local all_tricks = {'duel', -- 决斗
-        'god_salvation', -- 桃园结义
-        'fire_attack', -- 火攻
-        'amazing_grace', -- 五谷丰登
-        'savage_assault', -- 南蛮入侵
-        'iron_chain', -- 铁索连环
-        'archery_attack', -- 万箭齐发
-        'collateral', -- 借刀杀人
-        'dismantlement', -- 过河拆桥
-        'ex_nihilo', -- 无中生有
-        'snatch', -- 顺手牵羊
-        'nullification', -- 无懈可击
-        'indulgence', -- 乐不思蜀
-        'supply_shortage', -- 兵粮寸断
-        'lightning', -- 闪电
-        'indirect_combination' -- 奇正相生
-        }
+        local dinghan_cards = rinsan.getDinghanCardsTable(player)
         local add_available = {}
-        for _, cd in ipairs(all_tricks) do
+        for _, cd in ipairs(rinsan.ALL_TRICKS) do
             if not table.contains(dinghan_cards, cd) then
                 table.insert(add_available, cd)
             end
@@ -7933,7 +7923,7 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
                 table.removeOne(dinghan_cards,
                     room:askForChoice(player, 'LuaDinghanRemove', table.concat(remove_available, '+')))
             end
-            player:setTag('LuaDinghanCards', sgs.QVariant(table.concat(dinghan_cards, '|')))
+            rinsan.setDinghanCardsTable(player, dinghan_cards)
         end
     end,
     can_trigger = function(self, target)
