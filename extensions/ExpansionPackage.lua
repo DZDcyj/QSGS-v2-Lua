@@ -7831,6 +7831,11 @@ LuaTianzuo = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
         if effect.card:isKindOf('IndirectCombination') then
+            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard',{
+                ['from'] = player,
+                ['arg'] = effect.card:objectName(),
+                ['arg2'] = self:objectName()
+            })
             return true
         end
         return false
