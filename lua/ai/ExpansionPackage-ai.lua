@@ -1778,7 +1778,7 @@ sgs.ai_skill_invoke.LuaShouye = function(self, data)
     local use = data:toCardUse()
     local card = use.card
     -- 判断牌是否为好牌，不是就发动
-    if card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
+    if card:isKindOf('Peach') or card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
         return false
     end
     return true
