@@ -8015,33 +8015,41 @@ LuaFuhai = sgs.CreateTriggerSkill {
     name = 'LuaFuhai',
     frequency = sgs.Skill_Compulsory,
     global = true,
-    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling},
+    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling, sgs.CardAsked},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardUsed then
             local use = data:toCardUse()
+            if (not use.from) or (not use.from:hasSkill(self:objectName())) then
+                return false
+            end
+            if (not use.card) or use.card:isKindOf('SkillCard') then
+                return false
+            end
             local invoke = false
-            if use.from and use.from:hasSkill(self:objectName()) and
-                (use.card:isKindOf('Slash') or use.card:isNDTrick()) then
-                for _, p in sgs.qlist(use.to) do
-                    if p:getMark('@LuaPingding') > 0 then
-                        invoke = true
-                        room:addPlayerMark(p, 'LuaFuhaiTarget')
-                    end
+            for _, p in sgs.qlist(use.to) do
+                if p:getMark('@LuaPingding') > 0 then
+                    invoke = true
+                    room:addPlayerMark(p, 'LuaFuhaiTarget')
                 end
-                if invoke then
-                    if use.from:getMark('LuaFuhaiDraw') < 2 then
-                        room:sendCompulsoryTriggerLog(use.from, self:objectName())
-                        use.from:drawCards(1, self:objectName())
-                    end
+            end
+            if invoke then
+                room:broadcastSkillInvoke(self:objectName())
+                room:sendCompulsoryTriggerLog(use.from, self:objectName())
+                if use.from:getMark('LuaFuhaiDraw') < 2 then
+                    use.from:drawCards(1, self:objectName())
                 end
-                if invoke and use.from:hasSkill(self:objectName()) then
-                    room:sendCompulsoryTriggerLog(use.from, self:objectName())
-                    room:broadcastSkillInvoke(self:objectName())
+                if (use.card:isKindOf('Slash') or use.card:isNDTrick()) then
                     room:addPlayerMark(use.from, self:objectName() .. 'engine')
                     if use.from:getMark(self:objectName() .. 'engine') > 0 then
                         room:removePlayerMark(use.from, self:objectName() .. 'engine')
                     end
                 end
+            end
+        elseif event == sgs.CardAsked then
+            if player:getMark('LuaFuhaiTarget') > 0 then
+                room:provide(nil)
+                room:setPlayerMark(player, 'LuaFuhaiTarget', 0)
+                return true
             end
         elseif event == sgs.TargetConfirmed then
             local use = data:toCardUse()
