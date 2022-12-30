@@ -8183,6 +8183,9 @@ LuaPinghe = sgs.CreateTriggerSkill {
     view_as_skill = LuaPingheVS,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
+        if damage.from and damage.from:objectName() == player:objectName() then
+            return false
+        end
         if player:getMaxHp() > 1 and (not player:isKongcheng()) then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:askForUseCard(player, '@@LuaPinghe!', 'LuaPingheGive', -1, sgs.Card_MethodNone)
