@@ -3,16 +3,6 @@
 ## 介绍
 这是基于太阳神三国杀 QSanguosha-v2-20190208 编写的武将，使用 Lua 作为开发语言，基于源码的限制，某些功能可能无法完全 Lua 化
 
-## 额外说明
-~~本仓库现已经同步到国内镜像，欢迎加入。~~
-
-由于国内镜像仓库被封禁，现已经移动到私有 GitLab 镜像仓库
-（2022/09/11 更新）
-
-目前采取的策略是 GitLab 同步更新 Github master 分支，因此主要负责还是在 Github 侧
-
-有问题欢迎及时反馈
-
 ## 配置方法
 如果您想一边配置一边直接在日神杀环境测试，可以采取如下方案：
 1. 在日神杀目录下（即 QSanguosha-v2-20190208）打开 Git Bash
@@ -20,30 +10,13 @@
 3. git remote add origin git@github.com:DZDcyj/QSGS-v2-Lua.git
 4. git pull origin master
 
+或者直接使用 git clone 方式在对应目录下进行
+
+> 注意：如果已经提前使用过 Release 包或者 Download Zip 方式进行过文件的操作，为避免造成大量的文件冲突，请先在一个新的空文件夹进行 git 操作，然后将已有的文件进行复制
+
 执行完毕后，将会拉取对应的 lua 文件到 extensions 目录下，便可在日神杀内使用了。
 
 ## 开发建议与指南
-在进行开发之前，请先在您的环境下配置 Git：
-
-Windows 环境下请在如下链接下载即可：
-
-[Git 官方网址](https://git-scm.com/)
-
-macOS 环境下请在 homebrew 里进行操作：
-```bash
-$ brew install git
-```
-
-如果您对 Git 的操作不够熟悉，可以参考如下指南：
-
-[Git 廖雪峰教程](https://www.liaoxuefeng.com/wiki/896043488029600)
-
-在 Windows 或者 macOS 环境下，可以使用`SourceTree`等可视化 Git Gui 工具来辅助进行操作。
-
-[SourceTree 官网](https://www.sourcetreeapp.com/)
-
-如果在 Git 操作上存在有问题，随时可以问我，我会尽快进行回复
-
 如果有新的想法、建议，抑或是发现当前存在的一些 bug，请在`Issue`里提出，我会尽快回复以推进进程。
 
 关于详细的贡献指南，请参考[这里](.github/CONTRIBUTING.md)
@@ -159,6 +132,8 @@ PS: 为了导入资源和避免已有武将冲突，在界限突破外的武将�
 
 ## 补充说明
 游戏自带的`extra.lua`文件包含了大量其他的 lua 扩展包武将，但不可避免的存在有 bug，在此列出并提供参考修改方案
+
+> 在未来，或许会进行这些包内容的重构，届时将删除此部分，将对应文件纳入仓库之中
 
 ### 转换技导致部分技能触发多次
 #### 原因
