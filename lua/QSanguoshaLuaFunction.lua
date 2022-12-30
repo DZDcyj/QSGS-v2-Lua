@@ -585,7 +585,8 @@ function getStartHp(player)
         ['shenganning'] = 3,
         ['ExShenpei'] = 2,
         ['ExLijue'] = 4,
-        ['SPCactus'] = 3
+        ['SPCactus'] = 3,
+        ['ExShenSunce'] = 1
     }
     return general_hp_map[player:getGeneralName()] or player:getGeneral():getMaxHp()
 end
