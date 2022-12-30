@@ -16,5 +16,7 @@ assignees: DZDcyj
 X 勾玉
 
 ## 技能描述
+【技能1】XXX，XXXXXXX
+【技能2】XXX，XXXXXXX
 
 ## 备注
