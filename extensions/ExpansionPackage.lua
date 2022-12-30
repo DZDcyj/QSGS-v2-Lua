@@ -7820,3 +7820,154 @@ LuaQingjianClear = sgs.CreateTriggerSkill {
 JieXiahoudun:addSkill('ganglie')
 JieXiahoudun:addSkill(LuaQingjian)
 SkillAnjiang:addSkill(LuaQingjianClear)
+
+ExShenXunyu = sgs.General(extension, 'ExShenXunyu', 'god', '3', true, true)
+
+-- 天佐，只处理【奇正相生】无效
+LuaTianzuo = sgs.CreateTriggerSkill {
+    name = 'LuaTianzuo',
+    events = {sgs.CardEffected},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        if effect.card:isKindOf('IndirectCombination') then
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
+                ['from'] = player,
+                ['arg'] = effect.card:objectName(),
+                ['arg2'] = self:objectName()
+            })
+            return true
+        end
+        return false
+    end
+}
+
+-- 天佐辅助，如果启用了扩展卡牌包，就放一句语音
+LuaTianzuoStart = sgs.CreateTriggerSkill {
+    name = 'LuaTianzuoStart',
+    events = {sgs.GameStart},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local invoked = room:getTag('LuaTianzuoStartInvoked') and room:getTag('LuaTianzuoStartInvoked'):toBool()
+        if invoked then
+            return false
+        end
+        local bpkg = sgs.GetConfig('BanPackages', '')
+        local luapkg = sgs.GetConfig('LuaPackages', '')
+        if string.find(luapkg, 'ExpansionCardPackage') and (not string.find(bpkg, 'ExpansionCardPackage')) then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasSkill('LuaTianzuo') then
+                    room:sendCompulsoryTriggerLog(p, 'LuaTianzuo')
+                    room:broadcastSkillInvoke('LuaTianzuo')
+                    room:setTag('LuaTianzuoStartInvoked', sgs.QVariant(true))
+                    break
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaLingce = sgs.CreateTriggerSkill {
+    name = 'LuaLingce',
+    events = {sgs.CardUsed},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        local card = data:toCardUse().card
+        if card:isKindOf('TrickCard') and not card:isVirtualCard() then
+            for _, p in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                if rinsan.playerCanInvokeLingce(p, card) and room:askForSkillInvoke(p, self:objectName(), data) then
+                    p:drawCards(1, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaDinghan = sgs.CreateTriggerSkill {
+    name = 'LuaDinghan',
+    events = {sgs.TargetConfirming},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        local dinghan_cards = rinsan.getDinghanCardsTable(player)
+        if not use.card:isKindOf('TrickCard') or table.contains(dinghan_cards, use.card:objectName()) then
+            return false
+        end
+        if use.to:contains(player) then
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                local to_list = use.to
+                to_list:removeOne(player)
+                use.to = to_list
+                data:setValue(use)
+                local msgType = '$CancelTargetNoUser'
+                local params = {
+                    ['to'] = player,
+                    ['arg'] = use.card:objectName()
+                }
+                if use.from then
+                    params['from'] = use.from
+                    msgType = '$CancelTarget'
+                end
+                rinsan.sendLogMessage(room, msgType, params)
+                table.insert(dinghan_cards, use.card:objectName())
+                rinsan.setDinghanCardsTable(player, dinghan_cards)
+            end
+        end
+    end
+}
+
+LuaDinghanChange = sgs.CreateTriggerSkill {
+    name = 'LuaDinghanChange',
+    events = {sgs.TurnStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local dinghan_cards = rinsan.getDinghanCardsTable(player)
+        local add_available = {}
+        for _, cd in ipairs(rinsan.ALL_TRICKS) do
+            if not table.contains(dinghan_cards, cd) then
+                table.insert(add_available, cd)
+            end
+        end
+        local remove_available = dinghan_cards
+        local choices = {}
+        if #add_available > 0 then
+            table.insert(choices, 'LuaDinghanAdd')
+        end
+        if #remove_available > 0 then
+            table.insert(choices, 'LuaDinghanRemove')
+        end
+        if #choices == 0 then
+            return false
+        end
+        if room:askForSkillInvoke(player, 'LuaDinghan', data) then
+            room:broadcastSkillInvoke('LuaDinghan')
+            local choice = room:askForChoice(player, 'LuaDinghan', table.concat(choices, '+'))
+            if choice == 'LuaDinghanAdd' then
+                table.insert(dinghan_cards, room:askForChoice(player, 'LuaDinghanAdd', table.concat(add_available, '+')))
+            else
+                table.removeOne(dinghan_cards,
+                    room:askForChoice(player, 'LuaDinghanRemove', table.concat(remove_available, '+')))
+            end
+            rinsan.setDinghanCardsTable(player, dinghan_cards)
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaDinghan')
+    end
+}
+
+ExShenXunyu:addSkill(LuaTianzuo)
+SkillAnjiang:addSkill(LuaTianzuoStart)
+ExShenXunyu:addSkill(LuaLingce)
+ExShenXunyu:addSkill(LuaDinghan)
+SkillAnjiang:addSkill(LuaDinghanChange)

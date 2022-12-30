@@ -1071,6 +1071,33 @@ function unknownAnalyze(resultList, source, target, room)
     resultList:append(equipRemain)
 end
 
+function playerCanInvokeLingce(player, card)
+    -- 判断是否为固定可以发动的【无中生有】【过河拆桥】【无懈可击】【奇正相生】
+    local fixed_types = {'ExNihilo', 'Dismantlement', 'Nullification', 'IndirectCombination'}
+    for _, type in ipairs(fixed_types) do
+        if card:isKindOf(type) then
+            return true
+        end
+    end
+    local dinghan_cards = player:getTag('LuaDinghanCards'):toString():split('|')
+    for _, type in ipairs(dinghan_cards) do
+        if card:objectName() == type then
+            return true
+        end
+    end
+    return false
+end
+
+-- 封装方法用于获取定汉记录牌名 table
+function getDinghanCardsTable(player)
+    local dinghan_str = player:getTag('LuaDinghanCards') and player:getTag('LuaDinghanCards'):toString() or ''
+    return dinghan_str:split('|')
+end
+
+function setDinghanCardsTable(player, dinghan_cards)
+    player:setTag('LuaDinghanCards', sgs.QVariant(table.concat(dinghan_cards, '|')))
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
@@ -1091,5 +1118,24 @@ ANIMATE_NULLIFICATION = 3 -- 无懈可击石狮子
 ANIMATE_HUASHEN = 4 -- 化身用，表现为一张武将牌从牌堆移动到武将上
 ANIMATE_FIRE = 5 -- 火焰效果
 ANIMATE_LIGHTING = 6 -- 闪电效果
+
+-- 所有的锦囊牌类型，暂时写死用于定汉
+ALL_TRICKS = {'duel', -- 决斗
+'god_salvation', -- 桃园结义
+'fire_attack', -- 火攻
+'amazing_grace', -- 五谷丰登
+'savage_assault', -- 南蛮入侵
+'iron_chain', -- 铁索连环
+'archery_attack', -- 万箭齐发
+'collateral', -- 借刀杀人
+'dismantlement', -- 过河拆桥
+'ex_nihilo', -- 无中生有
+'snatch', -- 顺手牵羊
+'nullification', -- 无懈可击
+'indulgence', -- 乐不思蜀
+'supply_shortage', -- 兵粮寸断
+'lightning', -- 闪电
+'indirect_combination' -- 奇正相生
+}
 
 -- luacheck: pop

@@ -627,5 +627,16 @@ return {
     ['LuaQingjian-Give'] = '你须发动“清俭”，将剩余的 %arg 张“清俭”牌交给其他角色',
     ['~LuaQingjian'] = '选择合适的牌→选择合适的目标→点击“确定”',
     ['luaqingjiansto'] = '清俭',
-    ['luaqingjiangive'] = '清俭'
+    ['luaqingjiangive'] = '清俭',
+    ['ExShenXunyu'] = '神荀彧',
+    ['&ExShenXunyu'] = '神荀彧',
+    ['#ExShenXunyu'] = '洞心先识',
+    ['LuaTianzuo'] = '天佐',
+    [':LuaTianzuo'] = '锁定技，【奇正相生】对你无效',
+    ['LuaLingce'] = '灵策',
+    [':LuaLingce'] = '当一名角色使用非虚拟且非转化的锦囊牌时，若此牌的牌名属于智囊牌名、“定汉”已记录的牌名或【奇正相生】，你摸一张牌',
+    ['LuaDinghan'] = '定汉',
+    [':LuaDinghan'] = '每种牌名限一次，当你成为锦囊牌的目标时，你记录此牌名，然后取消之。回合开始时，你可以在“定汉”记录中增加或移除一种锦囊牌牌名',
+    ['LuaDinghanAdd'] = '定汉增加牌名',
+    ['LuaDinghanRemove'] = '定汉移除牌名'
 }
