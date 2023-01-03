@@ -63,7 +63,7 @@ indirect_combination = sgs.CreateTrickCard {
                     ['to'] = target,
                     ['arg'] = 'slash'
                 })
-                rinsan.doDamage(room, source, target, 1)
+                rinsan.doDamage(room, source, target, 1, sgs.DamageStruct_Normal, self)
             end
         end
     end
