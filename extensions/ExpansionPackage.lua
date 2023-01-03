@@ -5826,8 +5826,6 @@ LuaLonghun = sgs.CreateTriggerSkill {
         if event == sgs.DamageCaused then
             local damage = data:toDamage()
             if damage.card and damage.card:getSkillName() == self:objectName() and damage.card:subcardsLength() > 1 then
-                local msg = sgs.LogMessage()
-                room:sendLog(msg)
                 rinsan.sendLogMessage(room, '#LuaLonghunAddDamage', {
                     ['from'] = player,
                     ['arg'] = damage.damage,
@@ -8217,3 +8215,99 @@ SkillAnjiang:addSkill(LuaFuhaiClear)
 SkillAnjiang:addSkill(LuaFuhaiDeath)
 ExShenSunce:addSkill(LuaPinghe)
 SkillAnjiang:addSkill(LuaPingheMaxCards)
+
+ExMouMachao = sgs.General(extension, 'ExMouMachao', 'shu', '4', true, true)
+
+-- 判断谋弈是否成功
+local function checkLuaMouTiejiMouyi(sourceChoice, targetChoice)
+    return string.sub(sourceChoice, -1) ~= string.sub(targetChoice, -1)
+end
+
+LuaMouTieji = sgs.CreateTriggerSkill {
+    name = 'LuaMouTieji',
+    frequency = sgs.Skill_NotFrequent,
+    events = {sgs.TargetSpecified},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or (not use.card:isKindOf('Slash')) then
+            return false
+        end
+        local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
+        local index = 1
+        for _, p in sgs.qlist(use.to) do
+            if not player:isAlive() then
+                break
+            end
+            local data2 = sgs.QVariant()
+            data2:setValue(p)
+            if room:askForSkillInvoke(player, self:objectName(), data2) then
+                room:broadcastSkillInvoke(self:objectName())
+                room:addPlayerMark(p, 'LuaMouTieji')
+                room:addPlayerMark(p, '@skill_invalidity')
+                room:doAnimate(1, player:objectName(), p:objectName())
+
+                local sourceChoice = room:askForChoice(player, self:objectName(), 'LuaMouTiejiAttack1+LuaMouTiejiAttack2')
+                local targetChoice = room:askForChoice(p, self:objectName(),'LuaMouTiejiDefense1+LuaMouTiejiDefense2')
+                rinsan.sendLogMessage(room, '#choose', {
+                    ['from'] = player,
+                    ['arg'] = sourceChoice
+                })
+                rinsan.sendLogMessage(room, '#choose', {
+                    ['from'] = p,
+                    ['arg'] = targetChoice
+                })
+                local success = checkLuaMouTiejiMouyi(sourceChoice, targetChoice)
+                local type = success and '#LuaMouTiejiSuccess' or '#LuaMouTiejiFailure'
+                rinsan.sendLogMessage(room, type, {
+                    ['from'] = player,
+                    ['arg'] = 'LuaMouTiejiMouyi'
+                })
+                if success then
+                    if sourceChoice == 'LuaMouTiejiAttack1' then
+                        if p:isNude() then
+                            return false
+                        end
+                        local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false, sgs.Card_MethodNone)
+                        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, player:objectName())
+                        room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
+                    else
+                        player:drawCards(2, self:objectName())
+                    end
+                end
+                if p:isAlive() then
+                    rinsan.sendLogMessage(room, '#NoJink', {
+                        ['from'] = p
+                    })
+                    jink_table[index] = 0
+                end
+            end
+            index = index + 1
+        end
+        local jink_data = sgs.QVariant()
+        jink_data:setValue(Table2IntList(jink_table))
+        player:setTag('Jink_' .. use.card:toString(), jink_data)
+        return false
+    end
+}
+
+LuaMouTiejiClear = sgs.CreateTriggerSkill {
+    name = 'LuaMouTiejiClear',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to == sgs.Player_NotActive then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                local x = p:getMark('LuaMouTieji')
+                room:removePlayerMark(p, 'LuaMouTieji', x)
+                room:removePlayerMark(p, '@skill_invalidity', x)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+ExMouMachao:addSkill('mashu')
+ExMouMachao:addSkill(LuaMouTieji)
+SkillAnjiang:addSkill(LuaMouTiejiClear)

@@ -653,4 +653,22 @@ return {
     [':LuaPinghe'] = '锁定技，你的手牌上限为你已损失的体力值。当你受到其他角色造成的伤害时，若你有手牌且体力上限大于1，你防止此伤害，然后你减1点体力上限并将一张手牌交给一名其他角色，然后若你拥有“英霸”，你令伤害来源获得1个“平定”标记',
     ['LuaPingheGive'] = '“冯河”被触发，你须交给其他角色一张手牌',
     ['~LuaPinghe'] = '选择一张手牌→选择一名其他角色→点击“确定”',
+    ['ExMouMachao'] = '谋马超',
+    ['&ExMouMachao'] = '谋马超',
+    ['#ExMouMachao'] = '阻戎负勇',
+    ['LuaMouTiejiMouyi'] = '铁骑谋弈',
+    ['LuaMouTieji'] = '铁骑',
+    [':LuaMouTieji'] = '当你使用【杀】指定一名角色为目标后，你可以令其所有非锁定技失效直到回合结束，且其不能使用【闪】响应此【杀】，使用然后你与该角色进行一次“谋弈”：\
+    1. 直取敌营，你获得其一张牌；\
+    2. 扰阵疲敌，你摸两张牌',
+    ['LuaMouTiejiAttack1'] = '直取敌营',
+    [':LuaMouTiejiAttack1'] = '若成功，你获得其一张牌',
+    ['LuaMouTiejiAttack2'] = '扰阵疲敌',
+    [':LuaMouTiejiAttack2'] = '若成功，你摸2张牌',
+    ['LuaMouTiejiDefense1'] = '拱位中军',
+    [':LuaMouTiejiDefense1'] = '阻止其获得你的一张牌',
+    ['LuaMouTiejiDefense2'] = '出阵应战',
+    [':LuaMouTiejiDefense2'] = '阻止其摸2张牌',
+    ['#LuaMouTiejiSuccess'] = '%from %arg <font color="green"><b>成功</b></font>',
+    ['#LuaMouTiejiFailure'] = '%from %arg <font color="red"><b>失败</b></font>'
 }

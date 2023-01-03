@@ -3070,3 +3070,9 @@ sgs.ai_skill_choice['LuaQiai'] = function(self, choices, data)
     -- 非友随机
     return items[random(1, #items)]
 end
+
+-- 铁骑谋弈选项
+sgs.ai_skill_choice['LuaMoutieji'] = function(self, choices)
+    local items = choices:split('+')
+    return items[math.random(1, #items)]
+end
