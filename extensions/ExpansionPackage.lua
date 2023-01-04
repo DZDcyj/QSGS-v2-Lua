@@ -8425,6 +8425,51 @@ LuaChongjianCard = sgs.CreateSkillCard {
         end
         return #targets >= 0
     end,
+    on_validate = function(self, card_use)
+        local source = card_use.from
+        local room = source:getRoom()
+        local to_use = self:getUserString()
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local use_card = sgs.Sanguosha:cloneCard(to_use, card:getSuit(), card:getNumber())
+        if use_card == nil then
+            use_card = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        end
+        use_card:setSkillName('LuaChongjian')
+        use_card:addSubcards(self:getSubcards())
+        use_card:deleteLater()
+        local tos = card_use.to
+        for _, to in sgs.qlist(tos) do
+            local skill = room:isProhibited(source, to, use_card)
+            if skill then
+                card_use.to:removeOne(to)
+            end
+        end
+        return use_card
+    end,
+    on_validate_in_response = function(self, source)
+        local room = source:getRoom()
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local to_use
+        if self:getUserString() == 'peach+analeptic' then
+            to_use = 'analeptic'
+        elseif self:getUserString() == 'slash' then
+            to_use = self:getUserString()
+        end
+        local user_str
+        if to_use == 'slash' then
+            user_str = 'slash'
+        else
+            user_str = to_use
+        end
+        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+        if use_card == nil then
+            use_card = sgs.Sanguosha:cloneCard('analeptic', sgs.Card_NoSuit, 0)
+        end
+        use_card:setSkillName('LuaChongjian')
+        use_card:addSubcards(self:getSubcards())
+        use_card:deleteLater()
+        return use_card
+    end,
     on_use = function(self, room, source, targets)
         local orig_card = sgs.Sanguosha:getCard(self:getSubcards():first())
         local cardName = #targets > 0 and 'slash' or 'analeptic'
@@ -8451,20 +8496,9 @@ LuaChongjianVS = sgs.CreateOneCardViewAsSkill {
         return to_select:isKindOf('EquipCard')
     end,
     view_as = function(self, card)
-        local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
-        -- 默认出牌阶段为空，直接套技能卡
-        if pattern == '' then
-            local vs_card = LuaChongjianCard:clone()
-            vs_card:addSubcard(card)
-            return vs_card
-        end
-        if pattern ~= 'slash' then
-            pattern = 'analeptic'
-        end
-        local vs_card = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, 0)
-        vs_card:setSkillName(self:objectName())
+        local vs_card = LuaChongjianCard:clone()
         vs_card:addSubcard(card)
-        return card
+        return vs_card
     end,
     enabled_at_play = function(self, player)
         if player:getKingdom() ~= 'wu' then
