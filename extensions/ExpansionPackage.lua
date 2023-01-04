@@ -8447,7 +8447,6 @@ LuaChongjianCard = sgs.CreateSkillCard {
         return use_card
     end,
     on_validate_in_response = function(self, source)
-        local room = source:getRoom()
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         local to_use
         if self:getUserString() == 'peach+analeptic' then
