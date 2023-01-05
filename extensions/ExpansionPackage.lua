@@ -8226,7 +8226,7 @@ end
 LuaMouTieji = sgs.CreateTriggerSkill {
     name = 'LuaMouTieji',
     frequency = sgs.Skill_NotFrequent,
-    events = {sgs.TargetSpecified},
+    events = {sgs.TargetSpecifying},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
         if (not use.card) or (not use.card:isKindOf('Slash')) then
