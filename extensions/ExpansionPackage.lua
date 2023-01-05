@@ -8247,6 +8247,7 @@ LuaQuediCard = sgs.CreateSkillCard {
         if self:subcardsLength() > 0 then
             card = sgs.Sanguosha:getCard(self:getSubcards():first())
         end
+        room:broadcastSkillInvoke('LuaQuedi')
         room:addPlayerMark(source, 'LuaQuediUsed')
         if target then
             local card_id = room:askForCardChosen(source, target, 'he', 'LuaQuedi', false, sgs.Card_MethodNone)
@@ -8312,6 +8313,7 @@ LuaQuediDamageUp = sgs.CreateTriggerSkill {
         if damage.card and (damage.card:isKindOf('Slash') or damage.card:isKindOf('Duel')) and
             damage.from:hasFlag('LuaQuediDamageUp') then
             room:sendCompulsoryTriggerLog(damage.from, 'LuaQuedi')
+            room:broadcastSkillInvoke(self:objectName())
             damage.damage = damage.damage + 1
             data:setValue(damage)
             room:setPlayerFlag(player, '-LuaQuediDamageUp')
@@ -8392,6 +8394,7 @@ LuaZhuifeng = sgs.CreateTriggerSkill {
         local damage = data:toDamage()
         if damage.card and damage.card:getSkillName() == self:objectName() then
             room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
             room:setPlayerFlag(player, 'LuaZhuifengSelfDamaged')
             return true
         end
@@ -8532,6 +8535,7 @@ LuaChongjian = sgs.CreateTriggerSkill {
         local victim = damage.to
         local x = math.min(damage.damage, victim:getEquips():length())
         if x > 0 then
+            room:broadcastSkillInvoke(self:objectName())
             local orig_places = {}
             local cards = sgs.IntList()
             room:setTag('LuaFakeMove', sgs.QVariant(true))
@@ -8589,6 +8593,7 @@ LuaChoujue = sgs.CreateTriggerSkill {
         end
         if player:isAlive() and killer and killer:objectName() == player:objectName() then
             room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
             rinsan.addPlayerMaxHp(player, 1)
             room:addPlayerMark(player, 'LuaQuediExtra')
         end
