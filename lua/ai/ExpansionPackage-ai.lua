@@ -3070,3 +3070,9 @@ sgs.ai_skill_choice['LuaQiai'] = function(self, choices, data)
     -- 非友随机
     return items[random(1, #items)]
 end
+
+-- 文鸯势力选项
+sgs.ai_skill_choice['LuaWenyangKingdomChoose'] = function(self, choices)
+    local items = choices:split('+')
+    return items[math.random(1, #items)]
+end

@@ -8495,6 +8495,13 @@ LuaChongjianVS = sgs.CreateOneCardViewAsSkill {
         return to_select:isKindOf('EquipCard')
     end,
     view_as = function(self, card)
+        local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
+		if pattern == 'slash' then
+            local slash = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, 0)
+            slash:addSubcard(card)
+            slash:setSkillName('LuaChongjian')
+            return slash
+		end
         local vs_card = LuaChongjianCard:clone()
         vs_card:addSubcard(card)
         return vs_card
