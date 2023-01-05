@@ -8241,13 +8241,19 @@ LuaMouTieji = sgs.CreateTriggerSkill {
             local data2 = sgs.QVariant()
             data2:setValue(p)
             if room:askForSkillInvoke(player, self:objectName(), data2) then
-                room:broadcastSkillInvoke(self:objectName())
                 room:addPlayerMark(p, 'LuaMouTieji')
                 room:addPlayerMark(p, '@skill_invalidity')
                 room:doAnimate(1, player:objectName(), p:objectName())
+                room:broadcastSkillInvoke(self:objectName(), 1)
+                local sourceChoice = room:askForChoice(player, self:objectName(),
+                    'LuaMouTiejiAttack1+LuaMouTiejiAttack2')
+                local targetChoice = room:askForChoice(p, self:objectName(), 'LuaMouTiejiDefense1+LuaMouTiejiDefense2')
+                if sourceChoice == 'LuaMouTiejiAttack1' then
+                    room:broadcastSkillInvoke(self:objectName(), 2)
+                else
+                    room:broadcastSkillInvoke(self:objectName(), 3)
 
-                local sourceChoice = room:askForChoice(player, self:objectName(), 'LuaMouTiejiAttack1+LuaMouTiejiAttack2')
-                local targetChoice = room:askForChoice(p, self:objectName(),'LuaMouTiejiDefense1+LuaMouTiejiDefense2')
+                end
                 rinsan.sendLogMessage(room, '#choose', {
                     ['from'] = player,
                     ['arg'] = sourceChoice
@@ -8267,12 +8273,16 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                         if p:isNude() then
                             return false
                         end
-                        local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false, sgs.Card_MethodNone)
+                        local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false,
+                            sgs.Card_MethodNone)
                         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, player:objectName())
                         room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
                     else
                         player:drawCards(2, self:objectName())
                     end
+                else
+                    room:getThread():delay(2500)
+                    room:broadcastSkillInvoke(self:objectName(), 4)
                 end
                 if p:isAlive() then
                     rinsan.sendLogMessage(room, '#NoJink', {
