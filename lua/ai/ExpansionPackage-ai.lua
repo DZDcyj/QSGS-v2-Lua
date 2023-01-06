@@ -1778,7 +1778,8 @@ sgs.ai_skill_invoke.LuaShouye = function(self, data)
     local use = data:toCardUse()
     local card = use.card
     -- 判断牌是否为好牌，不是就发动
-    if card:isKindOf('Peach') or card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
+    if card:isKindOf('Peach') or card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or
+        card:isKindOf('ExNihilo') then
         return false
     end
     return true
@@ -3075,4 +3076,12 @@ end
 sgs.ai_skill_choice['LuaMouTieji'] = function(self, choices)
     local items = choices:split('+')
     return items[math.random(1, #items)]
+end
+
+sgs.ai_skill_invoke.LuaMouTieji = function(self, data)
+    local target = data:toPlayer()
+    if not self:isFriend(target) then
+        return true
+    end
+    return false
 end

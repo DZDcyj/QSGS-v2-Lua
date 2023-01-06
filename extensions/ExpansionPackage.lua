@@ -8216,7 +8216,7 @@ SkillAnjiang:addSkill(LuaFuhaiDeath)
 ExShenSunce:addSkill(LuaPinghe)
 SkillAnjiang:addSkill(LuaPingheMaxCards)
 
-ExMouMachao = sgs.General(extension, 'ExMouMachao', 'shu', '4', true, true)
+ExMouMachao = sgs.General(extension, 'ExMouMachao', 'shu', '4', true)
 
 -- 判断谋弈是否成功
 local function checkLuaMouTiejiMouyi(sourceChoice, targetChoice)
