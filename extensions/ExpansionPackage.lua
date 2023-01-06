@@ -8216,7 +8216,7 @@ SkillAnjiang:addSkill(LuaFuhaiDeath)
 ExShenSunce:addSkill(LuaPinghe)
 SkillAnjiang:addSkill(LuaPingheMaxCards)
 
-ExMouMachao = sgs.General(extension, 'ExMouMachao', 'shu', '4', true, true)
+ExMouMachao = sgs.General(extension, 'ExMouMachao', 'shu', '4', true)
 
 -- 判断谋弈是否成功
 local function checkLuaMouTiejiMouyi(sourceChoice, targetChoice)
@@ -8248,7 +8248,7 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                     room:doAnimate(1, player:objectName(), p:objectName())
                     room:broadcastSkillInvoke(self:objectName(), 1)
                     local sourceChoice = room:askForChoice(player, self:objectName(),
-                        'LuaMouTiejiAttack1+LuaMouTiejiAttack2')
+                        'LuaMouTiejiAttack1+LuaMouTiejiAttack2', data2)
                     local targetChoice = room:askForChoice(p, self:objectName(),
                         'LuaMouTiejiDefense1+LuaMouTiejiDefense2')
                     rinsan.sendLogMessage(room, '#choose', {
