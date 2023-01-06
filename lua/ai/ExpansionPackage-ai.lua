@@ -452,7 +452,7 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
     end
     use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
     if use.to then
-        use.to:append(face_up_enemies[math.random(1, #face_up_enemies)])
+        use.to:append(face_up_enemies[rinsan.random(1, #face_up_enemies)])
     end
 end
 
@@ -755,7 +755,7 @@ sgs.ai_skill_use['@@LuaXuanfeng'] = function(self, prompt, method)
         end
 
         -- 随机选择是否引入
-        local random = math.random(0, 1)
+        local random = rinsan.random(0, 1)
         -- 如果没有目标就直接考虑引入
         if (random == 1 or #targets == 0) and #no_equip_targets > 0 then
             table.insert(targets, no_equip_targets[1])
@@ -1011,7 +1011,7 @@ sgs.ai_skill_choice['LuaRangjie'] = function(self, choices)
     end
 
     -- 正常情况下，基本、锦囊、装备以 442 概率分配
-    local rand = math.random(1, 100)
+    local rand = rinsan.random(1, 100)
     if rand > 80 then
         return 'obtainEquip'
     elseif rand > 40 then
@@ -1788,7 +1788,7 @@ end
 -- 守邺选项
 sgs.ai_skill_choice.LuaShouye = function(self, choices)
     local items = choices:split('+')
-    return items[math.random(1, #items)]
+    return items[rinsan.random(1, #items)]
 end
 
 -- 烈直
@@ -1960,7 +1960,7 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
 
     for _, other in sgs.qlist(others) do
         if self:objectiveLevel(other) >= 0 and not (other:hasSkill('tuntian') and other:hasSkill('zaoxian')) and
-            math.random(0, 5) <= 1 and not self:hasSkills('qiaobian') then
+            rinsan.random(0, 5) <= 1 and not self:hasSkills('qiaobian') then
             add_player(other)
         end
     end
@@ -2564,7 +2564,7 @@ end
 -- 掠命选项
 sgs.ai_skill_choice.LuaLveming = function(self, choices)
     local items = choices:split('+')
-    return items[math.random(1, #items)]
+    return items[rinsan.random(1, #items)]
 end
 
 sgs.ai_use_value['LuaLvemingCard'] = 19.6
@@ -3087,7 +3087,7 @@ sgs.ai_skill_choice['LuaMouTieji'] = function(self, choices, data)
             return 'LuaMouTiejiDefense2'
         end
     end
-    return items[math.random(1, #items)]
+    return items[rinsan.random(1, #items)]
 end
 
 sgs.ai_skill_invoke.LuaMouTieji = function(self, data)
