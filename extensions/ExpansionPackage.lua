@@ -8248,7 +8248,7 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                     room:doAnimate(1, player:objectName(), p:objectName())
                     room:broadcastSkillInvoke(self:objectName(), 1)
                     local sourceChoice = room:askForChoice(player, self:objectName(),
-                        'LuaMouTiejiAttack1+LuaMouTiejiAttack2')
+                        'LuaMouTiejiAttack1+LuaMouTiejiAttack2', data2)
                     local targetChoice = room:askForChoice(p, self:objectName(),
                         'LuaMouTiejiDefense1+LuaMouTiejiDefense2')
                     rinsan.sendLogMessage(room, '#choose', {

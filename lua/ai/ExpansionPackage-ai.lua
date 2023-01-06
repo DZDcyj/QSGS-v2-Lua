@@ -3073,8 +3073,20 @@ sgs.ai_skill_choice['LuaQiai'] = function(self, choices, data)
 end
 
 -- 铁骑谋弈选项
-sgs.ai_skill_choice['LuaMouTieji'] = function(self, choices)
+sgs.ai_skill_choice['LuaMouTieji'] = function(self, choices, data)
     local items = choices:split('+')
+    -- 空城就嗯摸，反正大伙儿都知道你会选摸牌，就算选了偷牌也没用
+    if table.contains(items, 'LuaMouTiejiAttack2') then
+        local target = data:toPlayer()
+        if target:isNude() then
+            return 'LuaMouTiejiAttack2'
+        end
+    end
+    if table.contains(items, 'LuaMouTiejiDefense2') then
+        if self.player:isNude() then
+            return 'LuaMouTiejiDefense2'
+        end
+    end
     return items[math.random(1, #items)]
 end
 
