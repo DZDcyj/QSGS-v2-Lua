@@ -3097,3 +3097,9 @@ sgs.ai_skill_invoke.LuaMouTieji = function(self, data)
     end
     return false
 end
+
+-- 文鸯势力选项
+sgs.ai_skill_choice['LuaWenyangKingdomChoose'] = function(self, choices)
+    local items = choices:split('+')
+    return items[math.random(1, #items)]
+end

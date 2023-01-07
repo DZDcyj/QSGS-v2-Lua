@@ -670,5 +670,29 @@ return {
     ['LuaMouTiejiDefense2'] = '出阵应战',
     [':LuaMouTiejiDefense2'] = '阻止其摸2张牌',
     ['#LuaMouTiejiSuccess'] = '%from %arg <font color="green"><b>成功</b></font>',
-    ['#LuaMouTiejiFailure'] = '%from %arg <font color="red"><b>失败</b></font>'
+    ['#LuaMouTiejiFailure'] = '%from %arg <font color="red"><b>失败</b></font>',
+    ['ExWenyang'] = '文鸯',
+    ['&ExWenyang'] = '文鸯',
+    ['#ExWenyang'] = '独骑破军',
+    ['LuaQuedi'] = '却敌',
+    ['luaquedi'] = '却敌',
+    [':LuaQuedi'] = '<font color="green"><b>每回合限一次</b></font>，当你使用【杀】或【决斗】指定唯一目标后，你可以选择一项：\
+    1.获得其一张手牌；\
+    2.弃置一张基本牌，然后此【杀】或【决斗】伤害+1；\
+    背水：你减1点体力上限',
+    ['LuaQuedi_ask'] = '你可以发动“却敌”',
+    ['~LuaQuedi'] = '选择一名其他角色→选择一张基本牌→点击“确定”',
+    ['LuaZhuifeng'] = '椎锋',
+    ['luazhuifeng'] = '椎锋',
+    [':LuaZhuifeng'] = '<font color="#3F59A0"><b>魏势力技</b></font>，<font color="green"><b>出牌阶段限两次</b></font>，你可以失去一点体力，视为使用一张【决斗】。\
+    当你受到此【决斗】的伤害时，你防止此伤害，然后此技能于此阶段内失效',
+    ['LuaChongjian'] = '冲坚',
+    ['luachongjian'] = '冲坚',
+    [':LuaChongjian'] = '<font color="#59980F"><b>吴势力技</b></font>，你可以将一张装备牌当【酒】或无距离限制且无视目标防具的【杀】使用。\
+    当你以此法使用【杀】对一名角色造成伤害后，你获得其装备区里的X张牌（X为伤害值）',
+    ["@LuaChongjian"] = "请选择 %src 的目标",
+    ['~LuaChongjian'] = '选择若干其他角色→点击“确定”',
+    ['LuaChoujue'] = '仇决',
+    [':LuaChoujue'] = '锁定技，当一名角色死亡后，若杀死其的角色为你，你加1点体力上限，摸两张牌，然后“却敌”于此回合内的发动次数上限+1',
+    ['LuaWenyangKingdomChoose'] = '文鸯选择势力'
 }
