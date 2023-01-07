@@ -8805,6 +8805,7 @@ LuaChoujue = sgs.CreateTriggerSkill {
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             rinsan.addPlayerMaxHp(player, 1)
+            player:drawCards(2, self:objectName())
             room:addPlayerMark(player, 'LuaQuediExtra')
         end
     end
