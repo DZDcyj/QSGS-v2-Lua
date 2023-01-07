@@ -8404,123 +8404,210 @@ LuaZhuifeng = sgs.CreateTriggerSkill {
 
 LuaChongjianCard = sgs.CreateSkillCard {
     name = 'LuaChongjianCard',
-    target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        if not sgs.Slash_IsAvailable(sgs.Self) then
-            return false
+        local plist = sgs.PlayerList()
+        for i = 1, #targets do
+            plist:append(targets[i])
         end
-        local targets_list = sgs.PlayerList()
-        for _, target in ipairs(targets) do
-            targets_list:append(target)
+        local aocaistring = self:getUserString()
+        if aocaistring ~= '' then
+            local uses = aocaistring:split('+')
+            local name = uses[1]
+            local card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+            if not card then
+                return false
+            end
+            card:addSubcard(self:getSubcards():first())
+            if card and card:targetFixed() then
+                return false
+            else
+                return card and card:targetFilter(plist, to_select, sgs.Self) and
+                           not sgs.Self:isProhibited(to_select, card, plist)
+            end
         end
-        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        slash:setSkillName('LuaChongjian')
-        for _, cd in sgs.qlist(self:getSubcards()) do
-            slash:addSubcard(cd)
+        return true
+    end,
+    target_fixed = function(self)
+        local name = ''
+        local card
+        local aocaistring = self:getUserString()
+        if aocaistring ~= '' then
+            local uses = aocaistring:split('+')
+            name = uses[1]
+            card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
         end
-        slash:deleteLater()
-        return sgs.Self:canSlash(to_select, slash, false)
+        card:addSubcard(self:getSubcards():first())
+        return card and card:targetFixed()
     end,
     feasible = function(self, targets)
-        if not sgs.Slash_IsAvailable(sgs.Self) then
-            return #targets == 0
+        local name = ''
+        local card
+        local plist = sgs.PlayerList()
+        for i = 1, #targets do
+            plist:append(targets[i])
         end
-        return #targets >= 0
+        local aocaistring = self:getUserString()
+        if aocaistring ~= '' then
+            local uses = aocaistring:split('+')
+            name = uses[1]
+            card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        end
+        card:addSubcard(self:getSubcards():first())
+        return card and card:targetsFeasible(plist, sgs.Self)
     end,
     on_validate = function(self, card_use)
-        local source = card_use.from
-        local room = source:getRoom()
-        local to_use = self:getUserString()
-        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        local use_card = sgs.Sanguosha:cloneCard(to_use, card:getSuit(), card:getNumber())
+        local room = card_use.from:getRoom()
+        local aocaistring = self:getUserString()
+        local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
+        if string.find(aocaistring, '+') then
+            local uses = {}
+            for _, name in pairs(aocaistring:split('+')) do
+                table.insert(uses, name)
+            end
+            local name = room:askForChoice(card_use.from, 'LuaChongjian', table.concat(uses, '+'))
+            use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        end
         if use_card == nil then
-            use_card = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            return nil
         end
         use_card:setSkillName('LuaChongjian')
-        use_card:addSubcards(self:getSubcards())
-        use_card:deleteLater()
-        local tos = card_use.to
-        for _, to in sgs.qlist(tos) do
-            local skill = room:isProhibited(source, to, use_card)
-            if skill then
-                card_use.to:removeOne(to)
+        use_card:addSubcard(self:getSubcards():first())
+        local available = true
+        for _, p in sgs.qlist(card_use.to) do
+            if card_use.from:isProhibited(p, use_card) then
+                available = false
+                break
             end
+        end
+        if not available then
+            return nil
         end
         return use_card
     end,
-    on_validate_in_response = function(self, source)
-        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        local to_use
-        if self:getUserString() == 'peach+analeptic' then
-            to_use = 'analeptic'
-        elseif self:getUserString() == 'slash' then
-            to_use = self:getUserString()
-        end
-        local user_str
-        if to_use == 'slash' then
-            user_str = 'slash'
-        else
-            user_str = to_use
-        end
-        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
-        if use_card == nil then
-            use_card = sgs.Sanguosha:cloneCard('analeptic', sgs.Card_NoSuit, 0)
-        end
-        use_card:setSkillName('LuaChongjian')
-        use_card:addSubcards(self:getSubcards())
-        use_card:deleteLater()
-        return use_card
-    end,
-    on_use = function(self, room, source, targets)
-        local orig_card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        local cardName = #targets > 0 and 'slash' or 'analeptic'
-        local card = sgs.Sanguosha:cloneCard(cardName, orig_card:getSuit(), orig_card:getNumber())
-        card:setSkillName('LuaChongjian')
-        card:addSubcards(self:getSubcards())
-        local card_use = sgs.CardUseStruct()
-        card_use.card = card
-        card_use.from = source
-        if #targets > 0 then
-            for _, p in ipairs(targets) do
-                card_use.to:append(p)
+    on_validate_in_response = function(self, user)
+        local room = user:getRoom()
+        local aocaistring = self:getUserString()
+        local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
+        if string.find(aocaistring, '+') then
+            local uses = {}
+            for _, name in pairs(aocaistring:split('+')) do
+                table.insert(uses, name)
             end
-        else
-            card_use.to:append(source)
+            local name = room:askForChoice(user, 'LuaChongjian', table.concat(uses, '+'))
+            use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
         end
-        room:useCard(card_use, true)
+        use_card:addSubcard(self:getSubcards():first())
+        use_card:setSkillName('LuaChongjian')
+        return use_card
     end
 }
 
-LuaChongjianVS = sgs.CreateOneCardViewAsSkill {
+local function getPos(table, value)
+    for i, v in ipairs(table) do
+        if v == value then
+            return i
+        end
+    end
+    return 0
+end
+
+local LuaChongjianPatterns = {'slash', 'analeptic'}
+
+LuaChongjianSelect = sgs.CreateSkillCard {
     name = 'LuaChongjian',
-    view_filter = function(self, to_select)
+    will_throw = false,
+    target_fixed = true,
+    handling_method = sgs.Card_MethodNone,
+    on_use = function(self, room, source, targets)
+        local choices = {}
+        for _, name in ipairs(LuaChongjianPatterns) do
+            local poi = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+            poi:setSkillName('LuaChongjian')
+            poi:addSubcard(self:getSubcards():first())
+            if poi:isAvailable(source) and not table.contains(sgs.Sanguosha:getBanPackages(), poi:getPackage()) then
+                table.insert(choices, name)
+            end
+        end
+        local pos = 0
+        if next(choices) ~= nil then
+            table.insert(choices, 'cancel')
+            local pattern = room:askForChoice(source, 'LuaChongjian', table.concat(choices, '+'))
+            if pattern and pattern ~= 'cancel' then
+                local poi = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, -1)
+                if poi:targetFixed() then
+                    poi:setSkillName('LuaChongjian')
+                    poi:addSubcard(self:getSubcards():first())
+                    room:useCard(sgs.CardUseStruct(poi, source, source), true)
+                else
+                    pos = getPos(LuaChongjianPatterns, pattern)
+                    room:setPlayerMark(source, 'LuaChongjianPos', pos)
+                    room:setPlayerProperty(source, 'LuaChongjianProperty', sgs.QVariant(self:getSubcards():first()))
+                    room:askForUseCard(source, '@@LuaChongjian', '@LuaChongjian:' .. pattern) -- %src
+                end
+            end
+        end
+    end
+}
+
+LuaChongjianVS = sgs.CreateViewAsSkill {
+    name = 'LuaChongjian',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
+        if pattern and pattern == '@@LuaChongjian' then
+            return false
+        end
         return to_select:isKindOf('EquipCard')
     end,
-    view_as = function(self, card)
-        local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
-		if pattern == 'slash' then
-            local slash = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, 0)
-            slash:addSubcard(card)
-            slash:setSkillName('LuaChongjian')
-            return slash
-		end
-        local vs_card = LuaChongjianCard:clone()
-        vs_card:addSubcard(card)
-        return vs_card
+    view_as = function(self, cards)
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
+            if #cards == 1 then
+                local acard = LuaChongjianSelect:clone()
+                acard:addSubcard(cards[1]:getId())
+                return acard
+            end
+        else
+            local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
+            local acard = LuaChongjianCard:clone()
+            if pattern and pattern == '@@LuaChongjian' then
+                pattern = LuaChongjianPatterns[sgs.Self:getMark('LuaChongjianPos')]
+                acard:addSubcard(sgs.Self:property('LuaChongjianProperty'):toInt())
+                if #cards ~= 0 then
+                    return nil
+                end
+            else
+                if #cards ~= 1 then
+                    return nil
+                end
+                acard:addSubcard(cards[1]:getId())
+            end
+            if pattern == 'peach+analeptic' then
+                pattern = 'analeptic'
+            end
+            acard:setUserString(pattern)
+            return acard
+        end
     end,
     enabled_at_play = function(self, player)
         if player:getKingdom() ~= 'wu' then
             return false
         end
-        return sgs.Slash_IsAvailable(player) or sgs.Analeptic_IsAvailable(player)
+        local choices = {}
+        for _, name in ipairs(LuaChongjianPatterns) do
+            local poi = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+            if poi:isAvailable(player) then
+                table.insert(choices, name)
+            end
+        end
+        return next(choices)
     end,
     enabled_at_response = function(self, player, pattern)
         if player:getKingdom() ~= 'wu' then
             return false
         end
         if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
-            return (pattern == 'slash' or string.find(pattern, 'analeptic'))
+            return (string.find(pattern, 'analeptic') or string.find(pattern, 'slash') or pattern == '@@LuaChongjian')
         end
         return false
     end
@@ -8532,6 +8619,9 @@ LuaChongjian = sgs.CreateTriggerSkill {
     view_as_skill = LuaChongjianVS,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
+        if (not damage.card) or (damage.card:getSkillName() ~= self:objectName()) then
+            return false
+        end
         local victim = damage.to
         local x = math.min(damage.damage, victim:getEquips():length())
         if x > 0 then

@@ -672,6 +672,8 @@ return {
     ['luachongjian'] = '冲坚',
     [':LuaChongjian'] = '<font color="#59980F"><b>吴势力技</b></font>，你可以将一张装备牌当【酒】或无距离限制且无视目标防具的【杀】使用。\
     当你以此法使用【杀】对一名角色造成伤害后，你获得其装备区里的X张牌（X为伤害值）',
+    ["@LuaChongjian"] = "请选择 %src 的目标",
+    ['~LuaChongjian'] = '选择若干其他角色→点击“确定”',
     ['LuaChoujue'] = '仇决',
     [':LuaChoujue'] = '锁定技，当一名角色死亡后，若杀死其的角色为你，你加1点体力上限，摸两张牌，然后“却敌”于此回合内的发动次数上限+1',
     ['LuaWenyangKingdomChoose'] = '文鸯选择势力'
