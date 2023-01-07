@@ -12,11 +12,32 @@ end
 
 -- AI 是否使用【无懈可击】对抗【奇正相生】
 sgs.ai_nullification['IndirectCombination'] = function(self, trick, from, to, positive)
-    if not self:isFriend(to) then
-        return false
+    -- positive 参数为 true 时，响应的是对应的【奇正相生】
+    -- 为 false 时，则为对应的【无懈可击】
+    local null_num = self:getCardsNum('Nullification')
+    if positive then
+        if self:isFriend(to) then
+            -- 没牌还不怕伤害，不用交
+            if to:isNude() and not self:damageIsEffective(to, sgs.DamageStruct_Normal, from) then
+                return false
+            end
+            -- 友方威胁牌、价值牌、最后一张手牌、友方较弱->命中
+            if self:getDangerousCard(to) or self:getValuableCard(to) or self:isWeak(to) then
+                return true
+            end
+            -- 三七开使用概率
+            return rinsan.random(1, 10) <= 3
+        end
+    else
+        -- 是否使用【无懈可击】对抗【无懈可击】
+        if not self:isEnemy(to) then
+            return false
+        end
+        if self:isEnemy(to) and (self:isWeak(to) or null_num > 1 or self:getOverflow() > 0 or not self:isWeak()) then
+            return true
+        end
     end
-    -- 随机吧，50%概率使用
-    return rinsan.random(1, 10) >= 5
+    return false
 end
 
 sgs.ai_skill_choice['indirect_combination'] = function(self, choices, data)
@@ -38,7 +59,7 @@ function SmartAI:useCardIndirectCombination(card, use)
     for _, p in ipairs(self.enemies) do
         if hasTrickEffective(self, card, p, use.from) and
             self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
-                target = p
+            target = p
             break
         end
     end
@@ -72,5 +93,5 @@ sgs.ai_keep_value.IndirectCombination = 3.36
 sgs.ai_use_priority.IndirectCombination = 4.6
 
 sgs.ai_card_intention.IndirectCombination = function(self, card, from, tos)
-	sgs.updateIntentions(from, tos, 80)
+    sgs.updateIntentions(from, tos, 80)
 end
