@@ -8551,7 +8551,6 @@ LuaChongjianCard = sgs.CreateSkillCard {
         return true
     end,
     target_fixed = function(self)
-        local name = ''
         local card
         local aocaistring = self:getUserString()
         if aocaistring ~= '' then
@@ -8563,7 +8562,6 @@ LuaChongjianCard = sgs.CreateSkillCard {
         return card and card:targetFixed()
     end,
     feasible = function(self, targets)
-        local name = ''
         local card
         local plist = sgs.PlayerList()
         for i = 1, #targets do
@@ -8651,7 +8649,7 @@ LuaChongjianSelect = sgs.CreateSkillCard {
                 table.insert(choices, name)
             end
         end
-        local pos = 0
+        local pos
         if next(choices) ~= nil then
             table.insert(choices, 'cancel')
             local pattern = room:askForChoice(source, 'LuaChongjian', table.concat(choices, '+'))
