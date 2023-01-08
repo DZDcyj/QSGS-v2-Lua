@@ -1096,8 +1096,21 @@ function getDinghanCardsTable(player)
     return dinghan_str:split('|')
 end
 
+-- 封装方法用于设置定汉记录牌名
 function setDinghanCardsTable(player, dinghan_cards)
     player:setTag('LuaDinghanCards', sgs.QVariant(table.concat(dinghan_cards, '|')))
+end
+
+-- 封装方法用于添加青钢标记
+function addQinggangTag(victim, card)
+    -- 日神杀使用迫真 QStringList 来存储青钢标记牌名
+    -- 因此需要先判断是否已经存在，如果存在就不要再加
+    -- 在【杀】结束之后，将会自动清除青钢标记
+    local qinggang = victim:getTag('Qinggang'):toStringList()
+    if qinggang:contains(card:toString()) then
+        return
+    end
+    victim:addQinggangTag(card)
 end
 
 -- CardType 参数，用于 getCardMostProbably 方法
