@@ -200,11 +200,11 @@ return {
     ['$LuaLiegong2'] = '执此神弓，恭行天罚！',
     ['~ExMouHuangzhong'] = '呜呜呜，我不玩了',
     -- 神荀彧
-    ['$LuaTianzuo1-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
-    ['$LuaTianzuo2-ExShenXunyu_1'] ='这位更是脑子不好——孙策',
-    ['$LuaLingce1-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
-    ['$LuaLingce2-ExShenXunyu_1'] ='这位更是脑子不好——孙策',
-    ['$LuaDinghan1-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
-    ['$LuaDinghan2-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
+    ['$LuaTianzuo1-ExShenXunyu_1'] = '这位更是脑子不太好——孙策',
+    ['$LuaTianzuo2-ExShenXunyu_1'] ='这位更是脑子不太好——孙笨',
+    ['$LuaLingce1-ExShenXunyu_1'] = '这位更是脑子不太好——孙枣',
+    ['$LuaLingce2-ExShenXunyu_1'] ='这位更是脑子不太好——孙厕',
+    ['$LuaDinghan1-ExShenXunyu_1'] = '这位更是脑子不太好——江东小霸王',
+    ['$LuaDinghan2-ExShenXunyu_1'] = '这位更是脑子不太好——江东小白板',
     ['~ExShenXunyu-ExShenXunyu_1'] = '一定是王粲干的',
 }
