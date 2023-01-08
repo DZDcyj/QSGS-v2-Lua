@@ -108,6 +108,13 @@ LuaDizhu = sgs.CreateTriggerSkill {
             room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
         end
 
+        -- 神势力武将势力选择
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:getKingdom() == 'god' then
+                room:setPlayerProperty(p, 'kingdom', sgs.QVariant(room:askForKingdom(p)))
+            end
+        end
+
         -- 为自己增加一点体力上限
         room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
         rinsan.sendLogMessage(room, '#addmaxhp', {
