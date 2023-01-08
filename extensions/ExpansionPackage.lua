@@ -8453,8 +8453,10 @@ LuaQuediClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                room:setPlayerMark(player, 'LuaQuediUsed', 0)
-                room:setPlayerMark(player, 'LuaQuediExtra', 0)
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, 'LuaQuediUsed', 0)
+                    room:setPlayerMark(p, 'LuaQuediExtra', 0)
+                end
             end
         else
             local use = data:toCardUse()
@@ -8772,6 +8774,7 @@ LuaChongjian = sgs.CreateTriggerSkill {
         local victim = damage.to
         local x = math.min(damage.damage, victim:getEquips():length())
         if x > 0 then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             local orig_places = {}
             local cards = sgs.IntList()
