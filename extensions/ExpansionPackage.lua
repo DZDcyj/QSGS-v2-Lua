@@ -999,7 +999,7 @@ LuaPojun = sgs.CreateTriggerSkill {
                     if discard_n > 0 then
                         local orig_places = {}
                         local cards = sgs.IntList()
-                        room:setTag('LuaFakeMove', sgs.QVariant(true))
+                        room:setPlayerFlag(t, 'xuanhuo_InTempMoving')
                         for i = 0, discard_n - 1, 1 do
                             local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
                                 sgs.Card_MethodNone)
@@ -1011,7 +1011,7 @@ LuaPojun = sgs.CreateTriggerSkill {
                         for i = 0, discard_n - 1, 1 do
                             room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), t, orig_places[i], false)
                         end
-                        room:removeTag('LuaFakeMove')
+                        room:setPlayerFlag(t, '-xuanhuo_InTempMoving')
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         dummy:addSubcards(cards)
                         t:addToPile('LuaPojun', dummy, false)
@@ -8775,7 +8775,7 @@ LuaChongjian = sgs.CreateTriggerSkill {
             room:broadcastSkillInvoke(self:objectName())
             local orig_places = {}
             local cards = sgs.IntList()
-            room:setTag('LuaFakeMove', sgs.QVariant(true))
+            room:setPlayerFlag(victim, 'xuanhuo_InTempMoving')
             for i = 0, x - 1, 1 do
                 local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone)
                 local place = room:getCardPlace(id)
@@ -8786,7 +8786,7 @@ LuaChongjian = sgs.CreateTriggerSkill {
             for i = 0, x - 1, 1 do
                 room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), victim, orig_places[i], false)
             end
-            room:removeTag('LuaFakeMove')
+            room:setPlayerFlag(victim, '-xuanhuo_InTempMoving')
             local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
             dummy:addSubcards(cards)
             room:obtainCard(player, dummy, false)
