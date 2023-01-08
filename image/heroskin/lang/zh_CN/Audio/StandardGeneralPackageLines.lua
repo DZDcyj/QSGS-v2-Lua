@@ -65,6 +65,9 @@ return {
     ['$LuaPojun1-JieXusheng_1'] = '以攻为守，破敌卫疆！',
     ['$LuaPojun2-JieXusheng_1'] = '这长江天险后，便是江东铁壁！',
     ['~JieXusheng-JieXusheng_1'] = '望吾死后，江东依然无人敢犯……',
+    ['$LuaPojun1-JieXusheng_2'] = '盛一出杀，必然是一场腥风血雨',
+    ['$LuaPojun2-JieXusheng_2'] = '因为，盛一刀便砍了你四血',
+    ['~JieXusheng-JieXusheng_2'] = '主公，盛盛错了',
     -- 杨彪
     ['$LuaZhaohan1-ExYangbiao_1'] = '兴复汉室，文先自当尽力而为',
     ['$LuaZhaohan2-ExYangbiao_1'] = '风雨飘摇，徒增忠臣嗟叹',
@@ -191,5 +194,17 @@ return {
     ['$bazhen2-wolong_1'] = '天有八门，地有八方',
     ['$kanpo1-wolong_1'] = '一切都逃不过我的法眼',
     ['$kanpo2-wolong_1'] = '我，就是智慧的化身',
-    ['~wolong-wolong_1'] = '龙困浅滩遭虾戏，虎落平阳被犬欺'
+    ['~wolong-wolong_1'] = '龙困浅滩遭虾戏，虎落平阳被犬欺',
+    -- 谋黄忠
+    ['$LuaLiegong1'] = '吾虽无双，万军取首！',
+    ['$LuaLiegong2'] = '执此神弓，恭行天罚！',
+    ['~ExMouHuangzhong'] = '呜呜呜，我不玩了',
+    -- 神荀彧
+    ['$LuaTianzuo1-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
+    ['$LuaTianzuo2-ExShenXunyu_1'] ='这位更是脑子不好——孙策',
+    ['$LuaLingce1-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
+    ['$LuaLingce2-ExShenXunyu_1'] ='这位更是脑子不好——孙策',
+    ['$LuaDinghan1-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
+    ['$LuaDinghan2-ExShenXunyu_1'] = '这位更是脑子不好——孙策',
+    ['~ExShenXunyu-ExShenXunyu_1'] = '一定是王粲干的',
 }
