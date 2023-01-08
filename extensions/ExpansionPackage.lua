@@ -5281,7 +5281,7 @@ LuaSheque = sgs.CreateTriggerSkill {
             if use.from and use.from:hasFlag(self:objectName()) and use.card:isKindOf('Slash') then
                 room:broadcastSkillInvoke(self:objectName())
                 for _, p in sgs.qlist(use.to) do
-                    p:addQinggangTag(use.card)
+                    rinsan.addQinggangTag(p, use.card)
                 end
             end
         end
@@ -8808,7 +8808,7 @@ LuaChongjianQinggang = sgs.CreateTriggerSkill {
         local use = data:toCardUse()
         if use.from and use.card and use.card:isKindOf('Slash') and use.card:getSkillName() == 'LuaChongjian' then
             for _, p in sgs.qlist(use.to) do
-                p:addQinggangTag(use.card)
+                rinsan.addQinggangTag(p, use.card)
             end
         end
     end,

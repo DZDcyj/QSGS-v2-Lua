@@ -712,7 +712,7 @@ LuaTuci = sgs.CreateTriggerSkill {
                         break
                     end
                     if p:isAlive() and p:distanceTo(player) < player:getAttackRange() + player:getMark('@LuaJing') then
-                        p:addQinggangTag(use.card)
+                        rinsan.addQinggangTag(p, use.card)
                     end
                 end
             end
