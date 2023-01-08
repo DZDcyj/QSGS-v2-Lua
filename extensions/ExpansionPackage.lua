@@ -8553,17 +8553,19 @@ LuaChongjianCard = sgs.CreateSkillCard {
                         break
                     end
                 end
-                local canSlash = false
-                if #targets == 0 then
-                    canSlash = sgs.Slash_IsSpecificAssignee(to_select, sgs.Self, card)
-                else
-                    if sgs.Self:hasFlag('slashDisableExtraTarget') then
-                        return false
-                    end
-                    for _, p in ipairs(targets) do
-                        if sgs.Slash_IsSpecificAssignee(p, sgs.Self, card) then
-                            canSlash = true
-                            break
+                local canSlash = (not SpecificAssignee)
+                if SpecificAssignee then
+                    if #targets == 0 then
+                        canSlash = sgs.Slash_IsSpecificAssignee(to_select, sgs.Self, card)
+                    else
+                        if sgs.Self:hasFlag('slashDisableExtraTarget') then
+                            return false
+                        end
+                        for _, p in ipairs(targets) do
+                            if sgs.Slash_IsSpecificAssignee(p, sgs.Self, card) then
+                                canSlash = true
+                                break
+                            end
                         end
                     end
                 end
@@ -8643,15 +8645,6 @@ LuaChongjianCard = sgs.CreateSkillCard {
     end
 }
 
-local function getPos(table, value)
-    for i, v in ipairs(table) do
-        if v == value then
-            return i
-        end
-    end
-    return 0
-end
-
 local LuaChongjianPatterns = {'slash', 'analeptic'}
 
 LuaChongjianUseCard = sgs.CreateSkillCard {
@@ -8696,7 +8689,6 @@ LuaChongjianUseCard = sgs.CreateSkillCard {
             card:addSubcard(self:getSubcards():first())
             return card and card:targetsFeasible(plist, sgs.Self)
         end
-        return false
     end,
     on_use = function(self, room, source, targets)
         local pattern = #targets > 0 and 'slash' or 'analeptic'
