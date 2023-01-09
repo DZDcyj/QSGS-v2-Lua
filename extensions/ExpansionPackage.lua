@@ -8181,7 +8181,8 @@ LuaPinghe = sgs.CreateTriggerSkill {
     view_as_skill = LuaPingheVS,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
-        if damage.from and damage.from:objectName() == player:objectName() then
+        -- 需要伤害来源，且伤害来源不为自己才可发动
+        if (not damage.from) or damage.from:objectName() == player:objectName() then
             return false
         end
         if player:getMaxHp() > 1 and (not player:isKongcheng()) then
