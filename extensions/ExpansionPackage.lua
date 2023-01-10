@@ -9065,7 +9065,7 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
         end
         rinsan.sendLogMessage(room, '#LuaPoweiFailure', {
             ['from'] = player,
-            ['arg'] = self:objectName()
+            ['arg'] = 'LuaPowei'
         })
         room:broadcastSkillInvoke('LuaPowei', 3)
         rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
