@@ -8968,7 +8968,7 @@ LuaPoweiVS = sgs.CreateViewAsSkill {
         return false
     end,
     enabled_at_response = function(self, player, pattern)
-        return pattern == '@@LuaPowei'
+        return pattern == '@@LuaPoweiHelper'
     end
 }
 
@@ -8976,6 +8976,7 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
     name = 'LuaPoweiHelper',
     events = {sgs.GameStart, sgs.Damaged, sgs.EventPhaseStart, sgs.EventPhaseChanging},
     global = true,
+    view_as_skill = LuaPoweiVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.GameStart then
             local shentaishici = room:findPlayerBySkillName('LuaPowei')
@@ -9004,7 +9005,7 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
             _data:setValue(player)
             for _, stsc in sgs.qlist(stscs) do
                 room:broadcastSkillInvoke('LuaPowei', 1)
-                room:askForUseCard(stsc, '@@LuaPowei', 'LuaPowei_ask', -1, sgs.Card_MethodNone)
+                room:askForUseCard(stsc, '@@LuaPoweiHelper', 'LuaPowei_ask', -1, sgs.Card_MethodNone)
             end
         else
             if data:toPhaseChange().to == sgs.Player_NotActive then
@@ -9026,7 +9027,6 @@ LuaPowei = sgs.CreateTriggerSkill {
     name = 'LuaPowei',
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Wake,
-    view_as_skill = LuaPoweiVS,
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
         room:broadcastSkillInvoke('LuaPowei', 2)
