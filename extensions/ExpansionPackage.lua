@@ -7604,29 +7604,6 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         return false
     end,
     enabled_at_nullification = function(self, player)
-        local current = false
-        local players = player:getAliveSiblings()
-        players:append(player)
-        for _, p in sgs.qlist(players) do
-            if p:getPhase() ~= sgs.Player_NotActive then
-                current = true
-                break
-            end
-        end
-        if not current then
-            return false
-        end
-        if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
-            return false
-        end
-        if rinsan.availableShenGuojiaExists(player) then
-            return true
-        end
-        for _, p in sgs.qlist(player:getAliveSiblings()) do
-            if rinsan.availableShenGuojiaExists(p) then
-                return true
-            end
-        end
         return false
     end,
     view_as = function(self, cards)
