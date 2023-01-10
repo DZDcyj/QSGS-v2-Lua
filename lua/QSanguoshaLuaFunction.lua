@@ -1113,6 +1113,11 @@ function addQinggangTag(victim, card)
     victim:addQinggangTag(card)
 end
 
+-- 封装方法用于轮回标记
+function moveLuaPoweiMark(room)
+
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
