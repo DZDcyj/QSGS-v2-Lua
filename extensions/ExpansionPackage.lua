@@ -8919,7 +8919,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
             return false
         end
         return to_select:getPhase() == sgs.Player_RoundStart and to_select:getHp() <= sgs.Self:getHp() and
-                   (not to_select:isNude())
+                   (not to_select:isKongcheng())
     end,
     feasible = function(self, targets)
         if self:subcardsLength() > 0 then
@@ -8934,10 +8934,10 @@ LuaPoweiCard = sgs.CreateSkillCard {
         local target = room:getCurrent()
         repeat
             if #targets > 0 then
-                if target:isNude() then
+                if target:isKongcheng() then
                     break
                 end
-                local card_id = room:askForCardChosen(source, target, 'hej', self:objectName(), false,
+                local card_id = room:askForCardChosen(source, target, 'h', 'LuaPowei', false,
                     sgs.Card_MethodNone)
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
                 room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
@@ -9028,7 +9028,10 @@ LuaPowei = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Wake,
     on_trigger = function(self, event, player, data, room)
-        room:sendCompulsoryTriggerLog(player, self:objectName())
+        rinsan.sendLogMessage(room, '#LuaPoweiSuccess', {
+            ['from'] = player,
+            ['arg'] = self:objectName()
+        })
         room:broadcastSkillInvoke('LuaPowei', 2)
         if room:changeMaxHpForAwakenSkill(player, 0) then
             room:acquireSkill(player, 'LuaShenzhu')
@@ -9060,7 +9063,10 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
         if not dying.who:hasSkill('LuaPowei') then
             return false
         end
-        room:sendCompulsoryTriggerLog(dying.who, 'LuaPowei')
+        rinsan.sendLogMessage(room, '#LuaPoweiFailure', {
+            ['from'] = player,
+            ['arg'] = self:objectName()
+        })
         room:broadcastSkillInvoke('LuaPowei', 3)
         rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
         for _, p in sgs.qlist(room:getAlivePlayers()) do
