@@ -8930,6 +8930,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaPowei', 1)
         local target = room:getCurrent()
         repeat
             if #targets > 0 then
@@ -8946,7 +8947,6 @@ LuaPoweiCard = sgs.CreateSkillCard {
         if len > 0 then
             rinsan.doDamage(room, source, target, 1)
         end
-        room:broadcastSkillInvoke('LuaPowei', 1)
         rinsan.addToAttackRange(room, target, source)
     end
 }
