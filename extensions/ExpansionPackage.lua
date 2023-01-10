@@ -7851,12 +7851,13 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
 LuaLingce = sgs.CreateTriggerSkill {
     name = 'LuaLingce',
     events = {sgs.CardUsed},
-    frequency = sgs.Skill_Frequent,
+    frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local card = data:toCardUse().card
         if card:isKindOf('TrickCard') and not card:isVirtualCard() then
             for _, p in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-                if rinsan.playerCanInvokeLingce(p, card) and room:askForSkillInvoke(p, self:objectName(), data) then
+                if rinsan.playerCanInvokeLingce(p, card) then
+                    room:sendCompulsoryTriggerLog(p, self:objectName())
                     p:drawCards(1, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                 end
@@ -7878,25 +7879,24 @@ LuaDinghan = sgs.CreateTriggerSkill {
             return false
         end
         if use.to:contains(player) then
-            if room:askForSkillInvoke(player, self:objectName(), data) then
-                room:broadcastSkillInvoke(self:objectName())
-                local to_list = use.to
-                to_list:removeOne(player)
-                use.to = to_list
-                data:setValue(use)
-                local msgType = '$CancelTargetNoUser'
-                local params = {
-                    ['to'] = player,
-                    ['arg'] = use.card:objectName()
-                }
-                if use.from then
-                    params['from'] = use.from
-                    msgType = '$CancelTarget'
-                end
-                rinsan.sendLogMessage(room, msgType, params)
-                table.insert(dinghan_cards, use.card:objectName())
-                rinsan.setDinghanCardsTable(player, dinghan_cards)
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            local to_list = use.to
+            to_list:removeOne(player)
+            use.to = to_list
+            data:setValue(use)
+            local msgType = '$CancelTargetNoUser'
+            local params = {
+                ['to'] = player,
+                ['arg'] = use.card:objectName()
+            }
+            if use.from then
+                params['from'] = use.from
+                msgType = '$CancelTarget'
             end
+            rinsan.sendLogMessage(room, msgType, params)
+            table.insert(dinghan_cards, use.card:objectName())
+            rinsan.setDinghanCardsTable(player, dinghan_cards)
         end
     end
 }
