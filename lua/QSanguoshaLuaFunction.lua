@@ -316,7 +316,7 @@ function LuaQiaosiGetCards(room, roleType)
     -- 王、商、工、农、士、将
     -- King、Merchant、Artisan、Farmer、Scholar、General
     -- roleType 代表转的人类型，为 Table 类型
-    -- 例如{"king", "artisan", "general"}
+    -- 例如{'king', 'artisan', 'general'}
     local results = {}
     local kingActivated = table.contains(roleType, 'king')
     local generalActivated = table.contains(roleType, 'general')
@@ -1113,6 +1113,14 @@ function addQinggangTag(victim, card)
     victim:addQinggangTag(card)
 end
 
+function Set(list)
+    local set = {}
+    for _, l in ipairs(list) do
+        set[l] = true
+    end
+    return set
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
@@ -1134,23 +1142,17 @@ ANIMATE_HUASHEN = 4 -- 化身用，表现为一张武将牌从牌堆移动到武
 ANIMATE_FIRE = 5 -- 火焰效果
 ANIMATE_LIGHTING = 6 -- 闪电效果
 
--- 所有的锦囊牌类型，暂时写死用于定汉
-ALL_TRICKS = {'duel', -- 决斗
-'god_salvation', -- 桃园结义
-'fire_attack', -- 火攻
-'amazing_grace', -- 五谷丰登
-'savage_assault', -- 南蛮入侵
-'iron_chain', -- 铁索连环
-'archery_attack', -- 万箭齐发
-'collateral', -- 借刀杀人
-'dismantlement', -- 过河拆桥
-'ex_nihilo', -- 无中生有
-'snatch', -- 顺手牵羊
-'nullification', -- 无懈可击
-'indulgence', -- 乐不思蜀
-'supply_shortage', -- 兵粮寸断
-'lightning', -- 闪电
-'indirect_combination' -- 奇正相生
-}
+-- 初始化所有锦囊牌类型
+ALL_TRICKS = {}
+for i = 0, 10000 do
+    local card = sgs.Sanguosha:getEngineCard(i)
+    if card == nil then
+        break
+    end
+    if not (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('TrickCard')) and
+        not table.contains(ALL_TRICKS, card:objectName()) then
+        table.insert(ALL_TRICKS, card:objectName())
+    end
+end
 
 -- luacheck: pop
