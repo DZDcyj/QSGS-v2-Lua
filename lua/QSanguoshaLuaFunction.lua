@@ -1114,9 +1114,11 @@ function addQinggangTag(victim, card)
 end
 
 function Set(list)
-	local set = {}
-	for _, l in ipairs(list) do set[l] = true end
-	return set
+    local set = {}
+    for _, l in ipairs(list) do
+        set[l] = true
+    end
+    return set
 end
 
 -- CardType 参数，用于 getCardMostProbably 方法
@@ -1143,11 +1145,14 @@ ANIMATE_LIGHTING = 6 -- 闪电效果
 -- 初始化所有锦囊牌类型
 ALL_TRICKS = {}
 for i = 0, 10000 do
-	local card = sgs.Sanguosha:getEngineCard(i)
-	if card == nil then break end
-	if not (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('TrickCard')) and not table.contains(ALL_TRICKS, card:objectName()) then
-		table.insert(ALL_TRICKS, card:objectName())
-	end
+    local card = sgs.Sanguosha:getEngineCard(i)
+    if card == nil then
+        break
+    end
+    if not (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('TrickCard')) and
+        not table.contains(ALL_TRICKS, card:objectName()) then
+        table.insert(ALL_TRICKS, card:objectName())
+    end
 end
 
 -- luacheck: pop
