@@ -1121,6 +1121,41 @@ function Set(list)
     return set
 end
 
+-- 封装方法用于轮回标记
+function moveLuaPoweiMark(room, currentPlayer)
+    room:sendCompulsoryTriggerLog(currentPlayer, 'LuaPowei')
+    local froms = sgs.SPlayerList()
+    local maxIndex = room:alivePlayerCount() - 1
+    local targetMap = {}
+    -- 首先确定要动的来源
+    for i = 1, maxIndex do
+        local curr = currentPlayer:getNextAlive(i)
+        if curr:getMark('@LuaPowei') > 0 then
+            froms:append(curr)
+        end
+    end
+    -- 确认移动到的目标
+    for _, from in sgs.qlist(froms) do
+        for i = 1, maxIndex do
+            local curr = from:getNextAlive(i)
+            if not curr:hasSkill('LuaPowei') then
+                targetMap[from:objectName()] = i
+                goto label
+            end
+        end
+        ::label::
+    end
+    for _, from in sgs.qlist(froms) do
+        local toIndex = targetMap[from:objectName()]
+        if not toIndex then
+            return
+        end
+        local to = from:getNextAlive(toIndex)
+        room:removePlayerMark(from, '@LuaPowei')
+        room:addPlayerMark(to, '@LuaPowei')
+    end
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2

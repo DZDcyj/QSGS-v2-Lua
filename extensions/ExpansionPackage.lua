@@ -8845,3 +8845,288 @@ ExWenyang:addSkill(LuaChongjian)
 SkillAnjiang:addSkill(LuaChongjianQinggang)
 ExWenyang:addSkill(LuaChoujue)
 SkillAnjiang:addSkill(LuaWenyangKingdomChoose)
+
+ExShenTaishici = sgs.General(extension, 'ExShenTaishici', 'god', '4', true, true)
+
+LuaDulie = sgs.CreateTriggerSkill {
+    name = 'LuaDulie',
+    events = {sgs.TargetConfirming},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') then
+            if use.from and use.from:getHp() > player:getHp() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                local judge = rinsan.createJudgeStruct({
+                    ['who'] = player,
+                    ['reason'] = self:objectName(),
+                    ['play_animation'] = true,
+                    ['pattern'] = '.|heart'
+                })
+                room:judge(judge)
+                if judge:isGood() then
+                    local to_list = use.to
+                    to_list:removeOne(player)
+                    use.to = to_list
+                    data:setValue(use)
+                    local msgType = '$CancelTargetNoUser'
+                    local params = {
+                        ['to'] = player,
+                        ['arg'] = use.card:objectName()
+                    }
+                    if use.from then
+                        params['from'] = use.from
+                        msgType = '$CancelTarget'
+                    end
+                    rinsan.sendLogMessage(room, msgType, params)
+                end
+            end
+        end
+        return false
+    end
+}
+
+LuaPoweiCard = sgs.CreateSkillCard {
+    name = 'LuaPoweiCard',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, targets, to_select)
+        if self:subcardsLength() > 0 then
+            return false
+        end
+        return to_select:getPhase() == sgs.Player_RoundStart and to_select:getHp() <= sgs.Self:getHp() and
+                   (not to_select:isKongcheng())
+    end,
+    feasible = function(self, targets)
+        if self:subcardsLength() > 0 then
+            return #targets == 0
+        elseif self:subcardsLength() == 0 then
+            return #targets == 1
+        end
+        return false
+    end,
+    on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaPowei', 1)
+        local target = room:getCurrent()
+        repeat
+            if #targets > 0 then
+                if target:isKongcheng() then
+                    break
+                end
+                local card_id = room:askForCardChosen(source, target, 'h', 'LuaPowei', false,
+                    sgs.Card_MethodNone)
+                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
+                room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
+            end
+        until (true)
+        local len = self:subcardsLength()
+        if len > 0 then
+            rinsan.doDamage(room, source, target, 1)
+        end
+        rinsan.addToAttackRange(room, target, source)
+    end
+}
+
+LuaPoweiVS = sgs.CreateViewAsSkill {
+    name = 'LuaPowei',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        local vs_card = LuaPoweiCard:clone()
+        if #cards == 1 then
+            vs_card:addSubcard(cards[1]:getId())
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaPoweiHelper'
+    end
+}
+
+LuaPoweiHelper = sgs.CreateTriggerSkill {
+    name = 'LuaPoweiHelper',
+    events = {sgs.GameStart, sgs.Damaged, sgs.EventPhaseStart, sgs.EventPhaseChanging},
+    global = true,
+    view_as_skill = LuaPoweiVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.GameStart then
+            local shentaishici = room:findPlayerBySkillName('LuaPowei')
+            if (not shentaishici) or shentaishici:getMark('LuaPoweiStart') > 0 then
+                return false
+            end
+            room:addPlayerMark(shentaishici, 'LuaPoweiStart')
+            room:sendCompulsoryTriggerLog(shentaishici, 'LuaPowei')
+            room:broadcastSkillInvoke('LuaPowei', 1)
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if (not p:hasSkill('LuaPowei')) and p:getMark('LuaPoweiStart') == 0 then
+                    p:gainMark('@LuaPowei', 1)
+                    room:addPlayerMark(p, 'LuaPoweiStart')
+                end
+            end
+        elseif event == sgs.Damaged then
+            if player:getMark('@LuaPowei') > 0 then
+                player:loseMark('@LuaPowei', player:getMark('@LuaPowei'))
+            end
+        elseif event == sgs.EventPhaseStart then
+            if player:getMark('@LuaPowei') == 0 or player:getPhase() ~= sgs.Player_RoundStart then
+                return false
+            end
+            local stscs = room:findPlayersBySkillName('LuaPowei')
+            local _data = sgs.QVariant()
+            _data:setValue(player)
+            for _, stsc in sgs.qlist(stscs) do
+                room:broadcastSkillInvoke('LuaPowei', 1)
+                room:askForUseCard(stsc, '@@LuaPoweiHelper', 'LuaPowei_ask', -1, sgs.Card_MethodNone)
+            end
+        else
+            if data:toPhaseChange().to == sgs.Player_NotActive then
+                local stscs = room:findPlayersBySkillName('LuaPowei')
+                for _, stsc in sgs.qlist(stscs) do
+                    rinsan.removeFromAttackRange(room, player, stsc)
+                end
+                if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
+                    rinsan.moveLuaPoweiMark(room, player)
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaPowei = sgs.CreateTriggerSkill {
+    name = 'LuaPowei',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Wake,
+    on_trigger = function(self, event, player, data, room)
+        rinsan.sendLogMessage(room, '#LuaPoweiSuccess', {
+            ['from'] = player,
+            ['arg'] = self:objectName()
+        })
+        room:broadcastSkillInvoke('LuaPowei', 2)
+        if room:changeMaxHpForAwakenSkill(player, 0) then
+            room:acquireSkill(player, 'LuaShenzhu')
+            room:addPlayerMark(player, self:objectName())
+        end
+    end,
+    can_trigger = function(self, target)
+        if target:getMark('LuaPowei') > 0 then
+            return false
+        end
+        if target:getMark('@LuaPowei') > 0 then
+            return false
+        end
+        for _, p in sgs.qlist(target:getSiblings()) do
+            if p:getMark('@LuaPowei') > 0 then
+                return false
+            end
+        end
+        return rinsan.RIGHT(self, target) and rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart)
+    end
+}
+
+LuaPoweiFailed = sgs.CreateTriggerSkill {
+    name = 'LuaPoweiFailed',
+    events = {sgs.EnterDying},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if not dying.who:hasSkill('LuaPowei') then
+            return false
+        end
+        rinsan.sendLogMessage(room, '#LuaPoweiFailure', {
+            ['from'] = player,
+            ['arg'] = 'LuaPowei'
+        })
+        room:broadcastSkillInvoke('LuaPowei', 3)
+        rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerMark(p, '@LuaPowei', 0)
+        end
+        dying.who:throwAllEquips()
+        room:addPlayerMark(dying.who, 'LuaPowei')
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaPowei') and target:getMark('LuaPowei') == 0
+    end
+}
+
+LuaShenzhu = sgs.CreateTriggerSkill {
+    name = 'LuaShenzhu',
+    events = {sgs.CardFinished},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        local card = use.card
+        if card and card:isKindOf('Slash') and (not card:isVirtualCard()) then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            local choices = {string.format('%s1', self:objectName()), string.format('%s2', self:objectName())}
+            local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+            if choice == choices[1] then
+                -- 摸一牌、如果在出牌阶段多加一次出杀次数
+                player:drawCards(1, self:objectName())
+                if player:getPhase() == sgs.Player_Play then
+                    room:addPlayerMark(player, self:objectName())
+                end
+            elseif choice == choices[2] then
+                -- 摸三牌，然后本回合内不能用杀
+                player:drawCards(3, self:objectName())
+                room:addPlayerMark(player, 'LuaShenzhuForbid')
+                room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', true)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target)
+    end
+}
+
+LuaShenzhuClear = sgs.CreateTriggerSkill {
+    name = 'LuaShenzhuClear',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to == sgs.Player_NotActive then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:getMark('LuaShenzhuForbid') > 0 then
+                    rinsan.clearAllMarksContains(room, p, 'LuaShenzhu')
+                    room:removePlayerCardLimitation(p, 'use', 'Slash|.|.|.$1')
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaShenzhuTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaShenzhuTargetMod',
+    frequency = sgs.Skill_Compulsory,
+    pattern = 'Slash',
+    residue_func = function(self, player)
+        if player:hasSkill('LuaShenzhu') then
+            return player:getMark('LuaShenzhu')
+        else
+            return 0
+        end
+    end
+}
+
+ExShenTaishici:addSkill(LuaDulie)
+ExShenTaishici:addSkill(LuaPowei)
+ExShenTaishici:addRelateSkill('LuaShenzhu')
+SkillAnjiang:addSkill(LuaShenzhu)
+SkillAnjiang:addSkill(LuaPoweiHelper)
+SkillAnjiang:addSkill(LuaPoweiFailed)
+SkillAnjiang:addSkill(LuaShenzhuClear)
+SkillAnjiang:addSkill(LuaShenzhuTargetMod)
