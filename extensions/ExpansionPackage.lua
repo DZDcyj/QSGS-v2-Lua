@@ -9013,7 +9013,9 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
                 for _, stsc in sgs.qlist(stscs) do
                     rinsan.removeFromAttackRange(room, player, stsc)
                 end
-                rinsan.moveLuaPoweiMark(room)
+                if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
+                    rinsan.moveLuaPoweiMark(room, player)
+                end
             end
         end
         return false
