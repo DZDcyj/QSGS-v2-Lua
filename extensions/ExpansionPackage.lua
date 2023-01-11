@@ -7604,29 +7604,6 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         return false
     end,
     enabled_at_nullification = function(self, player)
-        local current = false
-        local players = player:getAliveSiblings()
-        players:append(player)
-        for _, p in sgs.qlist(players) do
-            if p:getPhase() ~= sgs.Player_NotActive then
-                current = true
-                break
-            end
-        end
-        if not current then
-            return false
-        end
-        if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
-            return false
-        end
-        if rinsan.availableShenGuojiaExists(player) then
-            return true
-        end
-        for _, p in sgs.qlist(player:getAliveSiblings()) do
-            if rinsan.availableShenGuojiaExists(p) then
-                return true
-            end
-        end
         return false
     end,
     view_as = function(self, cards)
@@ -7874,12 +7851,13 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
 LuaLingce = sgs.CreateTriggerSkill {
     name = 'LuaLingce',
     events = {sgs.CardUsed},
-    frequency = sgs.Skill_Frequent,
+    frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local card = data:toCardUse().card
         if card:isKindOf('TrickCard') and not card:isVirtualCard() then
             for _, p in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-                if rinsan.playerCanInvokeLingce(p, card) and room:askForSkillInvoke(p, self:objectName(), data) then
+                if rinsan.playerCanInvokeLingce(p, card) then
+                    room:sendCompulsoryTriggerLog(p, self:objectName())
                     p:drawCards(1, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                 end
@@ -7901,25 +7879,24 @@ LuaDinghan = sgs.CreateTriggerSkill {
             return false
         end
         if use.to:contains(player) then
-            if room:askForSkillInvoke(player, self:objectName(), data) then
-                room:broadcastSkillInvoke(self:objectName())
-                local to_list = use.to
-                to_list:removeOne(player)
-                use.to = to_list
-                data:setValue(use)
-                local msgType = '$CancelTargetNoUser'
-                local params = {
-                    ['to'] = player,
-                    ['arg'] = use.card:objectName()
-                }
-                if use.from then
-                    params['from'] = use.from
-                    msgType = '$CancelTarget'
-                end
-                rinsan.sendLogMessage(room, msgType, params)
-                table.insert(dinghan_cards, use.card:objectName())
-                rinsan.setDinghanCardsTable(player, dinghan_cards)
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            local to_list = use.to
+            to_list:removeOne(player)
+            use.to = to_list
+            data:setValue(use)
+            local msgType = '$CancelTargetNoUser'
+            local params = {
+                ['to'] = player,
+                ['arg'] = use.card:objectName()
+            }
+            if use.from then
+                params['from'] = use.from
+                msgType = '$CancelTarget'
             end
+            rinsan.sendLogMessage(room, msgType, params)
+            table.insert(dinghan_cards, use.card:objectName())
+            rinsan.setDinghanCardsTable(player, dinghan_cards)
         end
     end
 }
