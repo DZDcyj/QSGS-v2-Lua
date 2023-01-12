@@ -2255,26 +2255,26 @@ end
 
 -- 辉逝
 -- 无脑给自己
-local LuaHuishiLimit_skill = {}
-LuaHuishiLimit_skill.name = 'LuaHuishiLimit'
+local LuaLimitHuishi_skill = {}
+LuaLimitHuishi_skill.name = 'LuaLimitHuishi'
 
-table.insert(sgs.ai_skills, LuaHuishiLimit_skill)
+table.insert(sgs.ai_skills, LuaLimitHuishi_skill)
 
-LuaHuishiLimit_skill.getTurnUseCard = function(self, inclusive)
+LuaLimitHuishi_skill.getTurnUseCard = function(self, inclusive)
     if self.player:getMaxHp() < 4 or self.player:getLostHp() < 2 then
         return nil
     end
-    if self.player:getMark('@LuaHuishiLimit') == 0 then
+    if self.player:getMark('@LuaLimitHuishi') == 0 then
         return nil
     end
     if (#self.friends <= #self.enemies and sgs.turncount > 2 and self.player:getLostHp() > 1) or
         (sgs.turncount > 1 and self:isWeak()) or (not self:needBear()) then
-        return sgs.Card_Parse('#LuaHuishiLimitCard:.:')
+        return sgs.Card_Parse('#LuaLimitHuishiCard:.:')
     end
 end
 
-sgs.ai_skill_use_func['#LuaHuishiLimitCard'] = function(card, use, self)
-    local card_str = '#LuaHuishiLimitCard:.:'
+sgs.ai_skill_use_func['#LuaLimitHuishiCard'] = function(card, use, self)
+    local card_str = '#LuaLimitHuishiCard:.:'
     local acard = sgs.Card_Parse(card_str)
     assert(acard)
     use.card = acard

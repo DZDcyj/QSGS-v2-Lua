@@ -7374,36 +7374,36 @@ LuaTianyiDamaged = sgs.CreateTriggerSkill {
     end
 }
 
-LuaHuishiLimitCard = sgs.CreateSkillCard {
-    name = 'LuaHuishiLimitCard',
+LuaLimitHuishiCard = sgs.CreateSkillCard {
+    name = 'LuaLimitHuishiCard',
     target_fixed = false,
     filter = function(self, selected, to_select)
         return #selected == 0
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
-        source:loseMark('@LuaHuishiLimit')
-        target:drawCards(4, 'LuaHuishiLimit')
-        room:broadcastSkillInvoke('LuaHuishiLimit')
+        source:loseMark('@LuaLimitHuishi')
+        target:drawCards(4, 'LuaLimitHuishi')
+        room:broadcastSkillInvoke('LuaLimitHuishi')
         room:loseMaxHp(source, 2)
     end
 }
 
-LuaHuishiLimitVS = sgs.CreateZeroCardViewAsSkill {
-    name = 'LuaHuishiLimit',
+LuaLimitHuishiVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaLimitHuishi',
     view_as = function(self, cards)
-        return LuaHuishiLimitCard:clone()
+        return LuaLimitHuishiCard:clone()
     end,
     enabled_at_play = function(self, player)
-        return player:getMark('@LuaHuishiLimit') >= 1
+        return player:getMark('@LuaLimitHuishi') >= 1
     end
 }
 
-LuaHuishiLimit = sgs.CreateTriggerSkill {
-    name = 'LuaHuishiLimit',
+LuaLimitHuishi = sgs.CreateTriggerSkill {
+    name = 'LuaLimitHuishi',
     frequency = sgs.Skill_Limited,
-    limit_mark = '@LuaHuishiLimit',
-    view_as_skill = LuaHuishiLimitVS,
+    limit_mark = '@LuaLimitHuishi',
+    view_as_skill = LuaLimitHuishiVS,
     on_trigger = function()
     end
 }
@@ -7636,7 +7636,7 @@ LuaZuoxing:setGuhuoDialog('r')
 ExShenGuojia:addSkill(LuaHuishi)
 ExShenGuojia:addSkill(LuaTianyi)
 SkillAnjiang:addSkill(LuaTianyiDamaged)
-ExShenGuojia:addSkill(LuaHuishiLimit)
+ExShenGuojia:addSkill(LuaLimitHuishi)
 SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
 
