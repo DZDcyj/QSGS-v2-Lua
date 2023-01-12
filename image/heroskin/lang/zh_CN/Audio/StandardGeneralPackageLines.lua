@@ -201,21 +201,20 @@ return {
     ['~ExMouHuangzhong'] = '呜呜呜，我不玩了',
     -- 神荀彧
     ['$LuaTianzuo1-ExShenXunyu_1'] = '这位更是脑子不太好——孙策',
-    ['$LuaTianzuo2-ExShenXunyu_1'] ='这位更是脑子不太好——孙笨',
+    ['$LuaTianzuo2-ExShenXunyu_1'] = '这位更是脑子不太好——孙笨',
     ['$LuaLingce1-ExShenXunyu_1'] = '这位更是脑子不太好——孙枣',
-    ['$LuaLingce2-ExShenXunyu_1'] ='这位更是脑子不太好——孙束',
+    ['$LuaLingce2-ExShenXunyu_1'] = '这位更是脑子不太好——孙束',
     ['$LuaDinghan1-ExShenXunyu_1'] = '这位更是脑子不太好——江东小白板',
     ['$LuaDinghan2-ExShenXunyu_1'] = '这位更是脑子不太好——辣个男人',
     ['~ExShenXunyu-ExShenXunyu_1'] = '一定是王粲干的',
     -- 神郭嘉
     ['$LuaHuishi1-ExShenGuojia_1'] = '机关精巧，将军可看在眼里',
     ['$LuaHuishi2-ExShenGuojia_1'] = '区区小技，有手就行',
-    ['$LuaTianyi1-ExShenGuojia_1'] = '主公以国事待吾，吾食主公心智',
+    ['$LuaTianyi1-ExShenGuojia_1'] = '主公以国士待吾，吾食主公心智',
     ['$LuaTianyi2-ExShenGuojia_1'] = '虽然付出了许多代价，但是收获也不错，主公死了（喜）',
     ['$LuaLimitHuishi1-ExShenGuojia_1'] = '伐吴此举十有九利，惟陛下察之',
-    ['$LuaLimitHuishi2-ExShenGuojia_1'] = '我早知你小子天命不僣，果真如我所料',
+    ['$LuaLimitHuishi2-ExShenGuojia_1'] = '我早知你小子天命不眷，果真如我所料',
     ['$LuaZuoxing1-ExShenGuojia_1'] = '倾荡芝士已成，石城尽在眼下',
     ['$LuaZuoxing2-ExShenGuojia_1'] = '吾军势如破竹，江东六郡唾手可得',
-    ['~ExShenGuojia-ExShenGuojia_1'] = '我俏，我他妈死了是吧',
-
+    ['~ExShenGuojia-ExShenGuojia_1'] = '我俏，我他妈死了是吧'
 }
