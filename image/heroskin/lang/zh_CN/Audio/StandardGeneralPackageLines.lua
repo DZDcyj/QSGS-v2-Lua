@@ -216,5 +216,14 @@ return {
     ['$LuaLimitHuishi2-ExShenGuojia_1'] = '我早知你小子天命不眷，果真如我所料',
     ['$LuaZuoxing1-ExShenGuojia_1'] = '倾荡芝士已成，石城尽在眼下',
     ['$LuaZuoxing2-ExShenGuojia_1'] = '吾军势如破竹，江东六郡唾手可得',
-    ['~ExShenGuojia-ExShenGuojia_1'] = '我俏，我他妈死了是吧'
+    ['~ExShenGuojia-ExShenGuojia_1'] = '我俏，我他妈死了是吧',
+    -- 神孙策
+    ['$LuaYingba1'] = '看来你是真想和我拼一下子',
+    ['$LuaYingba2'] = '这位更是脑子不太好',
+    ['$LuaFuhai1'] = '我们该算算旧账了',
+    ['$LuaFuhai2'] = '我从未见过如此厚颜无耻之人！',
+    ['$LuaPinghe1'] = '将军不要杀我，钱要多少有多少',
+    ['$LuaPinghe2'] = '你坐Rolls Royce，你有资格参加这次决战',
+    ['~ExShenSunce'] = '无耻小人！胆敢暗算于我……',
+
 }
