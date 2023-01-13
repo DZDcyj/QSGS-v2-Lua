@@ -8582,14 +8582,20 @@ LuaChongjianCard = sgs.CreateSkillCard {
         local room = card_use.from:getRoom()
         local aocaistring = self:getUserString()
         local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
-        if string.find(aocaistring, '+') then
             local uses = {}
             for _, name in pairs(aocaistring:split('+')) do
                 table.insert(uses, name)
             end
+            if table.contains(uses, 'slash') then
+                local sts = sgs.GetConfig('BanPackages', '')
+                if not string.find(sts, 'maneuvering') then
+                    table.insert(uses, 'normal_slash')
+                    table.insert(uses, 'thunder_slash')
+                    table.insert(uses, 'fire_slash')
+                end
+            end
             local name = room:askForChoice(card_use.from, 'LuaChongjian', table.concat(uses, '+'))
             use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
-        end
         if use_card == nil then
             return nil
         end
@@ -8611,14 +8617,20 @@ LuaChongjianCard = sgs.CreateSkillCard {
         local room = user:getRoom()
         local aocaistring = self:getUserString()
         local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
-        if string.find(aocaistring, '+') then
             local uses = {}
             for _, name in pairs(aocaistring:split('+')) do
                 table.insert(uses, name)
             end
+            if table.contains(uses, 'slash') then
+                local sts = sgs.GetConfig('BanPackages', '')
+                if not string.find(sts, 'maneuvering') then
+                    table.insert(uses, 'normal_slash')
+                    table.insert(uses, 'thunder_slash')
+                    table.insert(uses, 'fire_slash')
+                end
+            end
             local name = room:askForChoice(user, 'LuaChongjian', table.concat(uses, '+'))
             use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
-        end
         use_card:addSubcard(self:getSubcards():first())
         use_card:setSkillName('LuaChongjian')
         return use_card
@@ -8672,6 +8684,19 @@ LuaChongjianUseCard = sgs.CreateSkillCard {
     end,
     on_use = function(self, room, source, targets)
         local pattern = #targets > 0 and 'slash' or 'analeptic'
+        repeat
+            if pattern == 'slash' then
+                local uses = {}
+                local sts = sgs.GetConfig('BanPackages', '')
+                if string.find(sts, 'maneuvering') then
+                    break
+                end
+                table.insert(uses, 'normal_slash')
+                table.insert(uses, 'thunder_slash')
+                table.insert(uses, 'fire_slash')
+                pattern = room:askForChoice(source, 'LuaChongjian', table.concat(uses, '+'))
+            end
+        until true
         local card = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, -1)
         card:addSubcards(self:getSubcards())
         card:setSkillName(self:objectName())
@@ -8914,8 +8939,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
                 if target:isKongcheng() then
                     break
                 end
-                local card_id = room:askForCardChosen(source, target, 'h', 'LuaPowei', false,
-                    sgs.Card_MethodNone)
+                local card_id = room:askForCardChosen(source, target, 'h', 'LuaPowei', false, sgs.Card_MethodNone)
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
                 room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
             end
