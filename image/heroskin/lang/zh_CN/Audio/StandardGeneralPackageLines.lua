@@ -196,7 +196,7 @@ return {
     ['$kanpo2-wolong_1'] = '我，就是智慧的化身',
     ['~wolong-wolong_1'] = '龙困浅滩遭虾戏，虎落平阳被犬欺',
     -- 谋黄忠
-    ['$LuaLiegong1'] = '吾虽无双，万军取首！',
+    ['$LuaLiegong1'] = '吾虽年迈，无双，万军取首！',
     ['$LuaLiegong2'] = '执此神弓，恭行天罚！',
     ['~ExMouHuangzhong'] = '呜呜呜，我不玩了',
     -- 神荀彧
