@@ -8327,7 +8327,7 @@ LuaQuediCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)
-        return to_select:hasFlag('LuaQuediTarget') and (not to_select:isNude())
+        return to_select:hasFlag('LuaQuediTarget') and (not to_select:isKongcheng())
     end,
     feasible = function(self, targets)
         -- 如果没有基本牌，就要求为一
@@ -8347,15 +8347,15 @@ LuaQuediCard = sgs.CreateSkillCard {
         if self:subcardsLength() > 0 then
             card = sgs.Sanguosha:getCard(self:getSubcards():first())
         end
+        if card then
+            room:setPlayerFlag(source, 'LuaQuediDamageUp')
+        end
         room:broadcastSkillInvoke('LuaQuedi')
         room:addPlayerMark(source, 'LuaQuediUsed')
         if target then
-            local card_id = room:askForCardChosen(source, target, 'he', 'LuaQuedi', false, sgs.Card_MethodNone)
+            local card_id = room:askForCardChosen(source, target, 'h', 'LuaQuedi', false, sgs.Card_MethodNone)
             local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
             room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
-        end
-        if card then
-            room:setPlayerFlag(source, 'LuaQuediDamageUp')
         end
         if target and card then
             room:loseMaxHp(source)
