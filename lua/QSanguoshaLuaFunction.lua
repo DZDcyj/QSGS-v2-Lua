@@ -1107,7 +1107,8 @@ function addQinggangTag(victim, card)
     -- 因此需要先判断是否已经存在，如果存在就不要再加
     -- 在【杀】结束之后，将会自动清除青钢标记
     local qinggang = victim:getTag('Qinggang'):toStringList()
-    if qinggang:contains(card:toString()) then
+    -- 迫真 type 是 table
+    if qinggang and table.contains(qinggang, card:toString()) then
         return
     end
     victim:addQinggangTag(card)
