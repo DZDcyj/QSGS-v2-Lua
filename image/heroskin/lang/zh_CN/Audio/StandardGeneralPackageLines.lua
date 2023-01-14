@@ -233,9 +233,9 @@ return {
     ['$LuaDulie1-ExShenTaishici_1'] = '吾想起高兴的事',
     ['$LuaDulie2-ExShenTaishici_1'] = '咱们江东天险牢不可破',
     ['$LuaPowei1-ExShenTaishici_1'] = '君且看身后，我主公生孩子力', -- 一般破围语音
-    ['$LuaPowei2-ExShenTaishici_1'] = '燕人张飞在此', -- 破围成功
+    ['$LuaPowei2-ExShenTaishici_1'] = '矢贯坚石，劲贯三军', -- 破围成功
     ['$LuaPowei3-ExShenTaishici_1'] = '太吓人力！', -- 破围失败
     ['$LuaShenzhu1-ExShenTaishici_1'] = '看我此箭，取那冒进之人性命',
-    ['$LuaShenzhu2-ExShenTaishici_1'] = '矢贯坚石，劲贯三军',
+    ['$LuaShenzhu2-ExShenTaishici_1'] = '燕人张飞在此',
     ['~ExShenTaishici-ExShenTaishici_1'] = '神鸦不佑……',
 }
