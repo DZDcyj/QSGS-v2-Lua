@@ -224,7 +224,7 @@ return {
     ['$LuaFuhai2-ExShenSunce_1'] = '我从未见过如此厚颜无耻之人！',
     ['$LuaPinghe1-ExShenSunce_1'] = '将军不要杀我，钱要多少有多少',
     ['$LuaPinghe2-ExShenSunce_1'] = '你坐Rolls Royce，你有资格参加这次决战',
-    ['~ExShenSunce-ExShenSunce_1'] = '无耻小人！胆敢暗算于我……',
+    ['~ExShenSunce-ExShenSunce_1'] = '他们在搞啥东东？他在讲什么？',
     -- 界朱然
     ['$LuaDanshou1-JieZhuran_1'] = '身受国恩，今日便是报偿之时',
     ['$LuaDanshou2-JieZhuran_1'] = '主公，臣斗胆来挡住魏军的火力',
