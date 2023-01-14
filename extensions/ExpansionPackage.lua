@@ -8695,6 +8695,9 @@ LuaChongjianUseCard = sgs.CreateSkillCard {
                 table.insert(uses, 'thunder_slash')
                 table.insert(uses, 'fire_slash')
                 pattern = room:askForChoice(source, 'LuaChongjian', table.concat(uses, '+'))
+                if pattern == 'normal_slash' then
+                    pattern = 'slash'
+                end
             end
         until true
         local card = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, -1)
@@ -8805,7 +8808,8 @@ LuaChongjian = sgs.CreateTriggerSkill {
 
 LuaChongjianQinggang = sgs.CreateTriggerSkill {
     name = 'LuaChongjianQinggang',
-    events = {sgs.PreCardUsed},
+    events = {sgs.TargetSpecified},
+    priority = -1,
     global = true,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
