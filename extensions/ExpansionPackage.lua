@@ -9076,6 +9076,7 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
         if not dying.who:hasSkill('LuaPowei') then
             return false
         end
+        room:addPlayerMark(dying.who, 'LuaPowei')
         rinsan.sendLogMessage(room, '#LuaPoweiFailure', {
             ['from'] = player,
             ['arg'] = 'LuaPowei'
@@ -9086,7 +9087,6 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, '@LuaPowei', 0)
         end
         dying.who:throwAllEquips()
-        room:addPlayerMark(dying.who, 'LuaPowei')
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target, 'LuaPowei') and target:getMark('LuaPowei') == 0
