@@ -8581,7 +8581,6 @@ LuaChongjianCard = sgs.CreateSkillCard {
     on_validate = function(self, card_use)
         local room = card_use.from:getRoom()
         local aocaistring = self:getUserString()
-        local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
         local uses = {}
         for _, name in pairs(aocaistring:split('+')) do
             table.insert(uses, name)
@@ -8598,7 +8597,7 @@ LuaChongjianCard = sgs.CreateSkillCard {
         if name == 'normal_slash' then
             name = 'slash'
         end
-        use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        local use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
         if use_card == nil then
             return nil
         end
@@ -8619,7 +8618,6 @@ LuaChongjianCard = sgs.CreateSkillCard {
     on_validate_in_response = function(self, user)
         local room = user:getRoom()
         local aocaistring = self:getUserString()
-        local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
         local uses = {}
         for _, name in pairs(aocaistring:split('+')) do
             table.insert(uses, name)
@@ -8636,7 +8634,10 @@ LuaChongjianCard = sgs.CreateSkillCard {
         if name == 'normal_slash' then
             name = 'slash'
         end
-        use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        local use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        if use_card == nil then
+            return nil
+        end
         use_card:addSubcard(self:getSubcards():first())
         use_card:setSkillName('LuaChongjian')
         return use_card
