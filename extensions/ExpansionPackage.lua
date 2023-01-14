@@ -8582,20 +8582,23 @@ LuaChongjianCard = sgs.CreateSkillCard {
         local room = card_use.from:getRoom()
         local aocaistring = self:getUserString()
         local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
-            local uses = {}
-            for _, name in pairs(aocaistring:split('+')) do
-                table.insert(uses, name)
+        local uses = {}
+        for _, name in pairs(aocaistring:split('+')) do
+            table.insert(uses, name)
+        end
+        if table.contains(uses, 'slash') then
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(uses, 'normal_slash')
+                table.insert(uses, 'thunder_slash')
+                table.insert(uses, 'fire_slash')
             end
-            if table.contains(uses, 'slash') then
-                local sts = sgs.GetConfig('BanPackages', '')
-                if not string.find(sts, 'maneuvering') then
-                    table.insert(uses, 'normal_slash')
-                    table.insert(uses, 'thunder_slash')
-                    table.insert(uses, 'fire_slash')
-                end
-            end
-            local name = room:askForChoice(card_use.from, 'LuaChongjian', table.concat(uses, '+'))
-            use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        end
+        local name = room:askForChoice(card_use.from, 'LuaChongjian', table.concat(uses, '+'))
+        if name == 'normal_slash' then
+            name = 'slash'
+        end
+        use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
         if use_card == nil then
             return nil
         end
@@ -8617,20 +8620,23 @@ LuaChongjianCard = sgs.CreateSkillCard {
         local room = user:getRoom()
         local aocaistring = self:getUserString()
         local use_card = sgs.Sanguosha:cloneCard(self:getUserString(), sgs.Card_NoSuit, -1)
-            local uses = {}
-            for _, name in pairs(aocaistring:split('+')) do
-                table.insert(uses, name)
+        local uses = {}
+        for _, name in pairs(aocaistring:split('+')) do
+            table.insert(uses, name)
+        end
+        if table.contains(uses, 'slash') then
+            local sts = sgs.GetConfig('BanPackages', '')
+            if not string.find(sts, 'maneuvering') then
+                table.insert(uses, 'normal_slash')
+                table.insert(uses, 'thunder_slash')
+                table.insert(uses, 'fire_slash')
             end
-            if table.contains(uses, 'slash') then
-                local sts = sgs.GetConfig('BanPackages', '')
-                if not string.find(sts, 'maneuvering') then
-                    table.insert(uses, 'normal_slash')
-                    table.insert(uses, 'thunder_slash')
-                    table.insert(uses, 'fire_slash')
-                end
-            end
-            local name = room:askForChoice(user, 'LuaChongjian', table.concat(uses, '+'))
-            use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
+        end
+        local name = room:askForChoice(user, 'LuaChongjian', table.concat(uses, '+'))
+        if name == 'normal_slash' then
+            name = 'slash'
+        end
+        use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
         use_card:addSubcard(self:getSubcards():first())
         use_card:setSkillName('LuaChongjian')
         return use_card
