@@ -218,17 +218,24 @@ return {
     ['$LuaZuoxing2-ExShenGuojia_1'] = '吾军势如破竹，江东六郡唾手可得',
     ['~ExShenGuojia-ExShenGuojia_1'] = '我俏，我他妈死了是吧',
     -- 神孙策
-    ['$LuaYingba1'] = '看来你是真想和我拼一下子',
-    ['$LuaYingba2'] = '这位更是脑子不太好',
-    ['$LuaFuhai1'] = '我们该算算旧账了',
-    ['$LuaFuhai2'] = '我从未见过如此厚颜无耻之人！',
-    ['$LuaPinghe1'] = '将军不要杀我，钱要多少有多少',
-    ['$LuaPinghe2'] = '你坐Rolls Royce，你有资格参加这次决战',
-    ['~ExShenSunce'] = '无耻小人！胆敢暗算于我……',
+    ['$LuaYingba1-ExShenSunce_1'] = '看来你是真想和我拼一下子',
+    ['$LuaYingba2-ExShenSunce_1'] = '这位更是脑子不太好',
+    ['$LuaFuhai1-ExShenSunce_1'] = '我们该算算旧账了',
+    ['$LuaFuhai2-ExShenSunce_1'] = '我从未见过如此厚颜无耻之人！',
+    ['$LuaPinghe1-ExShenSunce_1'] = '将军不要杀我，钱要多少有多少',
+    ['$LuaPinghe2-ExShenSunce_1'] = '你坐Rolls Royce，你有资格参加这次决战',
+    ['~ExShenSunce-ExShenSunce_1'] = '无耻小人！胆敢暗算于我……',
     -- 界朱然
-    ['$LuaDanshou1'] = '身受国恩，今日便是报偿之时',
-    ['$LuaDanshou2'] = '主公，臣斗胆来挡住魏军的火力',
-    ['~JieZhuran'] = '望吾死后，江东依然无人干饭',
-
-
+    ['$LuaDanshou1-JieZhuran_1'] = '身受国恩，今日便是报偿之时',
+    ['$LuaDanshou2-JieZhuran_1'] = '主公，臣斗胆来挡住魏军的火力',
+    ['~JieZhuran-JieZhuran_1'] = '望吾死后，江东依然无人干饭',
+    -- 神太史慈
+    ['$LuaDulie1-ExShenTaishici_1'] = '吾想起高兴的事',
+    ['$LuaDulie2-ExShenTaishici_1'] = '咱们江东天险牢不可破',
+    ['$LuaPowei1-ExShenTaishici_1'] = '君且看身后，我主公生孩子力', -- 一般破围语音
+    ['$LuaPowei2-ExShenTaishici_1'] = '燕人张飞在此', -- 破围成功
+    ['$LuaPowei3-ExShenTaishici_1'] = '太吓人力！', -- 破围失败
+    ['$LuaShenzhu1-ExShenTaishici_1'] = '看我此箭，取那冒进之人性命',
+    ['$LuaShenzhu2-ExShenTaishici_1'] = '矢贯坚石，劲贯三军',
+    ['~ExShenTaishici-ExShenTaishici_1'] = '神鸦不佑……',
 }
