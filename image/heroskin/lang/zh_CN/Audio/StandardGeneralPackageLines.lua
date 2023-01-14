@@ -225,5 +225,10 @@ return {
     ['$LuaPinghe1'] = '将军不要杀我，钱要多少有多少',
     ['$LuaPinghe2'] = '你坐Rolls Royce，你有资格参加这次决战',
     ['~ExShenSunce'] = '无耻小人！胆敢暗算于我……',
+    -- 界朱然
+    ['$LuaDanshou1'] = '身受国恩，今日便是报偿之时',
+    ['$LuaDanshou2'] = '主公，臣斗胆来挡住魏军的火力',
+    ['~JieZhuran'] = '望吾死后，江东依然无人干饭',
+
 
 }
