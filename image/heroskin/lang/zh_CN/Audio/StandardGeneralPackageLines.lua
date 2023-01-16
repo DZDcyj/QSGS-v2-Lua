@@ -238,4 +238,12 @@ return {
     ['$LuaShenzhu1-ExShenTaishici_1'] = '看我此箭，取那冒进之人性命',
     ['$LuaShenzhu2-ExShenTaishici_1'] = '燕人张飞在此',
     ['~ExShenTaishici-ExShenTaishici_1'] = '神鸦不佑……',
+    --曹昂
+    ['$kangkai1-caoang_1'] = '阿瞒上马，你父亲我随后便来',
+    ['$kangkai2-caoang_1'] = '叛军来得贼快，我替阿瞒殿后',
+    ['~caoang-caoang_1'] = '……（马嘶鸣声）',
+    --神曹操
+    ["$guixin1-shencaocao_2"] = '我麾下众将短命无妨',
+    ["$guixin2-shencaocao_2"] = '好计，就依奉孝说的办吧',
+    ["~shencaocao-shencaocao_2"] = '我命休矣',
 }

@@ -56,6 +56,8 @@ image/**/[^A-Z]*.[pP][nN][gG]
 !liuyan_1*
 !liufeng_1*
 !wolong_1*
+!caoang_1*
+!shencaocao_2*
 imageformats/
 lang/zh_CN/*.lua
 lang/zh_CN/Audio/*.lua
