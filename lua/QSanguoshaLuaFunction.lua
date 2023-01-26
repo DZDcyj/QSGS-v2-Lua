@@ -1157,6 +1157,26 @@ function moveLuaPoweiMark(room, currentPlayer)
     end
 end
 
+-- 死亡负面技能风险
+function hasDeathSkillRisk(source, target)
+    local room = target:getRoom()
+    if target:hasSkill('wuhun') then
+        local wuhunDeathRisk = true
+        local sourceMarkCount = source:getMark('@nightmare')
+        for _, p in sgs.qlist(room:getOtherPlayers(source)) do
+            if p:getMark('@nightmare') > sourceMarkCount then
+                wuhunDeathRisk = false
+                break
+            end
+        end
+        if wuhunDeathRisk then
+            return true
+        end
+    end
+    -- 挥泪、断肠、毒士
+    return target:hasSkills('huilei|duanchang|dushi')
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2

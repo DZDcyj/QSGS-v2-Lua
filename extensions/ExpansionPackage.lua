@@ -2831,7 +2831,7 @@ LuaQinzheng = sgs.CreateTriggerSkill {
 
 ExLuotong:addSkill(LuaQinzheng)
 
-ExZhangyi = sgs.General(extension, 'ExZhangyi', 'shu', '4', true, true)
+ExZhangyi = sgs.General(extension, 'ExZhangyi', 'shu', '4', true)
 
 LuaZhiyi = sgs.CreateTriggerSkill {
     name = 'LuaZhiyi',
@@ -2884,8 +2884,11 @@ LuaZhiyi = sgs.CreateTriggerSkill {
                                 end
                             end
                             if not players:isEmpty() then
+                                sp:setTag('LuaZhiyiSlashType', sgs.QVariant(choice))
                                 local target =
                                     room:askForPlayerChosen(sp, players, self:objectName(), 'LuaZhiyiSlashTo')
+                                sp:removeTag('LuaZhiyiSlashTarget')
+                                sp:removeTag('LuaZhiyiSlashType')
                                 if target then
                                     local card = sgs.Sanguosha:cloneCard(choice, sgs.Card_NoSuit, 0)
                                     card:setSkillName(self:objectName())

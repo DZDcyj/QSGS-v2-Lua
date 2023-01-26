@@ -3103,3 +3103,96 @@ sgs.ai_skill_choice['LuaWenyangKingdomChoose'] = function(self, choices)
     local items = choices:split('+')
     return items[math.random(1, #items)]
 end
+
+-- 张翼
+-- 执义
+sgs.ai_skill_choice['LuaZhiyi'] = function(self, choices)
+    local items = choices:split('+')
+    if table.contains(items, 'peach') then
+        -- 有桃就吃
+        return 'peach'
+    end
+    local slashes = {}
+    for _, item in ipairs(items) do
+        if string.find(item, 'slash') then
+            table.insert(slashes, item)
+        end
+    end
+    if #slashes > 0 then
+        -- 遍历敌人，然后选打伤害最高的
+        self:sort(self.enemies, 'defense')
+        local maxDamage, maxSlash = -1, ''
+        local victim
+        for _, enemy in ipairs(self.enemies) do
+            for _, slash in ipairs(slashes) do
+                local dummy = sgs.Sanguosha:cloneCard(slash, sgs.Card_NoSuit, -1)
+                local nature = getDamageType(dummy)
+                if not self:damageIsEffective(enemy, nature, self.player) then
+                    goto nextSlash
+                end
+                if self.player:canSlash(enemy, dummy, true) then
+                    local currDamage = self:AtomDamageCount(enemy, self.player, nature, dummy)
+                    -- 判断是否会有断肠等风险
+                    if rinsan.hasDeathSkillRisk(self.player, enemy) and currDamage >= enemy:getHp() then
+                        goto nextEnemy
+                    end
+                    if currDamage > maxDamage then
+                        maxDamage = currDamage
+                        maxSlash = slash
+                        victim = enemy
+                    end
+                end
+                ::nextSlash::
+            end
+            ::nextEnemy::
+        end
+        if maxDamage > 0 and victim then
+            -- 选中最大目标
+            local data = sgs.QVariant()
+            data:setValue(victim)
+            self.player:setTag('LuaZhiyiSlashTarget', data)
+            return maxSlash
+        end
+    end
+    return 'luazhiyidraw'
+end
+
+-- 执义选择杀目标
+sgs.ai_skill_playerchosen['LuaZhiyi'] = function(self, targets, data)
+    targets = sgs.QList2Table(targets)
+    -- 如果已经有预选角色，直接用
+    local prechoose = self.player:getTag('LuaZhiyiSlashTarget'):toPlayer()
+    if prechoose then
+        for _, p in ipairs(targets) do
+            if p:objectName() == prechoose:objectName() then
+                return p
+            end
+        end
+    end
+    local slash = self.player:getTag('LuaZhiyiSlashType'):toString()
+    self:sort(targets, 'defense')
+    local maxDamage = -1
+    local victim
+    for _, enemy in ipairs(targets) do
+        if not self:isEnemy(enemy) then
+            goto nextEnemy
+        end
+        local dummy = sgs.Sanguosha:cloneCard(slash, sgs.Card_NoSuit, -1)
+        if self.player:canSlash(enemy, dummy, true) then
+            local currDamage = self:AtomDamageCount(enemy, self.player, getDamageType(dummy), dummy)
+            -- 判断是否会有断肠等风险
+            if rinsan.hasDeathSkillRisk(self.player, enemy) and currDamage >= enemy:getHp() then
+                goto nextEnemy
+            end
+            if currDamage > maxDamage then
+                maxDamage = currDamage
+                victim = enemy
+            end
+        end
+        ::nextEnemy::
+    end
+    if maxDamage > 0 and victim then
+        return victim
+    end
+    return targets[random(1, #targets)]
+end
