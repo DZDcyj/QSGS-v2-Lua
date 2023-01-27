@@ -999,10 +999,11 @@ LuaPojun = sgs.CreateTriggerSkill {
                     if discard_n > 0 then
                         local orig_places = {}
                         local cards = sgs.IntList()
+                        room:setTag('LuaFakeMove', sgs.QVariant(true))
                         room:setPlayerFlag(t, 'xuanhuo_InTempMoving')
                         for i = 0, discard_n - 1, 1 do
                             local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
-                                sgs.Card_MethodNone)
+                                sgs.Card_MethodNone, cards)
                             local place = room:getCardPlace(id)
                             orig_places[i] = place
                             cards:append(id)
@@ -1012,6 +1013,7 @@ LuaPojun = sgs.CreateTriggerSkill {
                             room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), t, orig_places[i], false)
                         end
                         room:setPlayerFlag(t, '-xuanhuo_InTempMoving')
+                        room:setTag('LuaFakeMove', sgs.QVariant(false))
                         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                         dummy:addSubcards(cards)
                         t:addToPile('LuaPojun', dummy, false)
@@ -8795,8 +8797,9 @@ LuaChongjian = sgs.CreateTriggerSkill {
             local orig_places = {}
             local cards = sgs.IntList()
             room:setPlayerFlag(victim, 'xuanhuo_InTempMoving')
+            room:setTag('LuaFakeMove', sgs.QVariant(true))
             for i = 0, x - 1, 1 do
-                local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone)
+                local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone, cards)
                 local place = room:getCardPlace(id)
                 orig_places[i] = place
                 cards:append(id)
@@ -8806,6 +8809,7 @@ LuaChongjian = sgs.CreateTriggerSkill {
                 room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), victim, orig_places[i], false)
             end
             room:setPlayerFlag(victim, '-xuanhuo_InTempMoving')
+            room:setTag('LuaFakeMove', sgs.QVariant(false))
             local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
             dummy:addSubcards(cards)
             room:obtainCard(player, dummy, false)
