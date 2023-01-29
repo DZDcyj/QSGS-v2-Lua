@@ -1080,6 +1080,16 @@ end
 -- 公孙康
 -- 讨灭只对非友军发动
 sgs.ai_skill_invoke.LuaTaomie = function(self, data)
+    local target = data:toPlayer()
+    -- 不对友军发动
+    if self:isFriend(target) then
+        return false
+    end
+    -- 如果自身较弱，且对面打不到自己，就保命
+    if self:isWeak() and (not target:inMyAttackRange(self.player)) then
+        return false
+    end
+    -- 判断场上是否有讨灭标记
     local currTaomieTarget
     for _, p in sgs.qlist(self.room:getAlivePlayers()) do
         if p:getMark('@LuaTaomie') > 0 then
@@ -1087,16 +1097,19 @@ sgs.ai_skill_invoke.LuaTaomie = function(self, data)
             break
         end
     end
-    -- 如果场上已有讨灭标记，则判断血量
+    -- 如果存在讨灭标记角色
     if currTaomieTarget then
-        local target = data:toPlayer()
-        if target:getHp() < currTaomieTarget:getHp() then
+        -- 如果之前打到友军，就换到这里
+        if self:isFriend(currTaomieTarget) then
             return true
-        else
-            return false
         end
+        -- 判断防御值
+        if sgs.getDefense(currTaomieTarget) > sgs.getDefense(target) then
+            return true
+        end
+        return false
     end
-    return not self:isFriend(data:toPlayer())
+    return true
 end
 
 -- 讨灭给牌
@@ -1119,9 +1132,11 @@ sgs.ai_skill_choice['LuaTaomie'] = function(self, choices, data)
     -- 选项为：加伤害、拿牌、加伤害+拿牌
     local items = choices:split('+')
     local target = data:toPlayer()
-    local armor = target:getArmor()
-    if armor and armor:objectName() == 'silver_lion' then
-        -- 有白银狮子，只拿牌
+    if self:isFriend(target) then
+        return 'cancel'
+    end
+    if target:hasArmorEffect('silver_lion') then
+        -- 有白银狮子效果，只拿牌
         if table.contains(items, 'getOneCard') then
             return 'getOneCard'
         end
