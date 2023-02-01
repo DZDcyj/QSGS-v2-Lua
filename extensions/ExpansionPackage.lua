@@ -7834,7 +7834,7 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
         if invoked then
             return false
         end
-        local bpkg = sgs.GetConfig('BanPackages', '')
+        local bpkg = table.concat(sgs.Sanguosha:getBanPackages(), '+')
         local luapkg = sgs.GetConfig('LuaPackages', '')
         if string.find(luapkg, 'ExpansionCardPackage') and (not string.find(bpkg, 'ExpansionCardPackage')) then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -8799,7 +8799,8 @@ LuaChongjian = sgs.CreateTriggerSkill {
             room:setPlayerFlag(victim, 'xuanhuo_InTempMoving')
             room:setTag('LuaFakeMove', sgs.QVariant(true))
             for i = 0, x - 1, 1 do
-                local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone, cards)
+                local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone,
+                    cards)
                 local place = room:getCardPlace(id)
                 orig_places[i] = place
                 cards:append(id)
