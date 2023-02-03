@@ -1767,8 +1767,7 @@ LuaYizanCard = sgs.CreateSkillCard {
             sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -1801,8 +1800,7 @@ LuaYizanCard = sgs.CreateSkillCard {
         if self:getUserString() == 'peach+analeptic' then
             local use_list = {}
             table.insert(use_list, 'peach')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'analeptic')
             end
             to_use = room:askForChoice(source, 'yizan_saveself', table.concat(use_list, '+'))
@@ -1810,8 +1808,7 @@ LuaYizanCard = sgs.CreateSkillCard {
         elseif self:getUserString() == 'slash' then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -3987,8 +3984,7 @@ LuaMiewuCard = sgs.CreateSkillCard {
             sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -4019,8 +4015,7 @@ LuaMiewuCard = sgs.CreateSkillCard {
         if self:getUserString() == 'peach+analeptic' then
             local use_list = {}
             table.insert(use_list, 'peach')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'analeptic')
             end
             to_use = room:askForChoice(source, 'miewu_saveself', table.concat(use_list, '+'))
@@ -4028,8 +4023,7 @@ LuaMiewuCard = sgs.CreateSkillCard {
         elseif self:getUserString() == 'slash' then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -5955,8 +5949,7 @@ LuaZhanyiBasicCard = sgs.CreateSkillCard {
             sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -5988,8 +5981,7 @@ LuaZhanyiBasicCard = sgs.CreateSkillCard {
         if self:getUserString() == 'peach+analeptic' then
             local use_list = {}
             table.insert(use_list, 'peach')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'analeptic')
             end
             to_use = room:askForChoice(source, 'zhanyi_saveself', table.concat(use_list, '+'))
@@ -5997,8 +5989,7 @@ LuaZhanyiBasicCard = sgs.CreateSkillCard {
         elseif self:getUserString() == 'slash' then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -7482,8 +7473,7 @@ LuaZuoxingCard = sgs.CreateSkillCard {
             sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -7518,8 +7508,7 @@ LuaZuoxingCard = sgs.CreateSkillCard {
         if self:getUserString() == 'peach+analeptic' then
             local use_list = {}
             table.insert(use_list, 'peach')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'analeptic')
             end
             to_use = room:askForChoice(source, 'zuoxing_saveself', table.concat(use_list, '+'))
@@ -7527,8 +7516,7 @@ LuaZuoxingCard = sgs.CreateSkillCard {
         elseif self:getUserString() == 'slash' then
             local use_list = {}
             table.insert(use_list, 'slash')
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(use_list, 'normal_slash')
                 table.insert(use_list, 'thunder_slash')
                 table.insert(use_list, 'fire_slash')
@@ -7834,9 +7822,8 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
         if invoked then
             return false
         end
-        local bpkg = table.concat(sgs.Sanguosha:getBanPackages(), '+')
         local luapkg = sgs.GetConfig('LuaPackages', '')
-        if string.find(luapkg, 'ExpansionCardPackage') and (not string.find(bpkg, 'ExpansionCardPackage')) then
+        if string.find(luapkg, 'ExpansionCardPackage') and (not rinsan.isPackageBanned('ExpansionCardPackage')) then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 if p:hasSkill('LuaTianzuo') then
                     room:sendCompulsoryTriggerLog(p, 'LuaTianzuo')
@@ -8591,8 +8578,7 @@ LuaChongjianCard = sgs.CreateSkillCard {
             table.insert(uses, name)
         end
         if table.contains(uses, 'slash') then
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(uses, 'normal_slash')
                 table.insert(uses, 'thunder_slash')
                 table.insert(uses, 'fire_slash')
@@ -8628,8 +8614,7 @@ LuaChongjianCard = sgs.CreateSkillCard {
             table.insert(uses, name)
         end
         if table.contains(uses, 'slash') then
-            local sts = sgs.GetConfig('BanPackages', '')
-            if not string.find(sts, 'maneuvering') then
+            if not rinsan.isPackageBanned('maneuvering') then
                 table.insert(uses, 'normal_slash')
                 table.insert(uses, 'thunder_slash')
                 table.insert(uses, 'fire_slash')
@@ -8699,8 +8684,7 @@ LuaChongjianUseCard = sgs.CreateSkillCard {
         repeat
             if pattern == 'slash' then
                 local uses = {}
-                local sts = sgs.GetConfig('BanPackages', '')
-                if string.find(sts, 'maneuvering') then
+                if rinsan.isPackageBanned('maneuvering') then
                     break
                 end
                 table.insert(uses, 'normal_slash')

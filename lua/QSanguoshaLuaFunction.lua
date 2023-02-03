@@ -1177,6 +1177,17 @@ function hasDeathSkillRisk(source, target)
     return target:hasSkills('huilei|duanchang|dushi')
 end
 
+-- 判断对应包是否被禁用
+function isPackageBanned(packageName)
+    -- 必须每次判断，如果写成全局，只会在打开程序时加载一次
+    -- 采用 extra.lua 的 Set 写法
+    local bannedPackages = {}
+    for _, pkg in ipairs(sgs.Sanguosha:getBanPackages()) do
+        bannedPackages[pkg] = true
+    end
+    return bannedPackages[packageName]
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
