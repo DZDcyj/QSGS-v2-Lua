@@ -20,11 +20,7 @@ indirect_combination = sgs.CreateTrickCard {
     feasible = function(self, targets)
         return #targets == 1
     end,
-    on_use = function(self, room, source, targets)
-        for _, target in ipairs(targets) do
-            room:cardEffect(self, source, target)
-        end
-    end,
+    -- 无需覆写 on_use，否则会造成一系列结算问题
     on_effect = function(self, effect)
         local source = effect.from
         local target = effect.to
