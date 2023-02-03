@@ -1497,10 +1497,17 @@ sgs.ai_skill_askforag['LuaShuangxiong'] = function(self, card_ids)
     else
         local blackCount, redCount = 0, 0
         for _, cd in sgs.qlist(self.player:getHandcards()) do
-            if cd:isBlack() then
-                blackCount = blackCount + 1
-            elseif cd:isRed() then
-                redCount = redCount + 1
+            local dummy_use = {
+                isDummy = true
+            }
+            -- 引入是否会使用卡牌判断，避免纯靠颜色
+            self:useCardByClassName(cd, dummy_use)
+            if not dummy_use.card then
+                if cd:isBlack() then
+                    blackCount = blackCount + 1
+                elseif cd:isRed() then
+                    redCount = redCount + 1
+                end
             end
         end
         if blackCount > redCount then
@@ -1523,10 +1530,14 @@ local LuaShuangxiong_skill = {}
 LuaShuangxiong_skill.name = 'LuaShuangxiong'
 table.insert(sgs.ai_skills, LuaShuangxiong_skill)
 LuaShuangxiong_skill.getTurnUseCard = function(self)
-    if self.player:getMark('LuaShuangxiong') == 0 then
+    local canInvokeShuangxiong = self.player:hasFlag('LuaShuangxiongRed') or self.player:hasFlag('LuaShuangxiongBlack')
+    if not canInvokeShuangxiong then
         return nil
     end
-    local mark = self.player:getMark('LuaShuangxiong')
+    local mark = 2
+    if self.player:hasFlag('LuaShuangxiongRed') then
+        mark = 1
+    end
 
     local cards = self.player:getCards('h')
     cards = sgs.QList2Table(cards)
