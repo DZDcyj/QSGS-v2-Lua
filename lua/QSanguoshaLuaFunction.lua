@@ -1051,7 +1051,8 @@ function unknownAnalyze(resultList, source, target, room)
         trick = getKnownCard(p, source, 'TrickCard')
         equip = getKnownCard(p, source, 'EquipCard')
         for _, pile in sgs.list(p:getPileNames()) do
-            for _, cd in sgs.qlist(p:getPile(pile)) do
+            for _, cid in sgs.qlist(p:getPile(pile)) do
+                local cd = sgs.Sanguosha:getCard(cid)
                 if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
                     if cd:isKindOf('BasicCard') then
                         basicRemain = basicRemain - 1
