@@ -1523,10 +1523,14 @@ local LuaShuangxiong_skill = {}
 LuaShuangxiong_skill.name = 'LuaShuangxiong'
 table.insert(sgs.ai_skills, LuaShuangxiong_skill)
 LuaShuangxiong_skill.getTurnUseCard = function(self)
-    if self.player:getMark('LuaShuangxiong') == 0 then
+    local canInvokeShuangxiong = self.player:hasFlag('LuaShuangxiongRed') or self.player:hasFlag('LuaShuangxiongBlack')
+    if not canInvokeShuangxiong then
         return nil
     end
-    local mark = self.player:getMark('LuaShuangxiong')
+    local mark = 2
+    if self.player:hasFlag('LuaShuangxiongRed') then
+        mark = 1
+    end
 
     local cards = self.player:getCards('h')
     cards = sgs.QList2Table(cards)
