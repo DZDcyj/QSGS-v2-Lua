@@ -498,18 +498,18 @@ end
 -- 狼袭
 sgs.ai_skill_playerchosen['LuaLangxi'] = function(self, targets)
     self:updatePlayers()
-    targets = sgs.QList2Table(targets)
-    for _, p in ipairs(targets) do
+    local realTargets = {}
+    for _, p in sgs.qlist(targets) do
         -- damageIsEffective 函数封装了对应的判断逻辑
-        if self:isFriend(p) or not self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
-            table.removeOne(targets, p)
+        if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Normal, self.player) then
+            table.insert(realTargets, p)
         end
     end
-    if #targets == 0 then
+    if #realTargets == 0 then
         return nil
     end
-    self:sort(targets, 'hp')
-    return targets[1]
+    self:sort(realTargets, 'hp')
+    return realTargets[1]
 end
 
 -- 绝策
