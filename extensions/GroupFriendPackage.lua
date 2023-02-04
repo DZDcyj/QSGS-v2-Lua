@@ -1433,9 +1433,7 @@ LuaWangming = sgs.CreateTriggerSkill {
         local dying = data:toDying()
         if dying.damage and dying.damage.from and dying.damage.from:objectName() == player:objectName() then
             room:sendCompulsoryTriggerLog(player, self:objectName())
-            local damage = sgs.DamageStruct()
-            damage.from = player
-            room:killPlayer(dying.who, damage)
+            room:killPlayer(dying.who, dying.damage)
             return true
         end
         return false
