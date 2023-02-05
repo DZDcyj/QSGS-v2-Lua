@@ -1189,6 +1189,104 @@ function isPackageBanned(packageName)
     return bannedPackages[packageName]
 end
 
+-- 获取 table 中 value 的 index
+function getPos(table, value)
+    for i, v in ipairs(table) do
+        if v == value then
+            return i
+        end
+    end
+    return 0
+end
+
+-- 曹金玉系列判断
+-- 是否可以发动“隅泣”
+function canInvokeYuqi(caojinyu, player)
+    if caojinyu:distanceTo(player) > getYuqiAvailableDistance(caojinyu) then
+        return false
+    end
+    return caojinyu:getMark('LuaYuqiInvokeTime') < 2
+end
+
+-- 判断距离
+function getYuqiAvailableDistance(caojinyu)
+    return caojinyu:getMark('LuaYuqiDistance')
+end
+
+-- 可以观看的牌数
+function getYuqiPreviewCardCount(caojinyu)
+    return 3 + caojinyu:getMark('LuaYuqiPreviewCardCount')
+end
+
+-- 至多给出的牌
+function getYuqiGiveCardCount(caojinyu)
+    return 1 + caojinyu:getMark('LuaYuqiGiveCardCount')
+end
+
+-- 至多获得的牌
+function getYuqiKeepCardCount(caojinyu)
+    return 1 + caojinyu:getMark('LuaYuqiKeepCardCount')
+end
+
+-- 是否可以增加数字
+function canIncreaseNumber(caojinyu)
+    if getYuqiAvailableDistance(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiPreviewCardCount(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiGiveCardCount(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiKeepCardCount(caojinyu) < 5 then
+        return true
+    end
+    return false
+end
+
+-- 选择增加选项
+function askForYuqiIncreaseChoice(caojinyu, value, skill_name)
+    local choices = {}
+    for index, func in ipairs(YUQI_FUNCS) do
+        if func(caojinyu) < 5 then
+            table.insert(choices, YUQI_MAP[index])
+        end
+    end
+    if #choices == 0 then
+        return
+    end
+    local room = caojinyu:getRoom()
+    local choice = room:askForChoice(caojinyu, skill_name, table.concat(choices, '+'))
+    local pos = getPos(YUQI_MAP, choice)
+    increaseYuqiNumber(caojinyu, pos, value)
+end
+
+-- 增加“隅泣”数字
+function increaseYuqiNumber(caojinyu, position, value)
+    if position <= 0 or position > 4 then
+        return
+    end
+    local room = caojinyu:getRoom()
+    local diff = math.max(0, 5 - YUQI_FUNCS[position](caojinyu))
+    if diff <= 0 then
+        return
+    end
+    room:addPlayerMark(caojinyu, YUQI_MAP[position], math.min(diff, value))
+end
+
+-- Position 参数，用于隅泣
+YUQI_PREVIEW_COUNT = 1
+YUQI_GIVE_COUNT = 2
+YUQI_KEEP_COUNT = 3
+YUQI_DISTANCE = 4
+
+-- 函数映射
+YUQI_FUNCS = {getYuqiPreviewCardCount, getYuqiGiveCardCount, getYuqiKeepCardCount, getYuqiAvailableDistance}
+
+-- 映射位置
+YUQI_MAP = {'LuaYuqiPreviewCardCount', 'LuaYuqiGiveCardCount', 'LuaYuqiKeepCardCount', 'LuaYuqiDistance'}
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
