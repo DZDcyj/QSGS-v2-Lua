@@ -350,5 +350,13 @@ return {
     ['$LuaPowei3'] = '敌军尚犹严防，有待明日再看！', -- 破围失败
     ['$LuaShenzhu1'] = '力引强弓百斤，矢出贯手著棼！',
     ['$LuaShenzhu2'] = '箭既已在弦上，吾又岂能不发！',
-    ['~ExShenTaishici'] = '魂归……天地……'
+    ['~ExShenTaishici'] = '魂归……天地……',
+    -- 孙寒华
+    ['$LuaChongxu1'] = '阳炁冲三关，斩尸除阴魔',
+    ['$LuaChongxu2'] = '蒲团清静坐，神归了道真',
+    ['$LuaMiaojian1'] = '谨以三尺神锋，代天行化，布令宣威',
+    ['$LuaMiaojian2'] = '布天罡，踏北斗，有秽皆除，无妖不斩',
+    ['$LuaLianhua1'] = '刀兵水火，速离身形',
+    ['$LuaLianhua2'] = '体有金光，覆映全身',
+    ['~ExSunhanhua'] = '天有寒暑，人有死生……',
 }

@@ -1189,6 +1189,32 @@ function isPackageBanned(packageName)
     return bannedPackages[packageName]
 end
 
+-- 孙寒华系列判断
+
+-- 妙剑等级
+function getMiaojianLevel(sunhanhua)
+    return 1 + sunhanhua:getMark('LuaMiaojianLevelUp')
+end
+
+-- 莲华等级
+function getLianhuaLevel(sunhanhua)
+    return 1 + sunhanhua:getMark('LuaLianhuaLevelUp')
+end
+
+-- 更新技能描述
+function sunhanhuaUpdateSkillDesc(sunhanhua)
+    local miaojianLevel = getMiaojianLevel(sunhanhua)
+    if miaojianLevel > 1 then
+        modifySkillDescription(':LuaMiaojian', string.format(':LuaMiaojian%d', miaojianLevel))
+    end
+    local lianhuaLevel = getLianhuaLevel(sunhanhua)
+    if lianhuaLevel > 1 then
+        modifySkillDescription(':LuaLianhua', string.format(':LuaLianhua%d', lianhuaLevel))
+    end
+    -- 刷新一下，免得技能修正后显示不出来
+    ChangeCheck(sunhanhua, sunhanhua:getGeneralName())
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
