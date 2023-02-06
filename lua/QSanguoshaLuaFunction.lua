@@ -1189,6 +1189,11 @@ function isPackageBanned(packageName)
     return bannedPackages[packageName]
 end
 
+-- 获取护盾值
+function getShieldCount(player)
+    return player:getMark('@shield')
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
