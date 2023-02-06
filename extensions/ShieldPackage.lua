@@ -45,19 +45,12 @@ LuaTest = sgs.CreateTriggerSkill {
         params['arg2'] = nature
         rinsan.sendLogMessage(room, type, params)
 
-        local newHp = damage.to:getHp() - damage.damage + rinsan.getShieldCount(damage.to)
+        local newHp = damage.to:getHp() - math.max(0, damage.damage - rinsan.getShieldCount(damage.to))
         local newShield = math.max(rinsan.getShieldCount(damage.to) - damage.damage, 0)
-
-        -- local changeString = string.format('%s:%d', damage.to:objectName(), -damage.damage)
-        -- if damage.nature == sgs.DamageStruct_Fire then
-        --     changeString = changeString .. 'F'
-        -- elseif damage.nature == sgs.DamageStruct_Thunder then
-        --     changeString = changeString .. 'T'
-        -- end
 
         local jsonArray = string.format('"%s",%d,%d', damage.to:objectName(), -damage.damage, damage.nature)
         -- 用 int 替代 CommandType_S_COMMAND_CHANGE_HP
-        room:doBroadcastNotify(30, jsonArray)
+        room:doBroadcastNotify(31, jsonArray)
 
         room:setTag('HpChangedData', data)
 
@@ -69,6 +62,20 @@ LuaTest = sgs.CreateTriggerSkill {
 
         room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         room:setPlayerMark(damage.to, '@shield', newShield)
+
+        -- 手动播放音效和动画
+        if damage.damage > 0 then
+            local delta = damage.damage > 3 and 3 or damage.damage
+            sgs.Sanguosha:playSystemAudioEffect(string.format('injure%d', delta), true)
+        end
+
+        room:setEmotion(damage.to, 'damage')
+
+        rinsan.sendLogMessage(room, '#GetHp', {
+            ['from'] = damage.to,
+            ['arg'] = damage.to:getHp(),
+            ['arg2'] = damage.to:getMaxHp()
+        })
 
         return true
     end,
