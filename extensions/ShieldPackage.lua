@@ -55,8 +55,9 @@ LuaTest = sgs.CreateTriggerSkill {
         --     changeString = changeString .. 'T'
         -- end
 
-        -- -- 用 int 替代 CommandType_S_COMMAND_CHANGE_HP
-        -- room:doBroadcastNotify(30, changeString)
+        local jsonArray = string.format('"%s",%d,%d', damage.to:objectName(), -damage.damage, damage.nature)
+        -- 用 int 替代 CommandType_S_COMMAND_CHANGE_HP
+        room:doBroadcastNotify(30, jsonArray)
 
         room:setTag('HpChangedData', data)
 
