@@ -70,6 +70,11 @@ LuaTest = sgs.CreateTriggerSkill {
         end
 
         room:setEmotion(damage.to, 'damage')
+        if damage.nature == sgs.DamageStruct_Fire then
+            room:doAnimate(rinsan.ANIMATE_FIRE, damage.to:objectName())
+        elseif damage.nature == sgs.DamageStruct_Thunder then
+            room:doAnimate(rinsan.ANIMATE_LIGHTING, damage.to:objectName())
+        end
 
         rinsan.sendLogMessage(room, '#GetHp', {
             ['from'] = damage.to,
