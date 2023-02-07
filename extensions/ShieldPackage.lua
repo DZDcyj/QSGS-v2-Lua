@@ -225,13 +225,11 @@ LuaMouDuojing = sgs.CreateTriggerSkill {
 
 LuaMouDuojingClear = sgs.CreateTriggerSkill {
     name = 'LuaMouDuojingClear',
-    events = {sgs.EventPhaseChanging},
+    events = {sgs.EventPhaseEnd},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        if data:toPhaseChange().to == sgs.Player_NotActive then
-            for _, p in sgs.qlist(room:getAlivePlayers()) do
-                rinsan.clearAllMarksContains(room, p, 'LuaMouDuojing')
-            end
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            rinsan.clearAllMarksContains(room, p, 'LuaMouDuojing')
         end
     end,
     can_trigger = function(self, target)
