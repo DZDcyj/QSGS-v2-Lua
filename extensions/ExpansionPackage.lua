@@ -9124,8 +9124,8 @@ LuaShenzhuClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().to == sgs.Player_NotActive then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
+                rinsan.clearAllMarksContains(room, p, 'LuaShenzhu')
                 if p:getMark('LuaShenzhuForbid') > 0 then
-                    rinsan.clearAllMarksContains(room, p, 'LuaShenzhu')
                     room:removePlayerCardLimitation(p, 'use', 'Slash|.|.|.$1')
                 end
             end
