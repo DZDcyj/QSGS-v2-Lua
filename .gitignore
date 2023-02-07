@@ -69,6 +69,8 @@ lang/zh_CN/Package/*.lua
 !ImpassePackage.lua
 !GroupFriendPackage.lua
 !LandlordsPackage.lua
+!ShieldPackage.lua
+!ShieldPackageLines.lua
 listserver/
 lua/ai/[^A-Z]*.lua
 lua/lib
