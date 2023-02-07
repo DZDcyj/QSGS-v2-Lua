@@ -38,6 +38,7 @@ image/system
 image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
 !indirect_combination
+!@shield.png
 !@Lua[A-Z]*.png
 !shenganning_1*
 !shenganning_2*
