@@ -209,7 +209,7 @@ LuaMouDuojing = sgs.CreateTriggerSkill {
             if room:askForSkillInvoke(player, self:objectName(), data2) then
                 rinsan.decreaseShield(player, 1)
                 room:broadcastSkillInvoke(self:objectName())
-                rinsan.addQinggangTag(p, use.card)
+                room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), p:objectName())
                 room:addPlayerMark(player, self:objectName())
                 if not p:isNude() then
                     local card_id =
