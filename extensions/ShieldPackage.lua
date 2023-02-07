@@ -208,6 +208,7 @@ LuaMouDuojing = sgs.CreateTriggerSkill {
             data2:setValue(p)
             if room:askForSkillInvoke(player, self:objectName(), data2) then
                 rinsan.decreaseShield(player, 1)
+                rinsan.addQinggangTag(p, use.card)
                 room:broadcastSkillInvoke(self:objectName())
                 room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), p:objectName())
                 room:addPlayerMark(player, self:objectName())
