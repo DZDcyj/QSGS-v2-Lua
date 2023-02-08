@@ -42,6 +42,7 @@ LuaFeiyangCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaFeiyang')
         if source:getJudgingArea():length() > 0 then
             room:throwCard(room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
                 source)
@@ -98,7 +99,10 @@ LuaDizhu = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     -- priority 调整为最优先
     priority = 10,
+    global = true,
     on_trigger = function(self, event, player, data, room)
+        -- 优化 UI 显示
+        room:setPlayerMark(player, '@Landlords', 0)
         room:sendCompulsoryTriggerLog(player, self:objectName())
         room:addPlayerMark(player, self:objectName())
 
@@ -168,7 +172,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target) and target:getMark(self:objectName()) == 0
+        return target and target:getMark('@Landlords') > 0 and target:getMark(self:objectName()) == 0
     end
 }
 
