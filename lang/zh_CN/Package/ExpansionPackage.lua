@@ -716,5 +716,20 @@ return {
     ['LuaShenzhu'] = '神著',
     [':LuaShenzhu'] = '锁定技，当你使用非转化且非虚拟的【杀】结算结束后，你选择一项：1.摸一张牌，然后若此时是你的出牌阶段，你本阶段使用【杀】的次数上限+1；2.摸三张牌，然后你本回合不能再使用【杀】',
     ['LuaShenzhu1'] = '摸一张牌，若在出牌阶段则本回合内使用【杀】次数+1',
-    ['LuaShenzhu2'] = '摸三张牌，然后本回合内不能再使用【杀】'
+    ['LuaShenzhu2'] = '摸三张牌，然后本回合内不能再使用【杀】',
+    ['ExTenYearCaojinyu'] = '曹金玉-十周年',
+    ['&ExTenYearCaojinyu'] = '曹金玉',
+    ['#ExTenYearCaojinyu'] = '金乡公主',
+    ['LuaYuqi'] = '隅泣',
+    [':LuaYuqi'] = '<font color="green"><b>每回合限两次</b></font>，当一名角色受到伤害后，若你计算与其的距离其不大于0，你可以观看牌堆顶的3张牌，将其中至多1张牌交给该角色，获得其中至多1张牌，然后剩余的牌放回牌堆顶',
+    ['LuaShanshen'] = '善身',
+    [':LuaShanshen'] = '当其他角色死亡时，你可以令“隅泣”中的一个数字+2（单项不能超过5），然后若你没有对该角色造成过伤害，你回复1点体力',
+    ['LuaXianjing'] = '娴静',
+    [':LuaXianjing'] = '准备阶段，你可以令“隅泣”中的一个数字+1（单项不能超过5），然后若你未受伤，你再令“隅泣”中的一个数字+1',
+    ['LuaYuqiPreviewCardCount'] = '增加可观看牌数',
+    ['LuaYuqiGiveCardCount'] = '增加给出牌数',
+    ['LuaYuqiKeepCardCount'] = '增加获得牌数',
+    ['LuaYuqiDistance'] = '增加影响距离',
+    ['LuaYuqiKeep'] = '你可以保留至多 %arg 张牌',
+    ['LuaYuqiGiveOut'] = '你可以交给 %src 至多 %arg 张牌'
 }

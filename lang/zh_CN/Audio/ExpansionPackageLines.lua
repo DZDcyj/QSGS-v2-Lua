@@ -350,5 +350,13 @@ return {
     ['$LuaPowei3'] = '敌军尚犹严防，有待明日再看！', -- 破围失败
     ['$LuaShenzhu1'] = '力引强弓百斤，矢出贯手著棼！',
     ['$LuaShenzhu2'] = '箭既已在弦上，吾又岂能不发！',
-    ['~ExShenTaishici'] = '魂归……天地……'
+    ['~ExShenTaishici'] = '魂归……天地……',
+    -- 曹金玉-十周年
+    ['$LuaYuqi1'] = '孤影独泣，困于隅角',
+    ['$LuaYuqi2'] = '向隅而泣，黯然伤感',
+    ['$LuaShanshen1'] = '好善为德，坚守本心',
+    ['$LuaShanshen2'] = '洁身自爱，独善其身',
+    ['$LuaXianjing1'] = '文静闲丽，举止柔美',
+    ['$LuaXianjing2'] = '娴静淡雅，温婉穆穆',
+    ['~ExTenYearCaojinyu'] = '平叔之情，吾岂不明…'
 }
