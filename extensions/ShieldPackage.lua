@@ -26,6 +26,13 @@ LuaShield = sgs.CreateTriggerSkill {
         if rinsan.getShieldCount(damage.to) <= 0 then
             return false
         end
+
+        -- 这里延时一下，是避免当有多人同时受到伤害时(比如释放了AOE牌)，
+        -- 掉血效果太快导致看不清楚的问题
+        if damage.to:getAI() then
+            room:getThread():delay(500)
+        end
+
         if damage.from and (not damage.from:isAlive()) then
             damage.from = nil
         end
