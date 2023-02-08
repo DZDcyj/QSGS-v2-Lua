@@ -11,6 +11,10 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+local function globalTrigger(self, target)
+    return true
+end
+
 -- 护甲结算
 LuaShield = sgs.CreateTriggerSkill {
     name = 'LuaShield',
@@ -59,6 +63,12 @@ LuaShield = sgs.CreateTriggerSkill {
             room:setTag('is_chained', sgs.QVariant(n))
         end
 
+        -- 失去护盾数，目前用于【狭援】
+        if damage.damage >= rinsan.getShieldCount(damage.to) then
+            room:setPlayerFlag(damage.to, 'ShieldAllLost')
+            damage.to:setTag('ShieldLostCount', sgs.QVariant(math.min(damage.damage, rinsan.getShieldCount(damage.to))))
+        end
+
         room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         rinsan.decreaseShield(damage.to, damage.damage)
 
@@ -83,9 +93,7 @@ LuaShield = sgs.CreateTriggerSkill {
 
         return true
     end,
-    can_trigger = function(self, target)
-        return true
-    end
+    can_trigger = globalTrigger
 }
 
 SkillAnjiang:addSkill(LuaShield)
@@ -188,7 +196,9 @@ LuaMouDujiang = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart) and rinsan.getShieldCount(target) >= 3
+        return
+            rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart) and rinsan.getShieldCount(target) >=
+                3
     end
 }
 
@@ -232,9 +242,7 @@ LuaMouDuojingClear = sgs.CreateTriggerSkill {
             rinsan.clearAllMarksContains(room, p, 'LuaMouDuojing')
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end
+    can_trigger = globalTrigger
 }
 
 LuaMouDuojingTargetMod = sgs.CreateTargetModSkill {
@@ -258,3 +266,74 @@ SkillAnjiang:addSkill(LuaMoukejiProhibit)
 SkillAnjiang:addSkill(LuaMouDuojingTargetMod)
 SkillAnjiang:addSkill(LuaMouDuojing)
 SkillAnjiang:addSkill(LuaMouDuojingClear)
+
+-- 谋于禁
+ExMouYujin = sgs.General(extension, 'ExMouYujin', 'wei', '4', true, true)
+
+LuaMouXiayuan = sgs.CreateTriggerSkill {
+    name = 'LuaMouXiayuan',
+    events = {sgs.Damaged},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local invoke = rinsan.canInvokeXiayuan(player)
+        if invoke then
+            room:setPlayerFlag(player, '-ShieldAllLost')
+            local lostCount = player:getTag('ShieldLostCount'):toInt()
+            for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                if sp:objectName() ~= player:objectName() and
+                    sp:getMark(string.format('%s%s', self:objectName(), sp:objectName())) == 0 and
+                    room:askForDiscard(sp, self:objectName(), 2, 2, true, false,
+                        string.format('LuaMouXiayuan-Discard:%s::%s', player:objectName(), lostCount)) then
+                    rinsan.skill(self, room, sp, true)
+                    rinsan.increaseShield(player, lostCount)
+                    room:addPlayerMark(sp, string.format('%s%s', self:objectName(), sp:objectName()))
+                    break
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = globalTrigger
+}
+
+LuaMouXiayuanClear = sgs.CreateTriggerSkill {
+    name = 'LuaMouXiayuanClear',
+    events = {sgs.TurnStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        room:setPlayerMark(player, string.format('%s%s', 'LuaMouXiayuan', player:objectName()), 0)
+    end,
+    can_trigger = globalTrigger
+}
+
+LuaMouJieyue = sgs.CreateTriggerSkill {
+    name = 'LuaMouJieyue',
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        local targets = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if rinsan.canIncreaseShield(p) then
+                targets:append(p)
+            end
+        end
+        local target = room:askForPlayerChosen(player, targets, self:objectName(), 'LuaMouJieyue-choose', true, true)
+        if target then
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.increaseShield(target, 1)
+            local card = room:askForExchange(target, self:objectName(), 1, 1, true,
+                string.format('LuaMouJieyue-Give:%s', player:objectName()), true)
+            if card then
+                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, target:objectName(),
+                    player:objectName(), self:objectName(), nil)
+                room:moveCardTo(card, target, player, sgs.Player_PlaceHand, reason, true)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+    end
+}
+
+ExMouYujin:addSkill(LuaMouXiayuan)
+ExMouYujin:addSkill(LuaMouJieyue)
+SkillAnjiang:addSkill(LuaMouXiayuanClear)
