@@ -7366,7 +7366,7 @@ LuaTianyiDamaged = sgs.CreateTriggerSkill {
         room:addPlayerMark(player, self:objectName())
         local damage = data:toDamage()
         if damage.from then
-            room:addPlayerMark(player,string.format('LuaDamagedBy%s', damage.from:objectName()))
+            room:addPlayerMark(player, string.format('LuaDamagedBy%s', damage.from:objectName()))
         end
     end,
     can_trigger = function(self, target)
@@ -9197,8 +9197,9 @@ LuaYuqi = sgs.CreateTriggerSkill {
                 end
                 local tos = sgs.SPlayerList()
                 tos:append(victim)
-                if victim:isAlive() and room:askForYiji(caojinyu, yuqi_cards, self:objectName(), true, false, true, giveCount, tos,
-                    sgs.CardMoveReason(), string.format('LuaYuqiGiveOut:%s:%s', victim:objectName(), giveCount)) then
+                if victim:isAlive() and
+                    room:askForYiji(caojinyu, yuqi_cards, self:objectName(), true, false, true, giveCount, tos,
+                        sgs.CardMoveReason(), string.format('LuaYuqiGiveOut:%s:%s', victim:objectName(), giveCount)) then
                     local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
                         self:objectName(), nil)
                     move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
