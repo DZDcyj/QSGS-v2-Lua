@@ -9190,9 +9190,9 @@ LuaYuqi = sgs.CreateTriggerSkill {
                 moves:append(move)
                 room:notifyMoveCards(true, moves, false, _cjy)
                 room:notifyMoveCards(false, moves, false, _cjy)
-                local origin_yiji = sgs.IntList()
+                local origin_yuqi = sgs.IntList()
                 for _, id in sgs.qlist(yuqi_cards) do
-                    origin_yiji:append(id)
+                    origin_yuqi:append(id)
                 end
                 local tos = sgs.SPlayerList()
                 tos:append(victim)
@@ -9202,15 +9202,15 @@ LuaYuqi = sgs.CreateTriggerSkill {
                         self:objectName(), nil)
                     move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
                         sgs.Player_PlaceTable, _reason)
-                    for _, id in sgs.qlist(origin_yiji) do
+                    for _, id in sgs.qlist(origin_yuqi) do
                         if room:getCardPlace(id) ~= sgs.Player_DrawPile then
                             move.card_ids:append(id)
                             yuqi_cards:removeOne(id)
                         end
                     end
-                    origin_yiji = sgs.IntList()
+                    origin_yuqi = sgs.IntList()
                     for _, id in sgs.qlist(yuqi_cards) do
-                        origin_yiji:append(id)
+                        origin_yuqi:append(id)
                     end
                     moves = sgs.CardsMoveList()
                     moves:append(move)
@@ -9228,15 +9228,15 @@ LuaYuqi = sgs.CreateTriggerSkill {
                         self:objectName(), nil)
                     move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
                         sgs.Player_PlaceTable, _reason)
-                    for _, id in sgs.qlist(origin_yiji) do
+                    for _, id in sgs.qlist(origin_yuqi) do
                         if room:getCardPlace(id) ~= sgs.Player_DrawPile then
                             move.card_ids:append(id)
                             yuqi_cards:removeOne(id)
                         end
                     end
-                    origin_yiji = sgs.IntList()
+                    origin_yuqi = sgs.IntList()
                     for _, id in sgs.qlist(yuqi_cards) do
-                        origin_yiji:append(id)
+                        origin_yuqi:append(id)
                     end
                     moves = sgs.CardsMoveList()
                     moves:append(move)
