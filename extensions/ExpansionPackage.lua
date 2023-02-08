@@ -7364,6 +7364,10 @@ LuaTianyiDamaged = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         room:addPlayerMark(player, self:objectName())
+        local damage = data:toDamage()
+        if damage.from then
+            room:addPlayerMark(player, string.format('LuaDamagedBy%s', damage.from:objectName()))
+        end
     end,
     can_trigger = function(self, target)
         return target
@@ -9158,3 +9162,385 @@ SkillAnjiang:addSkill(LuaPoweiHelper)
 SkillAnjiang:addSkill(LuaPoweiFailed)
 SkillAnjiang:addSkill(LuaShenzhuClear)
 SkillAnjiang:addSkill(LuaShenzhuTargetMod)
+
+ExTenYearCaojinyu = sgs.General(extension, 'ExTenYearCaojinyu', 'wei', '3', false, true)
+
+LuaYuqi = sgs.CreateTriggerSkill {
+    name = 'LuaYuqi',
+    events = {sgs.Damaged},
+    frequency = sgs.Skill_Frequent,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local victim = data:toDamage().to
+        for _, caojinyu in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if rinsan.canInvokeYuqi(caojinyu, player) and room:askForSkillInvoke(caojinyu, self:objectName(), data) then
+                room:addPlayerMark(caojinyu, 'LuaYuqiInvokeTime')
+                room:broadcastSkillInvoke(self:objectName())
+
+                local totalCount = rinsan.getYuqiPreviewCardCount(caojinyu)
+                local giveCount = rinsan.getYuqiGiveCardCount(caojinyu)
+                local keepCount = rinsan.getYuqiKeepCardCount(caojinyu)
+
+                local _cjy = sgs.SPlayerList()
+                _cjy:append(caojinyu)
+                local yuqi_cards = room:getNCards(totalCount, false)
+                local move = sgs.CardsMoveStruct(yuqi_cards, nil, caojinyu, sgs.Player_PlaceTable, sgs.Player_PlaceHand,
+                    sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(), self:objectName(),
+                        nil))
+                local moves = sgs.CardsMoveList()
+                moves:append(move)
+                room:notifyMoveCards(true, moves, false, _cjy)
+                room:notifyMoveCards(false, moves, false, _cjy)
+                local origin_yuqi = sgs.IntList()
+                for _, id in sgs.qlist(yuqi_cards) do
+                    origin_yuqi:append(id)
+                end
+                local tos = sgs.SPlayerList()
+                tos:append(victim)
+                if victim:isAlive() and
+                    room:askForYiji(caojinyu, yuqi_cards, self:objectName(), true, false, true, giveCount, tos,
+                        sgs.CardMoveReason(), string.format('LuaYuqiGiveOut:%s:%s', victim:objectName(), giveCount)) then
+                    local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
+                        self:objectName(), nil)
+                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
+                        sgs.Player_PlaceTable, _reason)
+                    for _, id in sgs.qlist(origin_yuqi) do
+                        if room:getCardPlace(id) ~= sgs.Player_DrawPile then
+                            move.card_ids:append(id)
+                            yuqi_cards:removeOne(id)
+                        end
+                    end
+                    origin_yuqi = sgs.IntList()
+                    for _, id in sgs.qlist(yuqi_cards) do
+                        origin_yuqi:append(id)
+                    end
+                    moves = sgs.CardsMoveList()
+                    moves:append(move)
+                    room:notifyMoveCards(true, moves, false, _cjy)
+                    room:notifyMoveCards(false, moves, false, _cjy)
+                    if not caojinyu:isAlive() then
+                        return
+                    end
+                end
+                local selfs = sgs.SPlayerList()
+                selfs:append(caojinyu)
+                if room:askForYiji(caojinyu, yuqi_cards, self:objectName(), true, false, true, keepCount, selfs,
+                    sgs.CardMoveReason(), string.format('LuaYuqiKeep:%d', keepCount)) then
+                    local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
+                        self:objectName(), nil)
+                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
+                        sgs.Player_PlaceTable, _reason)
+                    for _, id in sgs.qlist(origin_yuqi) do
+                        if room:getCardPlace(id) ~= sgs.Player_DrawPile then
+                            move.card_ids:append(id)
+                            yuqi_cards:removeOne(id)
+                        end
+                    end
+                    origin_yuqi = sgs.IntList()
+                    for _, id in sgs.qlist(yuqi_cards) do
+                        origin_yuqi:append(id)
+                    end
+                    moves = sgs.CardsMoveList()
+                    moves:append(move)
+                    room:notifyMoveCards(true, moves, false, _cjy)
+                    room:notifyMoveCards(false, moves, false, _cjy)
+                    if not caojinyu:isAlive() then
+                        return
+                    end
+                end
+                if not yuqi_cards:isEmpty() then
+                    move = sgs.CardsMoveStruct(yuqi_cards, caojinyu, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile,
+                        sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER, '', self:objectName(), nil))
+                    moves = sgs.CardsMoveList()
+                    moves:append(move)
+                    room:notifyMoveCards(true, moves, false, _cjy)
+                    room:notifyMoveCards(false, moves, false, _cjy)
+                    room:returnToTopDrawPile(yuqi_cards)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaYuqiClear = sgs.CreateTriggerSkill {
+    name = 'LuaYuqiClear',
+    events = {sgs.EventPhaseChanging},
+    frequency = sgs.Skill_Frequent,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to == sgs.Player_NotActive then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerMark(p, 'LuaYuqiInvokeTime', 0)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+LuaShanshen = sgs.CreateTriggerSkill {
+    name = 'LuaShanshen',
+    events = {sgs.Death},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        local death = data:toDeath()
+        for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if rinsan.canIncreaseNumber(sp) and room:askForSkillInvoke(sp, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                rinsan.askForYuqiIncreaseChoice(sp, 2, self:objectName())
+                if death.who:getMark(string.format('LuaDamagedBy%s', sp:objectName())) == 0 then
+                    rinsan.recover(room, sp)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target and target:hasSkill(self:objectName())
+    end
+}
+
+LuaXianjing = sgs.CreateTriggerSkill {
+    name = 'LuaXianjing',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        if rinsan.canIncreaseNumber(player) and room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.askForYuqiIncreaseChoice(player, 1, self:objectName())
+            if not player:isWounded() then
+                rinsan.askForYuqiIncreaseChoice(player, 1, self:objectName())
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_RoundStart)
+    end
+}
+
+ExTenYearCaojinyu:addSkill(LuaYuqi)
+SkillAnjiang:addSkill(LuaYuqiClear)
+ExTenYearCaojinyu:addSkill(LuaShanshen)
+ExTenYearCaojinyu:addSkill(LuaXianjing)
+
+ExSunhanhua = sgs.General(extension, 'ExSunhanhua', 'wu', '3', false, true)
+
+LuaChongxuCard = sgs.CreateSkillCard {
+    name = 'LuaChongxuCard',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        -- 固定 5 分
+        room:broadcastSkillInvoke('LuaChongxu')
+        local score = 5
+        while score > 1 do
+            local choices = {}
+            if rinsan.getMiaojianLevel(source) < 3 and score >= 3 then
+                table.insert(choices, 'LuaMiaojianLevelUp')
+            end
+            if rinsan.getLianhuaLevel(source) < 3 and score >= 3 then
+                table.insert(choices, 'LuaLianhuaLevelUp')
+            end
+            if score >= 2 then
+                table.insert(choices, 'LuaChongxuDraw')
+            end
+            table.insert(choices, 'cancel')
+            local choice = room:askForChoice(source, 'LuaChongxu', table.concat(choices, '+'))
+            if choice == 'cancel' then
+                break
+            elseif choice == 'LuaChongxuDraw' then
+                score = score - 2
+                source:drawCards(1, 'LuaChongxu')
+            else
+                score = score - 3
+                room:addPlayerMark(source, choice)
+                rinsan.sunhanhuaUpdateSkillDesc(source)
+            end
+        end
+    end
+}
+
+LuaChongxu = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaChongxu',
+    view_as = function(self, cards)
+        return LuaChongxuCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaChongxuCard')
+    end
+}
+
+LuaMiaojianUseCard = sgs.CreateSkillCard {
+    name = 'LuaMiaojian',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        local targets_list = sgs.PlayerList()
+        for _, target in ipairs(targets) do
+            targets_list:append(target)
+        end
+        local card = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
+        if not card then
+            return false
+        end
+        local total_num = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, sgs.Self, card) + 1
+        return sgs.Self:canSlash(to_select, card, false) and #targets < total_num
+    end,
+    feasible = function(self, targets)
+        if #targets > 0 then
+            return sgs.Slash_IsAvailable(sgs.Self)
+        end
+        return true
+    end,
+    on_use = function(self, room, source, targets)
+        local pattern = #targets > 0 and 'slash' or 'ex_nihilo'
+        local card = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, -1)
+        card:setSkillName(self:objectName())
+        local card_use = sgs.CardUseStruct()
+        card_use.card = card
+        card_use.from = source
+        if #targets > 0 then
+            for _, target in ipairs(targets) do
+                card_use.to:append(target)
+            end
+        else
+            card_use.to:append(source)
+        end
+        room:useCard(card_use, true)
+    end
+}
+
+LuaMiaojianVS = sgs.CreateViewAsSkill {
+    name = 'LuaMiaojian',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        local level = rinsan.getMiaojianLevel(sgs.Self)
+        if level >= 3 then
+            return false
+        end
+        if level == 1 then
+            return #selected == 0 and to_select:isKindOf('Slash') or to_select:isKindOf('TrickCard')
+        end
+        return #selected == 0
+    end,
+    view_as = function(self, cards)
+        local level = rinsan.getMiaojianLevel(sgs.Self)
+        if level == 3 then
+            return LuaMiaojianUseCard:clone()
+        elseif #cards == 0 then
+            return nil
+        elseif level == 2 then
+            local card = cards[1]
+            local type = card:isKindOf('BasicCard') and 'slash' or 'ex_nihilo'
+            local vs_card = sgs.Sanguosha:cloneCard(type, card:getSuit(), card:getNumber())
+            vs_card:addSubcard(cards[1])
+            vs_card:setSkillName(self:objectName())
+            return vs_card
+        elseif level == 1 then
+            local card = cards[1]
+            local type
+            if card:isKindOf('Slash') then
+                type = 'slash'
+            elseif card:isKindOf('TrickCard') then
+                type = 'ex_nihilo'
+            end
+            if not type then
+                return nil
+            end
+            local vs_card = sgs.Sanguosha:cloneCard(type, card:getSuit(), card:getNumber())
+            vs_card:addSubcard(cards[1])
+            vs_card:setSkillName(self:objectName())
+            return vs_card
+        end
+        return nil
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasFlag('LuaMiaojianUsed')
+    end
+}
+
+LuaMiaojian = sgs.CreateTriggerSkill {
+    name = 'LuaMiaojian',
+    events = {sgs.CardUsed, sgs.SlashMissed},
+    view_as_skill = LuaMiaojianVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardUsed then
+            local use = data:toCardUse()
+            if use.card and use.card:getSkillName() == self:objectName() then
+                room:setPlayerFlag(player, 'LuaMiaojianUsed')
+            end
+        else
+            local effect = data:toSlashEffect()
+            if not effect.slash or effect.slash:getSkillName() ~= self:objectName() then
+                return false
+            end
+            if effect.to and not effect.to:isKongcheng() then
+                if not room:askForDiscard(effect.to, 'LuaMiaojian', 1, 1, true, false, 'LuaMiaojianDiscard') then
+                    room:slashResult(effect, nil)
+                    return true
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaLianhua = sgs.CreateTriggerSkill {
+    name = 'LuaLianhua',
+    events = {sgs.TargetConfirming},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            player:drawCards(1, self:objectName())
+            local level = rinsan.getLianhuaLevel(player)
+            if level <= 1 then
+                return false
+            elseif level == 2 then
+                local judge = rinsan.createJudgeStruct({
+                    ['who'] = player,
+                    ['reason'] = self:objectName(),
+                    ['play_animation'] = true,
+                    ['pattern'] = '.|spade'
+                })
+                room:judge(judge)
+                if not judge:isGood() then
+                    return false
+                end
+            elseif level >= 3 then
+                if not use.from then
+                    return false
+                end
+                local dataforai = sgs.QVariant()
+                dataforai:setValue(player)
+                if room:askForCard(use.from, '.|.|.|hand', "@xiangle-discard", dataforai) then
+                    return false
+                end
+            end
+            local to_list = use.to
+            to_list:removeOne(player)
+            use.to = to_list
+            data:setValue(use)
+            local msgType = '$CancelTargetNoUser'
+            local params = {
+                ['to'] = player,
+                ['arg'] = use.card:objectName()
+            }
+            if use.from then
+                params['from'] = use.from
+                msgType = '$CancelTarget'
+            end
+            rinsan.sendLogMessage(room, msgType, params)
+        end
+    end
+}
+
+ExSunhanhua:addSkill(LuaChongxu)
+ExSunhanhua:addSkill(LuaMiaojian)
+ExSunhanhua:addSkill(LuaLianhua)
