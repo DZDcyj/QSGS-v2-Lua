@@ -8454,7 +8454,8 @@ LuaZhuifengCard = sgs.CreateSkillCard {
             local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
             duel:setSkillName('LuaZhuifeng')
             duel:deleteLater()
-            return duel:targetFilter(targets_list, to_select, sgs.Self)
+            return duel:targetFilter(targets_list, to_select, sgs.Self) and
+                       not sgs.Self:isProhibited(to_select, duel, targets_list)
         end
         return false
     end,
