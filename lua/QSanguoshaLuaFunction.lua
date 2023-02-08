@@ -1189,6 +1189,163 @@ function isPackageBanned(packageName)
     return bannedPackages[packageName]
 end
 
+-- 获取护盾值
+function getShieldCount(player)
+    return player:getMark(SHIELD_MARK)
+end
+
+-- 获得护甲
+function increaseShield(player, count)
+    local curr = getShieldCount(player)
+    local toGain = math.min(count, MAX_SHIELD_COUNT - curr)
+    if toGain <= 0 then
+        return
+    end
+    local room = player:getRoom()
+    room:addPlayerMark(player, SHIELD_MARK, toGain)
+    sendLogMessage(room, '#GainShield', {
+        ['from'] = player,
+        ['arg'] = toGain
+    })
+end
+
+-- 失去护甲
+function decreaseShield(player, count)
+    local curr = getShieldCount(player)
+    local toLose = math.min(curr, count)
+    if toLose <= 0 then
+        return
+    end
+    local room = player:getRoom()
+    room:removePlayerMark(player, SHIELD_MARK, toLose)
+    sendLogMessage(room, '#LoseShield', {
+        ['from'] = player,
+        ['arg'] = toLose
+    })
+end
+
+-- 是否可以发动克己
+-- player 角色
+-- option 选项，填卡牌名
+function canInvokeKeji(player, option)
+    -- 不能超过最大
+    if getShieldCount(player) >= MAX_SHIELD_COUNT then
+        return false
+    end
+    -- 觉醒了只能选一个
+    if player:getMark('LuaMouDujiang') > 0 then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) and (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    if (not option) then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) or (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    return not player:hasUsed(string.format('#%s', option))
+end
+
+-- 护甲标记
+SHIELD_MARK = '@shield'
+
+-- 最大上限护甲为 5
+MAX_SHIELD_COUNT = 5
+
+-- 获取 table 中 value 的 index
+function getPos(table, value)
+    for i, v in ipairs(table) do
+        if v == value then
+            return i
+        end
+    end
+    return 0
+end
+
+-- 曹金玉系列判断
+-- 是否可以发动“隅泣”
+function canInvokeYuqi(caojinyu, player)
+    if caojinyu:distanceTo(player) > getYuqiAvailableDistance(caojinyu) then
+        return false
+    end
+    return caojinyu:getMark('LuaYuqiInvokeTime') < 2
+end
+
+-- 判断距离
+function getYuqiAvailableDistance(caojinyu)
+    return caojinyu:getMark('LuaYuqiDistance')
+end
+
+-- 可以观看的牌数
+function getYuqiPreviewCardCount(caojinyu)
+    return 3 + caojinyu:getMark('LuaYuqiPreviewCardCount')
+end
+
+-- 至多给出的牌
+function getYuqiGiveCardCount(caojinyu)
+    return 1 + caojinyu:getMark('LuaYuqiGiveCardCount')
+end
+
+-- 至多获得的牌
+function getYuqiKeepCardCount(caojinyu)
+    return 1 + caojinyu:getMark('LuaYuqiKeepCardCount')
+end
+
+-- 是否可以增加数字
+function canIncreaseNumber(caojinyu)
+    if getYuqiAvailableDistance(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiPreviewCardCount(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiGiveCardCount(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiKeepCardCount(caojinyu) < 5 then
+        return true
+    end
+    return false
+end
+
+-- 选择增加选项
+function askForYuqiIncreaseChoice(caojinyu, value, skill_name)
+    local choices = {}
+    for index, func in ipairs(YUQI_FUNCS) do
+        if func(caojinyu) < 5 then
+            table.insert(choices, YUQI_MAP[index])
+        end
+    end
+    if #choices == 0 then
+        return
+    end
+    local room = caojinyu:getRoom()
+    local choice = room:askForChoice(caojinyu, skill_name, table.concat(choices, '+'))
+    local pos = getPos(YUQI_MAP, choice)
+    increaseYuqiNumber(caojinyu, pos, value)
+end
+
+-- 增加“隅泣”数字
+function increaseYuqiNumber(caojinyu, position, value)
+    if position <= 0 or position > 4 then
+        return
+    end
+    local room = caojinyu:getRoom()
+    local diff = math.max(0, 5 - YUQI_FUNCS[position](caojinyu))
+    if diff <= 0 then
+        return
+    end
+    room:addPlayerMark(caojinyu, YUQI_MAP[position], math.min(diff, value))
+end
+
+-- Position 参数，用于隅泣
+YUQI_PREVIEW_COUNT = 1
+YUQI_GIVE_COUNT = 2
+YUQI_KEEP_COUNT = 3
+YUQI_DISTANCE = 4
+
+-- 函数映射
+YUQI_FUNCS = {getYuqiPreviewCardCount, getYuqiGiveCardCount, getYuqiKeepCardCount, getYuqiAvailableDistance}
+
+-- 映射位置
+YUQI_MAP = {'LuaYuqiPreviewCardCount', 'LuaYuqiGiveCardCount', 'LuaYuqiKeepCardCount', 'LuaYuqiDistance'}
+
 -- 孙寒华系列判断
 
 -- 妙剑等级
