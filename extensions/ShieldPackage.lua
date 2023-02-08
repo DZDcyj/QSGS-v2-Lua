@@ -11,6 +11,11 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+-- 初始护甲值表
+local START_SHIELDS = {
+    ['ExMouHuaxiong'] = 1
+}
+
 -- 护甲结算
 LuaShield = sgs.CreateTriggerSkill {
     name = 'LuaShield',
@@ -88,7 +93,24 @@ LuaShield = sgs.CreateTriggerSkill {
     end
 }
 
+LuaShieldInit = sgs.CreateTriggerSkill {
+    name = 'LuaShieldInit',
+    global = true,
+    events = {sgs.GameStart},
+    on_trigger = function(self, event, player, data, room)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            local first = START_SHIELDS[p:getGeneralName()] or 0
+            local second = START_SHIELDS[p:getGeneral2Name()] or 0
+            room:setPlayerMark(p, rinsan.SHIELD_MARK, math.min(rinsan.MAX_SHIELD_COUNT, first + second))
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
 SkillAnjiang:addSkill(LuaShield)
+SkillAnjiang:addSkill(LuaShieldInit)
 
 -- 谋吕蒙
 ExMouLvmeng = sgs.General(extension, 'ExMouLvmeng', 'wu', '4', true, true)
@@ -188,7 +210,9 @@ LuaMouDujiang = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart) and rinsan.getShieldCount(target) >= 3
+        return
+            rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart) and rinsan.getShieldCount(target) >=
+                3
     end
 }
 
@@ -258,3 +282,119 @@ SkillAnjiang:addSkill(LuaMoukejiProhibit)
 SkillAnjiang:addSkill(LuaMouDuojingTargetMod)
 SkillAnjiang:addSkill(LuaMouDuojing)
 SkillAnjiang:addSkill(LuaMouDuojingClear)
+
+-- 谋华雄
+ExMouHuaxiong = sgs.General(extension, 'ExMouHuaxiong', 'qun', '4', true, true, false, 3)
+
+LuaMouYaowu = sgs.CreateTriggerSkill {
+    name = 'LuaMouYaowu',
+    events = {sgs.DamageInflicted},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card and damage.card:isKindOf('Slash') then
+            if damage.card:isRed() then
+                if damage.from and damage.from:isAlive() then
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:sendCompulsoryTriggerLog(damage.to, self:objectName())
+                    local choices = {}
+                    if damage.from:isWounded() then
+                        table.insert(choices, 'recover')
+                    end
+                    table.insert(choices, 'draw')
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, damage.to:objectName(), damage.from:objectName())
+                    local choice = room:askForChoice(damage.from, 'yaowu', table.concat(choices, '+'))
+                    if choice == 'recover' then
+                        rinsan.recover(room, damage.from, 1)
+                    else
+                        damage.from:drawCards(1, self:objectName())
+                    end
+                end
+            else
+                room:broadcastSkillInvoke(self:objectName())
+                room:sendCompulsoryTriggerLog(damage.to, self:objectName())
+                damage.to:drawCards(1, self:objectName())
+            end
+        end
+        return false
+    end
+}
+
+LuaMouYangweiCard = sgs.CreateSkillCard {
+    name = 'LuaMouYangwei',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        source:drawCards(2, self:objectName())
+        source:gainMark('@LuaWei')
+        room:setPlayerFlag(source, 'LuaMouYangweiInvoked')
+        room:addPlayerMark(source, 'LuaMouYangweiDisabled')
+    end
+}
+
+LuaMouYangweiVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaMouYangwei',
+    view_as = function(self)
+        return LuaMouYangweiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaMouYangwei') and player:getMark('LuaMouYangweiDisabled') == 0
+    end
+}
+
+LuaMouYangwei = sgs.CreateTriggerSkill {
+    name = 'LuaMouYangwei',
+    events = {sgs.EventPhaseEnd},
+    view_as_skill = LuaMouYangweiVS,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Finish then
+            if player:hasFlag('LuaMouYangweiInvoked') then
+                room:setPlayerFlag(player, '-LuaMouYangweiInvoked')
+            else
+                room:setPlayerMark(player, 'LuaMouYangweiDisabled', 0)
+            end
+        end
+        room:setPlayerMark(player, '@LuaWei', 0)
+        return false
+    end
+}
+
+LuaMouYangweiTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaMouYangweiTargetMod',
+    pattern = 'Slash',
+    residue_func = function(self, player)
+        if player:getMark('@LuaWei') > 0 then
+            return 1
+        end
+        return 0
+    end,
+    distance_limit_func = function(self, from)
+        if from:getMark('@LuaWei') > 0 then
+            return 1000
+        end
+        return 0
+    end
+}
+
+LuaMouyangweiBuff = sgs.CreateTriggerSkill {
+    name = 'LuaMouyangweiBuff',
+    events = {sgs.TargetSpecified},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.from and use.from:getMark('@LuaWei') > 0 and use.card and use.card:isKindOf('Slash') then
+            for _, p in sgs.qlist(use.to) do
+                rinsan.addQinggangTag(p, use.card)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+ExMouHuaxiong:addSkill(LuaMouYaowu)
+ExMouHuaxiong:addSkill(LuaMouYangwei)
+SkillAnjiang:addSkill(LuaMouYangweiTargetMod)
+SkillAnjiang:addSkill(LuaMouyangweiBuff)
