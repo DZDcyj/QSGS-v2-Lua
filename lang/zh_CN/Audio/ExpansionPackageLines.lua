@@ -358,5 +358,13 @@ return {
     ['$LuaShanshen2'] = '洁身自爱，独善其身',
     ['$LuaXianjing1'] = '文静闲丽，举止柔美',
     ['$LuaXianjing2'] = '娴静淡雅，温婉穆穆',
-    ['~ExTenYearCaojinyu'] = '平叔之情，吾岂不明…'
+    ['~ExTenYearCaojinyu'] = '平叔之情，吾岂不明…',
+    -- 孙寒华
+    ['$LuaChongxu1'] = '阳炁冲三关，斩尸除阴魔',
+    ['$LuaChongxu2'] = '蒲团清静坐，神归了道真',
+    ['$LuaMiaojian1'] = '谨以三尺神锋，代天行化，布令宣威',
+    ['$LuaMiaojian2'] = '布天罡，踏北斗，有秽皆除，无妖不斩',
+    ['$LuaLianhua1'] = '刀兵水火，速离身形',
+    ['$LuaLianhua2'] = '体有金光，覆映全身',
+    ['~ExSunhanhua'] = '天有寒暑，人有死生……'
 }
