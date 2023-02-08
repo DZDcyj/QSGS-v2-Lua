@@ -1189,6 +1189,65 @@ function isPackageBanned(packageName)
     return bannedPackages[packageName]
 end
 
+-- 获取护盾值
+function getShieldCount(player)
+    return player:getMark(SHIELD_MARK)
+end
+
+-- 获得护甲
+function increaseShield(player, count)
+    local curr = getShieldCount(player)
+    local toGain = math.min(count, MAX_SHIELD_COUNT - curr)
+    if toGain <= 0 then
+        return
+    end
+    local room = player:getRoom()
+    room:addPlayerMark(player, SHIELD_MARK, toGain)
+    sendLogMessage(room, '#GainShield', {
+        ['from'] = player,
+        ['arg'] = toGain
+    })
+end
+
+-- 失去护甲
+function decreaseShield(player, count)
+    local curr = getShieldCount(player)
+    local toLose = math.min(curr, count)
+    if toLose <= 0 then
+        return
+    end
+    local room = player:getRoom()
+    room:removePlayerMark(player, SHIELD_MARK, toLose)
+    sendLogMessage(room, '#LoseShield', {
+        ['from'] = player,
+        ['arg'] = toLose
+    })
+end
+
+-- 是否可以发动克己
+-- player 角色
+-- option 选项，填卡牌名
+function canInvokeKeji(player, option)
+    -- 不能超过最大
+    if getShieldCount(player) >= MAX_SHIELD_COUNT then
+        return false
+    end
+    -- 觉醒了只能选一个
+    if player:getMark('LuaMouDujiang') > 0 then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) and (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    if (not option) then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) or (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    return not player:hasUsed(string.format('#%s', option))
+end
+
+-- 护甲标记
+SHIELD_MARK = '@shield'
+
+-- 最大上限护甲为 5
+MAX_SHIELD_COUNT = 5
+
 -- 获取 table 中 value 的 index
 function getPos(table, value)
     for i, v in ipairs(table) do

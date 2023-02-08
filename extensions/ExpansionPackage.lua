@@ -8458,7 +8458,8 @@ LuaZhuifengCard = sgs.CreateSkillCard {
             local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
             duel:setSkillName('LuaZhuifeng')
             duel:deleteLater()
-            return duel:targetFilter(targets_list, to_select, sgs.Self)
+            return duel:targetFilter(targets_list, to_select, sgs.Self) and
+                       not sgs.Self:isProhibited(to_select, duel, targets_list)
         end
         return false
     end,
@@ -9128,8 +9129,8 @@ LuaShenzhuClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().to == sgs.Player_NotActive then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
+                rinsan.clearAllMarksContains(room, p, 'LuaShenzhu')
                 if p:getMark('LuaShenzhuForbid') > 0 then
-                    rinsan.clearAllMarksContains(room, p, 'LuaShenzhu')
                     room:removePlayerCardLimitation(p, 'use', 'Slash|.|.|.$1')
                 end
             end
