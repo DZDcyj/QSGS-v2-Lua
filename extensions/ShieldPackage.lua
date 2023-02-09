@@ -105,9 +105,7 @@ LuaShield = sgs.CreateTriggerSkill {
 
         return true
     end,
-    can_trigger = function(self, target)
-        return true
-    end
+    can_trigger = globalTrigger
 }
 
 LuaShieldInit = sgs.CreateTriggerSkill {
@@ -121,9 +119,7 @@ LuaShieldInit = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, rinsan.SHIELD_MARK, math.min(rinsan.MAX_SHIELD_COUNT, first + second))
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end
+    can_trigger = globalTrigger
 }
 
 SkillAnjiang:addSkill(LuaShield)
@@ -227,9 +223,10 @@ LuaMouDujiang = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return
-            rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart) and rinsan.getShieldCount(target) >=
-                3
+        if rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_RoundStart) then
+            return rinsan.getShieldCount(target) >= 3
+        end
+        return false
     end
 }
 
@@ -475,9 +472,7 @@ LuaMouyangweiBuff = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end
+    can_trigger = globalTrigger
 }
 
 ExMouHuaxiong:addSkill(LuaMouYaowu)
