@@ -14,5 +14,11 @@ return {
     ['$LuaMouXiayuan2'] = '援军既至，定攻克此地！',
     ['$LuaMouJieyue1'] = '尔等小儿，徒费兵力',
     ['$LuaMouJieyue2'] = '雕虫小技，静待则已！',
-    ['~ExMouYujin'] = '禁……愧于丞相……'
+    ['~ExMouYujin'] = '禁……愧于丞相……',
+    -- 谋华雄
+    ['$LuaMouYaowu1'] = '俞涉小儿，岂是我的对手！',
+    ['$LuaMouYaowu2'] = '上将潘凤？哼！还不是死在我刀下！',
+    ['$LuaMouYangwei1'] = '哈哈哈哈！现在谁不知我华雄？',
+    ['$LuaMouYangwei2'] = '定要关外诸侯，知我威名！',
+    ['~ExMouHuaxiong'] = '小小马弓手，竟然……啊……'
 }

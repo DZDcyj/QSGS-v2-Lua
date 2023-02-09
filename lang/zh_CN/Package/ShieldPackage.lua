@@ -31,5 +31,15 @@ return {
     ['LuaMouJieyue'] = '节钺',
     [':LuaMouJieyue'] = '结束阶段，你可以令一名其他角色获得1点“护甲”，然后其可以交给你一张牌',
     ['LuaMouJieyue-choose'] = '你可以发动“节钺”，令一名其他角色获得一点“护甲”，然后其可选择交给你一张牌',
-    ['LuaMouJieyue-Give'] = '你可以交给 %src 一张牌'
+    ['LuaMouJieyue-Give'] = '你可以交给 %src 一张牌',
+    ['ExMouHuaxiong'] = '谋华雄',
+    ['&ExMouHuaxiong'] = '谋华雄',
+    ['#ExMouHuaxiong'] = '跋扈雄狮',
+    ['LuaMouYaowu'] = '耀武',
+    [':LuaMouYaowu'] = '锁定技，当你受到【杀】造成的伤害时，若此【杀】：为红色，伤害来源回复1点体力或摸一张牌；不为红色，你摸一张牌',
+    ['LuaMouYangwei'] = '扬威',
+    [':LuaMouYangwei'] = '出牌阶段限一次，你可以摸两张牌且本阶段获得“威”标记，然后此技能失效直到下个回合的结束阶段\
+    “威”标记效果：使用【杀】的次数上限+1、使用【杀】无距离限制且无视防具',
+    ['luamouyangwei'] = '扬威',
+    ['@LuaWei'] = '威'
 }

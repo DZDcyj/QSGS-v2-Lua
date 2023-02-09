@@ -14,5 +14,6 @@ return {
     ['LuaNongminChoice2'] = '摸两张牌',
     ['LuaDizhu'] = '地主',
     [':LuaDizhu'] = '锁定技，你杀死一名角色时，不执行奖惩；锁定技，限定技，回合开始时，你失去所有主公技',
-    ['luck_card:LuaLuckCard'] = '你想使用手气卡吗？'
+    ['luck_card:LuaLuckCard'] = '你想使用手气卡吗？',
+    ['@Landlords'] = '地主'
 }
