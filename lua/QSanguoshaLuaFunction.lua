@@ -1195,6 +1195,11 @@ function getShieldCount(player)
     return player:getMark(SHIELD_MARK)
 end
 
+-- 是否可以增加护甲
+function canIncreaseShield(player)
+    return getShieldCount(player) < MAX_SHIELD_COUNT
+end
+
 -- 获得护甲
 function increaseShield(player, count)
     local curr = getShieldCount(player)
@@ -1241,6 +1246,11 @@ function canInvokeKeji(player, option)
         return (not player:hasUsed('#LuaMouKejiDiscardCard')) or (not player:hasUsed('#LuaMouKejiLoseHpCard'))
     end
     return not player:hasUsed(string.format('#%s', option))
+end
+
+-- 是否可以发动狭援
+function canInvokeXiayuan(player)
+    return player:hasFlag('ShieldAllLost')
 end
 
 -- 护甲标记
