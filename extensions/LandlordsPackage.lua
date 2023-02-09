@@ -93,6 +93,11 @@ LuaFeiyang = sgs.CreateTriggerSkill {
     end
 }
 
+-- 兼容性考虑判断地主
+local function LuaIsDizhu(target)
+    return (target:hasSkill('LuaDizhu') or target:getMark('@Landlords') > 0)
+end
+
 LuaDizhu = sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
     events = {sgs.TurnStart},
@@ -172,7 +177,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return target and target:getMark('@Landlords') > 0 and target:getMark(self:objectName()) == 0
+        return target and LuaIsDizhu(target) and target:getMark(self:objectName()) == 0
     end
 }
 
