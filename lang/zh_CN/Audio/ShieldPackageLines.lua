@@ -20,5 +20,11 @@ return {
     ['$LuaMouYaowu2'] = '上将潘凤？哼！还不是死在我刀下！',
     ['$LuaMouYangwei1'] = '哈哈哈哈！现在谁不知我华雄？',
     ['$LuaMouYangwei2'] = '定要关外诸侯，知我威名！',
-    ['~ExMouHuaxiong'] = '小小马弓手，竟然……啊……'
+    ['~ExMouHuaxiong'] = '小小马弓手，竟然……啊……',
+    -- 谋黄盖
+    ['$LuaMouKurou1'] = '既不能破，不如依张子布之言，投降便罢！',
+    ['$LuaMouKurou2'] = '周瑜小儿！破曹不得，便欺吾三世老臣乎？',
+    ['$LuaMouZhaxiang1'] = '江东六郡之卒，怎敌丞相百万雄师！',
+    ['$LuaMouZhaxiang2'] = '闻丞相虚心纳士，盖愿率众归降！',
+    ['~ExMouHuanggai'] = '哈哈哈哈，公瑾计成，老夫死也无憾了……'
 }
