@@ -95,7 +95,7 @@ LuaShield = sgs.CreateTriggerSkill {
         elseif damage.nature == sgs.DamageStruct_Thunder then
             room:doAnimate(rinsan.ANIMATE_LIGHTING, damage.to:objectName())
         end
-        
+
         rinsan.sendLogMessage(room, '#GetHp', {
             ['from'] = damage.to,
             ['arg'] = newHp,
@@ -478,3 +478,113 @@ ExMouHuaxiong:addSkill(LuaMouYaowu)
 ExMouHuaxiong:addSkill(LuaMouYangwei)
 SkillAnjiang:addSkill(LuaMouYangweiTargetMod)
 SkillAnjiang:addSkill(LuaMouyangweiBuff)
+
+-- 谋曹仁
+ExMouCaoren = sgs.General(extension, 'ExMouCaoren', 'wei', '4', true, true)
+
+LuaMouJushouCard = sgs.CreateSkillCard {
+    name = 'LuaMouJushou',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        source:turnOver()
+        room:askForDiscard(source, self:objectName(), 2, 1, true, true, 'LuaMouJushouDiscard')
+    end
+}
+
+LuaMouJushouVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaMouJushou',
+    view_as = function(self)
+        return LuaMouJushouCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaMouJushou') and player:faceUp()
+    end
+}
+
+LuaMouJushou = sgs.CreateTriggerSkill {
+    name = 'LuaMouJushou',
+    events = {sgs.Damaged, sgs.ChoiceMade, sgs.TurnedOver},
+    view_as_skill = LuaMouJushouVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Damaged then
+            if not player:faceUp() then
+                local choices = {}
+                if rinsan.getShieldCount(player) < rinsan.MAX_SHIELD_COUNT then
+                    table.insert(choices, 'GainShield')
+                end
+                table.insert(choices, 'TurnOver')
+                table.insert(choices, 'cancel')
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                if choice == 'GainShield' then
+                    rinsan.skill(self, room, player, true)
+                    player:turnOver()
+                elseif choice == 'TurnOver' then
+                    rinsan.skill(self, room, player, true)
+                    rinsan.increaseShield(player, 1)
+                end
+            end
+        elseif event == sgs.TurnedOver then
+            if player:faceUp() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                local count = rinsan.getShieldCount(player)
+                player:drawCards(count, self:objectName())
+            end
+        else
+            local dataStr = data:toString():split(':')
+            if #dataStr ~= 3 or dataStr[1] ~= 'cardDiscard' or dataStr[2] ~= self:objectName() then
+                return false
+            end
+            rinsan.increaseShield(player, #dataStr[3]:split('+'))
+            return false
+        end
+    end
+}
+
+LuaMouJieweiCard = sgs.CreateSkillCard {
+    name = 'LuaMouJiewei',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, targets, to_select)
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) and (not to_select:isKongcheng())
+    end,
+    on_use = function(self, room, source, targets)
+        rinsan.decreaseShield(source, 1)
+        local target = targets[1]
+        if target:getHandcardNum() > 0 then
+            local cards = sgs.IntList()
+            local cards_table = {}
+            for _, cd in sgs.qlist(target:getHandcards()) do
+                cards:append(cd:getEffectiveId())
+                table.insert(cards_table, cd:getEffectiveId())
+            end
+            local cardString = table.concat(cards_table, '+')
+            rinsan.sendLogMessage(room, '$ViewAllCards', {
+                ['from'] = source,
+                ['to'] = target,
+                ['card_str'] = cardString
+            })
+            room:fillAG(cards, source)
+            local id = room:askForAG(source, cards, false, self:objectName())
+            if id ~= -1 then
+                room:obtainCard(source, id)
+            end
+            room:clearAG(source)
+        end
+    end
+}
+
+LuaMouJiewei = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaMouJiewei',
+    view_as = function(self)
+        return LuaMouJieweiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaMouJiewei') and rinsan.getShieldCount(player) > 0
+    end
+}
+
+ExMouCaoren:addSkill(LuaMouJushou)
+ExMouCaoren:addSkill(LuaMouJiewei)
