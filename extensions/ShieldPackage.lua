@@ -81,7 +81,6 @@ LuaShield = sgs.CreateTriggerSkill {
             damage.to:setTag('ShieldLostCount', sgs.QVariant(math.min(damage.damage, rinsan.getShieldCount(damage.to))))
         end
 
-        room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         rinsan.decreaseShield(damage.to, damage.damage)
 
         -- 手动播放音效和动画
@@ -89,20 +88,20 @@ LuaShield = sgs.CreateTriggerSkill {
             local delta = damage.damage > 3 and 3 or damage.damage
             sgs.Sanguosha:playSystemAudioEffect(string.format('injure%d', delta), true)
         end
-
         room:setEmotion(damage.to, 'damage')
+
         if damage.nature == sgs.DamageStruct_Fire then
             room:doAnimate(rinsan.ANIMATE_FIRE, damage.to:objectName())
         elseif damage.nature == sgs.DamageStruct_Thunder then
             room:doAnimate(rinsan.ANIMATE_LIGHTING, damage.to:objectName())
         end
-
+        
         rinsan.sendLogMessage(room, '#GetHp', {
             ['from'] = damage.to,
-            ['arg'] = damage.to:getHp(),
+            ['arg'] = newHp,
             ['arg2'] = damage.to:getMaxHp()
         })
-
+        room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         return true
     end,
     can_trigger = globalTrigger
