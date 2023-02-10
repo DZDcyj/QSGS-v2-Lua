@@ -519,10 +519,10 @@ LuaMouJushou = sgs.CreateTriggerSkill {
                 local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
                 if choice == 'GainShield' then
                     rinsan.skill(self, room, player, true)
-                    player:turnOver()
+                    rinsan.increaseShield(player, 1)
                 elseif choice == 'TurnOver' then
                     rinsan.skill(self, room, player, true)
-                    rinsan.increaseShield(player, 1)
+                    player:turnOver()
                 end
             end
         elseif event == sgs.TurnedOver then
