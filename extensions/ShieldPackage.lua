@@ -95,7 +95,7 @@ LuaShield = sgs.CreateTriggerSkill {
         elseif damage.nature == sgs.DamageStruct_Thunder then
             room:doAnimate(rinsan.ANIMATE_LIGHTING, damage.to:objectName())
         end
-        
+
         rinsan.sendLogMessage(room, '#GetHp', {
             ['from'] = damage.to,
             ['arg'] = newHp,
@@ -596,7 +596,7 @@ LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
                 if rinsan.RIGHT(self, use.from, 'LuaMouZhaxiang') and canInvokeZhaxiang(use.from) then
                     local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
                     local index = 1
-                    for _, p in sgs.qlist(use.to) do
+                    for _, _ in sgs.qlist(use.to) do
                         jink_table[index] = 0
                         index = index + 1
                     end
@@ -607,7 +607,7 @@ LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.TrickCardCanceling then
             local effect = data:toCardEffect()
-            if effect.from and rinsan.RIGHT(self, effect.from , 'LuaMouZhaxiang') and canInvokeZhaxiang(effect.from) then
+            if effect.from and rinsan.RIGHT(self, effect.from, 'LuaMouZhaxiang') and canInvokeZhaxiang(effect.from) then
                 return true
             end
         elseif event == sgs.CardFinished then
@@ -618,7 +618,7 @@ LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
             room:addPlayerMark(player, 'LuaMouZhaxiangUsed')
             if use.from and use.from:hasSkill('LuaMouZhaxiang') then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    room:setPlayerMark(player, 'LuaMouZhaxiangTarget', 0)
+                    room:setPlayerMark(p, 'LuaMouZhaxiangTarget', 0)
                 end
             end
         else
@@ -641,6 +641,13 @@ LuaMouZhaxiangTargetMod = sgs.CreateTargetModSkill {
             return 1000
         end
         return 0
+    end,
+    residue_func = function(self, player)
+        if player:hasSkill('LuaMouZhaxiang') and canInvokeZhaxiang(player) then
+            return 1000
+        else
+            return 0
+        end
     end
 }
 
