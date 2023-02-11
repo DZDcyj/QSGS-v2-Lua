@@ -678,7 +678,7 @@ LuaMouXiaoji = sgs.CreateTriggerSkill {
         local move = data:toMoveOneTime()
         if move.from and move.from:objectName() == player:objectName() then
             if move.from_places:contains(sgs.Player_PlaceEquip) then
-                for i, id in sgs.qlist(move.card_ids) do
+                for i, _ in sgs.qlist(move.card_ids) do
                     if not player:isAlive() then
                         return false
                     end

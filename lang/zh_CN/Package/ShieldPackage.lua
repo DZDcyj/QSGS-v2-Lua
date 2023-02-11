@@ -46,7 +46,7 @@ return {
     ['&ExMouSunshangxiang'] = '谋孙尚香',
     ['#ExMouSunshangxiang'] = '骄豪明俏',
     ['LuaMouLiangzhu'] = '良助',
-    [':LuaMouLiangzhu'] = '<font color="#D0796C"><b>蜀势力技</b></font>，出牌阶段限一次，你可以将其他角色装备区内的一张牌置于你的武将牌上，称为“妆”，然后令拥有“助”标记的角色选择一项：1.回复1点体力；2.摸两张牌',
+    [':LuaMouLiangzhu'] = '<font color="#D0796C"><b>蜀势力技</b></font>，出牌阶段限一次，你可以将其他角色装备区内的一张牌置于你的武将牌上，称为“妆”，然后令拥有“助”标记的角色选择一项回复1点体力或摸两张牌',
     ['@LuaMouLiangzhu'] = '助',
     ['LuaMouLiangzhuPile'] = '妆',
     ['LuaMouLiangzhuChoice1'] = '回复1点体力',
