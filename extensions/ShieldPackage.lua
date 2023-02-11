@@ -552,6 +552,7 @@ LuaMouJieyinAwakeHelper = sgs.CreateTriggerSkill {
             ['arg'] = 'LuaMouJieyin',
             ['arg2'] = '@LuaMouLiangzhu'
         })
+        room:broadcastSkillInvoke('LuaMouJieyin', 2)
         if room:changeMaxHpForAwakenSkill(mousunshangxiang, 0) then
             room:addPlayerMark(mousunshangxiang, jieyinMark)
             rinsan.recover(room, mousunshangxiang)
@@ -588,10 +589,10 @@ LuaMouJieyinStart = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, _player, data, room)
         for _, player in sgs.qlist(room:findPlayersBySkillName('LuaMouJieyin')) do
             if player:getMark(self:objectName()) == 0 then
-                local to = room:askForPlayerChosen(player, room:getOtherPlayers(player), 'LuaMouJieyin', 'LuaMouJieyin-invoke',
-                    false, true)
+                local to = room:askForPlayerChosen(player, room:getOtherPlayers(player), 'LuaMouJieyin',
+                    'LuaMouJieyin-invoke', false, true)
                 if to then
-                    room:broadcastSkillInvoke('LuaMouJieyin')
+                    room:broadcastSkillInvoke('LuaMouJieyin', 1)
                     room:notifySkillInvoked(player, 'LuaMouJieyin')
                     to:gainMark('@LuaMouLiangzhu')
                 end
@@ -626,6 +627,7 @@ LuaMouJieyin = sgs.CreateTriggerSkill {
             local aiData = sgs.QVariant()
             aiData:setValue(zhuTarget)
             player:setTag('LuaMouLiangZhuTarget', aiData)
+            room:broadcastSkillInvoke('LuaMouJieyin', 1)
             local choice = room:askForChoice(zhuTarget, self:objectName(), table.concat(choices, '+'))
             player:removeTag('LuaMouLiangZhuTarget')
             if choice == 'LuaMouJieyinChoice1' then
@@ -704,6 +706,9 @@ LuaMouXiaoji = sgs.CreateTriggerSkill {
                 end
             end
         end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getKingdom() == 'wu'
     end
 }
 
