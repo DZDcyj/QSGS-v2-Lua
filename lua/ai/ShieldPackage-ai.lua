@@ -11,3 +11,15 @@ sgs.ai_skill_discard['LuaMouJieyue'] = function(self, discard_num, min_num, opti
     self:sortByKeepValue(cards, true)
     return {cards[1]:getEffectiveId()}
 end
+
+-- 谋孙尚香给牌/移动标记
+sgs.ai_skill_choice['LuaMouJieyin'] = function(self, choices)
+    local target = self.player:getTag('LuaMouLiangZhuTarget'):toPlayer()
+    -- 如果自己虚，且不是队友就不给
+    if self:isWeak() and not self:isFriend(target) then
+        return 'LuaMouJieyinChoice2'
+    end
+    -- 能给就给
+    local items = choices:split('+')
+    return items[1]
+end
