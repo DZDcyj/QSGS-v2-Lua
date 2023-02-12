@@ -688,7 +688,7 @@ LuaMouXiaoji = sgs.CreateTriggerSkill {
                             player:drawCards(2, self:objectName())
                             local available_targets = sgs.SPlayerList()
                             for _, p in sgs.qlist(room:getAlivePlayers()) do
-                                if rinsan.canDiscard(player, p, 'hej') then
+                                if rinsan.canDiscard(player, p, 'ej') then
                                     available_targets:append(p)
                                 end
                             end
@@ -696,7 +696,7 @@ LuaMouXiaoji = sgs.CreateTriggerSkill {
                                 local target = room:askForPlayerChosen(player, available_targets, self:objectName(),
                                     'LuaMouXiaojiChoose', true, true)
                                 if target then
-                                    local card_id = room:askForCardChosen(player, target, 'hej', self:objectName(),
+                                    local card_id = room:askForCardChosen(player, target, 'ej', self:objectName(),
                                         false, sgs.Card_MethodDiscard)
                                     room:throwCard(card_id, target, player)
                                 end
