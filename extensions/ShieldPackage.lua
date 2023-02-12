@@ -565,7 +565,7 @@ LuaMouJieyinAwakeHelper = sgs.CreateTriggerSkill {
             if #card_table > 0 then
                 local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                 dummy:addSubcards(to_obtain)
-                rinsan.sendLogMessage(room, '#LuaMouJieyinGot', {
+                rinsan.sendLogMessage(room, '$LuaMouJieyinGot', {
                     ['from'] = mousunshangxiang,
                     ['arg'] = 'LuaMouLiangzhuPile',
                     ['card_str'] = table.concat(card_table, '+')
