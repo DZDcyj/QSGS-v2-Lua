@@ -34,5 +34,12 @@ return {
     ['$LuaMouKurou2'] = '周瑜小儿！破曹不得，便欺吾三世老臣乎？',
     ['$LuaMouZhaxiang1'] = '江东六郡之卒，怎敌丞相百万雄师！',
     ['$LuaMouZhaxiang2'] = '闻丞相虚心纳士，盖愿率众归降！',
-    ['~ExMouHuanggai'] = '哈哈哈哈，公瑾计成，老夫死也无憾了……'
+    ['~ExMouHuanggai'] = '哈哈哈哈，公瑾计成，老夫死也无憾了……',
+    -- 谋曹仁
+    ['$LuaMouJushou1'] = '白马沉河共歃誓，怒涛没城亦不悔！',
+    ['$LuaMouJushou2'] = '山水速疾来去易，襄樊镇固永难开！',
+    ['$LuaMouJushou3'] = '汉水溢流断归路，守城之志穷且坚！',
+    ['$LuaMouJiewei1'] = '同袍之谊，断不可弃之！',
+    ['$LuaMouJiewei2'] = '贼虽势盛，若吾出马，亦可解之',
+    ['~ExMouCaoren'] = '吾身可殉，然襄樊之地万不可落于吴蜀之手……'
 }

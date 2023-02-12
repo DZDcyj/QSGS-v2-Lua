@@ -78,4 +78,18 @@ return {
     ['LuaMouZhaxiang'] = '诈降',
     [':LuaMouZhaxiang'] = '锁定技，①摸牌阶段，你多摸X张牌；\
     ②你每回合使用的前X张牌无距离与次数限制且不能被响应（X为你已损失的体力值）',
+    ['ExMouCaoren'] = '谋曹仁',
+    ['&ExMouCaoren'] = '谋曹仁',
+    ['#ExMouCaoren'] = '大将军',
+    ['LuaMouJushou'] = '据守',
+    [':LuaMouJushou'] = '①出牌阶段限一次，若你的武将牌正面朝上，你可以翻面，然后你弃置至多两张牌并获得等量的“护甲”\
+    ②当你受到伤害后，若你的武将牌背面朝上，你可以选择一项：1.翻面；2.获得1点“护甲”\
+    ③当你的武将牌从背面翻至正面时，你摸等同于你“护甲”值的牌',
+    ['LuaMouJushouDiscard'] = '你可以弃置至多 2 张牌并获得等量的护甲',
+    ['luamoujushou'] = '据守',
+    ['GainShield'] = '获得一点护甲',
+    ['TurnOver'] = '翻面',
+    ['LuaMouJiewei'] = '解围',
+    [':LuaMouJiewei'] = '出牌阶段限一次，你可以失去1点“护甲”并选择一名其他角色，你观看其手牌并获得其中一张',
+    ['luamoujiewei'] = '解围'
 }
