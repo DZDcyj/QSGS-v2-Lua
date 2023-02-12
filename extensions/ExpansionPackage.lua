@@ -103,14 +103,14 @@ LuaQianchongBasicCardTargetMod = sgs.CreateTargetModSkill {
     frequency = sgs.Skill_Compulsory,
     pattern = 'BasicCard',
     residue_func = function(self, player)
-        if player:hasSkill('LuaQianchong') and player:getMark('LuaQianchongCard') == 1 then
+        if player:getMark('LuaQianchongCard') == 1 then
             return 1000
         else
             return 0
         end
     end,
     distance_limit_func = function(self, from, card)
-        if from:hasSkill('LuaQianchong') and from:getMark('LuaQianchongCard') == 1 then
+        if from:getMark('LuaQianchongCard') == 1 then
             return 1000
         else
             return 0
@@ -123,18 +123,32 @@ LuaQianchongTrickCardTargetMod = sgs.CreateTargetModSkill {
     frequency = sgs.Skill_Compulsory,
     pattern = 'TrickCard',
     residue_func = function(self, player)
-        if player:hasSkill('LuaQianchong') and player:getMark('LuaQianchongCard') == 2 then
+        if player:getMark('LuaQianchongCard') == 2 then
             return 1000
         else
             return 0
         end
     end,
     distance_limit_func = function(self, from, card)
-        if from:hasSkill('LuaQianchong') and from:getMark('LuaQianchongCard') == 2 then
+        if from:getMark('LuaQianchongCard') == 2 then
             return 1000
         else
             return 0
         end
+    end
+}
+
+LuaQianchongClear = sgs.CreateTriggerSkill {
+    name = 'LuaQianchongClear',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerMark(p, 'LuaQianchongCard', 0)
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
     end
 }
 
@@ -245,6 +259,7 @@ SkillAnjiang:addSkill(LuaQianchongTrickCardTargetMod)
 SkillAnjiang:addSkill(LuaQianchongBasicCardTargetMod)
 SkillAnjiang:addSkill(LuaWeimu)
 SkillAnjiang:addSkill(LuaMingzhe)
+SkillAnjiang:addSkill(LuaQianchongClear)
 ExWangyuanji:addSkill(LuaShangjian)
 ExWangyuanji:addRelateSkill('LuaWeimu')
 ExWangyuanji:addRelateSkill('LuaMingzhe')
