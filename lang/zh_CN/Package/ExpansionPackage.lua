@@ -684,11 +684,11 @@ return {
     ['~LuaQuedi'] = '选择一名其他角色→选择一张基本牌→点击“确定”',
     ['LuaZhuifeng'] = '椎锋',
     ['luazhuifeng'] = '椎锋',
-    [':LuaZhuifeng'] = '<font color="#3F59A0"><b>魏势力技</b></font>，<font color="green"><b>出牌阶段限两次</b></font>，你可以失去一点体力，视为使用一张【决斗】。\
+    [':LuaZhuifeng'] = '<font color="#547998"><b>魏势力技</b></font>，<font color="green"><b>出牌阶段限两次</b></font>，你可以失去一点体力，视为使用一张【决斗】。\
     当你受到此【决斗】的伤害时，你防止此伤害，然后此技能于此阶段内失效',
     ['LuaChongjian'] = '冲坚',
     ['luachongjian'] = '冲坚',
-    [':LuaChongjian'] = '<font color="#59980F"><b>吴势力技</b></font>，你可以将一张装备牌当【酒】或无距离限制且无视目标防具的【杀】使用。\
+    [':LuaChongjian'] = '<font color="#4DB873"><b>吴势力技</b></font>，你可以将一张装备牌当【酒】或无距离限制且无视目标防具的【杀】使用。\
     当你以此法使用【杀】对一名角色造成伤害后，你获得其装备区里的X张牌（X为伤害值）',
     ["@LuaChongjian"] = "请选择 %src 的目标",
     ['~LuaChongjian'] = '选择若干其他角色→点击“确定”',

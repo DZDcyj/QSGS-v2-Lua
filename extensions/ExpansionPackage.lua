@@ -8102,6 +8102,9 @@ LuaFuhaiDeath = sgs.CreateTriggerSkill {
             return false
         end
         local x = player:getMark('@LuaPingding')
+        if x <= 0 then
+            return false
+        end
         local splayers = room:findPlayersBySkillName('LuaFuhai')
         for _, sp in sgs.qlist(splayers) do
             room:sendCompulsoryTriggerLog(sp, 'LuaFuhai')
