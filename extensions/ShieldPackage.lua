@@ -718,3 +718,180 @@ ExMouSunshangxiang:addRelateSkill('LuaMouXiaoji')
 SkillAnjiang:addSkill(LuaMouJieyinAwakeHelper)
 SkillAnjiang:addSkill(LuaMouJieyinStart)
 SkillAnjiang:addSkill(LuaMouXiaoji)
+
+-- 谋黄盖
+ExMouHuanggai = sgs.General(extension, 'ExMouHuanggai', 'wu', '4', true, true)
+
+-- 是否满足【诈降】条件
+local function canInvokeZhaxiang(from)
+    return from:getMark('LuaMouZhaxiangUsed') < from:getLostHp()
+end
+
+LuaMouKurouCard = sgs.CreateSkillCard {
+    name = 'LuaMouKurou',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local loseHp = 1
+        if card:isKindOf('Peach') or card:isKindOf('Analeptic') then
+            loseHp = 2
+        end
+        local target = targets[1]
+        room:obtainCard(target, card)
+        room:loseHp(source, loseHp)
+    end
+}
+
+LuaMouKurouVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaMouKurou',
+    view_filter = function(self, to_select)
+        return true
+    end,
+    view_as = function(self, card)
+        local vs_card = LuaMouKurouCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaMouKurou'
+    end
+}
+
+LuaMouKurou = sgs.CreateTriggerSkill {
+    name = 'LuaMouKurou',
+    events = {sgs.EventPhaseStart, sgs.HpLost},
+    view_as_skill = LuaMouKurouVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_Play then
+                room:askForUseCard(player, '@@LuaMouKurou', '@LuaMouKurou')
+            end
+        else
+            local lostHp = data:toInt()
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.increaseShield(player, lostHp * 2)
+        end
+    end
+}
+
+LuaMouZhaxiang = sgs.CreateTriggerSkill {
+    name = 'LuaMouZhaxiang',
+    events = {sgs.DrawNCards},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local lostHp = player:getLostHp()
+        if lostHp == 0 then
+            return false
+        end
+        local count = data:toInt()
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
+        data:setValue(count + lostHp)
+    end
+}
+
+LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
+    name = 'LuaMouZhaxiangBuff',
+    global = true,
+    events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling, sgs.CardAsked, sgs.TurnStart, sgs.CardFinished},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardUsed then
+            local use = data:toCardUse()
+            if (not use.from) or (not use.from:hasSkill('LuaMouZhaxiang')) then
+                return false
+            end
+            if (not use.card) or use.card:isKindOf('SkillCard') then
+                return false
+            end
+            if canInvokeZhaxiang(use.from) then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:addPlayerMark(p, 'LuaMouZhaxiangTarget')
+                end
+                room:broadcastSkillInvoke('LuaMouZhaxiang')
+                room:sendCompulsoryTriggerLog(use.from, 'LuaMouZhaxiang')
+                if (use.card:isKindOf('Slash') or use.card:isNDTrick()) then
+                    room:addPlayerMark(use.from, self:objectName() .. 'engine')
+                    if use.from:getMark(self:objectName() .. 'engine') > 0 then
+                        room:removePlayerMark(use.from, self:objectName() .. 'engine')
+                    end
+                end
+            end
+        elseif event == sgs.CardAsked then
+            if player:getMark('LuaMouZhaxiangTarget') > 0 then
+                room:provide(nil)
+                room:setPlayerMark(player, 'LuaMouZhaxiangTarget', 0)
+                return true
+            end
+        elseif event == sgs.TargetConfirmed then
+            local use = data:toCardUse()
+            if use.card:isKindOf('Slash') then
+                if rinsan.RIGHT(self, use.from, 'LuaMouZhaxiang') and canInvokeZhaxiang(use.from) then
+                    local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
+                    local index = 1
+                    for _, _ in sgs.qlist(use.to) do
+                        jink_table[index] = 0
+                        index = index + 1
+                    end
+                    local jink_data = sgs.QVariant()
+                    jink_data:setValue(Table2IntList(jink_table))
+                    use.from:setTag('Jink_' .. use.card:toString(), jink_data)
+                end
+            end
+        elseif event == sgs.TrickCardCanceling then
+            local effect = data:toCardEffect()
+            if effect.from and rinsan.RIGHT(self, effect.from, 'LuaMouZhaxiang') and canInvokeZhaxiang(effect.from) then
+                return true
+            end
+        elseif event == sgs.CardFinished then
+            local use = data:toCardUse()
+            if (not use.card) or use.card:isKindOf('SkillCard') then
+                return false
+            end
+            room:addPlayerMark(player, 'LuaMouZhaxiangUsed')
+            if use.from and use.from:hasSkill('LuaMouZhaxiang') then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, 'LuaMouZhaxiangTarget', 0)
+                end
+            end
+        else
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerMark(p, 'LuaMouZhaxiangUsed', 0)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaMouZhaxiangTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaMouZhaxiangTargetMod',
+    pattern = '.',
+    distance_limit_func = function(self, from, card, to)
+        if from:hasSkill('LuaMouZhaxiang') and canInvokeZhaxiang(from) then
+            return 1000
+        end
+        return 0
+    end,
+    residue_func = function(self, player)
+        if player:hasSkill('LuaMouZhaxiang') and canInvokeZhaxiang(player) then
+            return 1000
+        else
+            return 0
+        end
+    end
+}
+
+ExMouHuanggai:addSkill(LuaMouKurou)
+ExMouHuanggai:addSkill(LuaMouZhaxiang)
+SkillAnjiang:addSkill(LuaMouZhaxiangBuff)
+SkillAnjiang:addSkill(LuaMouZhaxiangTargetMod)

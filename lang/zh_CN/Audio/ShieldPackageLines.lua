@@ -28,5 +28,11 @@ return {
     ['$LuaMouJieyin2'] = '夫妻之情既断，何必再问归期！',
     ['$LuaMouXiaoji1'] = '吾之所通，何止十八般兵刃！',
     ['$LuaMouXiaoji2'] = '既如此，就让尔等见识一番！',
-    ['~ExMouSunshangxiang'] = '此去一别，竟无再见之日……'
+    ['~ExMouSunshangxiang'] = '此去一别，竟无再见之日……',
+    -- 谋黄盖
+    ['$LuaMouKurou1'] = '既不能破，不如依张子布之言，投降便罢！',
+    ['$LuaMouKurou2'] = '周瑜小儿！破曹不得，便欺吾三世老臣乎？',
+    ['$LuaMouZhaxiang1'] = '江东六郡之卒，怎敌丞相百万雄师！',
+    ['$LuaMouZhaxiang2'] = '闻丞相虚心纳士，盖愿率众归降！',
+    ['~ExMouHuanggai'] = '哈哈哈哈，公瑾计成，老夫死也无憾了……'
 }

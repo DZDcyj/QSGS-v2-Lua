@@ -65,5 +65,17 @@ return {
     ['$LuaMouJieyinGot'] = "%from 获得所有“%arg”：%card",
     ['LuaMouXiaoji'] = '枭姬',
     [':LuaMouXiaoji'] = '<font color="#4DB873"><b>吴势力技</b></font>，当你失去装备区里的一张牌时，你摸两张牌，然后你可以弃置场上的一张牌',
-    ['LuaMouXiaojiChoose'] = '你可以选择一名角色，弃置其装备或判定区内的一张牌'
+    ['LuaMouXiaojiChoose'] = '你可以选择一名角色，弃置其装备或判定区内的一张牌',
+    ['ExMouHuanggai'] = '谋黄盖',
+    ['&ExMouHuanggai'] = '谋黄盖',
+    ['#ExMouHuanggai'] = '轻身为国',
+    ['LuaMouKurou'] = '苦肉',
+    [':LuaMouKurou'] = '【苦肉】①出牌阶段开始时，你可以交给一名其他角色一张牌。若你给出的牌为【桃】或【酒】，则你失去2点体力，否则你失去1点体力\
+    ②当你失去1点体力后，你获得2点“护甲”',
+    ['luamoukurou'] = '苦肉',
+    ['@LuaMouKurou'] = '你可以发动“苦肉”，将一张牌交给其他角色并失去体力',
+    ['~LuaMouKurou'] = '选择一张手牌→选择一名其他角色→点击确定',
+    ['LuaMouZhaxiang'] = '诈降',
+    [':LuaMouZhaxiang'] = '锁定技，①摸牌阶段，你多摸X张牌；\
+    ②你每回合使用的前X张牌无距离与次数限制且不能被响应（X为你已损失的体力值）',
 }
