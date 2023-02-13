@@ -1010,7 +1010,7 @@ ExMouCaoren:addSkill(LuaMouJiewei)
 ExMouXuhuang = sgs.General(extension, 'ExMouXuhuang', 'wei', '4', true, true)
 
 LuaMouDuanliangCard = sgs.CreateSkillCard {
-    name = 'LuaMouDuanliang',
+    name = 'LuaMouDuanliangCard',
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)
@@ -1020,16 +1020,26 @@ LuaMouDuanliangCard = sgs.CreateSkillCard {
         local attacks = {'LuaMouDuanliangAttack1', 'LuaMouDuanliangAttack2'}
         local defenses = {'LuaMouDuanliangDefense1', 'LuaMouDuanliangDefense2'}
         local target = targets[1]
+        room:broadcastSkillInvoke('LuaMouDuanliang', 1)
         local attack = room:askForChoice(source, self:objectName(), table.concat(attacks, '+'))
         local defense = room:askForChoice(target, self:objectName(), table.concat(defenses, '+'))
         local success = string.sub(attack, -1) ~= string.sub(defense, -1)
         local type = success and '#LuaMouDuanliangSuccess' or '#LuaMouDuanliangFailure'
+        rinsan.sendLogMessage(room, '#choose', {
+            ['from'] = source,
+            ['arg'] = attack
+        })
+        rinsan.sendLogMessage(room, '#choose', {
+            ['from'] = target,
+            ['arg'] = defense
+        })
         rinsan.sendLogMessage(room, type, {
             ['from'] = source,
             ['arg'] = 'LuaMouDuanliangMouyi'
         })
         if success then
             if attack == attacks[1] then
+            room:broadcastSkillInvoke('LuaMouDuanliang', 2)
                 if target:containsTrick('supply_shortage') then
                     local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false,
                         sgs.Card_MethodNone)
@@ -1043,10 +1053,13 @@ LuaMouDuanliangCard = sgs.CreateSkillCard {
                     room:useCard(sgs.CardUseStruct(supply_shortage, source, target))
                 end
             else
+                room:broadcastSkillInvoke('LuaMouDuanliang', 3)
                 local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
                 duel:setSkillName(self:objectName())
                 room:useCard(sgs.CardUseStruct(duel, source, target))
             end
+        else
+            room:broadcastSkillInvoke('LuaMouDuanliang', 4)
         end
     end
 }
@@ -1057,7 +1070,7 @@ LuaMouDuanliang = sgs.CreateZeroCardViewAsSkill {
         return LuaMouDuanliangCard:clone()
     end,
     enabled_at_play = function(self, player)
-        return not player:hasUsed('#LuaMouDuanliang')
+        return not player:hasUsed('#LuaMouDuanliangCard')
     end
 }
 
@@ -1085,16 +1098,19 @@ LuaMouShipo = sgs.CreateTriggerSkill {
         table.insert(choices, 'cancel')
         if #choices > 1 then
             local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+            if choice ~= 'cancel' then
+                rinsan.skill(self, room, player, true)
+            end
             if choice == 'LuaMouShipoChoice1' then
                 local victim = room:askForPlayerChosen(player, victims, self:objectName(), 'LuaMouShipo-choose', true, true)
                 if victim then
-                    if not room:askForDiscard(victim, self:objectName(), 1, 1, true, false, 'LuaMouShipo-discard') then
+                    if not room:askForDiscard(victim, self:objectName(), 1, 1, true, true, 'LuaMouShipo-discard'..player:objectName()) then
                         player:drawCards(1, self:objectName())
                     end
                 end
             elseif choice == 'LuaMouShipoChoice2' then
                 for _, p in sgs.qlist(shortages) do
-                    if not room:askForDiscard(p, self:objectName(), 1, 1, true, false, 'LuaMouShipo-discard') then
+                    if not room:askForDiscard(p, self:objectName(), 1, 1, true, true, 'LuaMouShipo-discard:'..player:objectName()) then
                         player:drawCards(1, self:objectName())
                     end
                 end

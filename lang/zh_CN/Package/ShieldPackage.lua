@@ -91,5 +91,27 @@ return {
     ['TurnOver'] = '翻面',
     ['LuaMouJiewei'] = '解围',
     [':LuaMouJiewei'] = '出牌阶段限一次，你可以失去1点“护甲”并选择一名其他角色，你观看其手牌并获得其中一张',
-    ['luamoujiewei'] = '解围'
+    ['luamoujiewei'] = '解围',
+    ['ExMouXuhuang'] = '谋徐晃',
+    ['&ExMouXuhuang'] = '谋徐晃',
+    ['#ExMouXuhuang'] = '径行截辎',
+    ['LuaMouDuanliang'] = '断粮',
+    [':LuaMouDuanliang'] = '出牌阶段限一次，你可以与一名其他角色进行一次谋弈：\
+    围城断粮，若其判定区中没有【兵粮寸断】，则你将牌堆顶的一张牌当无距离限制的【兵粮寸断】对其使用，否则你改为获得其一张牌；\
+    擂鼓进军，你视为对其使用一张【决斗】',
+    ['luamouduanliang'] = '断粮',
+    ['LuaMouDuanliangCard'] = '断粮',
+    ['LuaMouDuanliangMouyi'] = '断粮谋弈',
+    ['#LuaMouDuanliangSuccess'] = '%from %arg <font color="green"><b>成功</b></font>',
+    ['#LuaMouDuanliangFailure'] = '%from %arg <font color="red"><b>失败</b></font>',
+    ['LuaMouDuanliangAttack1'] = '围城断粮',
+    ['LuaMouDuanliangAttack2'] = '擂鼓进军',
+    ['LuaMouDuanliangDefense1'] = '全军突击',
+    ['LuaMouDuanliangDefense2'] = '闭门守城',
+    ['LuaMouShipo'] = '势迫',
+    [':LuaMouShipo'] = '结束阶段，你可以令一名体力值小于你的角色或所有判定区里有【兵粮寸断】的其他角色依次选择一项：1.弃置一张牌；2.令你摸一张牌',
+    ['LuaMouShipoChoice1'] = '令一名体力值小于你的角色进行选择',
+    ['LuaMouShipoChoice2'] = '令所有判定区里有【兵粮寸断】的其他角色依次选择',
+    ['LuaMouShipo-discard'] = '你需要弃置一张牌或者点击取消让 %src 摸一张牌',
+    ['LuaMouShipo-choose'] = '请选择一名其他角色，令其选择弃牌或是让你摸牌'
 }
