@@ -175,6 +175,11 @@ LuaDizhu = sgs.CreateTriggerSkill {
                 room:detachSkillFromPlayer(player, skill:objectName())
             end
         end
+
+        -- 处理锁定视为技
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:filterCards(p, p:getCards('he'), true)
+        end
     end,
     can_trigger = function(self, target)
         return target and LuaIsDizhu(target) and target:getMark(self:objectName()) == 0
