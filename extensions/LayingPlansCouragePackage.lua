@@ -66,7 +66,7 @@ LuaZaoliUse = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         local card
-        local isHandcard = false
+        local isHandcard
         if event == sgs.CardUsed then
             local use = data:toCardUse()
             card = use.card
