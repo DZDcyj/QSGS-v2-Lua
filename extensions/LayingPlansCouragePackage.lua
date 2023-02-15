@@ -47,7 +47,7 @@ LuaZaoliCardMove = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
         if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() and
-            player:objectName() ~= sgs.Player_NotActive and move.to_place == sgs.Player_PlaceHand and
+            player:getPhase() ~= sgs.Player_NotActive and move.to_place == sgs.Player_PlaceHand and
             not move.card_ids:isEmpty() then
             for _, id in sgs.qlist(move.card_ids) do
                 room:addPlayerMark(player, 'LuaZaoli' .. id .. '-Clear')
@@ -76,7 +76,7 @@ LuaZaoliUse = sgs.CreateTriggerSkill {
             card = resp.m_card
             isHandcard = resp.m_isHandcard;
         end
-        if card and isHandcard and player:getMark('@LuaZaoli') < 4 then
+        if card and (not card:isKindOf('SkillCard')) and isHandcard and player:getMark('@LuaZaoli') < 4 then
             room:broadcastSkillInvoke('LuaZaoli')
             room:sendCompulsoryTriggerLog(player, 'LuaZaoli')
             player:gainMark('@LuaZaoli')
@@ -98,13 +98,14 @@ LuaZaoliStart = sgs.CreateTriggerSkill {
                 return false
             end
             room:broadcastSkillInvoke('LuaZaoli')
+            room:sendCompulsoryTriggerLog(player, 'LuaZaoli')
             if player:getCardCount(true) > 0 then
                 room:askForDiscard(player, 'LuaZaoli', 10000, 1, false, true, 'LuaZaoli-discard')
                 return false
             end
             local markCount = player:getMark('@LuaZaoli')
             player:loseMark('@LuaZaoli', markCount)
-            player:drawCards(markCount, self:objectName())
+            player:drawCards(markCount, 'LuaZaoli')
             if markCount > 2 then
                 room:loseHp(player)
             end
@@ -116,7 +117,7 @@ LuaZaoliStart = sgs.CreateTriggerSkill {
             local count = #dataStr[3]:split('+')
             local markCount = player:getMark('@LuaZaoli')
             player:loseMark('@LuaZaoli', markCount)
-            player:drawCards(markCount + count, self:objectName())
+            player:drawCards(markCount + count, 'LuaZaoli')
             if markCount > 2 then
                 room:loseHp(player)
             end
