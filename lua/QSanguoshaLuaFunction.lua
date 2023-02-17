@@ -92,7 +92,7 @@ end
 -- tag_name，自定义名称，用于 tag
 function guhuoCardOnValidate(self, card_use, skill_name, choice_name, tag_name)
     choice_name = choice_name or skill_name
-    tag_name = skill_name
+    tag_name = tag_name or skill_name
     local source = card_use.from
     local room = source:getRoom()
     local to_use = self:getUserString()
