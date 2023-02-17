@@ -4168,123 +4168,28 @@ LuaMiewuCard = sgs.CreateSkillCard {
     will_throw = false,
     handling_method = sgs.Card_MethodNone,
     filter = function(self, targets, to_select)
-        local players = sgs.PlayerList()
-        for i = 1, #targets do
-            players:append(targets[i])
-        end
-        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
-            local card
-            if self:getUserString() and self:getUserString() ~= '' then
-                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
-                return card and card:targetFilter(players, to_select, sgs.Self) and
-                           not sgs.Self:isProhibited(to_select, card, players)
-            end
-        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
-            return false
-        end
-        local _card = sgs.Self:getTag('LuaMiewu'):toCard()
-        if _card == nil then
-            return false
-        end
-        local card = sgs.Sanguosha:cloneCard(_card)
-        card:deleteLater()
-        return card and card:targetFilter(players, to_select, sgs.Self) and
-                   not sgs.Self:isProhibited(to_select, card, players)
+        return rinsan.guhuoCardFilter(self, targets, to_select, 'LuaMiewu')
     end,
     feasible = function(self, targets)
-        local players = sgs.PlayerList()
-        for i = 1, #targets do
-            players:append(targets[i])
-        end
-        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
-            local card
-            if self:getUserString() and self:getUserString() ~= '' then
-                card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
-                return card and card:targetsFeasible(players, sgs.Self)
-            end
-        elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
-            return true
-        end
-        local _card = sgs.Self:getTag('LuaMiewu'):toCard()
-        if _card == nil then
-            return false
-        end
-        local card = sgs.Sanguosha:cloneCard(_card)
-        card:deleteLater()
-        return card and card:targetsFeasible(players, sgs.Self)
+        return rinsan.selfFeasible(self, targets, 'LuaMiewu')
     end,
     on_validate = function(self, card_use)
         local source = card_use.from
         local room = source:getRoom()
-        local to_use = self:getUserString()
-        room:addPlayerMark(source, 'LuaMiewu')
-        source:loseMark('@wuku')
-        if to_use == 'slash' and sgs.Sanguosha:getCurrentCardUseReason() ==
-            sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
-            local use_list = {}
-            table.insert(use_list, 'slash')
-            if not rinsan.isPackageBanned('maneuvering') then
-                table.insert(use_list, 'normal_slash')
-                table.insert(use_list, 'thunder_slash')
-                table.insert(use_list, 'fire_slash')
-            end
-            to_use = room:askForChoice(source, 'miewu_slash', table.concat(use_list, '+'))
-            source:setTag('MiewuSlash', sgs.QVariant(to_use))
-        end
-        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        local user_str = to_use
-        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
-        use_card:setSkillName('LuaMiewu')
-        use_card:addSubcard(self:getSubcards():first())
-        use_card:deleteLater()
-        local tos = card_use.to
-        for _, to in sgs.qlist(tos) do
-            local skill = room:isProhibited(source, to, use_card)
-            if skill then
-                card_use.to:removeOne(to)
-            end
+        local use_card = rinsan.guhuoCardOnValidate(self, card_use, 'LuaMiewu', 'miewu', 'Miewu')
+        if use_card then
+            room:addPlayerMark(source, 'LuaMiewu')
+            source:loseMark('@wuku')
         end
         return use_card
     end,
     on_validate_in_response = function(self, source)
         local room = source:getRoom()
-        local to_use
-        room:addPlayerMark(source, 'LuaMiewu')
-        source:loseMark('@wuku')
-        if self:getUserString() == 'peach+analeptic' then
-            local use_list = {}
-            table.insert(use_list, 'peach')
-            if not rinsan.isPackageBanned('maneuvering') then
-                table.insert(use_list, 'analeptic')
-            end
-            to_use = room:askForChoice(source, 'miewu_saveself', table.concat(use_list, '+'))
-            source:setTag('MiewuSaveSelf', sgs.QVariant(to_use))
-        elseif self:getUserString() == 'slash' then
-            local use_list = {}
-            table.insert(use_list, 'slash')
-            if not rinsan.isPackageBanned('maneuvering') then
-                table.insert(use_list, 'normal_slash')
-                table.insert(use_list, 'thunder_slash')
-                table.insert(use_list, 'fire_slash')
-            end
-            to_use = room:askForChoice(source, 'miewu_slash', table.concat(use_list, '+'))
-            source:setTag('MiewuSlash', sgs.QVariant(to_use))
-        else
-            to_use = self:getUserString()
+        local use_card = rinsan.guhuoCardOnValidateInResponse(self, source, 'LuaMiewu', 'miewu', 'Miewu')
+        if use_card then
+            room:addPlayerMark(source, 'LuaMiewu')
+            source:loseMark('@wuku')
         end
-        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        local user_str
-        if to_use == 'slash' then
-            user_str = 'slash'
-        elseif to_use == 'normal_slash' then
-            user_str = 'slash'
-        else
-            user_str = to_use
-        end
-        local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
-        use_card:setSkillName('LuaMiewu')
-        use_card:addSubcard(self)
-        use_card:deleteLater()
         return use_card
     end
 }
@@ -4294,44 +4199,16 @@ LuaMiewuVS = sgs.CreateOneCardViewAsSkill {
     filter_pattern = '.|.|.|.',
     response_or_use = true,
     enabled_at_response = function(self, player, pattern)
-        local current = false
-        local players = player:getAliveSiblings()
-        players:append(player)
-        for _, p in sgs.qlist(players) do
-            if p:getPhase() ~= sgs.Player_NotActive then
-                current = true
-                break
-            end
-        end
-        if not current then
+        if player:isNude() or player:getMark('@wuku') <= 0 or player:getMark('LuaMiewu') > 0 then
             return false
         end
-        if player:isNude() or string.sub(pattern, 1, 1) == '.' or player:getMark('@wuku') <= 0 or
-            string.sub(pattern, 1, 1) == '@' or player:getMark('LuaMiewu') > 0 then
-            return false
-        end
-        if pattern == 'peach' and player:getMark('Global_PreventPeach') > 0 then
-            return false
-        end
-        if string.find(pattern, '[%u%d]') then
-            return false
-        end -- 这是个极其肮脏的黑客！！ 因此我们需要去阻止基本牌模式
-        return true
+        return rinsan.guhuoVSSkillEnabledAtResponse(self, player, pattern)
     end,
     enabled_at_play = function(self, player)
-        local current = false
-        local players = player:getAliveSiblings()
-        players:append(player)
-        for _, p in sgs.qlist(players) do
-            if p:getPhase() ~= sgs.Player_NotActive then
-                current = true
-                break
-            end
-        end
-        if not current then
+        if player:isNude() or player:getMark('LuaMiewu') > 0 or player:getMark('@wuku') <= 0 then
             return false
         end
-        return not player:isNude() and player:getMark('LuaMiewu') == 0 and player:getMark('@wuku') > 0
+        return rinsan.guhuoVSSkillEnabledAtPlay(self, player)
     end,
     enabled_at_nullification = function(self, player)
         return not player:isNude() and player:getMark('LuaMiewu') == 0 and player:getMark('@wuku') > 0
@@ -4340,8 +4217,21 @@ LuaMiewuVS = sgs.CreateOneCardViewAsSkill {
         if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE or
             sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
             local card = LuaMiewuCard:clone()
-            card:setUserString(sgs.Sanguosha:getCurrentCardUsePattern())
+            local pattern = sgs.Sanguosha:getCurrentCardUsePattern()
+            card:setUserString(pattern)
             card:addSubcard(cards)
+            local available = false
+            for _, name in ipairs(pattern:split('+')) do
+                local c = sgs.Sanguosha:cloneCard(name, cards:getSuit(), cards:getNumber())
+                c:deleteLater()
+                if not sgs.Self:isCardLimited(card, c:getHandlingMethod()) then
+                    available = true
+                    break
+                end
+            end
+            if not available then
+                return nil
+            end
             return card
         end
         local c = sgs.Self:getTag('LuaMiewu'):toCard()
@@ -4349,6 +4239,9 @@ LuaMiewuVS = sgs.CreateOneCardViewAsSkill {
             local card = LuaMiewuCard:clone()
             card:setUserString(c:objectName())
             card:addSubcard(cards)
+            if sgs.Self:isCardLimited(card, c:getHandlingMethod()) then
+                return nil
+            end
             return card
         else
             return nil
