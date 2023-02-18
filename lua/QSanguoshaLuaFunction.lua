@@ -38,7 +38,7 @@ function guhuoVSSkillEnabledAtResponse(self, player, pattern)
     if not current then
         return false
     end
-    if player:isNude() or string.sub(pattern, 1, 1) == '.' or string.sub(pattern, 1, 1) == '@' then
+    if string.sub(pattern, 1, 1) == '.' or string.sub(pattern, 1, 1) == '@' then
         return false
     end
     if pattern == 'peach' and player:getMark('Global_PreventPeach') > 0 then
@@ -107,14 +107,13 @@ function guhuoCardOnValidate(self, card_use, skill_name, choice_name, tag_name)
         to_use = room:askForChoice(source, choice_name .. '_slash', table.concat(use_list, '+'))
         source:setTag(tag_name, sgs.QVariant(to_use))
     end
-    local card = sgs.Sanguosha:getCard(self:getSubcards():first())
     local user_str = to_use
-    local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+    local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
     if use_card == nil then
         return nil
     end
     use_card:setSkillName(skill_name)
-    use_card:addSubcard(self:getSubcards():first())
+    use_card:addSubcards(self:getSubcards())
     use_card:deleteLater()
     local tos = card_use.to
     for _, to in sgs.qlist(tos) do
@@ -153,7 +152,6 @@ function guhuoCardOnValidateInResponse(self, source, skill_name, choice_name, ta
     else
         to_use = self:getUserString()
     end
-    local card = sgs.Sanguosha:getCard(self:getSubcards():first())
     local user_str
     if to_use == 'slash' then
         user_str = 'slash'
@@ -162,9 +160,9 @@ function guhuoCardOnValidateInResponse(self, source, skill_name, choice_name, ta
     else
         user_str = to_use
     end
-    local use_card = sgs.Sanguosha:cloneCard(user_str, card:getSuit(), card:getNumber())
+    local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
     use_card:setSkillName(skill_name)
-    use_card:addSubcard(card)
+    use_card:addSubcards(self:getSubcards())
     use_card:deleteLater()
     return use_card
 end
