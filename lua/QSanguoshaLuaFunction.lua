@@ -7,6 +7,201 @@ module('QSanguoshaLuaFunction', package.seeall)
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
 
+-- 蛊惑类技能通用 enabled_at_play
+function guhuoVSSkillEnabledAtPlay(self, player)
+    local current = false
+    local players = player:getAliveSiblings()
+    players:append(player)
+    for _, p in sgs.qlist(players) do
+        if p:getPhase() ~= sgs.Player_NotActive then
+            current = true
+            break
+        end
+    end
+    if not current then
+        return false
+    end
+    return true
+end
+
+-- 蛊惑类技能通用 enabled_at_response
+function guhuoVSSkillEnabledAtResponse(self, player, pattern)
+    local current = false
+    local players = player:getAliveSiblings()
+    players:append(player)
+    for _, p in sgs.qlist(players) do
+        if p:getPhase() ~= sgs.Player_NotActive then
+            current = true
+            break
+        end
+    end
+    if not current then
+        return false
+    end
+    if string.sub(pattern, 1, 1) == '.' or string.sub(pattern, 1, 1) == '@' then
+        return false
+    end
+    if pattern == 'peach' and player:getMark('Global_PreventPeach') > 0 then
+        return false
+    end
+    if string.find(pattern, '[%u%d]') then
+        return false
+    end -- 这是个极其肮脏的黑客！！ 因此我们需要去阻止基本牌模式
+    return true
+end
+
+-- 蛊惑类（万能卡牌转换）filter
+-- 参数：
+-- self 对应的技能卡对象
+-- custom_name 对应自定义 tag 的名称
+function guhuoCardFilter(self, targets, to_select, custom_name)
+    -- 解决【无中生有】选多人问题
+    if selfTargetFixed(self) then
+        return false
+    end
+    local players = sgs.PlayerList()
+    for i = 1, #targets do
+        players:append(targets[i])
+    end
+    if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+        local card
+        if self:getUserString() and self:getUserString() ~= '' then
+            card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+            if sgs.Self:isProhibited(to_select, card, players) then
+                return false
+            end
+            return card and card:targetFilter(players, to_select, sgs.Self)
+        end
+    elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+        return false
+    end
+    local _card = sgs.Self:getTag(custom_name):toCard()
+    if _card == nil or sgs.Self:isProhibited(to_select, _card, players) then
+        return false
+    end
+    local card = sgs.Sanguosha:cloneCard(_card)
+    card:deleteLater()
+    return card and card:targetFilter(players, to_select, sgs.Self)
+end
+
+-- 通用 on_validate 方法
+-- 参数
+-- skill_name，技能卡名，用于转换后的卡牌
+-- 以下参数为空时默认设置为 skill_name
+-- choice_name，用于选择，即选择对应的杀类型提示框
+-- tag_name，自定义名称，用于 tag
+function guhuoCardOnValidate(self, card_use, skill_name, choice_name, tag_name)
+    choice_name = choice_name or skill_name
+    tag_name = tag_name or skill_name
+    local source = card_use.from
+    local room = source:getRoom()
+    local to_use = self:getUserString()
+    if to_use == 'slash' and sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+        local use_list = {}
+        table.insert(use_list, 'slash')
+        if not isPackageBanned('maneuvering') then
+            table.insert(use_list, 'normal_slash')
+            table.insert(use_list, 'thunder_slash')
+            table.insert(use_list, 'fire_slash')
+        end
+        to_use = room:askForChoice(source, choice_name .. '_slash', table.concat(use_list, '+'))
+        source:setTag(tag_name, sgs.QVariant(to_use))
+    end
+    local user_str = to_use
+    local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
+    if use_card == nil then
+        return nil
+    end
+    use_card:setSkillName(skill_name)
+    use_card:addSubcards(self:getSubcards())
+    use_card:deleteLater()
+    local tos = card_use.to
+    for _, to in sgs.qlist(tos) do
+        local skill = room:isProhibited(source, to, use_card)
+        if skill then
+            card_use.to:removeOne(to)
+        end
+    end
+    return use_card
+end
+
+-- 通用 on_validate_in_response 方法
+function guhuoCardOnValidateInResponse(self, source, skill_name, choice_name, tag_name)
+    choice_name = choice_name or skill_name
+    tag_name = tag_name or skill_name
+    local room = source:getRoom()
+    local to_use
+    if self:getUserString() == 'peach+analeptic' then
+        local use_list = {}
+        table.insert(use_list, 'peach')
+        if not isPackageBanned('maneuvering') then
+            table.insert(use_list, 'analeptic')
+        end
+        to_use = room:askForChoice(source, choice_name .. '_saveself', table.concat(use_list, '+'))
+        source:setTag(tag_name .. 'SaveSelf', sgs.QVariant(to_use))
+    elseif self:getUserString() == 'slash' then
+        local use_list = {}
+        table.insert(use_list, 'slash')
+        if not isPackageBanned('maneuvering') then
+            table.insert(use_list, 'normal_slash')
+            table.insert(use_list, 'thunder_slash')
+            table.insert(use_list, 'fire_slash')
+        end
+        to_use = room:askForChoice(source, tag_name .. '_slash', table.concat(use_list, '+'))
+        source:setTag(tag_name .. 'Slash', sgs.QVariant(to_use))
+    else
+        to_use = self:getUserString()
+    end
+    local user_str
+    if to_use == 'slash' then
+        user_str = 'slash'
+    elseif to_use == 'normal_slash' then
+        user_str = 'slash'
+    else
+        user_str = to_use
+    end
+    local use_card = sgs.Sanguosha:cloneCard(user_str, sgs.Card_NoSuit, 0)
+    use_card:setSkillName(skill_name)
+    use_card:addSubcards(self:getSubcards())
+    use_card:deleteLater()
+    return use_card
+end
+
+function selfFeasible(self, targets, skill_name)
+    local players = sgs.PlayerList()
+    for i = 1, #targets do
+        players:append(targets[i])
+    end
+    if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+        local card
+        if self:getUserString() and self:getUserString() ~= '' then
+            card = sgs.Sanguosha:cloneCard(self:getUserString():split('+')[1])
+            return card and card:targetsFeasible(players, sgs.Self)
+        end
+    elseif sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE then
+        return true
+    end
+    local _card = sgs.Self:getTag(skill_name):toCard()
+    if _card == nil then
+        return false
+    end
+    local card = sgs.Sanguosha:cloneCard(_card)
+    card:deleteLater()
+    return card and card:targetsFeasible(players, sgs.Self)
+end
+
+-- 蛊惑类型技能卡 targetFixed 自实现，避免多人无中生有等问题
+function selfTargetFixed(self)
+    local card
+    local aocaistring = self:getUserString()
+    if aocaistring ~= '' then
+        local uses = aocaistring:split('+')
+        card = sgs.Sanguosha:cloneCard(uses[1], sgs.Card_NoSuit, -1)
+    end
+    card:addSubcard(self:getSubcards():first())
+    return card and card:targetFixed()
+end
+
 -- 桃色获取卡牌
 function doTaoseGetCard(skill_name, room, source, flags, target)
     if target:getCards(flags):length() > 0 then
@@ -1028,7 +1223,7 @@ function unknownAnalyze(resultList, source, target, room)
     local totalTrick = room:getTag('LuaLingrenAITrick')
     local totalEquip = room:getTag('LuaLingrenAIEquip')
     while (not totalBasic) or (not totalTrick) or (not totalEquip) do
-        rinsan.cardNumInitialize(room)
+        cardNumInitialize(room)
         totalBasic = room:getTag('LuaLingrenAIBasic')
         totalTrick = room:getTag('LuaLingrenAITrick')
         totalEquip = room:getTag('LuaLingrenAIEquip')
