@@ -294,23 +294,29 @@ LuaMouJieyin = sgs.CreateTriggerSkill {
                     rinsan.increaseShield(zhuTarget, 1)
                 end
             else
-                if zhuTarget:getMark('LuaMouLiangZhuTargeted') == 0 then
-                    local available_targets = sgs.SPlayerList()
-                    for _, p in sgs.qlist(room:getAlivePlayers()) do
-                        if p:objectName() ~= player:objectName() and p:objectName() ~= zhuTarget:objectName() then
-                            if p:getMark('LuaMouLiangZhuTargeted') <= 1 then
-                                available_targets:append(p)
+                repeat
+                    if zhuTarget:getMark('LuaMouLiangZhuTargeted') == 0 then
+                        local choice = room:askForChoice(player, self:objectName(), 'LuaMouJieyinMove+LuaMouJieyinRemove')
+                        if choice == 'LuaMouJieyinRemove' then
+                            break
+                        end
+                        local available_targets = sgs.SPlayerList()
+                        for _, p in sgs.qlist(room:getAlivePlayers()) do
+                            if p:objectName() ~= player:objectName() and p:objectName() ~= zhuTarget:objectName() then
+                                if p:getMark('LuaMouLiangZhuTargeted') <= 1 then
+                                    available_targets:append(p)
+                                end
+                            end
+                        end
+                        if available_targets:length() > 0 then
+                            local target = room:askForPlayerChosen(player, available_targets, self:objectName(),
+                                'LuaMouJieyinMoveTo', false, true)
+                            if target then
+                                target:gainMark('@LuaMouLiangzhu')
                             end
                         end
                     end
-                    if available_targets:length() > 0 then
-                        local target = room:askForPlayerChosen(player, available_targets, self:objectName(),
-                            'LuaMouJieyinMoveTo', false, true)
-                        if target then
-                            target:gainMark('@LuaMouLiangzhu')
-                        end
-                    end
-                end
+                until true
                 zhuTarget:loseMark('@LuaMouLiangzhu')
                 room:addPlayerMark(zhuTarget, 'LuaMouLiangZhuTargeted')
             end
