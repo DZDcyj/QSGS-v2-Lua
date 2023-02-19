@@ -1,4 +1,5 @@
 -- lines for StrategicAttackKnowledgePackage
+
 return {
     -- 谋徐晃
     ['$LuaMouDuanliang1'] = '常读兵法，终有良策也！', -- 发动技能
