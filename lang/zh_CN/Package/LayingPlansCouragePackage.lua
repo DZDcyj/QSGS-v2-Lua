@@ -1,7 +1,7 @@
 -- translation for LayingPlansCouragePackage
 
 return {
-    ['LayingPlansCouragePackage'] = '始计篇·勇包',
+    ['LayingPlansCouragePackage'] = '始计篇-勇包',
     ['ExSunyi'] = '孙翊',
     ['&ExSunyi'] = '孙翊',
     ['#ExSunyi'] = '骁悍激躁',
