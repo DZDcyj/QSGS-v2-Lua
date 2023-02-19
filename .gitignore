@@ -71,6 +71,7 @@ lang/zh_CN/Package/*.lua
 !LandlordsPackage.lua
 !LayingPlansCouragePackage.lua
 !LayingPlansCouragePackageLines.lua
+!StrategicAttack*.lua
 !ShieldPackage.lua
 !ShieldPackageLines.lua
 listserver/
