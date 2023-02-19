@@ -15,10 +15,6 @@ local function globalTrigger(self, target)
     return true
 end
 
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 谋华雄
 ExMouHuaxiong = sgs.General(extension, 'ExMouHuaxiong', 'qun', '4', true, true, false, 3)
 
@@ -296,8 +292,8 @@ LuaMouJieyin = sgs.CreateTriggerSkill {
             else
                 repeat
                     if zhuTarget:getMark('LuaMouLiangZhuTargeted') == 0 then
-                        local choice = room:askForChoice(player, self:objectName(), 'LuaMouJieyinMove+LuaMouJieyinRemove')
-                        if choice == 'LuaMouJieyinRemove' then
+                        local markChoice = room:askForChoice(player, self:objectName(), 'LuaMouJieyinMove+LuaMouJieyinRemove')
+                        if markChoice == 'LuaMouJieyinRemove' then
                             break
                         end
                         local available_targets = sgs.SPlayerList()
