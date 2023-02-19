@@ -69,8 +69,7 @@ lang/zh_CN/Package/*.lua
 !ImpassePackage.lua
 !GroupFriendPackage.lua
 !LandlordsPackage.lua
-!LayingPlansCouragePackage.lua
-!LayingPlansCouragePackageLines.lua
+!LayingPlans*.lua
 !StrategicAttack*.lua
 !ShieldPackage.lua
 !ShieldPackageLines.lua
