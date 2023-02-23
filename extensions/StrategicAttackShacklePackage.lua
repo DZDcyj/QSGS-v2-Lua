@@ -72,8 +72,9 @@ LuaMouJieyue = sgs.CreateTriggerSkill {
         if target then
             room:broadcastSkillInvoke(self:objectName())
             rinsan.increaseShield(target, 1)
-            local card = room:askForExchange(target, self:objectName(), 1, 1, true,
-                string.format('LuaMouJieyue-Give:%s', player:objectName()), true)
+            target:drawCards(2, self:objectName())
+            local card = room:askForExchange(target, self:objectName(), 2, 2, true,
+                string.format('LuaMouJieyue-Give:%s', player:objectName()), false)
             if card then
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, target:objectName(),
                     player:objectName(), self:objectName(), nil)

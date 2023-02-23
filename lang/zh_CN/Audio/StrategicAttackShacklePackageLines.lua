@@ -4,7 +4,7 @@ return {
     -- 谋于禁
     ['$LuaMouXiayuan1'] = '速置粮草，驰援天柱山！',
     ['$LuaMouXiayuan2'] = '援军既至，定攻克此地！',
-    ['$LuaMouJieyue1'] = '尔等小儿，徒费兵力',
+    ['$LuaMouJieyue1'] = '尔等小儿，徒费兵力！',
     ['$LuaMouJieyue2'] = '雕虫小技，静待则已！',
     ['~ExMouYujin'] = '禁……愧于丞相……',
     -- 谋吕蒙
