@@ -798,6 +798,8 @@ LuaMouZhaxiang = sgs.CreateTriggerSkill {
 LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
     name = 'LuaMouZhaxiangBuff',
     global = true,
+    priority = 10000,
+    frequency = sgs.Skill_Compulsory,
     events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling, sgs.CardAsked, sgs.TurnStart, sgs.CardFinished},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardUsed then
