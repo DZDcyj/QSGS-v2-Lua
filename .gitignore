@@ -38,7 +38,11 @@ image/system
 image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
 !indirect_combination
+!@baoli.png
+!@baozou.png
+!@luashanjia.png
 !@shield.png
+!@wuku.png
 !@Lua[A-Z]*.png
 !shenganning_1*
 !shenganning_2*
