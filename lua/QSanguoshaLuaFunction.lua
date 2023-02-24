@@ -824,6 +824,7 @@ function askForLuckCard(room)
         end
 
         local drawList = sgs.IntList()
+        local drawPile = room:getDrawPile()
         for _, player in sgs.qlist(used) do
             drawList:append(player:getHandcardNum())
             local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'luck_card', '')
@@ -838,6 +839,7 @@ function askForLuckCard(room)
             for _, id in sgs.qlist(move.card_ids) do
                 local card = sgs.Sanguosha:getCard(id)
                 player:removeCard(card, sgs.Player_PlaceHand)
+                drawPile:prepend(id)
                 room:setCardMapping(id, nil ,sgs.Player_DrawPile)
             end
 
@@ -854,12 +856,11 @@ function askForLuckCard(room)
             local move = sgs.CardsMoveStruct(ids, nil, player, sgs.Player_DrawPile, sgs.Player_PlaceHand, reason)
             moves:append(move)
             room:notifyMoveCards(true, moves, false)
-            local drawPile = room:getDrawPile()
             for _, id in sgs.qlist(move.card_ids) do
                 local card = sgs.Sanguosha:getCard(id)
                 player:addCard(card, sgs.Player_PlaceHand)
                 drawPile:removeOne(id)
-                room:setCardMapping(id, player ,sgs.Player_DrawPile)
+                room:setCardMapping(id, player ,sgs.Player_PlaceHand)
             end
             room:notifyMoveCards(false, moves, false)
         end
