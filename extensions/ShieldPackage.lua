@@ -1,4 +1,4 @@
--- 护盾包
+-- 护甲包
 -- Created by DZDcyj at 2023/2/6
 module('extensions.ShieldPackage', package.seeall)
 extension = sgs.Package('ShieldPackage')
@@ -122,5 +122,26 @@ LuaShieldInit = sgs.CreateTriggerSkill {
     can_trigger = globalTrigger
 }
 
+-- 修正神甘宁魄袭多弃牌问题
+LuaPoxiHotFix = sgs.CreateTriggerSkill {
+    name = 'LuaPoxiHotFix',
+    events = {sgs.CardsMoveOneTime},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if move.to_place == sgs.Player_DiscardPile then
+            for _, id in sgs.qlist(move.card_ids) do
+                local card = sgs.Sanguosha:getCard(id)
+                if card:hasFlag('poxi') then
+                    room:setCardFlag(card, '-poxi')
+                end
+            end
+        end
+    end,
+    can_trigger = globalTrigger
+}
+
 SkillAnjiang:addSkill(LuaShield)
 SkillAnjiang:addSkill(LuaShieldInit)
+SkillAnjiang:addSkill(LuaPoxiHotFix)

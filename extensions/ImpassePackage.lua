@@ -311,16 +311,18 @@ LuaBoss = sgs.CreateTriggerSkill {
         end
 
         -- 手气卡
+        -- 避免“自书”触发
         room:setTag('FirstRound', sgs.QVariant(true))
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 在手气卡使用前先令所有技能失效，避免不必要的其他结算
-            local skills = p:getSkillList()
-            for _, skill in sgs.qlist(skills) do
+            for _, skill in sgs.qlist(p:getVisibleSkillList()) do
                 room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
             end
-            rinsan.askForLuckCard(room, p)
+        end
+        rinsan.askForLuckCard(room)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 恢复所有技能
-            for _, skill in sgs.qlist(skills) do
+            for _, skill in sgs.qlist(p:getVisibleSkillList()) do
                 room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
             end
         end

@@ -184,15 +184,14 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                     if success then
                         if sourceChoice == 'LuaMouTiejiAttack1' then
                             room:broadcastSkillInvoke(self:objectName(), 2)
-                            if p:isNude() then
-                                return false
-                            end
-                            local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false,
-                                sgs.Card_MethodNone)
+                            if not p:isNude() then
+                                local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false,
+                                    sgs.Card_MethodNone)
 
-                            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
-                                player:objectName())
-                            room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
+                                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
+                                    player:objectName())
+                                room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
+                            end
                         else
                             room:broadcastSkillInvoke(self:objectName(), 3)
                             player:drawCards(2, self:objectName())

@@ -155,9 +155,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
                 room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
             end
         end
-
         rinsan.askForLuckCard(room)
-
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 恢复所有技能
             for _, skill in sgs.qlist(p:getVisibleSkillList()) do
