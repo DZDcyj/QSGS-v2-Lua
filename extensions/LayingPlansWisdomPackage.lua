@@ -927,7 +927,7 @@ LuaMingfa = sgs.CreateTriggerSkill {
             end
             local targets = sgs.SPlayerList()
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-                if sgs.Self:canPindian(p, self:objectName()) then
+                if player:canPindian(p, self:objectName()) then
                     targets:append(p)
                 end
             end
