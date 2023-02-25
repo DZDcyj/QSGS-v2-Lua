@@ -1,4 +1,4 @@
--- lines for LayingPlans Wisdom Package
+-- lines for LayingPlans Sincerity Package
 
 return {
     -- 周处

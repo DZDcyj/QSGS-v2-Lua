@@ -1,7 +1,7 @@
 -- 始计篇-信包
 -- Created by DZDcyj at 2023/2/25
-module('extensions.LayingPlansWisdomPackage', package.seeall)
-extension = sgs.Package('LayingPlansWisdomPackage')
+module('extensions.LayingPlansSincerityPackage', package.seeall)
+extension = sgs.Package('LayingPlansSincerityPackage')
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')

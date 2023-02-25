@@ -1,7 +1,7 @@
--- translation for LayingPlansWisdomPackage
+-- translation for LayingPlansSincerityPackage
 
 return {
-    ['LayingPlansWisdomPackage'] = '始计篇-信包',
+    ['LayingPlansSincerityPackage'] = '始计篇-信包',
     ['ExZhouchu'] = '周处',
     ['&ExZhouchu'] = '周处',
     ['#ExZhouchu'] = '英情天逸',
