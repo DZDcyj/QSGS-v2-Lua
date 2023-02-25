@@ -934,8 +934,9 @@ LuaMingfa = sgs.CreateTriggerSkill {
             if targets:isEmpty() then
                 return false
             end
-            local target = room:askForPlayerChosen(player, targets, self:objectName(),
-                string.format('LuaMingfa-choose:%s::%s:%s', pindian_card:objectName(), pindian_card:getSuitString(), pindian_card:getNumberString()), true, true)
+            local prompt = string.format('LuaMingfa-choose:%s::%s:%s', pindian_card:objectName(),
+                pindian_card:getSuitString(), pindian_card:getNumberString())
+            local target = room:askForPlayerChosen(player, targets, self:objectName(), prompt, true, true)
             if target then
                 room:broadcastSkillInvoke(self:objectName())
                 if player:pindian(target, self:objectName(), pindian_card) then
@@ -945,8 +946,8 @@ LuaMingfa = sgs.CreateTriggerSkill {
                         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, player:objectName())
                         room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
                     end
-                    local togain = rinsan.obtainSpecifiedCard(room, function(_card)
-                        return _card:getNumber() == pindian_card:getNumber() - 1
+                    local togain = rinsan.obtainSpecifiedCard(room, function(toCheck)
+                        return toCheck:getNumber() == pindian_card:getNumber() - 1
                     end)
                     if togain then
                         room:obtainCard(player, togain)
