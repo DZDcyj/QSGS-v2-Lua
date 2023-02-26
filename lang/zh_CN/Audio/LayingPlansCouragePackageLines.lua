@@ -1,4 +1,4 @@
--- lines for LayingPlansCourage Package
+-- lines for LayingPlans Courage Package
 
 return {
     -- 孙翊
