@@ -269,7 +269,7 @@ LuaZhixie_skill.getTurnUseCard = function(self)
     local slash = self:getCard('FireSlash') or self:getCard('ThunderSlash') or self:getCard('Slash')
     if slash then
         local dummy_use = {
-            isDummy = true
+            isDummy = true,
         }
         self:useBasicCard(slash, dummy_use)
         if not dummy_use.card then
@@ -282,7 +282,7 @@ LuaZhixie_skill.getTurnUseCard = function(self)
             local shouldUse = true
             if self:getUseValue(acard) > sgs.ai_use_value.IronChain then
                 local dummy_use = {
-                    isDummy = true
+                    isDummy = true,
                 }
                 self:useTrickCard(acard, dummy_use)
                 if dummy_use.card then

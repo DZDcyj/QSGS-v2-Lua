@@ -398,7 +398,7 @@ function getEquipTypeStr(equip_index)
         [1] = 'Armor',
         [2] = 'DefensiveHorse',
         [3] = 'OffensiveHorse',
-        [4] = 'Treasure'
+        [4] = 'Treasure',
     }
     return map[equip_index]
 end
@@ -464,7 +464,7 @@ function LuaDoQiaosiShow(room, player, dummyCard)
     for _, cardTypes in ipairs(toGiveCardTypes) do
         local params = {
             ['existed'] = about_to_obtain,
-            ['findDiscardPile'] = true
+            ['findDiscardPile'] = true,
         }
         if #cardTypes == 2 then
             -- 确定的，王、将
@@ -532,7 +532,7 @@ function LuaGetRoleCardType(roleType, kingActivated, generalActivated)
         ['scholar'] = {'TrickCard', 'TrickCard', 'TrickCard', 'TrickCard', 'JinkOrPeach'},
         ['scholarKing'] = {'Peach', 'Peach', 'Peach', 'Peach', 'Jink'},
         ['merchant'] = {'EquipCard', 'EquipCard', 'EquipCard', 'EquipCard', 'SlashOrAnaleptic'},
-        ['merchantGeneral'] = {'Analeptic', 'Analeptic', 'Analeptic', 'Analeptic', 'Slash'}
+        ['merchantGeneral'] = {'Analeptic', 'Analeptic', 'Analeptic', 'Analeptic', 'Slash'},
     }
     if roleType == 'scholar' and kingActivated then
         roleType = roleType .. 'King'
@@ -551,7 +551,7 @@ function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
         local card
         local params = {
             ['existed'] = {},
-            ['findDiscardPile'] = true
+            ['findDiscardPile'] = true,
         }
         if type == 1 then
             params['type'] = cardType1
@@ -783,7 +783,7 @@ function getStartHp(player)
         ['ExLijue'] = 4,
         ['SPCactus'] = 3,
         ['ExShenSunce'] = 1,
-        ['ExMouHuaxiong'] = 3
+        ['ExMouHuaxiong'] = 3,
     }
     return general_hp_map[player:getGeneralName()] or player:getGeneral():getMaxHp()
 end
@@ -819,7 +819,7 @@ function askForLuckCard(room)
 
         for _, player in sgs.qlist(used) do
             sendLogMessage(room, '#UseLuckCard', {
-                ['from'] = player
+                ['from'] = player,
             })
         end
 
@@ -840,7 +840,7 @@ function askForLuckCard(room)
                 local card = sgs.Sanguosha:getCard(id)
                 player:removeCard(card, sgs.Player_PlaceHand)
                 drawPile:prepend(id)
-                room:setCardMapping(id, nil ,sgs.Player_DrawPile)
+                room:setCardMapping(id, nil, sgs.Player_DrawPile)
             end
 
             room:notifyMoveCards(false, moves, false, tmpList)
@@ -860,7 +860,7 @@ function askForLuckCard(room)
                 local card = sgs.Sanguosha:getCard(id)
                 player:addCard(card, sgs.Player_PlaceHand)
                 drawPile:removeOne(id)
-                room:setCardMapping(id, player ,sgs.Player_PlaceHand)
+                room:setCardMapping(id, player, sgs.Player_PlaceHand)
             end
             room:notifyMoveCards(false, moves, false)
         end
@@ -1085,7 +1085,7 @@ function addPlayerMaxHp(player, value)
     room:setPlayerProperty(player, 'maxhp', newValue)
     sendLogMessage(room, '#addMaxHp', {
         ['from'] = player,
-        ['arg'] = value
+        ['arg'] = value,
     })
 end
 
@@ -1461,7 +1461,7 @@ function increaseShield(player, count)
     room:addPlayerMark(player, SHIELD_MARK, toGain)
     sendLogMessage(room, '#GainShield', {
         ['from'] = player,
-        ['arg'] = toGain
+        ['arg'] = toGain,
     })
 end
 
@@ -1476,7 +1476,7 @@ function decreaseShield(player, count)
     room:removePlayerMark(player, SHIELD_MARK, toLose)
     sendLogMessage(room, '#LoseShield', {
         ['from'] = player,
-        ['arg'] = toLose
+        ['arg'] = toLose,
     })
 end
 

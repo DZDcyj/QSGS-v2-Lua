@@ -1,5 +1,7 @@
 -- 斗地主包 AI
 -- Created by DZDcyj at 2021/10/9
+
+-- 是否发动飞扬
 sgs.ai_skill_use['@@LuaFeiyang'] = function(self, prompt, method)
     -- 如果判定区内有“言笑”牌，不发动飞扬
     if self.player:containsTrick('YanxiaoCard') then

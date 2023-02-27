@@ -1,4 +1,4 @@
--- lines for StrategicAttackKnowledgePackage
+-- lines for Strategic Attack Knowledge Package
 
 return {
     -- 谋徐晃
@@ -14,5 +14,5 @@ return {
     ['$LuaMouTieji2'] = '敌军防备空虚，出击直取敌营！', -- 直取敌营
     ['$LuaMouTieji3'] = '敌军早有防备，先行扰阵疲敌！', -- 扰阵疲敌
     ['$LuaMouTieji4'] = '全军速撤回营，以期再觅良机！', -- 谋弈失败
-    ['~ExMouMachao'] = '父亲！不能为汝报仇雪恨矣……'
+    ['~ExMouMachao'] = '父亲！不能为汝报仇雪恨矣……',
 }

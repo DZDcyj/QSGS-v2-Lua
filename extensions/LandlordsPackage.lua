@@ -22,7 +22,7 @@ LuaBahu = sgs.CreateTriggerSkill {
     -- 如此一来，无论是“断肠”还是“缠怨”都不会影响地主技能的释放
     can_trigger = function(self, target)
         return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaDizhu') > 0)
-    end
+    end,
 }
 
 LuaBahuSlash = sgs.CreateTargetModSkill {
@@ -34,7 +34,7 @@ LuaBahuSlash = sgs.CreateTargetModSkill {
         else
             return 0
         end
-    end
+    end,
 }
 
 LuaFeiyangCard = sgs.CreateSkillCard {
@@ -47,7 +47,7 @@ LuaFeiyangCard = sgs.CreateSkillCard {
             room:throwCard(room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
                 source)
         end
-    end
+    end,
 }
 
 LuaFeiyangVS = sgs.CreateViewAsSkill {
@@ -71,7 +71,7 @@ LuaFeiyangVS = sgs.CreateViewAsSkill {
     end,
     enabled_at_response = function(self, player, pattern)
         return pattern == '@@LuaFeiyang'
-    end
+    end,
 }
 
 LuaFeiyang = sgs.CreateTriggerSkill {
@@ -90,7 +90,7 @@ LuaFeiyang = sgs.CreateTriggerSkill {
     -- 同“跋扈”
     can_trigger = function(self, target)
         return target and target:isAlive() and (target:hasSkill(self:objectName()) or target:getMark('LuaDizhu') > 0)
-    end
+    end,
 }
 
 -- 兼容性考虑判断地主
@@ -128,7 +128,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
         room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
         rinsan.sendLogMessage(room, '#addmaxhp', {
             ['from'] = player,
-            ['arg'] = 1
+            ['arg'] = 1,
         })
         rinsan.recover(room, player, 1, player)
 
@@ -184,7 +184,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target and LuaIsDizhu(target) and target:getMark(self:objectName()) == 0
-    end
+    end,
 }
 
 -- 斗地主场景技能
@@ -232,7 +232,7 @@ LuaDoudizhuScenario = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaBahu)

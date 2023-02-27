@@ -31,5 +31,5 @@ return {
     ['#LuaImpasseLordKill'] = '%from 杀死了 %to，摸 %arg 张牌',
     ['#LuaImpasseRebelKill'] = '%from 杀死了 %to，需弃置所有手牌',
     ['#LuaImpasseLordLoseMaxHp'] = '%from 杀死了 %to，失去了 %arg 点体力上限',
-    ['#LuaImpasseLordLoseMark'] = '%from 的暴走标记数 %arg 大于存活反贼数 %arg2，需要失去一枚暴走标记'
+    ['#LuaImpasseLordLoseMark'] = '%from 的暴走标记数 %arg 大于存活反贼数 %arg2，需要失去一枚暴走标记',
 }

@@ -12,5 +12,5 @@ return {
     ['Indirect'] = '奇兵',
     [':Indirect'] = '若其没有打出一张【杀】，则你对其造成一点伤害',
     ['#DirectFailed'] = '%to 没有打出【%arg】，%from 将获得其一张牌',
-    ['#IndirectFailed'] = '%to 没有打出【%arg】，%from 将对其造成一点伤害'
+    ['#IndirectFailed'] = '%to 没有打出【%arg】，%from 将对其造成一点伤害',
 }
