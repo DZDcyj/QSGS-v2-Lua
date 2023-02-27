@@ -12,7 +12,7 @@ sgs.ai_skill_discard['LuaMouJieyue'] = function(self, discard_num, min_num, opti
     end
     -- 始终给最低保留价值的牌
     local cards = sgs.QList2Table(self.player:getCards('he'))
-    self:sortByKeepValue(cards, true)
+    self:sortByKeepValue(cards)
     return {cards[1]:getEffectiveId(), cards[2]:getEffectiveId()}
 end
 
