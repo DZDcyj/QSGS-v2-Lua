@@ -44,7 +44,7 @@ LuaSilve = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = boss_can_trigger
+    can_trigger = boss_can_trigger,
 }
 
 SkillAnjiang:addSkill(LuaSilve)
@@ -65,7 +65,7 @@ LuaKedi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = boss_can_trigger
+    can_trigger = boss_can_trigger,
 }
 
 SkillAnjiang:addSkill(LuaKedi)
@@ -99,7 +99,7 @@ LuaJishi = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = boss_can_trigger
+    can_trigger = boss_can_trigger,
 }
 
 LuaJishiMaxCards = sgs.CreateMaxCardsSkill {
@@ -109,7 +109,7 @@ LuaJishiMaxCards = sgs.CreateMaxCardsSkill {
             return target:getAliveSiblings():length() + 1
         end
         return -1
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaJishi)
@@ -157,7 +157,7 @@ LuaDaji = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = boss_can_trigger
+    can_trigger = boss_can_trigger,
 }
 
 SkillAnjiang:addSkill(LuaDaji)
@@ -173,7 +173,7 @@ LuaGuzhan = sgs.CreateTargetModSkill {
         else
             return 0
         end
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaGuzhan)
@@ -217,7 +217,7 @@ LuaJizhan = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return boss_can_trigger(self, target) and rinsan.isBaozou(target)
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaJizhan)
@@ -230,7 +230,7 @@ LuaDuduan = sgs.CreateProhibitSkill {
         if rinsan.bossSkillEnabled(to, self:objectName(), BossMark) and rinsan.isBaozou(to) then
             return card:isKindOf('DelayedTrick')
         end
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaDuduan)
@@ -343,7 +343,7 @@ LuaBoss = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target) and target:getMark(self:objectName()) == 0
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaBoss)
@@ -385,7 +385,7 @@ LuaBaozou = sgs.CreateTriggerSkill {
                                 ['who'] = p,
                                 ['pattern'] = 'Peach,Analeptic|.|.|.',
                                 ['reason'] = self:objectName(),
-                                ['play_animation'] = true
+                                ['play_animation'] = true,
                             })
                             room:judge(judge)
                             if not judge:isGood() then
@@ -434,7 +434,7 @@ LuaBaozou = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaBaozou)
@@ -461,14 +461,14 @@ LuaImpasseDeath = sgs.CreateTriggerSkill {
                     rinsan.sendLogMessage(room, '#LuaImpasseLordKill', {
                         ['from'] = killer,
                         ['to'] = death.who,
-                        ['arg'] = 2
+                        ['arg'] = 2,
                     })
                     killer:drawCards(2, self:objectName())
                     if killer:getMaxHp() > 3 then
                         rinsan.sendLogMessage(room, '#LuaImpasseLordLoseMaxHp', {
                             ['from'] = killer,
                             ['to'] = death.who,
-                            ['arg'] = 1
+                            ['arg'] = 1,
                         })
                         room:loseMaxHp(killer)
                     end
@@ -477,14 +477,14 @@ LuaImpasseDeath = sgs.CreateTriggerSkill {
                         rinsan.sendLogMessage(room, '#LuaImpasseLordLoseMark', {
                             ['from'] = killer,
                             ['arg'] = killer:getMark(BaozouMark),
-                            ['arg2'] = room:alivePlayerCount() - 1
+                            ['arg2'] = room:alivePlayerCount() - 1,
                         })
                         killer:loseMark(BaozouMark)
                     end
                 else
                     rinsan.sendLogMessage(room, '#LuaImpasseRebelKill', {
                         ['from'] = killer,
-                        ['to'] = death.who
+                        ['to'] = death.who,
                     })
                     killer:throwAllHandCards()
                 end
@@ -502,7 +502,7 @@ LuaImpasseDeath = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaImpasseDeath)
@@ -531,7 +531,7 @@ LuaImpasseArmor = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaImpasseArmor)

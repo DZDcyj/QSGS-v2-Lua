@@ -37,7 +37,7 @@ LuaZaoli = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
-    end
+    end,
 }
 
 LuaZaoliCardMove = sgs.CreateTriggerSkill {
@@ -57,7 +57,7 @@ LuaZaoliCardMove = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target, 'LuaZaoli')
-    end
+    end,
 }
 
 LuaZaoliUse = sgs.CreateTriggerSkill {
@@ -85,7 +85,7 @@ LuaZaoliUse = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target, 'LuaZaoli')
-    end
+    end,
 }
 
 LuaZaoliStart = sgs.CreateTriggerSkill {
@@ -126,7 +126,7 @@ LuaZaoliStart = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target, 'LuaZaoli')
-    end
+    end,
 }
 
 ExSunyi:addSkill(LuaZaoli)

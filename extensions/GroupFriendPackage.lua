@@ -75,7 +75,7 @@ LuaBaipiao = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaGeidianCard = sgs.CreateSkillCard {
@@ -102,7 +102,7 @@ LuaGeidianCard = sgs.CreateSkillCard {
             slash:setSkillName('LuaGeidian')
             room:useCard(sgs.CardUseStruct(slash, target, source))
         end
-    end
+    end,
 }
 
 LuaGeidianVS = sgs.CreateZeroCardViewAsSkill {
@@ -112,7 +112,7 @@ LuaGeidianVS = sgs.CreateZeroCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return true
-    end
+    end,
 }
 
 LuaGeidian = sgs.CreateTriggerSkill {
@@ -128,7 +128,7 @@ LuaGeidian = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaWannengCard = sgs.CreateSkillCard {
@@ -157,7 +157,7 @@ LuaWannengCard = sgs.CreateSkillCard {
             room:addPlayerMark(source, 'LuaWanneng')
         end
         return use_card
-    end
+    end,
 }
 
 LuaWannengVS = sgs.CreateZeroCardViewAsSkill {
@@ -190,7 +190,7 @@ LuaWannengVS = sgs.CreateZeroCardViewAsSkill {
         else
             return nil
         end
-    end
+    end,
 }
 
 LuaWanneng = sgs.CreateTriggerSkill {
@@ -204,7 +204,7 @@ LuaWanneng = sgs.CreateTriggerSkill {
                 room:setPlayerMark(p, 'LuaWanneng', 0)
             end
         end
-    end
+    end,
 }
 
 LuaWanneng:setGuhuoDialog('lr')
@@ -237,7 +237,7 @@ LuaXiaosa = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaMasochism = sgs.CreateTriggerSkill {
@@ -258,7 +258,7 @@ LuaMasochism = sgs.CreateTriggerSkill {
                 end
             end
         end
-    end
+    end,
 }
 
 LuaZibao = sgs.CreateTriggerSkill {
@@ -295,7 +295,7 @@ LuaZibao = sgs.CreateTriggerSkill {
                 room:removePlayerMark(player, self:objectName())
             end
         end
-    end
+    end,
 }
 
 function doSoutu(card, soutuer, rinsanPlayer, room, self)
@@ -367,7 +367,7 @@ LuaSoutuCard = sgs.CreateSkillCard {
                 room:setPlayerFlag(source, 'ForbidSoutu')
             end
         end
-    end
+    end,
 }
 
 LuaSoutuVS = sgs.CreateOneCardViewAsSkill {
@@ -380,7 +380,7 @@ LuaSoutuVS = sgs.CreateOneCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return not player:hasFlag('ForbidSoutu')
-    end
+    end,
 }
 
 LuaSoutu = sgs.CreateTriggerSkill {
@@ -434,7 +434,7 @@ LuaSoutu = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaYangjing = sgs.CreateTriggerSkill {
@@ -534,7 +534,7 @@ LuaYangjing = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaYangjingAttackRange = sgs.CreateAttackRangeSkill {
@@ -545,7 +545,7 @@ LuaYangjingAttackRange = sgs.CreateAttackRangeSkill {
         else
             return 0
         end
-    end
+    end,
 }
 
 LuaTuci = sgs.CreateTriggerSkill {
@@ -567,7 +567,7 @@ LuaTuci = sgs.CreateTriggerSkill {
                 if p:isAlive() and p:distanceTo(player) < player:getAttackRange() + player:getMark('@LuaJing') then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
                     rinsan.sendLogMessage(room, '#NoJink', {
-                        ['from'] = p
+                        ['from'] = p,
                     })
                     jink_table[index] = 0
                 end
@@ -589,7 +589,7 @@ LuaTuci = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaNosJuesha = sgs.CreateTriggerSkill {
@@ -609,7 +609,7 @@ LuaNosJuesha = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target and target:isAlive() and target:hasSkill(self:objectName())
-    end
+    end,
 }
 
 SkillAnjiang:addSkill(LuaNosJuesha)
@@ -655,7 +655,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaMouhai = sgs.CreateTriggerSkill {
@@ -682,7 +682,7 @@ LuaMouhai = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaChuanyi = sgs.CreateTriggerSkill {
@@ -735,7 +735,7 @@ LuaChuanyi = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaPaozhuan = sgs.CreateTriggerSkill {
@@ -763,7 +763,7 @@ LuaPaozhuan = sgs.CreateTriggerSkill {
                 end
             end
         end
-    end
+    end,
 }
 
 LuaYinyu = sgs.CreateTriggerSkill {
@@ -782,7 +782,7 @@ LuaYinyu = sgs.CreateTriggerSkill {
                         if card then
                             rinsan.sendLogMessage(room, '#InvokeSkill', {
                                 ['from'] = p,
-                                ['arg'] = self:objectName()
+                                ['arg'] = self:objectName(),
                             })
                             room:showCard(p, card:getEffectiveId())
                             local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, p:objectName(),
@@ -817,7 +817,7 @@ LuaYinyu = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaQingyu = sgs.CreateTriggerSkill {
@@ -849,7 +849,7 @@ LuaQingyu = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaQingyuTargetMod = sgs.CreateTargetModSkill {
@@ -871,7 +871,7 @@ LuaQingyuTargetMod = sgs.CreateTargetModSkill {
             end
         end
         return 0
-    end
+    end,
 }
 
 LuaQingyuMaxCards = sgs.CreateMaxCardsSkill {
@@ -881,7 +881,7 @@ LuaQingyuMaxCards = sgs.CreateMaxCardsSkill {
             return target:getMark('LuaQingyuPlus') - target:getMark('LuaQingyuMinus')
         end
         return 0
-    end
+    end,
 }
 
 LuaJiaoxie = sgs.CreateTriggerSkill {
@@ -916,7 +916,7 @@ LuaJiaoxie = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaShulian = sgs.CreateTriggerSkill {
@@ -933,7 +933,7 @@ LuaShulian = sgs.CreateTriggerSkill {
                 player:setFlags('-LuaShulianCleaning')
             end
         end
-    end
+    end,
 }
 
 LuaShulianForbidden = sgs.CreateProhibitSkill {
@@ -942,7 +942,7 @@ LuaShulianForbidden = sgs.CreateProhibitSkill {
         if to:hasSkill('LuaShulian') then
             return card:isKindOf('DelayedTrick')
         end
-    end
+    end,
 }
 
 LuaZhazhi = sgs.CreateTriggerSkill {
@@ -1021,7 +1021,7 @@ LuaZhazhi = sgs.CreateTriggerSkill {
                 rinsan.sendLogMessage(room, '#LuaZhazhi', {
                     ['from'] = damage.from,
                     ['arg'] = damageNum,
-                    ['arg2'] = damage.damage
+                    ['arg2'] = damage.damage,
                 })
                 damage.damage = damageNum
                 if damageNum > 0 then
@@ -1035,7 +1035,7 @@ LuaZhazhi = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaJueding = sgs.CreateTriggerSkill {
@@ -1051,14 +1051,14 @@ LuaJueding = sgs.CreateTriggerSkill {
                 -- 翻回来，解除卡牌限制
                 rinsan.sendLogMessage(room, '#LuaJuedingAvailable', {
                     ['from'] = player,
-                    ['arg'] = self:objectName()
+                    ['arg'] = self:objectName(),
                 })
                 room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
             else
                 -- 进行卡牌限制
                 rinsan.sendLogMessage(room, '#LuaJuedingDisable', {
                     ['from'] = player,
-                    ['arg'] = self:objectName()
+                    ['arg'] = self:objectName(),
                 })
                 room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
             end
@@ -1067,7 +1067,7 @@ LuaJueding = sgs.CreateTriggerSkill {
             if data:toString() == self:objectName() then
                 rinsan.sendLogMessage(room, '#LuaJuedingAvailable', {
                     ['from'] = player,
-                    ['arg'] = self:objectName()
+                    ['arg'] = self:objectName(),
                 })
                 room:removePlayerCardLimitation(player, 'use, response', '.|.|.|.$0')
             end
@@ -1081,7 +1081,7 @@ LuaJueding = sgs.CreateTriggerSkill {
                 if not player:faceUp() then
                     rinsan.sendLogMessage(room, '#LuaJuedingDisable', {
                         ['from'] = player,
-                        ['arg'] = self:objectName()
+                        ['arg'] = self:objectName(),
                     })
                     room:setPlayerCardLimitation(player, 'use, response', '.|.|.|.', false)
                 end
@@ -1091,7 +1091,7 @@ LuaJueding = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaShaikaCard = sgs.CreateSkillCard {
@@ -1111,7 +1111,7 @@ LuaShaikaCard = sgs.CreateSkillCard {
             room:damage(damage)
         end
         room:addPlayerMark(target, 'LuaShaikaTarget')
-    end
+    end,
 }
 
 LuaShaikaVS = sgs.CreateViewAsSkill {
@@ -1144,7 +1144,7 @@ LuaShaikaVS = sgs.CreateViewAsSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaShaika = sgs.CreateTriggerSkill {
@@ -1172,7 +1172,7 @@ LuaShaika = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaChutou = sgs.CreateTriggerSkill {
@@ -1230,7 +1230,7 @@ LuaChutou = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaYingshi = sgs.CreateTriggerSkill {
@@ -1257,14 +1257,14 @@ LuaYingshi = sgs.CreateTriggerSkill {
             local choice = room:askForChoice(killer, self:objectName(), 'LuaYingshiChoice1+LuaYingshiChoice2')
             rinsan.sendLogMessage(room, '#choose', {
                 ['from'] = killer,
-                ['arg'] = choice
+                ['arg'] = choice,
             })
             if choice == 'LuaYingshiChoice1' then
                 -- 加一点体力上限，摸三张牌
                 room:setPlayerProperty(killer, 'maxhp', sgs.QVariant(killer:getMaxHp() + 1))
                 rinsan.sendLogMessage(room, '#addmaxhp', {
                     ['from'] = killer,
-                    ['arg'] = 1
+                    ['arg'] = 1,
                 })
                 killer:drawCards(3, self:objectName())
             else
@@ -1296,7 +1296,7 @@ LuaYingshi = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target and target:hasSkill(self:objectName())
-    end
+    end,
 }
 
 LuaWangming = sgs.CreateTriggerSkill {
@@ -1314,7 +1314,7 @@ LuaWangming = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target and target:isAlive() and target:hasSkill(self:objectName())
-    end
+    end,
 }
 
 LuaTianfa = sgs.CreateTriggerSkill {
@@ -1366,7 +1366,7 @@ LuaTianfa = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaZhixieCard = sgs.CreateSkillCard {
@@ -1381,7 +1381,7 @@ LuaZhixieCard = sgs.CreateSkillCard {
             room:setEmotion(target, 'chain')
             room:getThread():trigger(sgs.ChainStateChanged, room, target)
         end
-    end
+    end,
 }
 
 LuaZhixieVS = sgs.CreateViewAsSkill {
@@ -1407,7 +1407,7 @@ LuaZhixieVS = sgs.CreateViewAsSkill {
     end,
     enabled_at_response = function(self, player, pattern)
         return pattern == '@@LuaZhixie'
-    end
+    end,
 }
 
 LuaZhixie = sgs.CreateTriggerSkill {
@@ -1436,7 +1436,7 @@ LuaZhixie = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return target
-    end
+    end,
 }
 
 LuaJixie = sgs.CreateTriggerSkill {
@@ -1456,7 +1456,7 @@ LuaJixie = sgs.CreateTriggerSkill {
             data:setValue(damage)
         end
         return false
-    end
+    end,
 }
 
 LuaFumoVS = sgs.CreateViewAsSkill {
@@ -1491,7 +1491,7 @@ LuaFumoVS = sgs.CreateViewAsSkill {
     enabled_at_response = function(self, player, pattern)
         return pattern == 'slash' and sgs.Sanguosha:getCurrentCardUseReason() ==
                    sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
-    end
+    end,
 }
 
 LuaFumo = sgs.CreateTriggerSkill {
@@ -1547,7 +1547,7 @@ LuaFumo = sgs.CreateTriggerSkill {
                         jink_table[index] = 0
                         index = index + 1
                         rinsan.sendLogMessage(room, '#NoJink', {
-                            ['from'] = p
+                            ['from'] = p,
                         })
                     end
                     local jink_data = sgs.QVariant()
@@ -1589,7 +1589,7 @@ LuaFumo = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 LuaFumoTargetMod = sgs.CreateTargetModSkill {
@@ -1606,7 +1606,7 @@ LuaFumoTargetMod = sgs.CreateTargetModSkill {
             return 0
         end
         return 0
-    end
+    end,
 }
 
 LuaTaoseCard = sgs.CreateSkillCard {
@@ -1627,7 +1627,7 @@ LuaTaoseCard = sgs.CreateSkillCard {
             room:setCardFlag(slash, 'LuaTaose')
             room:useCard(sgs.CardUseStruct(slash, source, target))
         end
-    end
+    end,
 }
 
 LuaTaoseVS = sgs.CreateOneCardViewAsSkill {
@@ -1640,7 +1640,7 @@ LuaTaoseVS = sgs.CreateOneCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return not player:hasUsed('#LuaTaoseCard')
-    end
+    end,
 }
 
 LuaTaose = sgs.CreateTriggerSkill {
@@ -1654,7 +1654,7 @@ LuaTaose = sgs.CreateTriggerSkill {
             damage.damage = damage.damage + 1
             data:setValue(damage)
         end
-    end
+    end,
 }
 
 LuaJiaren = sgs.CreateTriggerSkill {
@@ -1666,18 +1666,18 @@ LuaJiaren = sgs.CreateTriggerSkill {
                 local judge = rinsan.createJudgeStruct({
                     ['play_animation'] = true,
                     ['who'] = player,
-                    ['reason'] = self:objectName()
+                    ['reason'] = self:objectName(),
                 })
                 room:judge(judge)
                 rinsan.sendLogMessage(room, '#LuaJiarenForbidSlash', {
                     ['from'] = player,
                     ['arg'] = self:objectName(),
-                    ['arg2'] = judge.card:getSuitString()
+                    ['arg2'] = judge.card:getSuitString(),
                 })
                 room:addPlayerMark(player, self:objectName() .. judge.card:getSuitString())
             end
         end
-    end
+    end,
 }
 
 -- 清除标记
@@ -1688,7 +1688,7 @@ LuaJiarenClear = sgs.CreateTriggerSkill {
     events = {sgs.TurnStart},
     on_trigger = function(self, event, player, data, room)
         rinsan.clearAllMarksContains(room, player, 'LuaJiaren')
-    end
+    end,
 }
 
 -- 不能成为【杀】的合法目标
@@ -1696,7 +1696,7 @@ LuaJiarenForbid = sgs.CreateProhibitSkill {
     name = 'LuaJiarenForbid',
     is_prohibited = function(self, from, to, card)
         return card:isKindOf('Slash') and to:getMark('LuaJiaren' .. card:getSuitString()) > 0
-    end
+    end,
 }
 
 LuaFabing = sgs.CreateTriggerSkill {
@@ -1715,7 +1715,7 @@ LuaFabing = sgs.CreateTriggerSkill {
                 data:setValue(damage)
             end
         end
-    end
+    end,
 }
 
 LuaChengsheng = sgs.CreateTriggerSkill {
@@ -1742,7 +1742,7 @@ LuaChengsheng = sgs.CreateTriggerSkill {
                 end
             end
         end
-    end
+    end,
 }
 
 Cactus:addSkill(LuaBaipiao)

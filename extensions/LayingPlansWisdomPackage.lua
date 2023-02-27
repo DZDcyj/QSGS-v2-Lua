@@ -38,7 +38,7 @@ LuaWuku = sgs.CreateTriggerSkill {
                 end
             end
         end
-    end
+    end,
 }
 
 LuaSanchen = sgs.CreateTriggerSkill {
@@ -49,7 +49,7 @@ LuaSanchen = sgs.CreateTriggerSkill {
         rinsan.sendLogMessage(room, '#LuaSanchen', {
             ['from'] = player,
             ['arg'] = player:getMark('@wuku'),
-            ['arg2'] = self:objectName()
+            ['arg2'] = self:objectName(),
         })
         if room:changeMaxHpForAwakenSkill(player, 1) then
             room:broadcastSkillInvoke(self:objectName())
@@ -63,7 +63,7 @@ LuaSanchen = sgs.CreateTriggerSkill {
             return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Finish) and target:getMark('@wuku') > 2
         end
         return false
-    end
+    end,
 }
 
 LuaMiewuCard = sgs.CreateSkillCard {
@@ -94,7 +94,7 @@ LuaMiewuCard = sgs.CreateSkillCard {
             source:loseMark('@wuku')
         end
         return use_card
-    end
+    end,
 }
 
 LuaMiewuVS = sgs.CreateOneCardViewAsSkill {
@@ -149,7 +149,7 @@ LuaMiewuVS = sgs.CreateOneCardViewAsSkill {
         else
             return nil
         end
-    end
+    end,
 }
 
 LuaMiewu = sgs.CreateTriggerSkill {
@@ -176,7 +176,7 @@ LuaMiewu = sgs.CreateTriggerSkill {
                 player:drawCards(1, self:objectName())
             end
         end
-    end
+    end,
 }
 LuaMiewu:setGuhuoDialog('lrd')
 
@@ -209,7 +209,7 @@ LuaQiaiCard = sgs.CreateSkillCard {
         else
             rinsan.recover(room, source, 1, target)
         end
-    end
+    end,
 }
 
 LuaQiai = sgs.CreateViewAsSkill {
@@ -228,7 +228,7 @@ LuaQiai = sgs.CreateViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return not player:hasUsed('#LuaQiaiCard')
-    end
+    end,
 }
 
 LuaShanxi = sgs.CreateTriggerSkill {
@@ -273,7 +273,7 @@ LuaShanxi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger
+    can_trigger = targetTrigger,
 }
 
 ExWangcan:addSkill(LuaQiai)
@@ -294,12 +294,12 @@ LuaTianzuo = sgs.CreateTriggerSkill {
             rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
                 ['from'] = player,
                 ['arg'] = effect.card:objectName(),
-                ['arg2'] = self:objectName()
+                ['arg2'] = self:objectName(),
             })
             return true
         end
         return false
-    end
+    end,
 }
 
 -- 天佐辅助，如果启用了扩展卡牌包，就放一句语音
@@ -326,7 +326,7 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger
+    can_trigger = globalTrigger,
 }
 
 LuaLingce = sgs.CreateTriggerSkill {
@@ -345,7 +345,7 @@ LuaLingce = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger
+    can_trigger = targetTrigger,
 }
 
 LuaDinghan = sgs.CreateTriggerSkill {
@@ -367,7 +367,7 @@ LuaDinghan = sgs.CreateTriggerSkill {
             local msgType = '$CancelTargetNoUser'
             local params = {
                 ['to'] = player,
-                ['arg'] = use.card:objectName()
+                ['arg'] = use.card:objectName(),
             }
             if use.from then
                 params['from'] = use.from
@@ -377,7 +377,7 @@ LuaDinghan = sgs.CreateTriggerSkill {
             table.insert(dinghan_cards, use.card:objectName())
             rinsan.setDinghanCardsTable(player, dinghan_cards)
         end
-    end
+    end,
 }
 
 LuaDinghanChange = sgs.CreateTriggerSkill {
@@ -417,7 +417,7 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target, 'LuaDinghan')
-    end
+    end,
 }
 
 ExShenXunyu:addSkill(LuaTianzuo)
@@ -452,7 +452,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
                 ['who'] = source,
                 ['reason'] = 'LuaHuishi',
                 ['good'] = (#suits == 0),
-                ['pattern'] = '.|' .. pattern .. '|.'
+                ['pattern'] = '.|' .. pattern .. '|.',
             })
             room:judge(judge)
             local card = judge.card
@@ -484,7 +484,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
         if isMaxCard then
             room:loseMaxHp(source)
         end
-    end
+    end,
 }
 
 LuaHuishi = sgs.CreateZeroCardViewAsSkill {
@@ -494,7 +494,7 @@ LuaHuishi = sgs.CreateZeroCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return (not player:hasUsed('#LuaHuishiCard')) and player:getMaxHp() < 10
-    end
+    end,
 }
 
 LuaTianyi = sgs.CreateTriggerSkill {
@@ -504,7 +504,7 @@ LuaTianyi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         rinsan.sendLogMessage(room, '#LuaTianyi', {
             ['from'] = player,
-            ['arg'] = self:objectName()
+            ['arg'] = self:objectName(),
         })
         if room:changeMaxHpForAwakenSkill(player, 2) then
             rinsan.recover(room, player)
@@ -527,7 +527,7 @@ LuaTianyi = sgs.CreateTriggerSkill {
             end
         end
         return rinsan.RIGHT(self, target) and rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start)
-    end
+    end,
 }
 
 LuaTianyiDamaged = sgs.CreateTriggerSkill {
@@ -541,7 +541,7 @@ LuaTianyiDamaged = sgs.CreateTriggerSkill {
             room:addPlayerMark(player, string.format('LuaDamagedBy%s', damage.from:objectName()))
         end
     end,
-    can_trigger = targetTrigger
+    can_trigger = targetTrigger,
 }
 
 LuaLimitHuishiCard = sgs.CreateSkillCard {
@@ -556,7 +556,7 @@ LuaLimitHuishiCard = sgs.CreateSkillCard {
         target:drawCards(4, 'LuaLimitHuishi')
         room:broadcastSkillInvoke('LuaLimitHuishi')
         room:loseMaxHp(source, 2)
-    end
+    end,
 }
 
 LuaLimitHuishiVS = sgs.CreateZeroCardViewAsSkill {
@@ -566,7 +566,7 @@ LuaLimitHuishiVS = sgs.CreateZeroCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return player:getMark('@LuaLimitHuishi') >= 1
-    end
+    end,
 }
 
 LuaLimitHuishi = sgs.CreateTriggerSkill {
@@ -575,7 +575,7 @@ LuaLimitHuishi = sgs.CreateTriggerSkill {
     limit_mark = '@LuaLimitHuishi',
     view_as_skill = LuaLimitHuishiVS,
     on_trigger = function()
-    end
+    end,
 }
 
 LuaZuoxingCard = sgs.CreateSkillCard {
@@ -624,7 +624,7 @@ LuaZuoxingCard = sgs.CreateSkillCard {
             room:setPlayerFlag(source, 'LuaZuoxing')
         end
         return use_card
-    end
+    end,
 }
 
 LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
@@ -700,14 +700,14 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         else
             return nil
         end
-    end
+    end,
 }
 
 LuaZuoxing = sgs.CreateTriggerSkill {
     name = 'LuaZuoxing',
     view_as_skill = LuaZuoxingVS,
     on_trigger = function()
-    end
+    end,
 }
 
 LuaZuoxing:setGuhuoDialog('r')
@@ -736,7 +736,7 @@ LuaShamengCard = sgs.CreateSkillCard {
         room:broadcastSkillInvoke('LuaShameng')
         room:drawCards(sourse, 3, 'LuaShameng')
         room:drawCards(dest, 2, 'LuaShameng')
-    end
+    end,
 }
 LuaShameng = sgs.CreateViewAsSkill {
     name = 'LuaShameng',
@@ -763,7 +763,7 @@ LuaShameng = sgs.CreateViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return not player:hasUsed('#LuaShamengCard')
-    end
+    end,
 }
 
 ExChenzhen:addSkill(LuaShameng)
@@ -802,7 +802,7 @@ LuaQinzheng = sgs.CreateTriggerSkill {
             player:obtainCard(card3, false)
         end
         return false
-    end
+    end,
 }
 
 ExLuotong:addSkill(LuaQinzheng)

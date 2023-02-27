@@ -33,7 +33,7 @@ indirect_combination = sgs.CreateTrickCard {
             string.format('indirect_combination-card:%s', source:objectName()), sgs.QVariant(), sgs.Card_MethodResponse)
         rinsan.sendLogMessage(room, '#choose', {
             ['from'] = source,
-            ['arg'] = choice
+            ['arg'] = choice,
         })
         if choice == 'Direct' then
             -- 正兵
@@ -44,7 +44,7 @@ indirect_combination = sgs.CreateTrickCard {
                 rinsan.sendLogMessage(room, '#DirectFailed', {
                     ['from'] = source,
                     ['to'] = target,
-                    ['arg'] = 'jink'
+                    ['arg'] = 'jink',
                 })
                 local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false,
                     sgs.Card_MethodNone)
@@ -57,12 +57,12 @@ indirect_combination = sgs.CreateTrickCard {
                 rinsan.sendLogMessage(room, '#IndirectFailed', {
                     ['from'] = source,
                     ['to'] = target,
-                    ['arg'] = 'slash'
+                    ['arg'] = 'slash',
                 })
                 rinsan.doDamage(room, source, target, 1, sgs.DamageStruct_Normal, self)
             end
         end
-    end
+    end,
 }
 
 for i = 2, 9, 1 do

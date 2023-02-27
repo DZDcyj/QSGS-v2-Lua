@@ -13,7 +13,7 @@ SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, tr
 
 -- 初始护甲值表
 local START_SHIELDS = {
-    ['ExMouHuaxiong'] = 1
+    ['ExMouHuaxiong'] = 1,
 }
 
 local function globalTrigger(self, target)
@@ -99,12 +99,12 @@ LuaShield = sgs.CreateTriggerSkill {
         rinsan.sendLogMessage(room, '#GetHp', {
             ['from'] = damage.to,
             ['arg'] = newHp,
-            ['arg2'] = damage.to:getMaxHp()
+            ['arg2'] = damage.to:getMaxHp(),
         })
         room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         return true
     end,
-    can_trigger = globalTrigger
+    can_trigger = globalTrigger,
 }
 
 -- 护甲初始化
@@ -119,7 +119,7 @@ LuaShieldInit = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, rinsan.SHIELD_MARK, math.min(rinsan.MAX_SHIELD_COUNT, first + second))
         end
     end,
-    can_trigger = globalTrigger
+    can_trigger = globalTrigger,
 }
 
 -- 修正神甘宁魄袭多弃牌问题
@@ -139,7 +139,7 @@ LuaPoxiHotFix = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger
+    can_trigger = globalTrigger,
 }
 
 SkillAnjiang:addSkill(LuaShield)

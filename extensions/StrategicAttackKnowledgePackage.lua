@@ -32,19 +32,19 @@ LuaMouDuanliangCard = sgs.CreateSkillCard {
         local type = success and '#LuaMouDuanliangSuccess' or '#LuaMouDuanliangFailure'
         rinsan.sendLogMessage(room, '#choose', {
             ['from'] = source,
-            ['arg'] = attack
+            ['arg'] = attack,
         })
         rinsan.sendLogMessage(room, '#choose', {
             ['from'] = target,
-            ['arg'] = defense
+            ['arg'] = defense,
         })
         rinsan.sendLogMessage(room, type, {
             ['from'] = source,
-            ['arg'] = 'LuaMouDuanliangMouyi'
+            ['arg'] = 'LuaMouDuanliangMouyi',
         })
         if success then
             if attack == attacks[1] then
-            room:broadcastSkillInvoke('LuaMouDuanliang', 2)
+                room:broadcastSkillInvoke('LuaMouDuanliang', 2)
                 if target:containsTrick('supply_shortage') then
                     local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false,
                         sgs.Card_MethodNone)
@@ -66,7 +66,7 @@ LuaMouDuanliangCard = sgs.CreateSkillCard {
         else
             room:broadcastSkillInvoke('LuaMouDuanliang', 4)
         end
-    end
+    end,
 }
 
 LuaMouDuanliang = sgs.CreateZeroCardViewAsSkill {
@@ -76,7 +76,7 @@ LuaMouDuanliang = sgs.CreateZeroCardViewAsSkill {
     end,
     enabled_at_play = function(self, player)
         return not player:hasUsed('#LuaMouDuanliangCard')
-    end
+    end,
 }
 
 LuaMouShipo = sgs.CreateTriggerSkill {
@@ -107,15 +107,18 @@ LuaMouShipo = sgs.CreateTriggerSkill {
                 rinsan.skill(self, room, player, true)
             end
             if choice == 'LuaMouShipoChoice1' then
-                local victim = room:askForPlayerChosen(player, victims, self:objectName(), 'LuaMouShipo-choose', true, true)
+                local victim = room:askForPlayerChosen(player, victims, self:objectName(), 'LuaMouShipo-choose', true,
+                    true)
                 if victim then
-                    if not room:askForDiscard(victim, self:objectName(), 1, 1, true, true, 'LuaMouShipo-discard'..player:objectName()) then
+                    if not room:askForDiscard(victim, self:objectName(), 1, 1, true, true,
+                        'LuaMouShipo-discard' .. player:objectName()) then
                         player:drawCards(1, self:objectName())
                     end
                 end
             elseif choice == 'LuaMouShipoChoice2' then
                 for _, p in sgs.qlist(shortages) do
-                    if not room:askForDiscard(p, self:objectName(), 1, 1, true, true, 'LuaMouShipo-discard:'..player:objectName()) then
+                    if not room:askForDiscard(p, self:objectName(), 1, 1, true, true,
+                        'LuaMouShipo-discard:' .. player:objectName()) then
                         player:drawCards(1, self:objectName())
                     end
                 end
@@ -125,7 +128,7 @@ LuaMouShipo = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
-    end
+    end,
 }
 
 ExMouXuhuang:addSkill(LuaMouDuanliang)
@@ -169,17 +172,17 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                         'LuaMouTiejiDefense1+LuaMouTiejiDefense2')
                     rinsan.sendLogMessage(room, '#choose', {
                         ['from'] = player,
-                        ['arg'] = sourceChoice
+                        ['arg'] = sourceChoice,
                     })
                     rinsan.sendLogMessage(room, '#choose', {
                         ['from'] = p,
-                        ['arg'] = targetChoice
+                        ['arg'] = targetChoice,
                     })
                     local success = checkLuaMouTiejiMouyi(sourceChoice, targetChoice)
                     local type = success and '#LuaMouTiejiSuccess' or '#LuaMouTiejiFailure'
                     rinsan.sendLogMessage(room, type, {
                         ['from'] = player,
-                        ['arg'] = 'LuaMouTiejiMouyi'
+                        ['arg'] = 'LuaMouTiejiMouyi',
                     })
                     if success then
                         if sourceChoice == 'LuaMouTiejiAttack1' then
@@ -201,7 +204,7 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                     end
                     if p:isAlive() then
                         rinsan.sendLogMessage(room, '#NoJink', {
-                            ['from'] = p
+                            ['from'] = p,
                         })
                     end
                 end
@@ -230,7 +233,7 @@ LuaMouTieji = sgs.CreateTriggerSkill {
         player:removeTag('LuaMouTiejiTargets')
         room:setPlayerFlag(player, '-LuaMouTiejiInvoked')
         return false
-    end
+    end,
 }
 
 LuaMouTiejiClear = sgs.CreateTriggerSkill {
@@ -248,7 +251,7 @@ LuaMouTiejiClear = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return true
-    end
+    end,
 }
 
 ExMouMachao:addSkill('mashu')
