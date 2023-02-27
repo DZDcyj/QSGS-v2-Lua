@@ -37,5 +37,5 @@ return {
     ['LuaMouJieyinRemove'] = '移除“助”标记',
     ['LuaMouXiaoji'] = '枭姬',
     [':LuaMouXiaoji'] = '<font color="#4DB873"><b>吴势力技</b></font>，当你失去装备区里的一张牌时，你摸两张牌，然后你可以弃置场上的一张牌',
-    ['LuaMouXiaojiChoose'] = '你可以选择一名角色，弃置其装备或判定区内的一张牌'
+    ['LuaMouXiaojiChoose'] = '你可以选择一名角色，弃置其装备或判定区内的一张牌',
 }

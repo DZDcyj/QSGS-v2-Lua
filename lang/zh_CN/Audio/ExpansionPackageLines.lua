@@ -293,5 +293,5 @@ return {
     ['$LuaMiaojian2'] = '布天罡，踏北斗，有秽皆除，无妖不斩',
     ['$LuaLianhua1'] = '刀兵水火，速离身形',
     ['$LuaLianhua2'] = '体有金光，覆映全身',
-    ['~ExSunhanhua'] = '天有寒暑，人有死生……'
+    ['~ExSunhanhua'] = '天有寒暑，人有死生……',
 }

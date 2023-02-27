@@ -1,4 +1,4 @@
--- lines for StrategicAttackAbilityPackage
+-- lines for Strategic Attac kAbility Package
 
 return {
     -- 谋华雄
@@ -14,5 +14,5 @@ return {
     ['$LuaMouJieyin2'] = '夫妻之情既断，何必再问归期！',
     ['$LuaMouXiaoji1'] = '吾之所通，何止十八般兵刃！',
     ['$LuaMouXiaoji2'] = '既如此，就让尔等见识一番！',
-    ['~ExMouSunshangxiang'] = '此去一别，竟无再见之日……'
+    ['~ExMouSunshangxiang'] = '此去一别，竟无再见之日……',
 }

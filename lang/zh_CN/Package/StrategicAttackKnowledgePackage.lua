@@ -41,5 +41,5 @@ return {
     ['LuaMouTiejiDefense2'] = '出阵应战',
     [':LuaMouTiejiDefense2'] = '阻止其摸2张牌',
     ['#LuaMouTiejiSuccess'] = '%from %arg <font color="green"><b>成功</b></font>',
-    ['#LuaMouTiejiFailure'] = '%from %arg <font color="red"><b>失败</b></font>'
+    ['#LuaMouTiejiFailure'] = '%from %arg <font color="red"><b>失败</b></font>',
 }
