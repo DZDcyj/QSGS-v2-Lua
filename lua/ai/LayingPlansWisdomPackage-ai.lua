@@ -113,6 +113,11 @@ sgs.ai_skill_discard['LuaShanxi'] = function(self, discard_num, min_num, optiona
     return nil
 end
 
+-- 善檄更新 AI 敌友判断
+sgs.ai_playerchosen_intention['LuaShanxi'] = function(self, from, to)
+    sgs.updateIntention(from, to, -50)
+end
+
 -- 神郭嘉
 -- 慧识
 local LuaHuishi_skill = {}
