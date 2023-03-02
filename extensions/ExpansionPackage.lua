@@ -2911,7 +2911,7 @@ LuaMiejiCard = sgs.CreateSkillCard {
             end
             card = room:askForCard(target, pattern, '@LuaMiejiDiscardNonTrick', sgs.QVariant(), sgs.Card_MethodNone)
             if not card or card:isKindOf('TrickCard') then
-                card =  maybeCards[rinsan.random(1, #maybeCards)]
+                card = maybeCards[rinsan.random(1, #maybeCards)]
             end
             if card then
                 room:throwCard(card, target)
