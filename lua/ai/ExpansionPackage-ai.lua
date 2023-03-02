@@ -6,46 +6,9 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 漫卷效果技能组
 local LuaManjuanEffectSkills = {'manjuan', 'zishu', 'LuaZishu'}
 
+-- 玩家是否有漫卷效果（漫卷、自书等）
 function playerHasManjuanEffect(player)
     return player:hasSkills(table.concat(LuaManjuanEffectSkills, '|'))
-end
-
--- 灭计弃牌
-sgs.ai_skill_discard['LuaMieji'] = function(self, discard_num, min_num, optional, include_equip)
-    min_num = min_num or discard_num
-    local exchange = self.player:hasFlag('Global_AIDiscardExchanging')
-    self:assignKeep(true)
-
-    local cards = self.player:getCards('he')
-    cards = sgs.QList2Table(cards)
-    self:sortByKeepValue(cards)
-    local to_discard, temp = {}, {}
-
-    local least = min_num
-    if discard_num - min_num > 1 then
-        least = discard_num - 1
-    end
-    for _, card in ipairs(cards) do
-        if exchange or not self.player:isJilei(card) and not card:isKindOf('TrickCard') then
-            if self:getKeepValue(card) >= 4.1 then
-                table.insert(temp, card:getEffectiveId())
-            else
-                table.insert(to_discard, card:getEffectiveId())
-            end
-        end
-        if (self.player:hasSkill('qinyin') and #to_discard >= least) or #to_discard >= discard_num then
-            break
-        end
-    end
-    if #to_discard < discard_num then
-        for _, id in ipairs(temp) do
-            table.insert(to_discard, id)
-            if (self.player:hasSkill('qinyin') and #to_discard >= least) or #to_discard >= discard_num then
-                break
-            end
-        end
-    end
-    return to_discard
 end
 
 -- 节钺
