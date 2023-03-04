@@ -23,7 +23,7 @@ return {
     ['LuaQuedi_ask'] = '你可以发动“却敌”',
     ['~LuaQuedi'] = '选择一名其他角色→选择一张基本牌→点击“确定”',
     ['LuaChuifeng'] = '椎锋',
-    ['luazhuifeng'] = '椎锋',
+    ['luachuifeng'] = '椎锋',
     [':LuaChuifeng'] = '<font color="#547998"><b>魏势力技</b></font>，<font color="green"><b>出牌阶段限两次</b></font>，你可以失去一点体力，视为使用一张【决斗】。\
     当你受到此【决斗】的伤害时，你防止此伤害，然后此技能于此阶段内失效',
     ['LuaChongjian'] = '冲坚',
