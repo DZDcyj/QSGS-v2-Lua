@@ -7172,13 +7172,17 @@ LuaMiaojianVS = sgs.CreateViewAsSkill {
 
 LuaMiaojian = sgs.CreateTriggerSkill {
     name = 'LuaMiaojian',
-    events = {sgs.CardUsed, sgs.SlashMissed},
+    events = {sgs.CardUsed, sgs.SlashMissed, sgs.EventPhaseEnd},
     view_as_skill = LuaMiaojianVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardUsed then
             local use = data:toCardUse()
             if use.card and use.card:getSkillName() == self:objectName() then
                 room:setPlayerFlag(player, 'LuaMiaojianUsed')
+            end
+        elseif event == sgs.EventPhaseEnd then
+            if player:getPhase() == sgs.Player_Play then
+                room:setPlayerFlag(player, '-LuaMiaojianUsed')
             end
         else
             local effect = data:toSlashEffect()
