@@ -2854,20 +2854,23 @@ LuaMiejiCard = sgs.CreateSkillCard {
     name = 'LuaMiejiCard',
     will_throw = false,
     filter = function(self, selected, to_select)
-        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and not to_select:isNude()
+        if rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) then
+            return rinsan.canDiscard(to_select, to_select, 'he')
+        end
+        return false
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
 
         room:broadcastSkillInvoke('LuaMieji')
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, source:objectName(), '', 'LuaMieji', '')
-        room:moveCardTo(sgs.Sanguosha:getCard(self:getSubcards():first()), source, nil, sgs.Player_DrawPile, reason,
-            true)
+        local miejiCard = sgs.Sanguosha:getCard(self:getSubcards():first())
+        room:moveCardTo(miejiCard, source, nil, sgs.Player_DrawPile, reason, true)
         local cards = target:getCards('he')
         local cardsCopy = cards
 
         for _, c in sgs.qlist(cardsCopy) do
-            if target:isJilei(c) then
+            if target:isCardLimited(c, sgs.Card_MethodDiscard) then
                 cards:removeOne(c)
             end
         end
@@ -2878,43 +2881,43 @@ LuaMiejiCard = sgs.CreateSkillCard {
 
         local pattern = '..!'
         local nonTrickNum = 0
-        local trickExists = false
         for _, c in sgs.qlist(cards) do
-            if c:isKindOf('TrickCard') then
-                trickExists = true
-            else
+            if not c:isKindOf('TrickCard') then
                 nonTrickNum = nonTrickNum + 1
             end
         end
 
-        if nonTrickNum < 2 and trickExists then
-            pattern = 'TrickCard!'
-        end
-
         local card = room:askForCard(target, pattern, '@LuaMiejiDiscard', sgs.QVariant(), sgs.Card_MethodNone)
-        if card == nil then
-            -- 随机抽卡
-            if nonTrickNum < 2 and trickExists then
-                cardsCopy = cards
-                for _, c in sgs.qlist(cardsCopy) do
-                    if not c:isKindOf('TrickCard') then
-                        cards:removeOne(c)
-                    end
+        if not card then
+            card = cards:at(rinsan.random(0, cardsCopy:length() - 1))
+        end
+        if not card then
+            return false
+        end
+        if card:isKindOf('TrickCard') then
+            room:obtainCard(source, card)
+        else
+            room:throwCard(card, target)
+            if nonTrickNum <= 1 then
+                return false
+            end
+            pattern = '^TrickCard!'
+            local maybeCards = {}
+            for _, c in sgs.qlist(target:getCards('he')) do
+                if not target:isCardLimited(c, sgs.Card_MethodDiscard) and not c:isKindOf('TrickCard') then
+                    table.insert(maybeCards, c)
                 end
             end
-            card = cards:at(rinsan.random(0, cards:length() - 1))
-        end
-        if card then
-            if card:isKindOf('TrickCard') then
-                room:obtainCard(source, card)
-                return
-            else
+            if #maybeCards <= 0 then
+                return false
+            end
+            card = room:askForCard(target, pattern, '@LuaMiejiDiscardNonTrick', sgs.QVariant(), sgs.Card_MethodNone)
+            if not card or card:isKindOf('TrickCard') then
+                card = maybeCards[rinsan.random(1, #maybeCards)]
+            end
+            if card then
                 room:throwCard(card, target)
             end
-        end
-
-        if target:getCardCount(true) > 0 then
-            room:askForDiscard(target, 'LuaMieji', 1, 1, false, true, '@LuaMiejiDiscardNonTrick', '^TrickCard')
         end
     end,
 }
@@ -7169,13 +7172,17 @@ LuaMiaojianVS = sgs.CreateViewAsSkill {
 
 LuaMiaojian = sgs.CreateTriggerSkill {
     name = 'LuaMiaojian',
-    events = {sgs.CardUsed, sgs.SlashMissed},
+    events = {sgs.CardUsed, sgs.SlashMissed, sgs.EventPhaseEnd},
     view_as_skill = LuaMiaojianVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardUsed then
             local use = data:toCardUse()
             if use.card and use.card:getSkillName() == self:objectName() then
                 room:setPlayerFlag(player, 'LuaMiaojianUsed')
+            end
+        elseif event == sgs.EventPhaseEnd then
+            if player:getPhase() == sgs.Player_Play then
+                room:setPlayerFlag(player, '-LuaMiaojianUsed')
             end
         else
             local effect = data:toSlashEffect()
