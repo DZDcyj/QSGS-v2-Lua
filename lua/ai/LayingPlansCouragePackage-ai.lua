@@ -9,17 +9,14 @@ sgs.ai_skill_cardask['@Yuyan-give'] = function(self, data)
     local card = use.card
     local number = use.card:getNumber()
     if self:isFriend(target) then
-        self.room:writeToConsole('Friend')
         return '.'
     end
-    self.room:writeToConsole('Not Friend')
     local cards = {}
     for _, cd in sgs.qlist(self.player:getCards('he')) do
         if cd:getNumber() > number then
             table.insert(cards, cd)
         end
     end
-    self.room:writeToConsole('Cards Length:'..#cards)
     self:sortByUseValue(cards, true)
     if #cards == 0 or self:isValuableCard(cards[1]) then
         return '.'
