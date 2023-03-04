@@ -2854,8 +2854,10 @@ LuaMiejiCard = sgs.CreateSkillCard {
     name = 'LuaMiejiCard',
     will_throw = false,
     filter = function(self, selected, to_select)
-        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and
-                   rinsan.canDiscard(to_select, to_select, 'he')
+        if rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) then
+            return rinsan.canDiscard(to_select, to_select, 'he')
+        end
+        return false
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
