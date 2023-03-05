@@ -11,6 +11,10 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+local function globalTrigger(self, target)
+    return true
+end
+
 -- 孙翊
 ExSunyi = sgs.General(extension, 'ExSunyi', 'wu', '4', true, true)
 
@@ -135,6 +139,125 @@ SkillAnjiang:addSkill(LuaZaoliCardMove)
 SkillAnjiang:addSkill(LuaZaoliUse)
 SkillAnjiang:addSkill(LuaZaoliStart)
 
+-- 宗预
+ExZongyu = sgs.General(extension, 'ExZongyu', 'shu', '3', true, true)
+
+LuaZhibian = sgs.CreateTriggerSkill {
+    name = 'LuaZhibian',
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        local available_players = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if player:canPindian(p, self:objectName()) then
+                available_players:append(p)
+            end
+        end
+        if available_players:isEmpty() then
+            return false
+        end
+        local target = room:askForPlayerChosen(player, available_players, self:objectName(), '@LuaZhibian', true, true)
+        if target then
+            if player:pindian(target, self:objectName()) then
+                local choices = {}
+                if rinsan.canMoveCardFromPlayer(target, player) then
+                    table.insert(choices, 'LuaZhibianChoice1')
+                end
+                if player:isWounded() then
+                    table.insert(choices, 'LuaZhibianChoice2')
+                end
+                if #choices == 2 then
+                    table.insert(choices, 'LastStand')
+                end
+                table.insert(choices, 'cancel')
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                if choice == 'cancel' then
+                    return false
+                end
+                if choice == 'LuaZhibianChoice1' then
+                    rinsan.askForMoveCards(player, target, player, self:objectName())
+                elseif choice == 'LuaZhibianChoice2' then
+                    rinsan.recover(room, player)
+                else
+                    rinsan.askForMoveCards(player, target, player, self:objectName())
+                    rinsan.recover(room, player)
+                    room:addPlayerMark(player, 'LuaZhibianSkipDraw')
+                end
+            else
+                room:loseHp(player)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start)
+    end,
+}
+
+LuaZhibianSkipDraw = sgs.CreateTriggerSkill {
+    name = 'LuaZhibianSkipDraw',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if player:getMark('LuaZhibianSkipDraw') == 0 then
+            return false
+        end
+        local change = data:toPhaseChange()
+        if change.to == sgs.Player_Draw then
+            room:sendCompulsoryTriggerLog(player, 'LuaZhibian')
+            room:setPlayerMark(player, 'LuaZhibianSkipDraw', 0)
+            player:skip(change.to)
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+LuaYuyan = sgs.CreateTriggerSkill {
+    name = 'LuaYuyan',
+    events = {sgs.TargetConfirming},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') and not use.card:isVirtualCard() then
+            if use.from and use.from:getHp() > player:getHp() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                local number = use.card:getNumber()
+                local pattern = string.format('.|.|%d~14|.|.', number + 1)
+                local dataforai = sgs.QVariant()
+                dataforai:setValue(player)
+                use.from:setTag('LuaYuyanTarget', dataforai)
+                local prompt = string.format('@Yuyan-give:%s::%d', player:objectName(), use.card:getNumberString())
+                local card = room:askForCard(use.from, pattern, prompt, data, sgs.Card_MethodNone)
+                use.from:removeTag('LuaYuyanTarget')
+                if card then
+                    room:obtainCard(player, card)
+                    return false
+                end
+                local to_list = use.to
+                to_list:removeOne(player)
+                use.to = to_list
+                data:setValue(use)
+                local msgType = '$CancelTargetNoUser'
+                local params = {
+                    ['to'] = player,
+                    ['arg'] = use.card:objectName(),
+                }
+                if use.from then
+                    params['from'] = use.from
+                    msgType = '$CancelTarget'
+                end
+                rinsan.sendLogMessage(room, msgType, params)
+            end
+        end
+        return false
+    end,
+}
+
+ExZongyu:addSkill(LuaZhibian)
+SkillAnjiang:addSkill(LuaZhibianSkipDraw)
+ExZongyu:addSkill(LuaYuyan)
+
 -- 初始随机魏国/吴国
 local wenyang_kingdoms = {'wei', 'wu'}
 -- 文鸯
@@ -237,9 +360,7 @@ LuaQuediDamageUp = sgs.CreateTriggerSkill {
             room:setPlayerFlag(player, '-LuaQuediDamageUp')
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end,
+    can_trigger = globalTrigger,
 }
 
 LuaQuediClear = sgs.CreateTriggerSkill {
@@ -262,9 +383,7 @@ LuaQuediClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end,
+    can_trigger = globalTrigger,
 }
 
 LuaChuifengCard = sgs.CreateSkillCard {
@@ -661,9 +780,7 @@ LuaChongjianQinggang = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end,
+    can_trigger = globalTrigger,
 }
 
 LuaChoujue = sgs.CreateTriggerSkill {
@@ -703,9 +820,7 @@ LuaWenyangKingdomChoose = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end,
+    can_trigger = globalTrigger,
 }
 
 ExWenyang:addSkill(LuaQuedi)

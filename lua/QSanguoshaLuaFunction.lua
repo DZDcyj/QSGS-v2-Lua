@@ -575,6 +575,65 @@ function canMoveCard(room)
     return false
 end
 
+-- 判断是否可以从 from 移动装备区/判定区卡牌到 to
+function canMoveCardFromPlayer(from, to)
+    -- 如果 from 没有可以移动的卡牌，则不行
+    if from:getCards('ej'):isEmpty() then
+        return false
+    end
+    -- 判定区
+    if to:hasJudgeArea() then
+        local judgeCards = {}
+        for _, jcd in sgs.qlist(to:getJudgingArea()) do
+            table.insert(judgeCards, jcd:objectName())
+        end
+        for _, jcd in sgs.qlist(from:getJudgingArea()) do
+            if not table.contains(judgeCards, jcd:objectName()) then
+                return true
+            end
+        end
+    end
+    -- 装备区
+    for i = 0, 4, 1 do
+        if from:getEquip(i) and not to:getEquip(i) then
+            -- 判断要移动到的角色是否有对应的装备栏
+            if to:hasEquipArea(i) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- 询问 controller 从 from 移动牌到 to 的区域里
+function askForMoveCards(controller, from, to, skillName)
+    local room = from:getRoom()
+    local disabled_ids = sgs.IntList()
+    for _, equip in sgs.qlist(from:getEquips()) do
+        local equip_index = equip:getRealCard():toEquipCard():location()
+        -- 如果移动的目标角色没有对应的装备栏，或者装备栏已经有装备，则不可以移动
+        if not to:hasEquipArea(equip_index) or (equip and to:getEquip(equip_index)) then
+            disabled_ids:append(equip:getId())
+        end
+    end
+    local judgeCards = {}
+    for _, jcd in sgs.qlist(to:getJudgingArea()) do
+        table.insert(judgeCards, jcd:objectName())
+    end
+    for _, jcd in sgs.qlist(from:getJudgingArea()) do
+        -- 如果移动的目标角色没有判定区，或者判定区内有重复卡牌，则不可以移动
+        if not to:hasJudgeArea() or table.contains(judgeCards, jcd:objectName()) then
+            disabled_ids:append(jcd:getId())
+        end
+    end
+    local card_id = room:askForCardChosen(controller, from, 'ej', skillName, false, sgs.Card_MethodNone, disabled_ids)
+    local card = sgs.Sanguosha:getCard(card_id)
+    local place = room:getCardPlace(card_id)
+    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), skillName, '')
+    room:moveCardTo(card, from, to, place, reason)
+
+end
+
 -- 获得牌堆中指定类型的牌
 -- params 代表参数，类型 Table
 -- type 具体要获得的类型，可以使用 isKindOf 进行判断，为 String
