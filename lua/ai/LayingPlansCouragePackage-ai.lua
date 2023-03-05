@@ -6,7 +6,6 @@
 sgs.ai_skill_cardask['@Yuyan-give'] = function(self, data)
     local use = data:toCardUse()
     local target = self.player:getTag('LuaYuyanTarget'):toPlayer()
-    local card = use.card
     local number = use.card:getNumber()
     if self:isFriend(target) then
         return '.'
