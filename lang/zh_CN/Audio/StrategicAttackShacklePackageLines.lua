@@ -1,4 +1,4 @@
--- lines for StrategicAttackShacklePackage
+-- lines for Strategic Attack Shackle Package
 
 return {
     -- 谋于禁

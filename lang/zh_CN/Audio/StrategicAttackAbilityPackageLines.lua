@@ -1,4 +1,4 @@
--- lines for Strategic Attac kAbility Package
+-- lines for Strategic Attack Ability Package
 
 return {
     -- 谋华雄

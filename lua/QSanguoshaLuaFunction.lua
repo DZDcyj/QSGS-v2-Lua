@@ -1704,13 +1704,14 @@ function filterMouQingzhengCards(source, selected, to_select)
             table.insert(suits, suit)
         end
     end
-    -- 如果小于，就判断能不能弃牌
-    if #suits < requiredSuitCount then
-        return not to_select:isEquipped() and not source:isJilei(to_select)
+
+    -- 是否是装备牌、能否弃置
+    if to_select:isEquipped() or source:isJilei(to_select) then
+        return false
     end
 
-    -- 如果大于等于就判断是否在范围内
-    return table.contains(suits, to_select:getSuitString())
+    -- 要么是已选中花色，要么是不够花色
+    return table.contains(suits, to_select:getSuitString()) or #suits < requiredSuitCount
 end
 
 -- 判断清正合法性

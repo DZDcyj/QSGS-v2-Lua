@@ -149,7 +149,7 @@ LuaMouQingzheng = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     view_as_skill = LuaMouQingzhengVS,
     on_trigger = function(self, event, player, data, room)
-        room:askForUseCard(player, '@@LuaMouQingzheng', '@LuaMouQingzheng', -1, sgs.Card_MethodNone)
+        room:askForUseCard(player, '@@LuaMouQingzheng', '@LuaMouQingzheng:::' .. (3 - player:getMark('@LuaZhishi')), -1, sgs.Card_MethodNone)
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
@@ -175,6 +175,7 @@ LuaMouHujia = sgs.CreateTriggerSkill {
         end
         local target = room:askForPlayerChosen(player, wei_generals, self:objectName(), 'LuaMouHujia-choose', true, true)
         if target then
+            room:broadcastSkillInvoke(self:objectName())
             if damage.card and damage.card:isKindOf('Slash') then
 				damage.from:removeQinggangTag(damage.card)
 			end
