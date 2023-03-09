@@ -11,6 +11,10 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
+local function globalTrigger(self, target)
+    return true
+end
+
 -- 谋徐晃
 ExMouXuhuang = sgs.General(extension, 'ExMouXuhuang', 'wei', '4', true, true)
 
@@ -249,9 +253,7 @@ LuaMouTiejiClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end,
+    can_trigger = globalTrigger,
 }
 
 ExMouMachao:addSkill('mashu')

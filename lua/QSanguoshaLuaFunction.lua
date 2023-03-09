@@ -1692,6 +1692,60 @@ function sunhanhuaUpdateSkillDesc(sunhanhua)
     ChangeCheck(sunhanhua, sunhanhua:getGeneralName())
 end
 
+-- 清正选牌
+function filterMouQingzhengCards(source, selected, to_select)
+    -- 需要的花色数
+    local requiredSuitCount = 3 - source:getMark('@LuaZhishi')
+    -- 判断已选择卡牌是否满足花色数
+    local suits = {}
+    for _, cd in ipairs(selected) do
+        local suit = cd:getSuitString()
+        if not table.contains(suits, suit) then
+            table.insert(suits, suit)
+        end
+    end
+    -- 如果小于，就判断能不能弃牌
+    if #suits < requiredSuitCount then
+        return not to_select:isEquipped() and not source:isJilei(to_select)
+    end
+
+    -- 如果大于等于就判断是否在范围内
+    return table.contains(suits, to_select:getSuitString())
+end
+
+-- 判断清正合法性
+function checkMouQingzhengCards(source, cards)
+    -- 需要的花色数
+    local requiredSuitCount = 3 - source:getMark('@LuaZhishi')
+
+    -- 判断已选择卡牌是否满足花色数
+    local suits = {}
+    for _, cd in ipairs(cards) do
+        local suit = cd:getSuitString()
+        if not table.contains(suits, suit) then
+            table.insert(suits, suit)
+        end
+    end
+    if #suits < requiredSuitCount then
+        return false
+    end
+
+    local ids = {}
+    for _, cd in ipairs(cards) do
+        table.insert(ids, cd:getEffectiveId())
+    end
+
+    -- 判断所有手牌是否已被选中
+    for _, cd in sgs.qlist(source:getHandcards()) do
+        local suit = cd:getSuitString()
+        if table.contains(suits, suit) and not table.contains(ids, cd:getEffectiveId()) then
+            return false
+        end
+    end
+
+    return true
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
