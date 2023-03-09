@@ -180,13 +180,13 @@ LuaMouHujia = sgs.CreateTriggerSkill {
             room:askForPlayerChosen(player, wei_generals, self:objectName(), 'LuaMouHujia-choose', true, true)
         if target then
             room:broadcastSkillInvoke(self:objectName())
+            room:addPlayerMark(player, self:objectName() .. '_lun')
             if damage.card and damage.card:isKindOf('Slash') then
                 damage.from:removeQinggangTag(damage.card)
             end
             damage.to = target
             damage.transfer = true
             room:damage(damage)
-            room:addPlayerMark(player, self:objectName() .. '_lun')
             return true
         end
         return false
