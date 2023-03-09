@@ -58,6 +58,8 @@ LuaMouJianxiongStart = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         for _, p in sgs.qlist(room:findPlayersBySkillName('LuaMouJianxiong')) do
             if p:getMark('LuaMouJianxiongInvoked') == 0 then
+                room:notifySkillInvoked(p, 'LuaMouJianxiong')
+                room:broadcastSkillInvoke('LuaMouJianxiong')
                 local choices = {0, 1, 2}
                 local choice = room:askForChoice(p, 'LuaMouJianxiong', table.concat(choices, '+'))
                 local num = tonumber(choice)
@@ -149,7 +151,8 @@ LuaMouQingzheng = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     view_as_skill = LuaMouQingzhengVS,
     on_trigger = function(self, event, player, data, room)
-        room:askForUseCard(player, '@@LuaMouQingzheng', '@LuaMouQingzheng:::' .. (3 - player:getMark('@LuaZhishi')), -1, sgs.Card_MethodNone)
+        local prompt = string.format('@LuaMouQingzheng:::%d', 3 - player:getMark('@LuaZhishi'))
+        room:askForUseCard(player, '@@LuaMouQingzheng', prompt, -1, sgs.Card_MethodNone)
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
@@ -173,15 +176,16 @@ LuaMouHujia = sgs.CreateTriggerSkill {
         if wei_generals:isEmpty() then
             return false
         end
-        local target = room:askForPlayerChosen(player, wei_generals, self:objectName(), 'LuaMouHujia-choose', true, true)
+        local target =
+            room:askForPlayerChosen(player, wei_generals, self:objectName(), 'LuaMouHujia-choose', true, true)
         if target then
             room:broadcastSkillInvoke(self:objectName())
             if damage.card and damage.card:isKindOf('Slash') then
-				damage.from:removeQinggangTag(damage.card)
-			end
-			damage.to = target
-			damage.transfer = true
-			room:damage(damage)
+                damage.from:removeQinggangTag(damage.card)
+            end
+            damage.to = target
+            damage.transfer = true
+            room:damage(damage)
             room:addPlayerMark(player, self:objectName() .. '_lun')
             return true
         end
