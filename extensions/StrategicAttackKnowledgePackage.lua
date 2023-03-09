@@ -194,7 +194,6 @@ LuaMouTieji = sgs.CreateTriggerSkill {
                             if not p:isNude() then
                                 local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false,
                                     sgs.Card_MethodNone)
-
                                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
                                     player:objectName())
                                 room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)

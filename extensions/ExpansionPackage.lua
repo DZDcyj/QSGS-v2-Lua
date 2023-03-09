@@ -3514,8 +3514,10 @@ LuaHunzi = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return (rinsan.RIGHT(self, target)) and rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start) and
-                   (target:getHp() <= 2)
+        if not rinsan.RIGHT(self, target) then
+            return false
+        end
+        return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start) and (target:getHp() <= 2)
     end,
 }
 
@@ -3632,8 +3634,10 @@ LuaTaomieMark = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         local mark = data:toMark()
-        local markFunction = mark.who:getMark('@LuaTaomie') > 0 and rinsan.addToAttackRange or
-                                 rinsan.removeFromAttackRange
+        local markFunction = rinsan.removeFromAttackRange
+        if mark.who:getMark('@LuaTaomie') > 0 then
+            markFunction = rinsan.addToAttackRange
+        end
         if mark.name == '@LuaTaomie' then
             local gongsunkangs = room:findPlayersBySkillName('LuaTaomie')
             for _, gongsunkang in sgs.qlist(gongsunkangs) do
