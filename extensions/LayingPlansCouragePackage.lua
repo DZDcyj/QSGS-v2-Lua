@@ -918,9 +918,11 @@ LuaDengli = sgs.CreateTriggerSkill {
             end
         else
             if use.to:contains(player) then
-                if use.from and use.from:getHp() == player:getHp() and room:askForSkillInvoke(player, self:objectName(), data) then
-                    room:broadcastSkillInvoke(self:objectName())
-                    player:drawCards(1, self:objectName())
+                if use.from and use.from:getHp() == player:getHp() then
+                    if room:askForSkillInvoke(player, self:objectName(), data) then
+                        room:broadcastSkillInvoke(self:objectName())
+                        player:drawCards(1, self:objectName())
+                    end
                 end
             end
         end
