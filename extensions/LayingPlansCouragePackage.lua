@@ -831,3 +831,104 @@ ExWenyang:addSkill(LuaChongjian)
 SkillAnjiang:addSkill(LuaChongjianQinggang)
 ExWenyang:addSkill(LuaChoujue)
 SkillAnjiang:addSkill(LuaWenyangKingdomChoose)
+
+ExGaolan = sgs.General(extension, 'ExGaolan', 'qun', '4', true, true)
+
+LuaJungongCard = sgs.CreateSkillCard {
+    name = 'LuaJungong',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, targets, to_select)
+        local targets_list = sgs.PlayerList()
+        for _, target in ipairs(targets) do
+            targets_list:append(target)
+        end
+        local card = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, -1)
+        if not card then
+            return false
+        end
+        card:addSubcards(self:getSubcards())
+        local total_num = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, sgs.Self, card) + 1
+        return sgs.Self:canSlash(to_select, card, false) and #targets < total_num
+    end,
+    on_use = function(self, room, source, targets)
+        local len = self:subcardsLength()
+        if len == 0 then
+            -- 此时已经 used 了，不必特别 +1
+            room:loseHp(source, source:usedTimes('#LuaJungong'))
+        end
+        local victim = targets[1]
+        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        slash:setSkillName(self:objectName())
+        room:useCard(sgs.CardUseStruct(slash, source, victim))
+    end,
+}
+
+LuaJungongVS = sgs.CreateViewAsSkill {
+    name = 'LuaJungong',
+    n = 99999,
+    view_filter = function(self, selected, to_select)
+        local required = sgs.Self:usedTimes('#LuaJungong') + 1
+        return #selected < required
+    end,
+    view_as = function(self, cards)
+        local required = sgs.Self:usedTimes('#LuaJungong') + 1
+        if #cards > 0 and #cards ~= required then
+            return nil
+        end
+        local card = LuaJungongCard:clone()
+        for _, cd in ipairs(cards) do
+            card:addSubcard(cd)
+        end
+        return card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasFlag('LuaJungongDamaged')
+    end,
+}
+
+LuaJungong = sgs.CreateTriggerSkill {
+    name = 'LuaJungong',
+    events = {sgs.Damage},
+    view_as_skill = LuaJungongVS,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card and damage.card:getSkillName() == self:objectName() then
+            room:setPlayerFlag(player, 'LuaJungongDamaged')
+        end
+        return false
+    end,
+}
+
+LuaDengli = sgs.CreateTriggerSkill {
+    name = 'LuaDengli',
+    events = {sgs.TargetConfirmed, sgs.TargetSpecified},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or (not use.card:isKindOf('Slash')) then
+            return false
+        end
+        if event == sgs.TargetSpecified then
+            for _, p in sgs.qlist(use.to) do
+                if p:getHp() == player:getHp() and room:askForSkillInvoke(player, self:objectName(), data) then
+                    room:broadcastSkillInvoke(self:objectName())
+                    player:drawCards(1, self:objectName())
+                end
+            end
+        else
+            if use.to:contains(player) then
+                if use.from and use.from:getHp() == player:getHp() then
+                    if room:askForSkillInvoke(player, self:objectName(), data) then
+                        room:broadcastSkillInvoke(self:objectName())
+                        player:drawCards(1, self:objectName())
+                    end
+                end
+            end
+        end
+        return false
+    end,
+}
+
+ExGaolan:addSkill(LuaJungong)
+ExGaolan:addSkill(LuaDengli)
