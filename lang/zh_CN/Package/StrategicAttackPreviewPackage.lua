@@ -2,6 +2,21 @@
 
 return {
     ['StrategicAttackPreviewPackage'] = '谋攻篇-知包',
+    ['ExMouZhouyu'] = '谋周瑜',
+    ['&ExMouZhouyu'] = '谋周瑜',
+    ['#ExMouZhouyu'] = '江淮之杰',
+    ['LuaMouYingzi'] = '英姿',
+    [':LuaMouYingzi'] = '锁定技，摸牌阶段，你多摸X张牌且你本回合的手牌上限+X\
+    （X为你满足的条件数：手牌数不小于2、体力值不小于2、装备区的牌数不小于1）',
+    ['#LuaMouYingzi'] = '%from 的“%arg”被触发，额外摸了 %arg2 张牌',
+    ['LuaMouFanjian'] = '反间',
+    [':LuaMouFanjian'] = '出牌阶段，你可以选择一名其他角色并扣置一张手牌（每种花色的牌每回合限一次），声明一种花色并令其选择一项：1.猜测此牌的花色与声明的花色是否相同；2.翻面；\
+    若如此做，你展示此牌且其获得之。若其选择猜测且其猜测错误，则其失去1点体力，否则此技能本回合失效',
+    ['luamoufanjian'] = '反间',
+    ['#LuaMouFanjianSuit'] = '%from 为此牌声明花色 %arg',
+    ['LuaMouFanjianSame'] = '花色一致',
+    ['LuaMouFanjianNotSame'] = '花色不一致',
+    ['LuaMouFanjianTurnOver'] = '翻面',
     ['ExMouCaocao'] = '谋曹操',
     ['&ExMouCaocao'] = '谋曹操',
     ['#ExMouCaocao'] = '魏武大帝',
