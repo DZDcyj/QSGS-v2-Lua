@@ -20,9 +20,13 @@ ExMouZhouyu = sgs.General(extension, 'ExMouZhouyu', 'wu', '3', true, true)
 
 LuaMouYingzi = sgs.CreateTriggerSkill {
     name = 'LuaMouYingzi',
-    events = {sgs.DrawNCards},
+    events = {sgs.DrawNCards, sgs.AskForGameruleDiscard},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
+        if event == sgs.AskForGameruleDiscard then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            return false
+        end
         local x = 0
         if player:getHandcardNum() >= 2 then
             x = x + 1
@@ -43,6 +47,7 @@ LuaMouYingzi = sgs.CreateTriggerSkill {
             room:broadcastSkillInvoke(self:objectName())
             data:setValue(data:toInt() + x)
         end
+        return false
     end,
 }
 
