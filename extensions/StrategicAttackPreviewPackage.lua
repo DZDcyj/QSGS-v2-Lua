@@ -15,6 +15,116 @@ local function globalTrigger(self, target)
     return true
 end
 
+-- 谋周瑜
+ExMouZhouyu = sgs.General(extension, 'ExMouZhouyu', 'wu', '3', true, true)
+
+LuaMouYingzi = sgs.CreateTriggerSkill {
+    name = 'LuaMouYingzi',
+    events = {sgs.DrawNCards},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local x = 0
+        if player:getHandcardNum() >= 2 then
+            x = x + 1
+        end
+        if player:getHp() >= 2 then
+            x = x + 1
+        end
+        if player:getEquips():length() > 0 then
+            x = x + 1
+        end
+        if x > 0 then
+            rinsan.sendLogMessage(room, '#LuaMouYingzi', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+                ['arg2'] = x,
+            })
+            room:notifySkillInvoked(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            data:setValue(data:toInt() + x)
+        end
+    end,
+}
+
+LuaMouYingziMaxCards = sgs.CreateMaxCardsSkill {
+    name = 'LuaMouYingziMaxCards',
+    extra_func = function(self, player)
+        local x = 0
+        if player:hasSkill('LuaMouYingzi') then
+            if player:getHandcardNum() >= 2 then
+                x = x + 1
+            end
+            if player:getHp() >= 2 then
+                x = x + 1
+            end
+            if player:getEquips():length() > 0 then
+                x = x + 1
+            end
+        end
+        return x
+    end,
+}
+
+LuaMouFanjianCard = sgs.CreateSkillCard {
+    name = 'LuaMouFanjian',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, targets, to_select)
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        local victim = targets[1]
+        room:notifySkillInvoked(source, self:objectName())
+        local suit = room:askForSuit(source, self:objectName())
+        rinsan.sendLogMessage(room, '#LuaMouFanjianSuit', {
+            ['from'] = source,
+            ['arg'] = rinsan.Suit2String(suit),
+        })
+        local fanjianCard = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local choices = {'LuaMouFanjianSame', 'LuaMouFanjianNotSame', 'LuaMouFanjianTurnOver'}
+        local dataforai = sgs.QVariant()
+        dataforai:setValue(source)
+        room:setTag('LuaMoufanjianDeclaredSuit', sgs.QVariant(suit))
+        local choice = room:askForChoice(victim, self:objectName(), table.concat(choices, '+'), dataforai)
+        room:removeTag('LuaMoufanjianDeclaredSuit')
+        room:setPlayerFlag(source, self:objectName() .. fanjianCard:getSuitString())
+        rinsan.sendLogMessage(room, '#choose', {
+            ['from'] = victim,
+            ['arg'] = choice,
+        })
+        room:showCard(source, fanjianCard:getEffectiveId())
+        room:obtainCard(victim, fanjianCard)
+        if choice ~= 'LuaMouFanjianTurnOver' then
+            local suffix = (suit == fanjianCard:getSuit()) and 'Same' or 'NotSame'
+            if choice ~= self:objectName() .. suffix then
+                room:loseHp(victim)
+            end
+            return
+        end
+        room:setPlayerFlag(source, 'LuaMouFanjianInvalid')
+        victim:turnOver()
+    end,
+}
+
+LuaMouFanjian = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaMouFanjian',
+    view_filter = function(self, to_select)
+        return not to_select:isEquipped() and (not sgs.Self:hasFlag(self:objectName() .. to_select:getSuitString()))
+    end,
+    view_as = function(self, card)
+        local vs_card = LuaMouFanjianCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasFlag('LuaMouFanjianInvalid')
+    end,
+}
+
+ExMouZhouyu:addSkill(LuaMouYingzi)
+SkillAnjiang:addSkill(LuaMouYingziMaxCards)
+ExMouZhouyu:addSkill(LuaMouFanjian)
+
 -- 谋曹操
 ExMouCaocao = sgs.General(extension, 'ExMouCaocao$', 'wei', '4', true, true)
 

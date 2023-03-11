@@ -1747,6 +1747,37 @@ function checkMouQingzhengCards(source, cards)
     return true
 end
 
+-- 避免一堆 if-else
+local suitStringFuncs = {
+    [sgs.Card_Spade] = function()
+        return 'spade'
+    end,
+    [sgs.Card_Club] = function()
+        return 'club'
+    end,
+    [sgs.Card_Heart] = function()
+        return 'heart'
+    end,
+    [sgs.Card_Diamond] = function()
+        return 'diamond'
+    end,
+    [sgs.Card_NoSuitBlack] = function()
+        return 'no_suit_black'
+    end,
+    [sgs.Card_NoSuitRed] = function()
+        return 'no_suit_red'
+    end,
+}
+
+-- 花色转字符串
+function Suit2String(suit)
+    local f = suitStringFuncs[suit]
+    if f then
+        return f()
+    end
+    return 'no_suit'
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
