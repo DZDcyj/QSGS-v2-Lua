@@ -103,7 +103,9 @@ LuaMouFanjianCard = sgs.CreateSkillCard {
             local suffix = (suit == fanjianCard:getSuit()) and 'Same' or 'NotSame'
             if choice ~= self:objectName() .. suffix then
                 room:loseHp(victim)
+                return
             end
+            room:setPlayerFlag(source, 'LuaMouFanjianInvalid')
             return
         end
         room:setPlayerFlag(source, 'LuaMouFanjianInvalid')
