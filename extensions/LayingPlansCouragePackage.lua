@@ -227,7 +227,7 @@ LuaYuyan = sgs.CreateTriggerSkill {
                 local dataforai = sgs.QVariant()
                 dataforai:setValue(player)
                 use.from:setTag('LuaYuyanTarget', dataforai)
-                local prompt = string.format('@Yuyan-give:%s::%d', player:objectName(), use.card:getNumberString())
+                local prompt = string.format('@Yuyan-give:%s::%s', player:objectName(), use.card:getNumberString())
                 local card = room:askForCard(use.from, pattern, prompt, data, sgs.Card_MethodNone)
                 use.from:removeTag('LuaYuyanTarget')
                 if card then
