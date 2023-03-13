@@ -284,4 +284,8 @@ return {
     ['$LuaLianhua1'] = '刀兵水火，速离身形',
     ['$LuaLianhua2'] = '体有金光，覆映全身',
     ['~ExSunhanhua'] = '天有寒暑，人有死生……',
+    -- 毛玠
+    ['$LuaBingqing1'] = '常怀圣言，以是自励！',
+    ['$LuaBingqing2'] = '身受贵宠，不忘初心！',
+    ['~ExMaojie'] = '废立大事，公不可不慎……',
 }

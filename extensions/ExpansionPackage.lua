@@ -6680,3 +6680,57 @@ LuaLianhua = sgs.CreateTriggerSkill {
 ExSunhanhua:addSkill(LuaChongxu)
 ExSunhanhua:addSkill(LuaMiaojian)
 ExSunhanhua:addSkill(LuaLianhua)
+
+-- 毛玠
+ExMaojie = sgs.General(extension, 'ExMaojie', 'wei', '3', true, true)
+
+LuaBingqing = sgs.CreateTriggerSkill {
+    name = 'LuaBingqing',
+    events = {sgs.CardFinished},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or (use.card:isKindOf('SkillCard')) or (rinsan.startsWith(use.card:getSuitString(), 'no_suit')) then
+            return false
+        end
+        local mark = string.format('@%s%s-Clear', self:objectName(), use.card:getSuitString())
+        if player:getMark(mark) > 0 then
+            return false
+        end
+        room:addPlayerMark(player, mark)
+        local count = rinsan.getBingQingMarkCount(player)
+        if count <= 1 then
+            return false
+        end
+        local available_targets = sgs.SPlayerList()
+        if count < 4 then
+            available_targets:append(player)
+        end
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if count ~= 3 or rinsan.canDiscard(player, p, 'hej') then
+                available_targets:append(p)
+            end
+        end
+        local target = room:askForPlayerChosen(player, available_targets, self:objectName(),
+            'LuaBingqing-invoke' .. count, true, true)
+        if target then
+            room:notifySkillInvoked(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            if count == 2 then
+                target:drawCards(2, self:objectName())
+            elseif count == 3 then
+                if rinsan.canDiscard(player, target, 'hej') then
+                    local id = room:askForCardChosen(player, target, 'hej', self:objectName())
+                    room:throwCard(id, target, player)
+                end
+            elseif count == 4 then
+                rinsan.doDamage(room, player, target, 1)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+ExMaojie:addSkill(LuaBingqing)
