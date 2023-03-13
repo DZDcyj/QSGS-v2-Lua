@@ -1778,6 +1778,24 @@ function Suit2String(suit)
     return 'no_suit'
 end
 
+-- 判断字符串是否以给定前缀开头
+function startsWith(str, prefix)
+    return string.sub(str, 1, string.len(prefix)) == prefix
+end
+
+-- 获取秉清标记数
+function getBingQingMarkCount(player)
+    local suits = {sgs.Card_Diamond, sgs.Card_Spade, sgs.Card_Heart, sgs.Card_Club}
+    local count = 0
+    for _, suit in ipairs(suits) do
+        local mark = string.format('@%s%s-Clear', 'LuaBingqing', Suit2String(suit))
+        if player:getMark(mark) > 0 then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
