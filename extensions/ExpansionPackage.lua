@@ -6693,7 +6693,7 @@ LuaBingqing = sgs.CreateTriggerSkill {
             (rinsan.startsWith(use.card:getSuitString(), 'no_suit')) then
             return false
         end
-        local mark = string.format('@%s%s-Clear', self:objectName(), use.card:getSuitString())
+        local mark = string.format('@%s%s_biu', self:objectName(), use.card:getSuitString())
         if player:getMark(mark) > 0 then
             return false
         end
