@@ -6854,7 +6854,6 @@ LuaXunshi = sgs.CreateFilterSkill {
     end,
     view_as = function(self, card)
         local id = card:getId()
-        local suit = card:getSuit()
         local number = card:getNumber()
         local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, number)
         slash:setSkillName(self:objectName())
