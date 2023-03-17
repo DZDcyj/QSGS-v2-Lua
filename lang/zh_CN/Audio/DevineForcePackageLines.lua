@@ -9,4 +9,10 @@ return {
     ['$LuaPingxiang1'] = '策马纵慷慨，捐躯抗虎豺',
     ['$LuaPingxiang2'] = '解甲事仇雠，竭力挽狂澜',
     ['~ExTenYearShenJiangwei'] = '武侯遗志，已成泡影矣',
+    -- 神张飞
+    ['$LuaShencai1'] = '我有三千炼狱，待汝万世轮回！',
+    ['$LuaShencai2'] = '纵汝王侯将相，亦需俯首待裁！',
+    ['$LuaXunshi1'] = '秉身为正，辟易万邪！',
+    ['$LuaXunshi2'] = '巡御两界，路寻不平！',
+    ['~ExTenYearShenZhangfei'] = '尔等欲复砍我头乎？',
 }
