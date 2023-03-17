@@ -2380,15 +2380,15 @@ LuaShouyeEffected = sgs.CreateTriggerSkill {
         else
             can_invoke = shouye_ids:contains(effect.card:getEffectiveId())
         end
-        if effect.card:isKindOf('Slash') then
-            player:removeQinggangTag(effect.card)
-        end
         if can_invoke then
             rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
                 ['from'] = player,
                 ['arg'] = effect.card:objectName(),
                 ['arg2'] = 'LuaShouye',
             })
+            if effect.card:isKindOf('Slash') then
+                player:removeQinggangTag(effect.card)
+            end
             return true
         end
         return false
@@ -2482,11 +2482,7 @@ LuaZhaohan = sgs.CreateTriggerSkill {
             if player:getMark(self:objectName() .. 'up') < 4 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName(), 1)
-                room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
-                rinsan.sendLogMessage(room, '#addmaxhp', {
-                    ['from'] = player,
-                    ['arg'] = 1,
-                })
+                rinsan.addPlayerMaxHp(player, 1)
                 rinsan.recover(room, player, 1, player)
                 room:addPlayerMark(player, self:objectName() .. 'up')
             elseif player:getMark(self:objectName() .. 'down') < 3 then
