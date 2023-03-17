@@ -2380,6 +2380,9 @@ LuaShouyeEffected = sgs.CreateTriggerSkill {
         else
             can_invoke = shouye_ids:contains(effect.card:getEffectiveId())
         end
+        if effect.card:isKindOf('Slash') then
+            player:removeQinggangTag(effect.card)
+        end
         if can_invoke then
             rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
                 ['from'] = player,
