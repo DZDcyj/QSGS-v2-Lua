@@ -6689,11 +6689,11 @@ LuaBingqing = sgs.CreateTriggerSkill {
     events = {sgs.CardFinished},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        if (not use.card) or (use.card:isKindOf('SkillCard')) or
-            (rinsan.startsWith(use.card:getSuitString(), 'no_suit')) then
+        local suitString = use.card:getSuitString()
+        if (not use.card) or (use.card:isKindOf('SkillCard')) or (rinsan.startsWith(suitString, 'no_suit')) then
             return false
         end
-        local mark = string.format('@%s%s_biu', self:objectName(), use.card:getSuitString())
+        local mark = string.format('@%s%s_biu', self:objectName(), suitString)
         if player:getMark(mark) > 0 then
             return false
         end
@@ -6791,14 +6791,14 @@ LuaShencai = sgs.CreateTriggerSkill {
                 if player:getMark('@LuaShencai-Death') > room:alivePlayerCount() then
                     rinsan.sendLogMessage(room, '#LuaShencai-Death', {
                         ['from'] = player,
-                        ['arg'] = '@LuaShencai-Death'
+                        ['arg'] = '@LuaShencai-Death',
                     })
                     room:killPlayer(player)
                 end
                 if player:getMark('@LuaShencai-Liu') > 0 then
                     rinsan.sendLogMessage(room, '#LuaShencai-Liu', {
                         ['from'] = player,
-                        ['arg'] = '@LuaShencai-Liu'
+                        ['arg'] = '@LuaShencai-Liu',
                     })
                     player:turnOver()
                 end
@@ -6808,7 +6808,7 @@ LuaShencai = sgs.CreateTriggerSkill {
             if effect.to:getMark('@LuaShencai-Zhang') > 0 then
                 rinsan.sendLogMessage(room, '#LuaShencai-Zhang', {
                     ['from'] = effect.to,
-                    ['arg'] = '@LuaShencai-Zhang'
+                    ['arg'] = '@LuaShencai-Zhang',
                 })
                 room:slashResult(effect, nil)
                 return true
@@ -6821,7 +6821,7 @@ LuaShencai = sgs.CreateTriggerSkill {
                         if not player:isKongcheng() then
                             rinsan.sendLogMessage(room, '#LuaShencai-Tu', {
                                 ['from'] = player,
-                                ['arg'] = '@LuaShencai-Tu'
+                                ['arg'] = '@LuaShencai-Tu',
                             })
                             local len = player:getHandcardNum()
                             local card = player:getHandcards():at(rinsan.random(0, len - 1))
@@ -6850,7 +6850,8 @@ LuaShencaiMaxCards = sgs.CreateMaxCardsSkill {
 LuaXunshi = sgs.CreateFilterSkill {
     name = 'LuaXunshi',
     view_filter = function(self, to_select)
-        return to_select:getSubtype() == 'global_effect' or to_select:getSubtype() == 'aoe' or to_select:isKindOf('IronChain')
+        return to_select:getSubtype() == 'global_effect' or to_select:getSubtype() == 'aoe' or
+                   to_select:isKindOf('IronChain')
     end,
     view_as = function(self, card)
         local id = card:getId()
