@@ -584,4 +584,28 @@ return {
     ['LuaBingqing-invoke2'] = '你可以发动“秉清”令一名角色摸两张牌',
     ['LuaBingqing-invoke3'] = '你可以发动“秉清”弃置一名角色区域内的一张牌',
     ['LuaBingqing-invoke4'] = '你可以发动“秉清”对一名其他角色造成一点伤害',
+    ['ExTenYearShenZhangfei'] = '神张飞-十周年',
+    ['&ExTenYearShenZhangfei'] = '神张飞',
+    ['#ExTenYearShenZhangfei'] = '两界大巡环使',
+    ['LuaShencai'] = '神裁',
+    [':LuaShencai'] = '出牌阶段限一次，你可以令一名其他角色进行一次判定且你获得判定牌，若判定牌包含以下内容，则你可以令其获得下列对应效果（覆盖之前的效果），否则该角色获得1个“死”标记且你获得其区域内的一张牌。\
+    （有“死”标记的角色：1.其手牌上限减少其“死”标记数；2.其回合结束时，若其“死”标记数大于场上存活角色数，其死亡）\
+    体力-“笞”-受到伤害后失去等量体力\
+    武器-“杖”-不能响应【杀】\
+    打出-“徒”-失去手牌后（因此技能除外）随机弃置一张手牌\
+    距离-“流”-结束阶段，将武将牌翻面',
+    ['luashencai'] = '神裁',
+    ['LuaXunshi'] = '巡使',
+    [':LuaXunshi'] = '锁定技，①你的多目标锦囊牌均视为无色【杀】；\
+    ②当你使用无色牌时，此牌无距离与次数限制（使用时，可以额外指定任意个目标），然后你每个出牌阶段内发动“神裁”的次数上限+1（至多加至5）',
+    ['@LuaShencai-Chi'] = '笞',
+    ['@LuaShencai-Zhang'] = '杖',
+    ['@LuaShencai-Tu'] = '徒',
+    ['@LuaShencai-Liu'] = '流',
+    ['@LuaShencai-Death'] = '死',
+    ['#LuaShencai-Chi'] = '%from 的“%arg2”标记效果被触发，失去 %arg 点体力',
+    ['#LuaShencai-Zhang'] = '%from 的“%arg”标记效果被触发，无法响应此杀',
+    ['#LuaShencai-Tu'] = '%from 的“%arg”标记效果被触发，随机弃置一张手牌',
+    ['#LuaShencai-Liu'] = '%from 的“%arg”标记效果被触发，将武将牌翻面',
+    ['#LuaShencai-Death'] = '%from 的“%arg”标记效果被触发，直接死亡',
 }

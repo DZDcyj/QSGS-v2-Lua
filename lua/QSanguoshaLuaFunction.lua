@@ -1788,12 +1788,50 @@ function getBingQingMarkCount(player)
     local suits = {sgs.Card_Diamond, sgs.Card_Spade, sgs.Card_Heart, sgs.Card_Club}
     local count = 0
     for _, suit in ipairs(suits) do
-        local mark = string.format('@%s%s-Clear', 'LuaBingqing', Suit2String(suit))
+        local mark = string.format('@%s%s_biu', 'LuaBingqing', Suit2String(suit))
         if player:getMark(mark) > 0 then
             count = count + 1
         end
     end
     return count
+end
+
+local SHENCAI_KEYWORDS = {'体力', '武器', '打出', '距离'}
+local SHENCAI_MARKS = {'@LuaShencai-Chi', '@LuaShencai-Zhang', '@LuaShencai-Tu', '@LuaShencai-Liu'}
+
+-- 清除神张飞标记
+function clearShencaiMark(player)
+    local room = player:getRoom()
+    room:setPlayerMark(player, '@LuaShencai-Chi', 0)
+    room:setPlayerMark(player, '@LuaShencai-Zhang', 0)
+    room:setPlayerMark(player, '@LuaShencai-Tu', 0)
+    room:setPlayerMark(player, '@LuaShencai-Liu', 0)
+end
+
+-- 中文字符匹配
+function chineseStrFind(str, pattern)
+    local startIndex, endIndex = string.find(str, pattern, 1, true)
+    return startIndex and endIndex
+end
+
+-- 根据牌面给玩家上 debuff
+function shencaiEffect(source, victim, desc)
+    local room = victim:getRoom()
+    local markCount = 0
+    for i = 1, 4, 1 do
+        if chineseStrFind(desc, SHENCAI_KEYWORDS[i]) then
+            victim:gainMark(SHENCAI_MARKS[i])
+            markCount = markCount + 1
+        end
+    end
+    if markCount == 0 then
+        victim:gainMark('@LuaShencai-Death')
+        if not victim:isAllNude() then
+            local card_id = room:askForCardChosen(source, victim, 'hej', 'LuaShencai', false, sgs.Card_MethodNone)
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
+            room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
+        end
+    end
 end
 
 -- CardType 参数，用于 getCardMostProbably 方法
