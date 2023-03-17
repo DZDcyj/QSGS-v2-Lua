@@ -1261,11 +1261,7 @@ LuaYingshi = sgs.CreateTriggerSkill {
             })
             if choice == 'LuaYingshiChoice1' then
                 -- 加一点体力上限，摸三张牌
-                room:setPlayerProperty(killer, 'maxhp', sgs.QVariant(killer:getMaxHp() + 1))
-                rinsan.sendLogMessage(room, '#addmaxhp', {
-                    ['from'] = killer,
-                    ['arg'] = 1,
-                })
+                rinsan.addPlayerMaxHp(killer, 1)
                 killer:drawCards(3, self:objectName())
             else
                 -- 选一个觉醒技外技能并失去一点体力上限
