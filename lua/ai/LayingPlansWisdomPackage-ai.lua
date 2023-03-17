@@ -1,6 +1,8 @@
 -- 始计篇-智包 AI
 -- Created by DZDcyj at 2023/2/27
 
+local rinsan = require('QSanguoshaLuaFunction')
+
 -- 王粲
 -- 七哀
 local LuaQiai_skill = {}
