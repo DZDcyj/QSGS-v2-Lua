@@ -125,11 +125,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
         end
 
         -- 为自己增加一点体力上限
-        room:setPlayerProperty(player, 'maxhp', sgs.QVariant(player:getMaxHp() + 1))
-        rinsan.sendLogMessage(room, '#addmaxhp', {
-            ['from'] = player,
-            ['arg'] = 1,
-        })
+        rinsan.addPlayerMaxHp(player, 1)
         rinsan.recover(room, player, 1, player)
 
         -- 初始技能触发
