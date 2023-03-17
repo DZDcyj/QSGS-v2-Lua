@@ -6754,9 +6754,10 @@ LuaShencaiCard = sgs.CreateSkillCard {
             ['reason'] = self:objectName(),
         })
         room:judge(judge)
+        local desc = judge.card:getDescription()
         source:obtainCard(judge.card)
         rinsan.clearShencaiMark(victim)
-        rinsan.shencaiEffect(source, victim, judge.card)
+        rinsan.shencaiEffect(source, victim, desc)
     end,
 }
 

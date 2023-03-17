@@ -1815,9 +1815,8 @@ function chineseStrFind(str, pattern)
 end
 
 -- 根据牌面给玩家上 debuff
-function shencaiEffect(source, victim, judgeCard)
+function shencaiEffect(source, victim, desc)
     local room = victim:getRoom()
-    local desc = judgeCard:getDescription()
     local markCount = 0
     for i = 1, 4, 1 do
         if chineseStrFind(desc, SHENCAI_KEYWORDS[i]) then
