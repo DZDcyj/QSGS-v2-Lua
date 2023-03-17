@@ -89,6 +89,7 @@ LuaJiufa = sgs.CreateTriggerSkill {
         end
         if #jiufa_cards >= 9 then
             if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
                 local ids = room:getNCards(9)
                 room:fillAG(ids)
                 local to_get = sgs.IntList()
