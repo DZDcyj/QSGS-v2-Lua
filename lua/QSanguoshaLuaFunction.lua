@@ -1142,7 +1142,7 @@ function addPlayerMaxHp(player, value)
     local room = player:getRoom()
     local newValue = sgs.QVariant(player:getMaxHp() + value)
     room:setPlayerProperty(player, 'maxhp', newValue)
-    sendLogMessage(room, '#addMaxHp', {
+    sendLogMessage(room, '#addmaxhp', {
         ['from'] = player,
         ['arg'] = value,
     })
