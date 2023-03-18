@@ -79,7 +79,7 @@ LuaJiufa = sgs.CreateTriggerSkill {
         else
             card = data:toCardResponse().m_card
         end
-        if (not card) or card:isKindOf('TrickCard') then
+        if (not card) or card:isKindOf('SkillCard') then
             return false
         end
         local tag = player:getTag('LuaJiufaCards')
