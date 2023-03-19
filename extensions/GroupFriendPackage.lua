@@ -35,38 +35,38 @@ LuaBaipiao = sgs.CreateTriggerSkill {
     events = {sgs.CardsMoveOneTime},
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
+        -- 当你的牌因使用、打出、重铸、给出、更换装备而失去时，不可以触发
+        local isUse = rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_USE)
+        local isRecast = rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RECAST)
+        local response = rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RESPONSE)
+        local giveOut = move.reason.m_reason == sgs.CardMoveReason_S_REASON_GIVE
+        local exchangeEquip = move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
+        local notTriggerable = isUse or response or isRecast or giveOut or exchangeEquip
+        if notTriggerable then
+            return false
+        end
         if rinsan.RIGHT(self, player) then
             if rinsan.lostCard(move, player) then
-                -- 当你的牌因使用、打出、重铸、给出、更换装备而失去时，不可以触发
-                local notTriggerable = rinsan.moveBasicReasonCompare(move.reason.m_reason,
-                    sgs.CardMoveReason_S_REASON_USE) or
-                                           rinsan.moveBasicReasonCompare(move.reason.m_reason,
-                        sgs.CardMoveReason_S_REASON_RESPONSE) or
-                                           rinsan.moveBasicReasonCompare(move.reason.m_reason,
-                        sgs.CardMoveReason_S_REASON_RECAST) or move.reason.m_reason == sgs.CardMoveReason_S_REASON_GIVE or
-                                           move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
-                if not notTriggerable then
-                    if move.to and move.to:objectName() ~= player:objectName() then
-                        room:sendCompulsoryTriggerLog(player, self:objectName())
-                        player:drawCards(1, self:objectName())
-                    else
-                        local targets = sgs.SPlayerList()
-                        for _, p in sgs.qlist(room:getAlivePlayers()) do
-                            if not p:isAllNude() then
-                                targets:append(p)
-                            end
+                if move.to and move.to:objectName() ~= player:objectName() then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    player:drawCards(1, self:objectName())
+                else
+                    local targets = sgs.SPlayerList()
+                    for _, p in sgs.qlist(room:getAlivePlayers()) do
+                        if not p:isAllNude() then
+                            targets:append(p)
                         end
-                        if not targets:isEmpty() then
-                            room:sendCompulsoryTriggerLog(player, self:objectName())
-                            local target = room:askForPlayerChosen(player, targets, self:objectName(),
-                                'LuaBaipiao-invoke', false, true)
-                            if target then
-                                local card_id = room:askForCardChosen(player, target, 'hej', self:objectName(), false,
-                                    sgs.Card_MethodNone)
-                                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
-                                    player:objectName())
-                                room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
-                            end
+                    end
+                    if not targets:isEmpty() then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        local target = room:askForPlayerChosen(player, targets, self:objectName(), 'LuaBaipiao-invoke',
+                            false, true)
+                        if target then
+                            local card_id = room:askForCardChosen(player, target, 'hej', self:objectName(), false,
+                                sgs.Card_MethodNone)
+                            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
+                                player:objectName())
+                            room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
                         end
                     end
                 end
@@ -83,8 +83,10 @@ LuaGeidianCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        return to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude() and
-                   not to_select:hasFlag('LuaGeidianTargeted')
+        if to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude() then
+            return not to_select:hasFlag('LuaGeidianTargeted')
+        end
+        return false
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
@@ -1485,8 +1487,10 @@ LuaFumoVS = sgs.CreateViewAsSkill {
         return sgs.Slash_IsAvailable(player)
     end,
     enabled_at_response = function(self, player, pattern)
-        return pattern == 'slash' and sgs.Sanguosha:getCurrentCardUseReason() ==
-                   sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            return pattern == 'slash'
+        end
+        return false
     end,
 }
 

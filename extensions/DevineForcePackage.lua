@@ -47,6 +47,7 @@ LuaTianren = sgs.CreateTriggerSkill {
                 ['arg2'] = markCount,
             })
             room:broadcastSkillInvoke(self:objectName())
+            room:notifySkillInvoked(player, self:objectName())
             room:addPlayerMark(player, '@LuaTianren', markCount)
         else
             local mark = data:toMark()
