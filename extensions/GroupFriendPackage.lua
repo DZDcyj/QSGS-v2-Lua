@@ -6,6 +6,14 @@ extension = sgs.Package('GroupFriendPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+local function globalTrigger(self, target)
+    return true
+end
+
+local function targetTrigger(self, target)
+    return target
+end
+
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
@@ -73,9 +81,7 @@ LuaBaipiao = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaGeidianCard = sgs.CreateSkillCard {
@@ -609,9 +615,6 @@ LuaNosJuesha = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName())
-    end,
 }
 
 SkillAnjiang:addSkill(LuaNosJuesha)
@@ -655,9 +658,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaMouhai = sgs.CreateTriggerSkill {
@@ -916,9 +917,7 @@ LuaJiaoxie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaShulian = sgs.CreateTriggerSkill {
@@ -1035,9 +1034,7 @@ LuaZhazhi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaJueding = sgs.CreateTriggerSkill {
@@ -1091,9 +1088,7 @@ LuaJueding = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaShaikaCard = sgs.CreateSkillCard {
@@ -1172,9 +1167,7 @@ LuaShaika = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaChutou = sgs.CreateTriggerSkill {
@@ -1230,9 +1223,7 @@ LuaChutou = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaYingshi = sgs.CreateTriggerSkill {
@@ -1310,9 +1301,6 @@ LuaWangming = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName())
-    end,
 }
 
 LuaTianfa = sgs.CreateTriggerSkill {
@@ -1362,9 +1350,7 @@ LuaTianfa = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaZhixieCard = sgs.CreateSkillCard {
@@ -1432,9 +1418,7 @@ LuaZhixie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaJixie = sgs.CreateTriggerSkill {
