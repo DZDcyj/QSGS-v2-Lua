@@ -1834,6 +1834,16 @@ function shencaiEffect(source, victim, desc)
     end
 end
 
+-- 封装交换座位和提示
+function swapSeat(a, b)
+    local room = a:getRoom()
+    room:swapSeat(a, b)
+    sendLogMessage(room, '#swapSeat', {
+        ['from'] = a,
+        ['to'] = b,
+    })
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2

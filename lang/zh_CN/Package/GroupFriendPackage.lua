@@ -2,6 +2,7 @@
 
 return {
     ['GroupFriendPackage'] = '群友包',
+    ['#swapSeat'] = '%from 和 %to 交换了座位',
     ['Cactus'] = '仙人掌',
     ['&Cactus'] = '仙人掌',
     ['#Cactus'] = '海呐百川',
@@ -158,4 +159,14 @@ return {
     [':LuaFabing'] = '锁定技，你属性杀的基础伤害+1',
     ['LuaChengsheng'] = '成圣',
     [':LuaChengsheng'] = '目标含有你的锦囊生效时，你可以摸一张牌。若你回合内发动该技能，你可以跳过弃牌阶段',
+    ['Shatang'] = '砂糖',
+    ['&Shatang'] = '砂糖',
+    ['#Shatang'] = '捷足先登',
+    ['LuaXiandeng'] = '先登',
+    [':LuaXiandeng'] = '锁定技，游戏开始时，你与主公交换座位；出牌阶段，你使用的第一张杀不计入次数且无距离限制',
+    ['LuaZhiyuan'] = '支援',
+    [':LuaZhiyuan'] = '准备阶段与结束阶段，你可以令任意名手牌数不大于体力值的角色各摸1张牌，或令一名手牌数大于体力值的角色回复1点体力',
+    ['luazhiyuan'] = '支援',
+    ['@LuaZhiyuan'] = '你可以发动“支援”，令若干角色摸牌或一名角色回复体力',
+    ['~LuaZhiyuan'] = '选择若干名合法角色→点击“确定”',
 }

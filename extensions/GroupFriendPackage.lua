@@ -29,6 +29,7 @@ Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 Ajie = sgs.General(extension, 'Ajie', 'wei', '3', true)
+Shatang = sgs.General(extension, 'Shatang', 'qun', '4', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -1729,6 +1730,109 @@ LuaChengsheng = sgs.CreateTriggerSkill {
     end,
 }
 
+LuaXiandeng = sgs.CreateTriggerSkill {
+    name = 'LuaXiandeng',
+    events = {sgs.CardUsed},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card:isKindOf('Slash') then
+            if player:getMark(self:objectName() .. '_biu') > 0 then
+                return false
+            end
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:addPlayerHistory(player, use.card:getClassName(), -1);
+            use.m_addHistory = false
+            data:setValue(use)
+            room:addPlayerMark(player, self:objectName() .. '_biu')
+        end
+        return false
+    end,
+}
+
+LuaXiandengStart = sgs.CreateTriggerSkill {
+    name = 'LuaXiandengStart',
+    events = {sgs.GameStart},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        for _, p in sgs.qlist(room:findPlayersBySkillName('LuaXiandeng')) do
+            if not p:isLord() and p:getMark(self:objectName()) == 0 then
+                room:sendCompulsoryTriggerLog(p, 'LuaXiandeng')
+                rinsan.swapSeat(p, room:getLord())
+                room:addPlayerMark(p, self:objectName())
+            end
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+LuaXiandengTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaXiandengTargetMod',
+    pattern = 'Slash',
+    distance_limit_func = function(self, from, card)
+        if from:hasSkill('LuaXiandeng') then
+            if from:getMark('LuaXiandeng_biu') == 0 then
+                return 1000
+            end
+        end
+        return 0
+    end,
+}
+
+LuaZhiyuanCard = sgs.CreateSkillCard {
+    name = 'LuaZhiyuan',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        if #selected > 0 then
+            local first = selected[1]
+            if first:getHandcardNum() <= first:getHp() then
+                return to_select:getHandcardNum() <= to_select:getHp()
+            end
+            return false
+        end
+        -- 没选的时候至少要受伤或者牌数不大于体力值
+        return to_select:getHandcardNum() <= to_select:getHp() or to_select:isWounded()
+    end,
+    on_use = function(self, room, source, targets)
+        for _, target in ipairs(targets) do
+            if target:getHandcardNum() <= target:getHp() then
+                target:drawCards(1, self:objectName())
+            else
+                rinsan.recover(room, target, 1, source)
+            end
+        end
+    end,
+}
+
+LuaZhiyuanVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaZhiyuan',
+    view_as = function(self, cards)
+        return LuaZhiyuanCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaZhiyuan'
+    end,
+}
+
+LuaZhiyuan = sgs.CreateTriggerSkill {
+    name = 'LuaZhiyuan',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaZhiyuanVS,
+    on_trigger = function(self, event, player, data, room)
+        room:askForUseCard(player, '@@LuaZhiyuan', '@LuaZhiyuan', -1, sgs.Card_MethodNone)
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start) or
+                   rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+    end,
+}
+
 Cactus:addSkill(LuaBaipiao)
 SkillAnjiang:addSkill(LuaGeidian)
 SkillAnjiang:addSkill(LuaWanneng)
@@ -1771,3 +1875,7 @@ Ajie:addSkill(LuaFabing)
 Ajie:addSkill(LuaChengsheng)
 SkillAnjiang:addSkill(LuaJiarenClear)
 SkillAnjiang:addSkill(LuaJiarenForbid)
+Shatang:addSkill(LuaXiandeng)
+Shatang:addSkill(LuaZhiyuan)
+SkillAnjiang:addSkill(LuaXiandengStart)
+SkillAnjiang:addSkill(LuaXiandengTargetMod)
