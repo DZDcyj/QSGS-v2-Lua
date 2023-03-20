@@ -1736,7 +1736,7 @@ LuaXiandeng = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        if use.card:isKindOf('Slash') then
+        if use.card and use.card:isKindOf('Slash') then
             if player:getMark(self:objectName() .. '_biu') > 0 then
                 return false
             end
@@ -1748,6 +1748,9 @@ LuaXiandeng = sgs.CreateTriggerSkill {
         end
         return false
     end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
 }
 
 LuaXiandengStart = sgs.CreateTriggerSkill {
@@ -1758,10 +1761,19 @@ LuaXiandengStart = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         for _, p in sgs.qlist(room:findPlayersBySkillName('LuaXiandeng')) do
             if not p:isLord() and p:getMark(self:objectName()) == 0 then
-                room:sendCompulsoryTriggerLog(p, 'LuaXiandeng')
-                rinsan.swapSeat(p, room:getLord())
+                rinsan.sendLogMessage(room, '#LuaXiandeng', {
+                    ['from'] = p,
+                    ['arg'] = 'LuaXiandeng',
+                })
                 room:addPlayerMark(p, self:objectName())
+                room:setCurrent(p)
             end
+        end
+        -- set the turncount to 1
+        if room:getCurrent():hasSkill('LuaXiandeng') then
+            local currTurn = 1
+            room:setPlayerMark(room:getPlayers():at(0), '@clock_time', currTurn)
+            room:setTag('TurnLengthCount', sgs.QVariant(currTurn))
         end
     end,
     can_trigger = globalTrigger,
@@ -1793,14 +1805,26 @@ LuaZhiyuanCard = sgs.CreateSkillCard {
             return false
         end
         -- 没选的时候至少要受伤或者牌数不大于体力值
+        -- 每回合每选项限一次
+        if sgs.Self:hasFlag('LuaZhiyuanDraw') then
+            -- 摸过牌了只能选回血的
+            return to_select:isWounded() and to_select:getHandcardNum() > to_select:getHp()
+        end
+        if sgs.Self:hasFlag('LuaZhiyuanRecover') then
+            -- 只能摸牌
+            return to_select:getHandcardNum() <= to_select:getHp()
+        end
+        -- 要么能摸牌，要么能回血
         return to_select:getHandcardNum() <= to_select:getHp() or to_select:isWounded()
     end,
     on_use = function(self, room, source, targets)
         for _, target in ipairs(targets) do
             if target:getHandcardNum() <= target:getHp() then
                 target:drawCards(1, self:objectName())
+                room:setPlayerFlag(source, 'LuaZhiyuanDraw')
             else
                 rinsan.recover(room, target, 1, source)
+                room:setPlayerFlag(source, 'LuaZhiyuanRecover')
             end
         end
     end,
