@@ -6,6 +6,14 @@ extension = sgs.Package('GroupFriendPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+local function globalTrigger(self, target)
+    return true
+end
+
+local function targetTrigger(self, target)
+    return target
+end
+
 SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
@@ -21,6 +29,7 @@ Shayu = sgs.General(extension, 'Shayu', 'qun', '3', true)
 Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 Ajie = sgs.General(extension, 'Ajie', 'wei', '3', true)
+Shatang = sgs.General(extension, 'Shatang', 'qun', '4', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -35,47 +44,45 @@ LuaBaipiao = sgs.CreateTriggerSkill {
     events = {sgs.CardsMoveOneTime},
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
+        -- 当你的牌因使用、打出、重铸、给出、更换装备而失去时，不可以触发
+        local isUse = rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_USE)
+        local isRecast = rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RECAST)
+        local response = rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RESPONSE)
+        local giveOut = move.reason.m_reason == sgs.CardMoveReason_S_REASON_GIVE
+        local exchangeEquip = move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
+        local notTriggerable = isUse or response or isRecast or giveOut or exchangeEquip
+        if notTriggerable then
+            return false
+        end
         if rinsan.RIGHT(self, player) then
             if rinsan.lostCard(move, player) then
-                -- 当你的牌因使用、打出、重铸、给出、更换装备而失去时，不可以触发
-                local notTriggerable = rinsan.moveBasicReasonCompare(move.reason.m_reason,
-                    sgs.CardMoveReason_S_REASON_USE) or
-                                           rinsan.moveBasicReasonCompare(move.reason.m_reason,
-                        sgs.CardMoveReason_S_REASON_RESPONSE) or
-                                           rinsan.moveBasicReasonCompare(move.reason.m_reason,
-                        sgs.CardMoveReason_S_REASON_RECAST) or move.reason.m_reason == sgs.CardMoveReason_S_REASON_GIVE or
-                                           move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP
-                if not notTriggerable then
-                    if move.to and move.to:objectName() ~= player:objectName() then
-                        room:sendCompulsoryTriggerLog(player, self:objectName())
-                        player:drawCards(1, self:objectName())
-                    else
-                        local targets = sgs.SPlayerList()
-                        for _, p in sgs.qlist(room:getAlivePlayers()) do
-                            if not p:isAllNude() then
-                                targets:append(p)
-                            end
+                if move.to and move.to:objectName() ~= player:objectName() then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    player:drawCards(1, self:objectName())
+                else
+                    local targets = sgs.SPlayerList()
+                    for _, p in sgs.qlist(room:getAlivePlayers()) do
+                        if not p:isAllNude() then
+                            targets:append(p)
                         end
-                        if not targets:isEmpty() then
-                            room:sendCompulsoryTriggerLog(player, self:objectName())
-                            local target = room:askForPlayerChosen(player, targets, self:objectName(),
-                                'LuaBaipiao-invoke', false, true)
-                            if target then
-                                local card_id = room:askForCardChosen(player, target, 'hej', self:objectName(), false,
-                                    sgs.Card_MethodNone)
-                                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
-                                    player:objectName())
-                                room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
-                            end
+                    end
+                    if not targets:isEmpty() then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
+                        local target = room:askForPlayerChosen(player, targets, self:objectName(), 'LuaBaipiao-invoke',
+                            false, true)
+                        if target then
+                            local card_id = room:askForCardChosen(player, target, 'hej', self:objectName(), false,
+                                sgs.Card_MethodNone)
+                            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION,
+                                player:objectName())
+                            room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
                         end
                     end
                 end
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaGeidianCard = sgs.CreateSkillCard {
@@ -83,8 +90,10 @@ LuaGeidianCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = false,
     filter = function(self, targets, to_select)
-        return to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude() and
-                   not to_select:hasFlag('LuaGeidianTargeted')
+        if to_select:objectName() ~= sgs.Self:objectName() and not to_select:isNude() then
+            return not to_select:hasFlag('LuaGeidianTargeted')
+        end
+        return false
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
@@ -607,9 +616,6 @@ LuaNosJuesha = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName())
-    end,
 }
 
 SkillAnjiang:addSkill(LuaNosJuesha)
@@ -653,9 +659,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaMouhai = sgs.CreateTriggerSkill {
@@ -914,9 +918,7 @@ LuaJiaoxie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaShulian = sgs.CreateTriggerSkill {
@@ -1033,9 +1035,7 @@ LuaZhazhi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaJueding = sgs.CreateTriggerSkill {
@@ -1089,9 +1089,7 @@ LuaJueding = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaShaikaCard = sgs.CreateSkillCard {
@@ -1170,9 +1168,7 @@ LuaShaika = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaChutou = sgs.CreateTriggerSkill {
@@ -1228,9 +1224,7 @@ LuaChutou = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaYingshi = sgs.CreateTriggerSkill {
@@ -1308,9 +1302,6 @@ LuaWangming = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName())
-    end,
 }
 
 LuaTianfa = sgs.CreateTriggerSkill {
@@ -1360,9 +1351,7 @@ LuaTianfa = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaZhixieCard = sgs.CreateSkillCard {
@@ -1430,9 +1419,7 @@ LuaZhixie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = targetTrigger,
 }
 
 LuaJixie = sgs.CreateTriggerSkill {
@@ -1485,8 +1472,10 @@ LuaFumoVS = sgs.CreateViewAsSkill {
         return sgs.Slash_IsAvailable(player)
     end,
     enabled_at_response = function(self, player, pattern)
-        return pattern == 'slash' and sgs.Sanguosha:getCurrentCardUseReason() ==
-                   sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            return pattern == 'slash'
+        end
+        return false
     end,
 }
 
@@ -1741,6 +1730,133 @@ LuaChengsheng = sgs.CreateTriggerSkill {
     end,
 }
 
+LuaXiandeng = sgs.CreateTriggerSkill {
+    name = 'LuaXiandeng',
+    events = {sgs.CardUsed},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') then
+            if player:getMark(self:objectName() .. '_biu') > 0 then
+                return false
+            end
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:addPlayerHistory(player, use.card:getClassName(), -1);
+            use.m_addHistory = false
+            data:setValue(use)
+            room:addPlayerMark(player, self:objectName() .. '_biu')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+LuaXiandengStart = sgs.CreateTriggerSkill {
+    name = 'LuaXiandengStart',
+    events = {sgs.GameStart},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        for _, p in sgs.qlist(room:findPlayersBySkillName('LuaXiandeng')) do
+            if not p:isLord() and p:getMark(self:objectName()) == 0 then
+                rinsan.sendLogMessage(room, '#LuaXiandeng', {
+                    ['from'] = p,
+                    ['arg'] = 'LuaXiandeng',
+                })
+                room:addPlayerMark(p, self:objectName())
+                room:setCurrent(p)
+            end
+        end
+        -- set the turncount to 1
+        if room:getCurrent():hasSkill('LuaXiandeng') then
+            local currTurn = 1
+            room:setPlayerMark(room:getPlayers():at(0), '@clock_time', currTurn)
+            room:setTag('TurnLengthCount', sgs.QVariant(currTurn))
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+LuaXiandengTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaXiandengTargetMod',
+    pattern = 'Slash',
+    distance_limit_func = function(self, from, card)
+        if from:hasSkill('LuaXiandeng') then
+            if from:getMark('LuaXiandeng_biu') == 0 then
+                return 1000
+            end
+        end
+        return 0
+    end,
+}
+
+LuaZhiyuanCard = sgs.CreateSkillCard {
+    name = 'LuaZhiyuan',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        if #selected > 0 then
+            local first = selected[1]
+            if first:getHandcardNum() <= first:getHp() then
+                return to_select:getHandcardNum() <= to_select:getHp()
+            end
+            return false
+        end
+        -- 没选的时候至少要受伤或者牌数不大于体力值
+        -- 每回合每选项限一次
+        if sgs.Self:hasFlag('LuaZhiyuanDraw') then
+            -- 摸过牌了只能选回血的
+            return to_select:isWounded() and to_select:getHandcardNum() > to_select:getHp()
+        end
+        if sgs.Self:hasFlag('LuaZhiyuanRecover') then
+            -- 只能摸牌
+            return to_select:getHandcardNum() <= to_select:getHp()
+        end
+        -- 要么能摸牌，要么能回血
+        return to_select:getHandcardNum() <= to_select:getHp() or to_select:isWounded()
+    end,
+    on_use = function(self, room, source, targets)
+        for _, target in ipairs(targets) do
+            if target:getHandcardNum() <= target:getHp() then
+                target:drawCards(1, self:objectName())
+                room:setPlayerFlag(source, 'LuaZhiyuanDraw')
+            else
+                rinsan.recover(room, target, 1, source)
+                room:setPlayerFlag(source, 'LuaZhiyuanRecover')
+            end
+        end
+    end,
+}
+
+LuaZhiyuanVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaZhiyuan',
+    view_as = function(self, cards)
+        return LuaZhiyuanCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaZhiyuan'
+    end,
+}
+
+LuaZhiyuan = sgs.CreateTriggerSkill {
+    name = 'LuaZhiyuan',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaZhiyuanVS,
+    on_trigger = function(self, event, player, data, room)
+        room:askForUseCard(player, '@@LuaZhiyuan', '@LuaZhiyuan', -1, sgs.Card_MethodNone)
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start) or
+                   rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+    end,
+}
+
 Cactus:addSkill(LuaBaipiao)
 SkillAnjiang:addSkill(LuaGeidian)
 SkillAnjiang:addSkill(LuaWanneng)
@@ -1783,3 +1899,7 @@ Ajie:addSkill(LuaFabing)
 Ajie:addSkill(LuaChengsheng)
 SkillAnjiang:addSkill(LuaJiarenClear)
 SkillAnjiang:addSkill(LuaJiarenForbid)
+Shatang:addSkill(LuaXiandeng)
+Shatang:addSkill(LuaZhiyuan)
+SkillAnjiang:addSkill(LuaXiandengStart)
+SkillAnjiang:addSkill(LuaXiandengTargetMod)

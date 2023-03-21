@@ -147,7 +147,7 @@ function guhuoCardOnValidateInResponse(self, source, skill_name, choice_name, ta
             table.insert(use_list, 'thunder_slash')
             table.insert(use_list, 'fire_slash')
         end
-        to_use = room:askForChoice(source, tag_name .. '_slash', table.concat(use_list, '+'))
+        to_use = room:askForChoice(source, choice_name .. '_slash', table.concat(use_list, '+'))
         source:setTag(tag_name .. 'Slash', sgs.QVariant(to_use))
     else
         to_use = self:getUserString()

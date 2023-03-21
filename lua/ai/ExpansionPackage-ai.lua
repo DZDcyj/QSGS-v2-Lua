@@ -2181,7 +2181,7 @@ end
 
 sgs.ai_card_intention.LuaLijiCard = function(self, card, from, tos)
     local to = tos[1]
-    sgs.updateIntention(from, to, -80)
+    sgs.updateIntention(from, to, 80)
 end
 
 -- 张济
@@ -2222,7 +2222,7 @@ end
 
 sgs.ai_card_intention.LuaLvemingCard = function(self, card, from, tos)
     local to = tos[1]
-    sgs.updateIntention(from, to, -80)
+    sgs.updateIntention(from, to, 80)
 end
 
 -- 掠命选项
