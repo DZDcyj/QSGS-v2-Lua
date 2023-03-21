@@ -344,3 +344,11 @@ table.insert(sgs.ai_damage_effect, LuaJixieDamageEffect)
 
 sgs.ai_skill_invoke.LuaJiaren = true
 sgs.ai_skill_invoke.LuaChengsheng = true
+
+-- 砂糖
+-- 支援敌友判断
+sgs.ai_card_intention.LuaZhiyuanCard = function(self, card, from, tos)
+    for _, to in ipairs(tos) do
+        sgs.updateIntention(from, to, -50)
+    end
+end

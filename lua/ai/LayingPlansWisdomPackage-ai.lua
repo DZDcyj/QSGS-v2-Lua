@@ -117,7 +117,7 @@ end
 
 -- 善檄更新 AI 敌友判断
 sgs.ai_playerchosen_intention['LuaShanxi'] = function(self, from, to)
-    sgs.updateIntention(from, to, -50)
+    sgs.updateIntention(from, to, 50)
 end
 
 -- 神郭嘉
