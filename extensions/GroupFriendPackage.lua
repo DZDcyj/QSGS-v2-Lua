@@ -1937,6 +1937,7 @@ LuaManyan = sgs.CreateTriggerSkill {
             if not playerToChain:isEmpty() then
                 local prompt = '@LuaManyan-choose'
                 local target = room:askForPlayerChosen(player, playerToChain, self:objectName(), prompt, false)
+                room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), target:objectName())
                 room:setPlayerChained(target)
                 return false
             end
@@ -1969,6 +1970,7 @@ LuaManyan = sgs.CreateTriggerSkill {
             end
         end
         local target = room:askForPlayerChosen(player, playerToChoose, self:objectName(), prompt, false)
+        room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), target:objectName())
         func(target)
     end,
 }
