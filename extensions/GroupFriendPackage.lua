@@ -1853,8 +1853,10 @@ LuaZhiyuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start) or
-                   rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+        if rinsan.RIGHT(self, target) then
+            return target:getPhase() == sgs.Player_Start or target:getPhase() == sgs.Player_Finish
+        end
+        return false
     end,
 }
 
@@ -1869,7 +1871,7 @@ LuaYishi = sgs.CreateTriggerSkill {
                 return false
             end
         end
-        local damageSuffix = (event == sgs.DamageCaused) and 'From' or 'To'
+        local damageSuffix = (damage.to:objectName() ~= player:objectName()) and 'From' or 'To'
         local targetName = (event == sgs.DamageCaused) and damage.to:objectName() or player:objectName()
         local isMinus = (player:getMark(self:objectName()) == 1)
         local damageString = isMinus and '-1' or '+1'
@@ -1877,7 +1879,13 @@ LuaYishi = sgs.CreateTriggerSkill {
         local prompt = string.format('prompt:%s::%s', targetName, damageString)
         if room:askForSkillInvoke(player, string.format('%s%s', self:objectName(), damageSuffix), sgs.QVariant(prompt)) then
             ChangeSkill(self, room, player)
-            skill(self, room, player, true)
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.sendLogMessage(room, '#LuaYishi', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+                ['to'] = damage.to,
+                ['arg2'] = damageString,
+            })
             damage.damage = damage.damage + diff
             data:setValue(damage)
             if damage.damage == 0 then
@@ -1898,9 +1906,9 @@ LuaManyan = sgs.CreateTriggerSkill {
             card = data:toCardUse().card
         else
             local response = data:toCardResponse()
-			if not response.m_isUse then
-				card = response.m_card
-			end
+            if not response.m_isUse then
+                card = response.m_card
+            end
         end
         if (not card) or card:isKindOf('SkillCard') then
             return false
@@ -1927,8 +1935,8 @@ LuaManyan = sgs.CreateTriggerSkill {
             end
             -- 必须连
             if not playerToChain:isEmpty() then
-                local target = room:askForPlayerChosen(player, playerToChain, self:objectName(), '@LuaManyan-choose',
-                    false, true)
+                local prompt = '@LuaManyan-choose'
+                local target = room:askForPlayerChosen(player, playerToChain, self:objectName(), prompt, false, true)
                 room:setPlayerChained(target)
                 return false
             end
