@@ -30,6 +30,7 @@ Yeniao = sgs.General(extension, 'Yeniao', 'shu', '4', true, true)
 Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 Ajie = sgs.General(extension, 'Ajie', 'wei', '3', true)
 Shatang = sgs.General(extension, 'Shatang', 'qun', '4', true, true)
+Dalaojiang = sgs.General(extension, 'Dalaojiang', 'qun', '3', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -1852,8 +1853,125 @@ LuaZhiyuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start) or
-                   rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+        if rinsan.RIGHT(self, target) then
+            return target:getPhase() == sgs.Player_Start or target:getPhase() == sgs.Player_Finish
+        end
+        return false
+    end,
+}
+
+LuaYishi = sgs.CreateTriggerSkill {
+    name = 'LuaYishi',
+    events = {sgs.DamageCaused, sgs.DamageInflicted},
+    frequency = sgs.Skill_Change,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if event == sgs.DamageInflicted then
+            if damage.from and damage.from:objectName() == player:objectName() then
+                return false
+            end
+        end
+        local damageSuffix = (damage.to:objectName() ~= player:objectName()) and 'From' or 'To'
+        local targetName = (event == sgs.DamageCaused) and damage.to:objectName() or player:objectName()
+        local isMinus = (player:getMark(self:objectName()) == 1)
+        local damageString = isMinus and '-1' or '+1'
+        local diff = isMinus and -1 or 1
+        local prompt = string.format('prompt:%s::%s', targetName, damageString)
+        if room:askForSkillInvoke(player, string.format('%s%s', self:objectName(), damageSuffix), sgs.QVariant(prompt)) then
+            ChangeSkill(self, room, player)
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.sendLogMessage(room, '#LuaYishi', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+                ['to'] = damage.to,
+                ['arg2'] = damageString,
+            })
+            damage.damage = damage.damage + diff
+            data:setValue(damage)
+            if damage.damage == 0 then
+                return true
+            end
+        end
+        return false
+    end,
+}
+
+LuaManyan = sgs.CreateTriggerSkill {
+    name = 'LuaManyan',
+    events = {sgs.CardFinished, sgs.CardResponded},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        if event == sgs.CardFinished then
+            card = data:toCardUse().card
+        else
+            local response = data:toCardResponse()
+            if not response.m_isUse then
+                card = response.m_card
+            end
+        end
+        if (not card) or card:isKindOf('SkillCard') then
+            return false
+        end
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        local chained_players = {}
+        local unchained_players = {}
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:isChained() then
+                table.insert(chained_players, p)
+            else
+                table.insert(unchained_players, p)
+            end
+        end
+        if #chained_players > 0 then
+            -- 有无必须连的
+            local playerToChain = sgs.SPlayerList()
+            for _, up in ipairs(unchained_players) do
+                for _, cp in ipairs(chained_players) do
+                    if up:distanceTo(cp) == 1 and (not playerToChain:contains(up)) then
+                        playerToChain:append(up)
+                    end
+                end
+            end
+            -- 必须连
+            if not playerToChain:isEmpty() then
+                local prompt = '@LuaManyan-choose'
+                local target = room:askForPlayerChosen(player, playerToChain, self:objectName(), prompt, false)
+                room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), target:objectName())
+                room:setPlayerChained(target)
+                return false
+            end
+        end
+        -- 不满足条件
+        local choices = {}
+        if #chained_players > 0 then
+            table.insert(choices, 'LuaManyanFireDamage')
+        end
+        if #unchained_players > 0 then
+            table.insert(choices, 'LuaManyanChain')
+        end
+        local playerToChoose = sgs.SPlayerList()
+        local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+        local prompt = string.format('@%s-choose', choice)
+        local func = function(victim)
+            if choice == 'LuaManyanChain' then
+                room:setPlayerChained(victim)
+            else
+                rinsan.doDamage(room, player, victim, 1, sgs.DamageStruct_Fire)
+            end
+        end
+        if choice == 'LuaManyanChain' then
+            for _, p in ipairs(unchained_players) do
+                playerToChoose:append(p)
+            end
+        else
+            for _, p in ipairs(chained_players) do
+                playerToChoose:append(p)
+            end
+        end
+        local target = room:askForPlayerChosen(player, playerToChoose, self:objectName(), prompt, false)
+        room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), target:objectName())
+        func(target)
     end,
 }
 
@@ -1903,3 +2021,5 @@ Shatang:addSkill(LuaXiandeng)
 Shatang:addSkill(LuaZhiyuan)
 SkillAnjiang:addSkill(LuaXiandengStart)
 SkillAnjiang:addSkill(LuaXiandengTargetMod)
+Dalaojiang:addSkill(LuaYishi)
+Dalaojiang:addSkill(LuaManyan)
