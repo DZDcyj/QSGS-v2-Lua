@@ -314,11 +314,14 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
             return false
         end
         local luapkg = sgs.GetConfig('LuaPackages', '')
-        if string.find(luapkg, 'ExpansionCardPackage') and (not rinsan.isPackageBanned('ExpansionCardPackage')) then
+        if string.find(luapkg, 'ExpansionCardPackage') then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 if p:hasSkill('LuaTianzuo') then
                     room:sendCompulsoryTriggerLog(p, 'LuaTianzuo')
                     room:broadcastSkillInvoke('LuaTianzuo')
+                    if rinsan.isPackageBanned('ExpansionCardPackage') then
+                        rinsan.initIndirectCombination(room)
+                    end
                     room:setTag('LuaTianzuoStartInvoked', sgs.QVariant(true))
                     break
                 end
@@ -375,6 +378,11 @@ LuaDinghan = sgs.CreateTriggerSkill {
             end
             rinsan.sendLogMessage(room, msgType, params)
             table.insert(dinghan_cards, use.card:objectName())
+            rinsan.sendLogMessage(room, '#LuaDinghanAdd', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+                ['arg2'] = use.card:objectName(),
+            })
             rinsan.setDinghanCardsTable(player, dinghan_cards)
         end
     end,
@@ -406,12 +414,19 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
         if room:askForSkillInvoke(player, 'LuaDinghan', data) then
             room:broadcastSkillInvoke('LuaDinghan')
             local choice = room:askForChoice(player, 'LuaDinghan', table.concat(choices, '+'))
+            local card_choice
             if choice == 'LuaDinghanAdd' then
-                table.insert(dinghan_cards, room:askForChoice(player, 'LuaDinghanAdd', table.concat(add_available, '+')))
+                card_choice = room:askForChoice(player, 'LuaDinghanAdd', table.concat(add_available, '+'))
+                table.insert(dinghan_cards, card_choice)
             else
-                table.removeOne(dinghan_cards,
-                    room:askForChoice(player, 'LuaDinghanRemove', table.concat(remove_available, '+')))
+                card_choice = room:askForChoice(player, 'LuaDinghanRemove', table.concat(remove_available, '+'))
+                table.removeOne(dinghan_cards, card_choice)
             end
+            rinsan.sendLogMessage(room, '#' .. choice, {
+                ['from'] = player,
+                ['arg'] = 'LuaDinghan',
+                ['arg2'] = card_choice,
+            })
             rinsan.setDinghanCardsTable(player, dinghan_cards)
         end
     end,

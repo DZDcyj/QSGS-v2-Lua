@@ -1834,6 +1834,33 @@ function shencaiEffect(source, victim, desc)
     end
 end
 
+-- 将【奇正相生】加入到初始卡牌
+function initIndirectCombination(room)
+    local drawPile = room:getDrawPile()
+    local ids = {}
+    for i = 0, 10000 do
+        local card = sgs.Sanguosha:getEngineCard(i)
+        if card == nil then
+            break
+        end
+        if (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('IndirectCombination')) then
+            if card:getPackage() ~= 'jiaozhao' then
+                -- 排除【矫诏】包的无色卡牌
+                table.insert(ids, card:getId())
+            end
+        end
+    end
+    for _, id in ipairs(ids) do
+        drawPile:append(id)
+        room:setCardMapping(id, nil, sgs.Player_DrawPile)
+    end
+    shuffleDrawPile(room)
+    sendLogMessage(room, '$LuaTianzuo', {
+        ['card_str'] = table.concat(ids, '+'),
+    })
+    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
