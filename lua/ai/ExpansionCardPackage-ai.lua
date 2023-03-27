@@ -53,6 +53,42 @@ sgs.ai_skill_choice['indirect_combination'] = function(self, choices, data)
     return items[rinsan.random(1, #items)]
 end
 
+-- 【奇正相生】防御方
+sgs.ai_skill_choice['indirect_combination_defense'] = function(self, choices, data)
+    local effect = data:toCardEffect()
+    local source = effect.from
+    if self:getDangerousCard(self.player) then
+        if not self:isWeak() then
+            -- 有关键牌且不怕掉血就出【闪】
+            if sgs.card_lack[self.player:objectName()]['Jink'] > 0 then
+                -- 如果十分滴缺【闪】
+                self.player:setTag('NoResponseForIndirectCombination', sgs.QVariant(true))
+            end
+            return 'ResponseJink'
+        end
+    else
+        -- 如果没有什么关键牌就出【杀】
+        if self:isWeak() then
+            return 'ResponseSlash'
+        end
+    end
+
+    -- 随机
+    local items = choices:split('+')
+    return items[rinsan.random(1, #items)]
+end
+
+-- 奇正相生出牌
+sgs.ai_skill_cardask['indirect_combination-card'] = function(self, data, pattern)
+    -- 某些情况下直接不出
+    if self.player:getTag('NoResponseForIndirectCombination'):toBool() then
+        self.player:removeTag('NoResponseForIndirectCombination')
+        return '.'
+    end
+    -- 交由默认处理
+    return nil
+end
+
 function SmartAI:useCardIndirectCombination(card, use)
     local target
     self:sort(self.enemies, 'defense')

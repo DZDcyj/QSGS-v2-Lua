@@ -29,7 +29,7 @@ indirect_combination = sgs.CreateTrickCard {
         data:setValue(effect)
         -- 正兵或奇兵
         local choice = room:askForChoice(source, self:objectName(), 'Direct+Indirect', data)
-        local choice2 = room:askForChoice(target, self:objectName(), 'ResponseSlash+ResponseJink', data)
+        local choice2 = room:askForChoice(target, self:objectName() .. '_defense', 'ResponseSlash+ResponseJink', data)
         local pattern = string.gsub(choice2, 'Response', '')
         -- 首字母小写
         pattern = string.gsub(pattern, '^%u', string.lower)

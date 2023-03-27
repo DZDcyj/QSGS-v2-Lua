@@ -7,6 +7,7 @@ return {
     若奇兵目标没有打出【杀】，你对其造成1点伤害\
     若正兵目标没有打出【闪】，你获得其一张牌',
     ['indirect_combination-card'] = '%src 使用了【奇正相生】，请打出一张【%arg】',
+    ['indirect_combination_defense'] = '奇正相生',
     ['Direct'] = '正兵',
     [':Direct'] = '若其没有打出一张【闪】，则你获得其一张牌',
     ['Indirect'] = '奇兵',
