@@ -20,7 +20,6 @@ etc/
 font/
 iconengines/
 image/animate
-image/big-card
 image/compact
 image/equips
 image/gender
@@ -72,12 +71,15 @@ lang/zh_CN/Package/*.lua
 !ExpansionPackage.lua
 !ExpansionCardPackage.lua
 !ImpassePackage.lua
+!MajunEquipCardPackage.lua
 !GroupFriendPackage.lua
 !LandlordsPackage.lua
 !LayingPlans*.lua
 !StrategicAttack*.lua
 !ShieldPackage.lua
 !ShieldPackageLines.lua
+!xiantian_eightdiagram*
+!yuanrong_crossbow*
 listserver/
 lua/ai/[^A-Z]*.lua
 lua/lib
