@@ -115,7 +115,7 @@ LuaMouShipo = sgs.CreateTriggerSkill {
                     true)
                 if victim then
                     if not room:askForDiscard(victim, self:objectName(), 1, 1, true, true,
-                        'LuaMouShipo-discard' .. player:objectName()) then
+                        'LuaMouShipo-discard:' .. player:objectName()) then
                         player:drawCards(1, self:objectName())
                     end
                 end

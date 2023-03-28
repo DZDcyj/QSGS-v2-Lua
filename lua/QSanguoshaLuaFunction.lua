@@ -416,7 +416,12 @@ end
 
 -- 将首字母换成大写
 function firstToUpper(str)
-    return (str:gsub('^%l', string.upper))
+    return str:gsub('^%l', string.upper)
+end
+
+-- 首字母小写
+function firstToLower(str)
+    return str:gsub('^%u', string.lower)
 end
 
 -- 将下划线换成大写
@@ -1832,6 +1837,33 @@ function shencaiEffect(source, victim, desc)
             room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
         end
     end
+end
+
+-- 将【奇正相生】加入到初始卡牌
+function initIndirectCombination(room)
+    local drawPile = room:getDrawPile()
+    local ids = {}
+    for i = 0, 10000 do
+        local card = sgs.Sanguosha:getEngineCard(i)
+        if card == nil then
+            break
+        end
+        if (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('IndirectCombination')) then
+            if card:getPackage() ~= 'jiaozhao' then
+                -- 排除【矫诏】包的无色卡牌
+                table.insert(ids, card:getId())
+            end
+        end
+    end
+    for _, id in ipairs(ids) do
+        drawPile:append(id)
+        room:setCardMapping(id, nil, sgs.Player_DrawPile)
+    end
+    shuffleDrawPile(room)
+    sendLogMessage(room, '$LuaTianzuo', {
+        ['card_str'] = table.concat(ids, '+'),
+    })
+    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
 
 -- CardType 参数，用于 getCardMostProbably 方法
