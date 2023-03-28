@@ -76,11 +76,6 @@ end
 
 -- 奇正相生出牌
 sgs.ai_skill_cardask['indirect_combination-card'] = function(self, data, pattern)
-    -- 某些情况下直接不出
-    if self.player:getTag('NoResponseForIndirectCombination'):toBool() then
-        self.player:removeTag('NoResponseForIndirectCombination')
-        return '.'
-    end
     -- 交由默认处理
     return nil
 end
