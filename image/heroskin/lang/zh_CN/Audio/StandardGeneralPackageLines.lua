@@ -200,6 +200,7 @@ return {
     ['$LuaLiegong2'] = '执此神弓，恭行天罚！',
     ['~ExMouHuangzhong'] = '呜呜呜，我不玩了',
     -- 神荀彧
+    -- 知著侠
     ['$LuaTianzuo1-ExShenXunyu_1'] = '这位更是脑子不太好——孙策',
     ['$LuaTianzuo2-ExShenXunyu_1'] = '这位更是脑子不太好——孙笨',
     ['$LuaLingce1-ExShenXunyu_1'] = '这位更是脑子不太好——孙枣',
@@ -207,6 +208,14 @@ return {
     ['$LuaDinghan1-ExShenXunyu_1'] = '这位更是脑子不太好——江东小白板',
     ['$LuaDinghan2-ExShenXunyu_1'] = '这位更是脑子不太好——辣个男人',
     ['~ExShenXunyu-ExShenXunyu_1'] = '一定是王粲干的',
+    -- 虎年清明
+    ['$LuaTianzuo1-ExShenXunyu_2'] = '主公有此四胜，纵绍强亦可败之',
+    ['$LuaTianzuo2-ExShenXunyu_2'] = '主公以有道之师伐不义之徒，胜之必矣',
+    ['$LuaLingce1-ExShenXunyu_2'] = '良策者，胜败之机也',
+    ['$LuaLingce2-ExShenXunyu_2'] = '以帷幄之规，下攻拔之捷',
+    ['$LuaDinghan1-ExShenXunyu_2'] = '不求有功于社稷，但求无过于本心',
+    ['$LuaDinghan2-ExShenXunyu_2'] = '投忠君之士，谋定国之计',
+    ['~ExShenXunyu-ExShenXunyu_2'] = '君本起义兵匡国，今怎可生此异心……',
     -- 神郭嘉
     ['$LuaHuishi1-ExShenGuojia_1'] = '机关精巧，将军可看在眼里',
     ['$LuaHuishi2-ExShenGuojia_1'] = '区区小技，有手就行',
