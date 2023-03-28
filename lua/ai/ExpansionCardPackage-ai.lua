@@ -53,6 +53,33 @@ sgs.ai_skill_choice['indirect_combination'] = function(self, choices, data)
     return items[rinsan.random(1, #items)]
 end
 
+-- 【奇正相生】防御方
+sgs.ai_skill_choice['indirect_combination_defense'] = function(self, choices, data)
+    local noJink, noSlash = true, true
+    for _, cd in sgs.qlist(self.player:getHandcards()) do
+        if cd:isKindOf('Jink') then
+            noJink = false
+        elseif cd:isKindOf('Slash') then
+            noSlash = false
+        end
+    end
+    -- 啥都没有或啥都有就随便
+    if (noJink and noSlash) or ((not noJink) and (not noSlash)) then
+        local items = choices:split('+')
+        return items[rinsan.random(1, #items)]
+    end
+    if noJink then
+        return 'ResponseSlash'
+    end
+    return 'ResponseJink'
+end
+
+-- 奇正相生出牌
+sgs.ai_skill_cardask['indirect_combination-card'] = function(self, data, pattern)
+    -- 交由默认处理
+    return nil
+end
+
 function SmartAI:useCardIndirectCombination(card, use)
     local target
     self:sort(self.enemies, 'defense')
