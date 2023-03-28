@@ -217,6 +217,7 @@ return {
     ['$LuaDinghan2-ExShenXunyu_2'] = '投忠君之士，谋定国之计',
     ['~ExShenXunyu-ExShenXunyu_2'] = '君本起义兵匡国，今怎可生此异心……',
     -- 神郭嘉
+    -- 知著侠
     ['$LuaHuishi1-ExShenGuojia_1'] = '机关精巧，将军可看在眼里',
     ['$LuaHuishi2-ExShenGuojia_1'] = '区区小技，有手就行',
     ['$LuaTianyi1-ExShenGuojia_1'] = '主公以国士待吾，吾食主公心智',
@@ -226,6 +227,16 @@ return {
     ['$LuaZuoxing1-ExShenGuojia_1'] = '倾荡芝士已成，石城尽在眼下',
     ['$LuaZuoxing2-ExShenGuojia_1'] = '吾军势如破竹，江东六郡唾手可得',
     ['~ExShenGuojia-ExShenGuojia_1'] = '我俏，我他妈死了是吧',
+    -- 虎年清明
+    ['$LuaHuishi1-ExShenGuojia_2'] = '不过星霭云雾，岂可当我七窍清明？',
+    ['$LuaHuishi2-ExShenGuojia_2'] = '星辰虽小，难掩其明',
+    ['$LuaTianyi1-ExShenGuojia_2'] = '君以国士待吾，吾自以国士报之',
+    ['$LuaTianyi2-ExShenGuojia_2'] = '吾计均已言明，主公可自择而行',
+    ['$LuaLimitHuishi1-ExShenGuojia_2'] = '此诚天赐余之主也',
+    ['$LuaLimitHuishi2-ExShenGuojia_2'] = '天赐明主，吾自择之',
+    ['$LuaZuoxing1-ExShenGuojia_2'] = '殚思极虑，以临制变',
+    ['$LuaZuoxing2-ExShenGuojia_2'] = '沥血书辞，以效区区之忠',
+    ['~ExShenGuojia-ExShenGuojia_2'] = '行将就木，良谋难施',
     -- 神孙策
     ['$LuaYingba1-ExShenSunce_1'] = '看来你是真想和我拼一下子',
     ['$LuaYingba2-ExShenSunce_1'] = '这位更是脑子不太好',
