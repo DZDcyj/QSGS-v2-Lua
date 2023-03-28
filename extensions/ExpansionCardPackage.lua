@@ -30,9 +30,7 @@ indirect_combination = sgs.CreateTrickCard {
         -- 正兵或奇兵
         local choice = room:askForChoice(source, self:objectName(), 'Direct+Indirect', data)
         local choice2 = room:askForChoice(target, self:objectName() .. '_defense', 'ResponseSlash+ResponseJink', data)
-        local pattern = string.gsub(choice2, 'Response', '')
-        -- 首字母小写
-        pattern = string.gsub(pattern, '^%u', string.lower)
+        local pattern = rinsan.firstToLower(string.gsub(choice2, 'Response', ''))
         local prompt = string.format('indirect_combination-card:%s::%s', source:objectName(), pattern)
         local card = room:askForCard(target, pattern, prompt, sgs.QVariant(), sgs.Card_MethodResponse)
         rinsan.sendLogMessage(room, '#choose', {

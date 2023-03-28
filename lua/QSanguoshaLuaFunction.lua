@@ -416,7 +416,12 @@ end
 
 -- 将首字母换成大写
 function firstToUpper(str)
-    return (str:gsub('^%l', string.upper))
+    return str:gsub('^%l', string.upper)
+end
+
+-- 首字母小写
+function firstToLower(str)
+    return str:gsub('^%u', string.lower)
 end
 
 -- 将下划线换成大写

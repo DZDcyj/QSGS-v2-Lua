@@ -55,8 +55,6 @@ end
 
 -- 【奇正相生】防御方
 sgs.ai_skill_choice['indirect_combination_defense'] = function(self, choices, data)
-    local effect = data:toCardEffect()
-    local source = effect.from
     local noJink, noSlash = true, true
     for _, cd in sgs.qlist(self.player:getHandcards()) do
         if cd:isKindOf('Jink') then
