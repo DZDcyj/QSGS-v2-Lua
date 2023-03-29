@@ -42,6 +42,9 @@ xiantian_eightdiagram_skill = sgs.CreateTriggerSkill {
     priority = -2,
     on_trigger = function(self, event, player, data, room)
         local pattern = data:toStringList()[1]
+        if pattern ~= 'jink' then
+            return false
+        end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             local armor_id = player:getArmor():getId()
             room:setCardFlag(armor_id, 'using')
