@@ -13,4 +13,5 @@ return {
     ['tongyou_vine'] = '桐油百韧甲',
     [':tongyou_vine'] = '装备牌·防具<br/><b>防具技能</b>：锁定技，【南蛮入侵】、【万箭齐发】和普通【杀】对你无效；你不能被横置；你受到火焰伤害时，伤害值+1',
     ['#TongyouVineDamage'] = '%from 的防具【<font color="yellow"><b>桐油百韧甲</b></font>】效果被触发，火焰伤害由 %arg 点增加至 %arg2 点',
+    ['#TongyouVineChain'] = '%from 的防具【<font color="yellow"><b>桐油百韧甲</b></font>】效果被触发，防止其进入横置状态',
 }

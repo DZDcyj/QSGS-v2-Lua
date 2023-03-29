@@ -172,7 +172,7 @@ tongyou_vine = sgs.CreateArmor {
 
 tongyou_vine_skill = sgs.CreateTriggerSkill {
     name = 'tongyou_vine',
-    events = {sgs.DamageInflicted, sgs.SlashEffected, sgs.CardEffected},
+    events = {sgs.DamageInflicted, sgs.SlashEffected, sgs.CardEffected, sgs.ChainStateChange},
     global = true,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.DamageInflicted then
@@ -186,6 +186,15 @@ tongyou_vine_skill = sgs.CreateTriggerSkill {
                 })
                 damage.damage = damage.damage + 1
                 data:setValue(damage)
+            end
+        elseif event == sgs.ChainStateChange then
+            if not player:isChained() then
+                room:setEmotion(player, 'armor/vine')
+                rinsan.sendLogMessage(room, '#TongyouVineChain', {
+                    ['from'] = player,
+                    ['arg'] = self:objectName(),
+                })
+                return true
             end
         else
             local effect, card
