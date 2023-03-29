@@ -110,3 +110,53 @@ function sgs.ai_armor_value.jingang_renwang_shield(player, self)
     end
     return 4.5
 end
+
+-- 桐油百韧甲
+function sgs.ai_armor_value.tongyou_vine(player, self)
+    if self:needKongcheng(player) and player:getHandcardNum() == 1 then
+        return player:hasSkill('kongcheng') and 5 or 3.8
+    end
+    if self:hasSkills(sgs.lose_equip_skill, player) then
+        return 3.8
+    end
+    if not self:damageIsEffective(player, sgs.DamageStruct_Fire) then
+        return 6
+    end
+    if self.player:hasSkill('sizhan') then
+        return 4.9
+    end
+    if player:hasSkill('jujian') and not player:getArmor() and #(self:getFriendsNoself(player)) > 0 and
+        player:getPhase() == sgs.Player_Play then
+        return 3
+    end
+    if player:hasSkill('diyyicong') and not player:getArmor() and player:getPhase() == sgs.Player_Play then
+        return 3
+    end
+
+    local fslash = sgs.Sanguosha:cloneCard('fire_slash')
+    local tslash = sgs.Sanguosha:cloneCard('thunder_slash')
+    if player:isChained() and (not self:isGoodChainTarget(player, self.player, nil, nil, fslash) or
+        not self:isGoodChainTarget(player, self.player, nil, nil, tslash)) then
+        return -2
+    end
+
+    for _, enemy in ipairs(self:getEnemies(player)) do
+        if (enemy:canSlash(player) and enemy:hasWeapon('fan')) or
+            enemy:hasSkills('huoji|longhun|shaoying|zonghuo|wuling') or
+            (enemy:hasSkill('yeyan') and enemy:getMark('@flame') > 0) then
+            return -2
+        end
+        if getKnownCard(enemy, player, 'FireSlash', true) >= 1 or getKnownCard(enemy, player, 'FireAttack', true) >= 1 or
+            getKnownCard(enemy, player, 'fan') >= 1 then
+            return -2
+        end
+    end
+
+    if (#self.enemies < 3 and sgs.turncount > 2) or player:getHp() <= 2 then
+        return 5
+    end
+    if player:hasSkill('xiansi') and player:getPile('counter'):length() > 1 then
+        return 3
+    end
+    return 0
+end
