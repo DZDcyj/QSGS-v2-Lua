@@ -55,10 +55,10 @@ xiantian_eightdiagram_skill = sgs.CreateTriggerSkill {
                 ['reason'] = self:objectName(),
                 ['good'] = false,
             })
+            room:setEmotion(player, 'armor/eight_diagram')
             room:judge(judge)
             room:setCardFlag(armor_id, '-using')
             if judge:isGood() then
-                room:setEmotion(player, 'armor/eight_diagram')
                 local jink = sgs.Sanguosha:cloneCard('jink', sgs.Card_NoSuit, 0)
                 jink:setSkillName(self:objectName())
                 room:provide(jink)
