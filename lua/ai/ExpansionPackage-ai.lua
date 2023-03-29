@@ -242,15 +242,15 @@ table.insert(sgs.ai_skills, LuaJingxie_skill)
 LuaJingxie_skill.getTurnUseCard = function(self, inclusive)
     local armor = self.player:getArmor()
     local weapon = self.player:getWeapon()
-    if armor and self.player:getMark(armor:objectName()) == 0 then
-        return sgs.Card_Parse('#LuaJingxieCard:' .. armor:getEffectiveId() .. ':')
+    if armor and rinsan.canBeUpgrade(armor) then
+        return sgs.Card_Parse('#LuaJingxie:' .. armor:getEffectiveId() .. ':')
     end
-    if weapon and weapon:objectName() == 'crossbow' and self.player:getMark('crossbow') == 0 then
-        return sgs.Card_Parse('#LuaJingxieCard:' .. weapon:getEffectiveId() .. ':')
+    if weapon and weapon:objectName() == 'crossbow' then
+        return sgs.Card_Parse('#LuaJingxie:' .. weapon:getEffectiveId() .. ':')
     end
 end
 
-sgs.ai_skill_use_func['#LuaJingxieCard'] = function(cd, use, self)
+sgs.ai_skill_use_func['#LuaJingxie'] = function(cd, use, self)
     use.card = cd
 end
 

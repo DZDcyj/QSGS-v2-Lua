@@ -1257,17 +1257,13 @@ JieMadai:addSkill(LuaQianxi)
 ExMajun = sgs.General(extension, 'ExMajun', 'wei', '3', true)
 
 LuaJingxieCard = sgs.CreateSkillCard {
-    name = 'LuaJingxieCard',
+    name = 'LuaJingxie',
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
-        room:broadcastSkillInvoke('LuaJingxie')
-        room:setPlayerMark(source, card:objectName(), 1)
         room:showCard(source, card:getEffectiveId())
-        if room:getCardPlace(card:getEffectiveId()) == sgs.Player_PlaceHand then
-            room:useCard(sgs.CardUseStruct(card, source, source))
-        end
+        rinsan.majunUpgradeCard(card, source)
     end,
 }
 
@@ -1275,13 +1271,7 @@ LuaJingxieVS = sgs.CreateViewAsSkill {
     name = 'LuaJingxie',
     n = 1,
     view_filter = function(self, selected, to_select)
-        if #selected == 0 then
-            if sgs.Self:getMark(to_select:objectName()) == 1 then
-                return nil
-            end
-            return to_select:isKindOf('Armor') or to_select:objectName() == 'crossbow'
-        end
-        return false
+        return rinsan.canBeUpgrade(to_select)
     end,
     view_as = function(self, cards)
         if #cards == 1 then
@@ -1296,101 +1286,41 @@ LuaJingxieVS = sgs.CreateViewAsSkill {
 LuaJingxie = sgs.CreateTriggerSkill {
     name = 'LuaJingxie',
     view_as_skill = LuaJingxieVS,
-    events = {sgs.Dying, sgs.CardsMoveOneTime, sgs.CardEffected, sgs.AskForRetrial, sgs.ChainStateChange},
+    events = {sgs.Dying},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.Dying then
-            local dying = data:toDying()
-            if dying.who:objectName() == player:objectName() then
-                room:filterCards(player, player:getCards('he'), true)
-                local card = room:askForCard(player, 'Armor|.|.|.', 'LuaJingxie-Invoke', data, sgs.Card_MethodRecast)
-                if card then
-                    room:moveCardTo(card, player, nil, sgs.Player_DiscardPile, sgs.CardMoveReason(
-                        sgs.CardMoveReason_S_REASON_RECAST, player:objectName(), card:objectName(), ''))
-                    rinsan.sendLogMessage(room, '#UseCard_Recase', {
-                        ['from'] = player,
-                        ['card_str'] = card:getEffectiveId(),
-                    })
-                    room:broadcastSkillInvoke('@recast')
-                    player:drawCards(1, 'recast')
-                    rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
-                    room:broadcastSkillInvoke(self:objectName(), 1)
-                end
-                room:filterCards(player, player:getCards('he'), false)
+        local dying = data:toDying()
+        if dying.who:objectName() == player:objectName() then
+            room:filterCards(player, player:getCards('he'), true)
+            local card = room:askForCard(player, 'Armor|.|.|.', 'LuaJingxie-Invoke', data, sgs.Card_MethodRecast)
+            if card then
+                room:moveCardTo(card, player, nil, sgs.Player_DiscardPile, sgs.CardMoveReason(
+                    sgs.CardMoveReason_S_REASON_RECAST, player:objectName(), card:objectName(), ''))
+                rinsan.sendLogMessage(room, '#UseCard_Recase', {
+                    ['from'] = player,
+                    ['card_str'] = card:getEffectiveId(),
+                })
+                room:broadcastSkillInvoke('@recast')
+                player:drawCards(1, 'recast')
+                rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
+                room:broadcastSkillInvoke(self:objectName(), 1)
             end
-        elseif event == sgs.CardsMoveOneTime then
-            local move = data:toMoveOneTime()
-            if (move.from and move.from:objectName() == player:objectName() and
-                move.from_places:contains(sgs.Player_PlaceEquip)) then
-                for i = 0, move.card_ids:length() - 1, 1 do
-                    if move.from_places:at(i) == sgs.Player_PlaceEquip then
-                        local card = sgs.Sanguosha:getCard(move.card_ids:at(i))
-                        if card:isKindOf('Armor') or card:objectName() == 'crossbow' then
-                            if player:getMark(card:objectName()) > 0 then
-                                room:removePlayerMark(player, card:objectName())
-                                if card:objectName() == 'silver_lion' then
-                                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                                    player:drawCards(2, self:objectName())
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        elseif event == sgs.CardEffected then
-            local effect = data:toCardEffect()
-            local card = effect.card
-            if player:getMark('renwang_shield') == 0 then
-                return false
-            end
-            if card and card:isKindOf('Slash') then
-                if card:isBlack() or card:getSuit() == sgs.Card_Heart then
-                    rinsan.sendLogMessage(room, '#LuaJingxie-Renwang', {
-                        ['from'] = player,
-                        ['to'] = effect.from,
-                        ['arg'] = card:objectName(),
-                    })
-                    return true
-                end
-            end
-        elseif event == sgs.AskForRetrial then
-            local judge = data:toJudge()
-            if judge.who:getMark('eight_diagram') == 0 then
-                return false
-            end
-            if judge.reason ~= 'eight_diagram' then
-                return false
-            end
-            if judge.card:getSuit() == sgs.Card_Club then
-                local card = sgs.Sanguosha:getWrappedCard(judge.card:getId())
-                card:setSkillName(self:objectName())
-                card:setSuit(sgs.Card_Heart)
-                card:setModified(true)
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                room:broadcastUpdateCard(room:getAllPlayers(true), judge.card:getId(), card)
-                judge:updateResult()
-            end
-        elseif event == sgs.ChainStateChange then
-            if player:getMark('vine') == 0 then
-                return false
-            end
-            if not player:isChained() then
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                return true
-            end
+            room:filterCards(player, player:getCards('he'), false)
         end
         return false
     end,
 }
 
-LuaJingxieAttackRange = sgs.CreateAttackRangeSkill {
-    name = '#LuaJingxieAttackRange',
-    extra_func = function(self, from, card)
-        if from:hasSkill('LuaJingxie') and from:getMark('crossbow') > 0 then
-            return 2
-        else
-            return 0
+LuaJingxieStart = sgs.CreateTriggerSkill {
+    name = 'LuaJingxieStart',
+    events = {sgs.GameStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if not room:getTag('MajunEquipsRemoved'):toBool() then
+            rinsan.removeMajunEquipsFromPile(room)
+            room:setTag('MajunEquipsRemoved', sgs.QVariant(true))
         end
     end,
+    can_trigger = globalTrigger,
 }
 
 LuaQiaosiCard = sgs.CreateSkillCard {
@@ -1471,7 +1401,7 @@ LuaQiaosi = sgs.CreateViewAsSkill {
 
 ExMajun:addSkill(LuaJingxie)
 ExMajun:addSkill(LuaQiaosi)
-SkillAnjiang:addSkill(LuaJingxieAttackRange)
+SkillAnjiang:addSkill(LuaJingxieStart)
 
 ExYiji = sgs.General(extension, 'ExYiji', 'shu', '3', true)
 
