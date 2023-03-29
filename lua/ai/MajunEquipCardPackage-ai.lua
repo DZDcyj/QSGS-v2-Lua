@@ -1,5 +1,4 @@
 -- 马钧装备包 AI
-
 -- 是否发动先天八卦阵
 -- 均照搬八卦 AI
 sgs.ai_skill_invoke.xiantian_eightdiagram = function(self, data)
@@ -94,4 +93,20 @@ function sgs.ai_armor_value.xiantian_eightdiagram(player, self)
     end
 
     return 4
+end
+
+-- 照搬原版仁王盾
+function sgs.ai_armor_value.jingang_renwang_shield(player, self)
+    if player:hasSkill('yizhong') then
+        -- 比毅重强一些
+        return 2.5
+    end
+    if player:hasSkill('bazhen') then
+        return 0
+    end
+    if player:hasSkills('leiji|nosleiji') and getKnownCard(player, self.player, 'Jink', true) > 1 and
+        player:hasSkill('guidao') and getKnownCard(player, self.player, 'black', false, 'he') > 0 then
+        return 0
+    end
+    return 4.5
 end
