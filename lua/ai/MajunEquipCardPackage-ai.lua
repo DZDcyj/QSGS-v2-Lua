@@ -1,4 +1,6 @@
 -- 马钧装备包 AI
+-- Created by DZDcyj at 2023/3/29
+
 -- 是否发动先天八卦阵
 -- 均照搬八卦 AI
 sgs.ai_skill_invoke.xiantian_eightdiagram = function(self, data)
