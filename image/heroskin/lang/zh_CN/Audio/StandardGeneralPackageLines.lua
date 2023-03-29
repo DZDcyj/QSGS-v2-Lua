@@ -88,11 +88,18 @@ return {
     ['$poxi2-shenganning_2'] = '匹马单枪出重围，英风锐气敌胆寒',
     ['~shenganning-shenganning_2'] = '我亦有被乐不思蜀所伤之时',
     -- 马钧
+    -- 鬼斧神工
     ['$LuaJingxie1-ExMajun_1'] = '吾所欲作者，国之精器、军之要用也',
     ['$LuaJingxie2-ExMajun_1'] = '路未尽，铸不止',
     ['$LuaQiaosi1-ExMajun_1'] = '另辟蹊径博君乐，盛世美景百戏中！',
     ['$LuaQiaosi2-ExMajun_1'] = '机关精巧，将军可看在眼里？',
     ['~ExMajun-ExMajun_1'] = '污泥覆玉，顽石掩璞，痛哉痛哉！',
+    -- 能工巧匠
+    ['$LuaJingxie1-ExMajun_2'] = '墨守成规，不如改而善之',
+    ['$LuaJingxie2-ExMajun_2'] = '弃巧具，吾安矣',
+    ['$LuaQiaosi1-ExMajun_2'] = '才通墨翟，巧比公输',
+    ['$LuaQiaosi2-ExMajun_2'] = '沉机照物。妙思考神',
+    ['~ExMajun-ExMajun_2'] = '古今巧器，未能尽见，实乃憾事',
     -- 麴义
     ['$fuji1-quyi_1'] = '白马？不足挂齿！',
     ['$fuji2-quyi_1'] = '掌握之中，岂可逃之？',
