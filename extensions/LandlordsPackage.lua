@@ -138,12 +138,14 @@ LuaDizhu = sgs.CreateTriggerSkill {
             room:getThread():trigger(sgs.GameStart, room, p)
 
             -- 统一在这里进行初始牌的摸取，避免提前摸牌导致一些问题
+            room:setTag('FirstRound', sgs.QVariant(true))
             local draw_data = sgs.QVariant(4)
             room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
             local to_draw = draw_data:toInt()
             if to_draw > 0 then
                 p:drawCards(to_draw, self:objectName())
             end
+            room:setTag('FirstRound', sgs.QVariant(false))
         end
 
         -- 手气卡
