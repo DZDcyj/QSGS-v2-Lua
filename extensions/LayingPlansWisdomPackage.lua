@@ -390,7 +390,7 @@ LuaDinghan = sgs.CreateTriggerSkill {
 
 LuaDinghanChange = sgs.CreateTriggerSkill {
     name = 'LuaDinghanChange',
-    events = {sgs.TurnStart},
+    events = {sgs.EventPhaseStart},
     global = true,
     on_trigger = function(self, event, player, data, room)
         local dinghan_cards = rinsan.getDinghanCardsTable(player)
@@ -431,7 +431,7 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target, 'LuaDinghan')
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_RoundStart, 'LuaDinghan')
     end,
 }
 

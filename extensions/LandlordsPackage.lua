@@ -108,8 +108,12 @@ LuaDizhu = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         -- 优化 UI 显示
         room:setPlayerMark(player, '@Landlords', 0)
-        room:sendCompulsoryTriggerLog(player, self:objectName())
         room:addPlayerMark(player, self:objectName())
+
+        rinsan.landlordsGeneralChoose(room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        room:acquireSkill(player, 'LuaBahu')
+        room:acquireSkill(player, 'LuaFeiyang')
 
         -- 设置初始血量，主要针对不满血的武将
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -133,8 +137,8 @@ LuaDizhu = sgs.CreateTriggerSkill {
             -- 触发游戏开始时时机，例如先辅、怀橘
             room:getThread():trigger(sgs.GameStart, room, p)
 
-            -- 涉及到摸初始牌的，补一下，例如挫锐、七星
-            local draw_data = sgs.QVariant(0)
+            -- 统一在这里进行初始牌的摸取，避免提前摸牌导致一些问题
+            local draw_data = sgs.QVariant(4)
             room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
             local to_draw = draw_data:toInt()
             if to_draw > 0 then

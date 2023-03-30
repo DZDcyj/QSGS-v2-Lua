@@ -1,0 +1,4 @@
+extraOptions:randomRoles
+general:sujiang role:lord starter:true marks:@Landlords*1 draw:0 
+general:sujiang role:rebel draw:0 
+general:sujiang role:rebel draw:0 

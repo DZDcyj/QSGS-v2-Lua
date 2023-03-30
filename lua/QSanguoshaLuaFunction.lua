@@ -933,6 +933,54 @@ function askForLuckCard(room)
     room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
+-- 斗地主模式武将选择
+function landlordsGeneralChoose(room)
+    local all = sgs.Sanguosha:getRandomGenerals(sgs.Sanguosha:getGeneralCount())
+    local players = room:getPlayers()
+    shuffleTable(all)
+    for _, sp in sgs.qlist(players) do
+        local available = {}
+        for _ = 0, 4, 1 do
+            local choice = findReasonable(all)
+            table.insert(available, choice)
+            table.removeOne(all, choice)
+        end
+        local general = room:askForGeneral(sp, table.concat(available, '+'))
+        table.insertTable(all, available)
+        table.removeOne(all, general)
+        sp:setTag('LandlordsGeneral', sgs.QVariant(general))
+        shuffleTable(all)
+    end
+    for _, p in sgs.qlist(players) do
+        local general = p:getTag('LandlordsGeneral'):toString()
+        if general then
+            room:changeHero(p, general, false, false, false, false)
+        end
+    end
+end
+
+-- 打乱 table
+function shuffleTable(table)
+    local len = #table
+    for i = 0, len - 1, 1 do
+        local j = random(i, len - 1)
+        table[i], table[j] = table[j], table[i]
+    end
+end
+
+function findReasonable(generals, no_unreasonable)
+    for _, name in ipairs(generals) do
+        local banList = sgs.GetConfig('Banlist/Roles', ''):split(',')
+        if not table.contains(banList, name) then
+            return name
+        end
+    end
+    if no_unreasonable then
+        return ''
+    end
+    return generals[0]
+end
+
 -- 使用 Fisher-Yates 洗牌算法打乱牌堆
 function shuffleDrawPile(room)
     local drawPile = room:getDrawPile()
@@ -1864,6 +1912,120 @@ function initIndirectCombination(room)
         ['card_str'] = table.concat(ids, '+'),
     })
     room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+end
+
+-- 将马钧装备包移出游戏
+function removeMajunEquipsFromPile(room)
+    -- 被 Ban 了就不用操作
+    if isPackageBanned('MajunEquipCardPackage') then
+        return
+    end
+    local drawPile = room:getDrawPile()
+    local ids = {}
+    for _, id in sgs.qlist(drawPile) do
+        local cd = sgs.Sanguosha:getCard(id)
+        if isMajunEquip(cd) then
+            table.insert(ids, id)
+        end
+    end
+    for _, id in ipairs(ids) do
+        drawPile:removeOne(id)
+        room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+    end
+    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+end
+
+-- 升级装备对应
+local MAJUN_EQUIPS = {
+    ['yuanrong_crossbow'] = 'crossbow',
+    ['xiantian_eightdiagram'] = 'eight_diagram',
+    ['jingang_renwang_shield'] = 'renwang_shield',
+    ['zhaoyue_silver_lion'] = 'silver_lion',
+    ['tongyou_vine'] = 'vine',
+}
+
+-- 原始装备对应升级
+local EQUIP_UPGRADE = {
+    ['crossbow'] = 'yuanrong_crossbow',
+    ['eight_diagram'] = 'xiantian_eightdiagram',
+    ['renwang_shield'] = 'jingang_renwang_shield',
+    ['silver_lion'] = 'zhaoyue_silver_lion',
+    ['vine'] = 'tongyou_vine',
+}
+
+-- 是否是马钧装备
+function isMajunEquip(card)
+    return MAJUN_EQUIPS[card:objectName()] ~= nil
+end
+
+-- 是否可以升级
+function canBeUpgrade(card)
+    return EQUIP_UPGRADE[card:objectName()] ~= nil
+end
+
+-- 获取升级卡牌
+function majunUpgradeCard(card, player)
+    local room = player:getRoom()
+    local newEquipName = EQUIP_UPGRADE[card:objectName()]
+    if not newEquipName then
+        return
+    end
+    local newEquip
+    for i = 0, 10000 do
+        local cd = sgs.Sanguosha:getEngineCard(i)
+        if cd == nil then
+            break
+        end
+        if cd:objectName() == newEquipName and cd:getSuit() == card:getSuit() then
+            newEquip = cd
+            break
+        end
+    end
+    if not newEquip then
+        return
+    end
+    -- 移除旧装备
+    local ids = sgs.IntList()
+    ids:append(card:getEffectiveId())
+    local place = room:getCardPlace(card:getEffectiveId())
+    moveOutCardFromGame(ids, player, place)
+    -- 获取新装备
+    local newIds = sgs.IntList()
+    newIds:append(newEquip:getEffectiveId())
+    obtainCard(newIds, player)
+end
+
+-- 将卡牌移出游戏
+function moveOutCardFromGame(card_ids, mover, place)
+    local room = mover:getRoom()
+    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, mover:objectName(), 'moveout', '')
+    local moves = sgs.CardsMoveList()
+    local move = sgs.CardsMoveStruct(card_ids, mover, nil, place, sgs.Player_DrawPile, reason)
+    moves:append(move)
+    room:notifyMoveCards(true, moves, false)
+    for _, id in sgs.qlist(move.card_ids) do
+        local card = sgs.Sanguosha:getCard(id)
+        mover:removeCard(card, place)
+        room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+    end
+    room:notifyMoveCards(false, moves, false)
+    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
+end
+
+-- 获取卡牌
+function obtainCard(ids, player)
+    local room = player:getRoom()
+    local moves = sgs.CardsMoveList()
+    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_DRAW, player:objectName(), 'obtain', '')
+    local move = sgs.CardsMoveStruct(ids, nil, player, sgs.Player_DrawPile, sgs.Player_PlaceHand, reason)
+    moves:append(move)
+    room:notifyMoveCards(true, moves, true)
+    for _, id in sgs.qlist(move.card_ids) do
+        local card = sgs.Sanguosha:getCard(id)
+        player:addCard(card, sgs.Player_PlaceHand)
+        room:setCardMapping(id, player, sgs.Player_PlaceHand)
+    end
+    room:notifyMoveCards(false, moves, true)
 end
 
 -- CardType 参数，用于 getCardMostProbably 方法
