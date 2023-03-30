@@ -6,13 +6,6 @@ extension = sgs.Package('MajunEquipCardPackage', sgs.Package_CardPack)
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function ArmorSkillTriggerable(target, armor)
-    if (not target) or (not target:getArmor()) then
-        return false
-    end
-    return target:hasArmorEffect(armor:objectName())
-end
-
 local skillList = sgs.SkillList()
 
 -- 元戎精械弩
