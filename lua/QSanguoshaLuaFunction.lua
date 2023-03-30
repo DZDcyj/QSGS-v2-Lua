@@ -940,7 +940,7 @@ function landlordsGeneralChoose(room)
     shuffleTable(all)
     for _, sp in sgs.qlist(players) do
         local available = {}
-        for k = 0, 4, 1 do
+        for _ = 0, 4, 1 do
             local choice = findReasonable(all)
             table.insert(available, choice)
             table.removeOne(all, choice)
