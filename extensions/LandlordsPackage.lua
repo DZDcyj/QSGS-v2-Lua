@@ -111,6 +111,8 @@ LuaDizhu = sgs.CreateTriggerSkill {
         room:sendCompulsoryTriggerLog(player, self:objectName())
         room:addPlayerMark(player, self:objectName())
 
+        rinsan.landlordsGeneralChoose(room)
+
         -- 设置初始血量，主要针对不满血的武将
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             local start_hp = rinsan.getStartHp(p)

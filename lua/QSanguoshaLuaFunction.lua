@@ -933,6 +933,54 @@ function askForLuckCard(room)
     room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
+-- 斗地主模式武将选择
+function landlordsGeneralChoose(room)
+    local all = sgs.Sanguosha:getRandomGenerals(sgs.Sanguosha:getGeneralCount())
+    local players = room:getPlayers()
+    shuffleTable(all)
+    for _, sp in sgs.qlist(players) do
+        local available = {}
+        for k = 0, 4, 1 do
+            local choice = findReasonable(all)
+            table.insert(available, choice)
+            table.removeOne(all, choice)
+        end
+        local general = room:askForGeneral(sp, table.concat(available, '+'))
+        table.insertTable(all, available)
+        table.removeOne(all, general)
+        sp:setTag('LandlordsGeneral', sgs.QVariant(general))
+        shuffleTable(all)
+    end
+    for _, p in sgs.qlist(players) do
+        local general = p:getTag('LandlordsGeneral'):toString()
+        if general then
+            room:changeHero(p, general, false, false, false, false)
+        end
+    end
+end
+
+-- 打乱 table
+function shuffleTable(table)
+    local len = #table
+    for i = 0, len - 1, 1 do
+        local j = random(i, len - 1)
+        table[i], table[j] = table[j], table[i]
+    end
+end
+
+function findReasonable(generals, no_unreasonable)
+    for _, name in ipairs(generals) do
+        local banList = sgs.GetConfig('Banlist/Roles', ''):split(',')
+        if not table.contains(banList, name) then
+            return name
+        end
+    end
+    if no_unreasonable then
+        return ''
+    end
+    return generals[0]
+end
+
 -- 使用 Fisher-Yates 洗牌算法打乱牌堆
 function shuffleDrawPile(room)
     local drawPile = room:getDrawPile()
