@@ -492,7 +492,9 @@ LuaLingrenAIInitializer = sgs.CreateTriggerSkill {
         if room:getTag('LuaLingrenAIInitialized'):toBool() then
             return false
         end
-        rinsan.cardNumInitialize(room)
+        for _, caoying in sgs.qlist(room:findPlayersBySkillName('LuaLingren')) do
+            rinsan.cardNumInitialize(room, caoying)
+        end
         room:setTag('LuaLingrenAIInitialized', sgs.QVariant(true))
     end,
     can_trigger = globalTrigger,

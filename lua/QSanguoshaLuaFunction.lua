@@ -1311,7 +1311,7 @@ function calculateProbably(unknownCardNum, typeCardRemain, totalRemain, cardType
 end
 
 -- 初始化三种牌数量
-function cardNumInitialize(room)
+function cardNumInitialize(room, source)
     local totalBasic, totalTrick, totalEquip = 0, 0, 0
     for _, cid in sgs.qlist(room:getDrawPile()) do
         local cd = sgs.Sanguosha:getCard(cid)
@@ -1390,7 +1390,7 @@ function unknownAnalyze(resultList, source, target, room)
     local totalTrick = room:getTag('LuaLingrenAITrick')
     local totalEquip = room:getTag('LuaLingrenAIEquip')
     while (not totalBasic) or (not totalTrick) or (not totalEquip) do
-        cardNumInitialize(room)
+        cardNumInitialize(room, source)
         totalBasic = room:getTag('LuaLingrenAIBasic')
         totalTrick = room:getTag('LuaLingrenAITrick')
         totalEquip = room:getTag('LuaLingrenAIEquip')
