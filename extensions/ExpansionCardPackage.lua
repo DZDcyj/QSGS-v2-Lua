@@ -73,3 +73,72 @@ for i = 2, 9, 1 do
     card:setNumber(i)
     card:setParent(extension)
 end
+
+-- 调剂盐梅
+adjust_salt_plum = sgs.CreateTrickCard {
+    name = 'adjust_salt_plum',
+    class_name = 'AdjustSaltPlum',
+    target_fixed = false,
+    can_recast = true,
+    is_cancelable = true,
+    filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return true
+        elseif #selected == 1 then
+            return to_select:getHandcardNum() ~= selected[1]:getHandcardNum()
+        end
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets == 2
+    end,
+    about_to_use = function(self, room, card_use)
+        local source = card_use.from
+        local targets = card_use.to
+        if targets:length() ~= 2 then
+            room:writeToConsole(debug.traceback())
+            return
+        end
+        local more = targets:at(0)
+        local less = targets:at(1)
+        if more:getHandcardNum() < less:getHandcardNum() then
+            more, less = less, more
+        end
+        local data = sgs.QVariant()
+        data:setValue(less)
+        more:setTag('AdjustSaltPlum', data)
+        local use = sgs.CardUseStruct(self, source, more)
+        self:cardOnUse(room, use)
+    end,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local room = source:getRoom()
+        local more = effect.to
+        local less = more:getTag('AdjustSaltPlum'):toPlayer()
+        local prompt = string.format('%s:%s', 'AdjustSaltPlum-Discard', source:objectName())
+        local discard = room:askForCard(more, '.!', prompt, sgs.QVariant(), sgs.Card_MethodDiscard)
+        if not discard then
+            local cards = more:getCards('he')
+            discard = cards:at(rinsan.random(0, cards:length() - 1))
+        end
+        less:drawCards(1, self:objectName())
+        if more:getHandcardNum() == less:getHandcardNum() then
+            local choosePrompt = string.format('%s:%s::%s:%s', 'AdjustSaltPlum-Choose', discard:objectName(),
+                discard:getSuitString(), discard:getNumberString())
+            local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), choosePrompt,
+                true)
+            if target then
+                target:obtainCard(discard)
+            end
+        end
+    end,
+}
+
+local suits = {sgs.Card_Heart, sgs.Card_Spade, sgs.Card_Diamond, sgs.Card_Club}
+
+for i = 1, 4, 1 do
+    local card = adjust_salt_plum:clone()
+    card:setSuit(suits[i])
+    card:setNumber(6)
+    card:setParent(extension)
+end
