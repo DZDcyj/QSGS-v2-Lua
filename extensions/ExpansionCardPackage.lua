@@ -85,7 +85,14 @@ adjust_salt_plum = sgs.CreateTrickCard {
         if #selected == 0 then
             return true
         elseif #selected == 1 then
-            return to_select:getHandcardNum() ~= selected[1]:getHandcardNum()
+            local to_select_count = to_select:getHandcardNum()
+            local first_count = selected[1]:getHandcardNum()
+            if to_select:objectName() == sgs.Self:objectName() then
+                to_select_count = to_select_count - 1
+            elseif selected[1]:objectName() == sgs.Self:objectName() then
+                first_count = first_count - 1
+            end
+            return to_select_count ~= first_count
         end
         return false
     end,
