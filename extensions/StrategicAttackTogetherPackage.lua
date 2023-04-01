@@ -30,6 +30,7 @@ LuaMouQiaoshi = sgs.CreateTriggerSkill {
                     ['to'] = player,
                     ['arg'] = self:objectName(),
                 })
+                room:broadcastSkillInvoke(self:objectName())
                 room:doAnimate(rinsan.ANIMATE_INDICATE, damage.from:objectName(), player:objectName())
                 rinsan.recover(room, player, damage.damage, damage.from)
                 damage.from:drawCards(2, self:objectName())
@@ -73,6 +74,7 @@ LuaMouYanyu = sgs.CreateTriggerSkill {
             local prompt = string.format('LuaMouYanyu-choose:%d', count)
             local target = room:askForPlayerChosen(player, targets, self:objectName(), prompt, true, true)
             if target then
+                room:broadcastSkillInvoke(self:objectName())
                 target:drawCards(count, self:objectName())
             end
         end
