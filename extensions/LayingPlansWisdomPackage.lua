@@ -734,6 +734,87 @@ ExShenGuojia:addSkill(LuaLimitHuishi)
 SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
 
+-- 费祎
+ExFeiyi = sgs.General(extension, 'ExFeiyi', 'shu', '3', true)
+
+LuaJianyuCard = sgs.CreateSkillCard {
+    name = 'LuaJianyu',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return true
+        elseif #selected == 1 then
+            return to_select:objectName() ~= selected[1]:objectName()
+        end
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets == 2
+    end,
+    on_use = function(self, room, source, targets)
+        for _, target in ipairs(targets) do
+            room:addPlayerMark(target, '@LuaJianyu')
+        end
+        room:addPlayerMark(source, self:objectName() .. '_lun')
+    end,
+}
+
+LuaJianyuVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaJianyu',
+    view_as = function(self, cards)
+        return LuaJianyuCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark(self:objectName() .. '_lun') == 0
+    end,
+}
+
+LuaJianyu = sgs.CreateTriggerSkill {
+    name = 'LuaJianyu',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaJianyuVS,
+    on_trigger = function(self, event, player, data, room)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerMark(p, '@LuaJianyu', 0)
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_RoundStart)
+    end
+}
+
+LuaJianyuDraw = sgs.CreateTriggerSkill {
+    name = 'LuaJianyuDraw',
+    events = {sgs.TargetConfirming},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local feiyi = room:findPlayerBySkillName('LuaJianyu')
+        if not feiyi then
+            return false
+        end
+        local use = data:toCardUse()
+        if (not use.card) or use.card:isKindOf('SkillCard') then
+            return false
+        end
+        if use.from and use.from:getMark('@LuaJianyu') > 0 then
+            for _, p in sgs.qlist(use.to) do
+                if p:getMark('@LuaJianyu') > 0 and p:objectName() ~= use.from:objectName() then
+                    room:sendCompulsoryTriggerLog(feiyi, 'LuaJianyu')
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, feiyi:objectName(), p:objectName())
+                    p:drawCards(1, 'LuaJianyu')
+                    -- Default only one target
+                    break
+                end
+            end
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+ExFeiyi:addSkill(LuaJianyu)
+SkillAnjiang:addSkill(LuaJianyuDraw)
+
 -- 陈震
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true)
 

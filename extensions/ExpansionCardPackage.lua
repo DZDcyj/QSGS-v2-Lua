@@ -90,9 +90,52 @@ adjust_salt_plum = sgs.CreateTrickCard {
         return false
     end,
     feasible = function(self, targets)
+        local rec = sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY
+        local sub = sgs.IntList()
+        if self:isVirtualCard() then
+            sub = self:getSubcards()
+        else
+            sub:append(self:getEffectiveId())
+        end
+        for _, id in sgs.qlist(sub) do
+            if sgs.Self:getHandPile():contains(id) then
+                rec = false
+                break
+            end
+        end
+        if rec and sgs.Self:isCardLimited(self, sgs.Card_MethodUse) then
+            return #targets == 0
+        end
+        if rec then
+            return #targets == 2 or #targets == 0
+        end
         return #targets == 2
     end,
     about_to_use = function(self, room, card_use)
+        -- Recast
+        if card_use.to:isEmpty() then
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_RECAST, card_use.from:objectName())
+            reason.m_skillName = self:getSkillName()
+            local ids = sgs.IntList()
+            if self:isVirtualCard() then
+                ids = self:getSubcards()
+            else
+                ids:append(self:getEffectiveId())
+            end
+            local moves = sgs.CardsMoveList()
+            for _, id in sgs.qlist(ids) do
+                local move = sgs.CardsMoveStruct(id, nil, sgs.Player_DiscardPile, reason)
+                moves:append(move)
+            end
+            room:moveCardsAtomic(moves, true)
+            card_use.from:broadcastSkillInvoke('@recast')
+            rinsan.sendLogMessage(room, '#UseCard_Recast', {
+                ['from'] = card_use.from,
+                ['card_str'] = card_use.card:toString(),
+            })
+            card_use.from:drawCards(1, 'recast')
+            return
+        end
         local source = card_use.from
         local targets = card_use.to
         if targets:length() ~= 2 then
@@ -120,13 +163,14 @@ adjust_salt_plum = sgs.CreateTrickCard {
         if not discard then
             local cards = more:getCards('he')
             discard = cards:at(rinsan.random(0, cards:length() - 1))
+            room:throwCard(discard, more)
         end
         less:drawCards(1, self:objectName())
         if more:getHandcardNum() == less:getHandcardNum() then
             local choosePrompt = string.format('%s:%s::%s:%s', 'AdjustSaltPlum-Choose', discard:objectName(),
                 discard:getSuitString(), discard:getNumberString())
-            local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), choosePrompt,
-                true)
+            local target =
+                room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), choosePrompt, true)
             if target then
                 target:obtainCard(discard)
             end
