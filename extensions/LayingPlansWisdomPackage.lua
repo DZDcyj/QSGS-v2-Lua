@@ -798,14 +798,10 @@ LuaJianyuDraw = sgs.CreateTriggerSkill {
             return false
         end
         if use.from and use.from:getMark('@LuaJianyu') > 0 then
-            for _, p in sgs.qlist(use.to) do
-                if p:getMark('@LuaJianyu') > 0 and p:objectName() ~= use.from:objectName() then
-                    room:sendCompulsoryTriggerLog(feiyi, 'LuaJianyu')
-                    room:doAnimate(rinsan.ANIMATE_INDICATE, feiyi:objectName(), p:objectName())
-                    p:drawCards(1, 'LuaJianyu')
-                    -- Default only one target
-                    break
-                end
+            if player:getMark('@LuaJianyu') > 0 and player:objectName() ~= use.from:objectName() then
+                room:sendCompulsoryTriggerLog(feiyi, 'LuaJianyu')
+                room:doAnimate(rinsan.ANIMATE_INDICATE, feiyi:objectName(), player:objectName())
+                player:drawCards(1, 'LuaJianyu')
             end
         end
     end,
@@ -830,18 +826,23 @@ LuaShengxi = sgs.CreateTriggerSkill {
                         table.insert(ids, card:getId())
                     end
                 end
+                local available_ids = {}
                 for _, id in ipairs(ids) do
                     local place = room:getCardPlace(id)
                     local owner = room:getCardOwner(id)
                     if not owner then
-                        if place ~= sgs.Player_DrawPile then
-                            local id_list = sgs.IntList()
-                            id_list:append(id)
-                            rinsan.obtainCard(id_list, player)
-                            break
+                        if place ~= sgs.Player_DiscardPile then
+                            table.insert(available_ids, id)
                         end
                     end
                 end
+                if #available_ids == 0 then
+                    return false
+                end
+                local id = available_ids[rinsan.random(1, #available_ids)]
+                local id_list = sgs.IntList()
+                id_list:append(id)
+                rinsan.obtainCard(id_list, player)
                 room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
             end
         elseif player:getPhase() == sgs.Player_Finish then
