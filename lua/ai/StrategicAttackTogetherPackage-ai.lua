@@ -1,7 +1,5 @@
 -- 谋攻篇-同包 AI
 -- Created by DZDcyj at 2023/4/1
--- 引入封装函数包
-local rinsan = require('QSanguoshaLuaFunction')
 
 -- 谋夏侯氏
 -- 樵拾
