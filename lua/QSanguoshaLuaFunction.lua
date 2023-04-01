@@ -2028,6 +2028,20 @@ function obtainCard(ids, player)
     room:notifyMoveCards(false, moves, true)
 end
 
+-- 判断是否是智囊牌
+function isZhinangCard(card)
+    if card:isKindOf('ExNihilo') then
+        return true
+    end
+    if card:isKindOf('Dismantlement') then
+        return true
+    end
+    if card:isKindOf('Nullification') then
+        return true
+    end
+    return false
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2

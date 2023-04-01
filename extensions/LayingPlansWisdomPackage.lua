@@ -781,7 +781,7 @@ LuaJianyu = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_RoundStart)
-    end
+    end,
 }
 
 LuaJianyuDraw = sgs.CreateTriggerSkill {
@@ -812,8 +812,79 @@ LuaJianyuDraw = sgs.CreateTriggerSkill {
     can_trigger = globalTrigger,
 }
 
+LuaShengxi = sgs.CreateTriggerSkill {
+    name = 'LuaShengxi',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Start then
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                local drawPile = room:getDrawPile()
+                local ids = {}
+                for i = 0, 10000 do
+                    local card = sgs.Sanguosha:getEngineCard(i)
+                    if card == nil then
+                        break
+                    end
+                    if card:isKindOf('AdjustSaltPlum') and card:getNumber() == 6 then
+                        table.insert(ids, card:getId())
+                    end
+                end
+                for _, id in ipairs(ids) do
+                    local place = room:getCardPlace(id)
+                    local owner = room:getCardOwner(id)
+                    if not owner then
+                        if place ~= sgs.Player_DrawPile then
+                            local id_list = sgs.IntList()
+                            id_list:append(id)
+                            rinsan.obtainCard(id_list, player)
+                            break
+                        end
+                    end
+                end
+                room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+            end
+        elseif player:getPhase() == sgs.Player_Finish then
+            if player:hasFlag('LuaShengxiCardUsed') and not player:hasFlag('LuaShengxiDamageCaused') then
+                if room:askForSkillInvoke(player, self:objectName(), data) then
+                    local choice = room:askForChoice(player, self:objectName(), 'LuaShengxiZhinang+LuaShengxiDraw')
+                    if choice == 'LuaShengxiZhinang' then
+                        local obtain = rinsan.obtainCardFromPile(rinsan.isZhinangCard, room:getDrawPile())
+                        if obtain then
+                            player:obtainCard(obtain, false)
+                            return
+                        end
+                    end
+                    player:drawCards(1, self:objectName())
+                end
+            end
+        end
+    end,
+}
+
+LuaShengxiCheck = sgs.CreateTriggerSkill {
+    name = 'LuaShengxiCheck',
+    events = {sgs.Damage, sgs.CardUsed},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Damage then
+            room:setPlayerFlag(player, 'LuaShengxiDamageCaused')
+        else
+            local use = data:toCardUse()
+            if use.card and (not use.card:isKindOf('SkillCard')) then
+                room:setPlayerFlag(player, 'LuaShengxiCardUsed')
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTNOTATPHASE(self, target, sgs.Player_NotActive, 'LuaShengxi')
+    end,
+}
+
 ExFeiyi:addSkill(LuaJianyu)
 SkillAnjiang:addSkill(LuaJianyuDraw)
+ExFeiyi:addSkill(LuaShengxi)
+SkillAnjiang:addSkill(LuaShengxiCheck)
 
 -- 陈震
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true)
