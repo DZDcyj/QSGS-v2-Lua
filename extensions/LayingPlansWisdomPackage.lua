@@ -735,7 +735,7 @@ SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
 
 -- 费祎
-ExFeiyi = sgs.General(extension, 'ExFeiyi', 'shu', '3', true)
+ExFeiyi = sgs.General(extension, 'ExFeiyi', 'shu', '3', true, true)
 
 LuaJianyuCard = sgs.CreateSkillCard {
     name = 'LuaJianyu',
@@ -800,6 +800,7 @@ LuaJianyuDraw = sgs.CreateTriggerSkill {
         if use.from and use.from:getMark('@LuaJianyu') > 0 then
             if player:getMark('@LuaJianyu') > 0 and player:objectName() ~= use.from:objectName() then
                 room:sendCompulsoryTriggerLog(feiyi, 'LuaJianyu')
+                room:broadcastSkillInvoke('LuaJianyu')
                 room:doAnimate(rinsan.ANIMATE_INDICATE, feiyi:objectName(), player:objectName())
                 player:drawCards(1, 'LuaJianyu')
             end
@@ -815,7 +816,6 @@ LuaShengxi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
             if room:askForSkillInvoke(player, self:objectName(), data) then
-                local drawPile = room:getDrawPile()
                 local ids = {}
                 for i = 0, 10000 do
                     local card = sgs.Sanguosha:getEngineCard(i)
@@ -842,12 +842,13 @@ LuaShengxi = sgs.CreateTriggerSkill {
                 local id = available_ids[rinsan.random(1, #available_ids)]
                 local id_list = sgs.IntList()
                 id_list:append(id)
+                room:broadcastSkillInvoke(self:objectName())
                 rinsan.obtainCard(id_list, player)
-                room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
             end
         elseif player:getPhase() == sgs.Player_Finish then
             if player:hasFlag('LuaShengxiCardUsed') and not player:hasFlag('LuaShengxiDamageCaused') then
                 if room:askForSkillInvoke(player, self:objectName(), data) then
+                    room:broadcastSkillInvoke(self:objectName())
                     local choice = room:askForChoice(player, self:objectName(), 'LuaShengxiZhinang+LuaShengxiDraw')
                     if choice == 'LuaShengxiZhinang' then
                         local obtain = rinsan.obtainCardFromPile(rinsan.isZhinangCard, room:getDrawPile())
