@@ -91,7 +91,11 @@ adjust_salt_plum = sgs.CreateTrickCard {
             end
             table.insert(handcardNums, curr)
         end
-        if table.contains(handcardNums, to_select:getHandcardNum()) then
+        local to_select_handcards_num =  to_select:getHandcardNum()
+        if to_select:objectName() == sgs.Self:objectName() then
+            to_select_handcards_num = to_select_handcards_num - 1
+        end
+        if table.contains(handcardNums, to_select_handcards_num) then
             return false
         end
         return #selected < total_num and (not sgs.Self:isCardLimited(self, sgs.Card_MethodUse))
