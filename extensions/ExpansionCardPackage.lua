@@ -82,19 +82,19 @@ adjust_salt_plum = sgs.CreateTrickCard {
     can_recast = true,
     is_cancelable = true,
     filter = function(self, selected, to_select)
-        if #selected == 0 then
-            return true
-        elseif #selected == 1 then
-            local to_select_count = to_select:getHandcardNum()
-            local first_count = selected[1]:getHandcardNum()
-            if to_select:objectName() == sgs.Self:objectName() then
-                to_select_count = to_select_count - 1
-            elseif selected[1]:objectName() == sgs.Self:objectName() then
-                first_count = first_count - 1
+        local total_num = 2 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, sgs.Self, self)
+        local handcardNums = {}
+        for _, p in ipairs(selected) do
+            local curr = p:getHandcardNum()
+            if p:objectName() == sgs.Self:objectName() then
+                curr = curr - 1
             end
-            return to_select_count ~= first_count
+            table.insert(handcardNums, curr)
         end
-        return false
+        if table.contains(handcardNums, to_select:getHandcardNum()) then
+            return false
+        end
+        return #selected < total_num and (not sgs.Self:isCardLimited(self, sgs.Card_MethodUse))
     end,
     feasible = function(self, targets)
         local rec = sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_PLAY
@@ -114,9 +114,9 @@ adjust_salt_plum = sgs.CreateTrickCard {
             return #targets == 0
         end
         if rec then
-            return #targets == 2 or #targets == 0
+            return #targets > 1 or #targets == 0
         end
-        return #targets == 2
+        return #targets > 1
     end,
     about_to_use = function(self, room, card_use)
         -- Recast
@@ -145,42 +145,74 @@ adjust_salt_plum = sgs.CreateTrickCard {
         end
         local source = card_use.from
         local targets = card_use.to
-        if targets:length() ~= 2 then
-            room:writeToConsole(debug.traceback())
-            return
-        end
-        local more = targets:at(0)
-        local less = targets:at(1)
-        if more:getHandcardNum() < less:getHandcardNum() then
-            more, less = less, more
-        end
-        local data = sgs.QVariant()
-        data:setValue(less)
-        more:setTag('AdjustSaltPlum', data)
-        local use = sgs.CardUseStruct(self, source, more)
+        local use = sgs.CardUseStruct(self, source, targets)
         self:cardOnUse(room, use)
     end,
-    on_effect = function(self, effect)
-        local source = effect.from
-        local room = source:getRoom()
-        local more = effect.to
-        local less = more:getTag('AdjustSaltPlum'):toPlayer()
-        local prompt = string.format('%s:%s', 'AdjustSaltPlum-Discard', source:objectName())
-        local discard = room:askForCard(more, '.!', prompt, sgs.QVariant(), sgs.Card_MethodDiscard)
-        if not discard then
-            local cards = more:getCards('he')
-            discard = cards:at(rinsan.random(0, cards:length() - 1))
-            room:throwCard(discard, more)
+    on_use = function(self, room, source, targets)
+        local minCard = 10000
+        for _, p in ipairs(targets) do
+            if p:getHandcardNum() < minCard then
+                minCard = p:getHandcardNum()
+            end
         end
-        less:drawCards(1, self:objectName())
-        if more:getHandcardNum() == less:getHandcardNum() then
-            local choosePrompt = string.format('%s:%s::%s:%s', 'AdjustSaltPlum-Choose', discard:objectName(),
-                discard:getSuitString(), discard:getNumberString())
+        room:setTag('AdjustSaltPlum', sgs.QVariant(minCard))
+        local ids = sgs.IntList()
+        local data2 = sgs.QVariant()
+        data2:setValue(ids)
+        room:setTag('AdjustSaltPlumDiscards', data2)
+        local target_list = sgs.SPlayerList()
+        for _, target in ipairs(targets) do
+            target_list:append(target)
+        end
+        rinsan.defaultOnUse(self, room, source, targets)
+        local allSame = true
+        if #targets == 0 then
+            return
+        end
+        for i = 1, #targets - 1, 1 do
+            if targets[i]:getHandcardNum() ~= targets[i + 1]:getHandcardNum() then
+                allSame = false
+                break
+            end
+        end
+        if allSame then
+            local discard = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            for _, id in sgs.qlist(room:getTag('AdjustSaltPlumDiscards'):toIntList()) do
+                if room:getCardPlace(id) == sgs.Player_DiscardPile then
+                    discard:addSubcard(id)
+                end
+            end
+            if discard:subcardsLength() == 0 then
+                return
+            end
+            local choosePrompt = string.format('%s', 'AdjustSaltPlum-Choose')
             local target =
                 room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), choosePrompt, true)
             if target then
                 target:obtainCard(discard)
             end
+        end
+    end,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local target = effect.to
+        local room = target:getRoom()
+        local minNum = room:getTag('AdjustSaltPlum'):toInt()
+        local prompt = string.format('%s:%s', 'AdjustSaltPlum-Discard', source:objectName())
+        if target:getHandcardNum() > minNum then
+            local discard = room:askForCard(target, '.!', prompt, sgs.QVariant(), sgs.Card_MethodDiscard)
+            if not discard then
+                local cards = target:getCards('he')
+                discard = cards:at(rinsan.random(0, cards:length() - 1))
+                room:throwCard(discard, target)
+            end
+            local ids = room:getTag('AdjustSaltPlumDiscards'):toIntList()
+            ids:append(discard:getEffectiveId())
+            local data = sgs.QVariant()
+            data:setValue(ids)
+            room:setTag('AdjustSaltPlumDiscards', data)
+        elseif target:getHandcardNum() == minNum then
+            target:drawCards(1, self:objectName())
         end
     end,
 }

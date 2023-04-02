@@ -23,5 +23,5 @@ return {
     然后若这两名角色手牌数相同，你可以将以此法弃置的牌交给一名角色。\
     重铸：出牌阶段，你可以将此牌置入弃牌堆，摸一张牌',
     ['AdjustSaltPlum-Discard'] = '%src 使用了【调剂盐梅】，你须弃置一张牌',
-    ['AdjustSaltPlum-Choose'] = '你可以将 %src[%arg%arg2] 交给一名角色',
+    ['AdjustSaltPlum-Choose'] = '你可以将所有弃置的牌交给一名角色',
 }

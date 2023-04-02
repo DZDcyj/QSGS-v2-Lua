@@ -2042,6 +2042,46 @@ function isZhinangCard(card)
     return false
 end
 
+-- 常规 on_use
+function defaultOnUse(card, room, source, targets)
+    local nullified_list = room:getTag('CardUseNullifiedList'):toStringList()
+    local all_nullified = table.contains(nullified_list, '_ALL_TARGETS')
+    for _, target in ipairs(targets) do
+        local effect = sgs.CardEffectStruct()
+        effect.card = card
+        effect.from = source
+        effect.to = target
+        effect.multiple = #targets > 1
+        effect.nullified = (all_nullified or table.contains(nullified_list, target:objectName()))
+
+        room:cardEffect(effect)
+    end
+
+    local ids = sgs.IntList()
+    if card:isVirtualCard() then
+        ids = card:getSubcards()
+    else
+        ids:append(card:getId())
+    end
+    local moves = sgs.CardsMoveList()
+    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_USE, source:objectName(),'',card:getSkillName(), '')
+    if #targets == 1 then
+        reason.m_targetId = targets:first():objectName()
+    end
+    local data = sgs.QVariant()
+    data:setValue(card)
+    reason.m_extraData = data
+    for _, id in sgs.qlist(ids) do
+        if room:getCardPlace(id) == sgs.Player_PlaceTable then
+            local move = sgs.CardsMoveStruct(id, source, nil, sgs.Player_PlaceTable, sgs.Player_DiscardPile, reason)
+            moves:append(move)
+        end
+    end
+    if not moves:isEmpty() then
+        room:moveCardsAtomic(moves, true)
+    end
+end
+
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1
 TRICK_CARD = 2
