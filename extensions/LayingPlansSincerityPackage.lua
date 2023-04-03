@@ -22,59 +22,65 @@ end
 -- 吴景
 ExWujing = sgs.General(extension, 'ExWujing', 'wu', '4', true, true)
 
+local function askForHeji(self, wujing, victim)
+    local room = wujing:getRoom()
+    local pattern = 'Slash,Duel|.'
+    if wujing:getMark(self:objectName()) == 0 then
+        local choices = {
+            [1] = self:objectName() .. 'Slash',
+            [2] = self:objectName() .. 'Duel',
+            [3] = self:objectName() .. 'NoMoreHint',
+            [4] = 'cancel',
+        }
+        local choice = room:askForChoice(wujing, self:objectName(), table.concat(choices, '+'))
+        if choice == choices[3] then
+            room:addPlayerMark(wujing, self:objectName())
+        elseif choice ~= choices[4] then
+            pattern = rinsan.firstToLower(string.gsub(choice, self:objectName(), ''))
+        else
+            return false
+        end
+    end
+    local prompt = string.format('LuaHeji_ask:%s::%s', victim:objectName(), pattern)
+    local card = room:askForCard(wujing, pattern, prompt, sgs.QVariant(), sgs.Card_MethodResponse, nil, true)
+    if card then
+        local card_use = sgs.CardUseStruct()
+        card_use.card = card
+        card_use.from = wujing
+        card_use.to:append(victim)
+        room:notifySkillInvoked(wujing, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
+        rinsan.skill(self, room, wujing, true)
+        if not card:isVirtualCard() then
+            local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
+            if not toObtain then
+                toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
+            end
+            if toObtain then
+                room:obtainCard(wujing, toObtain, false)
+            end
+        end
+        room:useCard(card_use)
+    end
+end
+
 LuaHeji = sgs.CreateTriggerSkill {
     name = 'LuaHeji',
     events = {sgs.CardFinished},
     global = true,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
+        if use.to:length() > 1 then
+            return false
+        end
         if use.card and ((use.card:isKindOf('Slash') and use.card:isRed()) or use.card:isKindOf('Duel')) then
-            if use.to:length() == 1 then
-                local victim = use.to:at(0)
-                if not victim:isAlive() then
-                    return false
-                end
-                local wujings = room:findPlayersBySkillName(self:objectName())
-                for _, wujing in sgs.qlist(wujings) do
-                    local pattern = 'Slash,Duel|.'
-                    if wujing:getMark(self:objectName()) == 0 then
-                        local choices = {
-                            [1] = self:objectName() .. 'Slash',
-                            [2] = self:objectName() .. 'Duel',
-                            [3] = self:objectName() .. 'NoMoreHint',
-                            [4] = 'cancel',
-                        }
-                        local choice = room:askForChoice(wujing, self:objectName(), table.concat(choices, '+'))
-                        if choice == choices[3] then
-                            room:addPlayerMark(wujing, self:objectName())
-                        elseif choice ~= choices[4] then
-                            pattern = rinsan.firstToLower(string.gsub(choice, self:objectName(), ''))
-                        else
-                            return false
-                        end
-                    end
-                    local card = room:askForCard(wujing, pattern, string.format('LuaHeji_ask:%s::%s', victim:objectName(), pattern),
-                        sgs.QVariant(), sgs.Card_MethodResponse, nil, true)
-                    if card then
-                        local card_use = sgs.CardUseStruct()
-                        card_use.card = card
-                        card_use.from = wujing
-                        card_use.to:append(victim)
-                        room:notifySkillInvoked(wujing, self:objectName())
-                        room:broadcastSkillInvoke(self:objectName())
-                        rinsan.skill(self, room, wujing, true)
-                        if not card:isVirtualCard() then
-                            local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
-                            if not toObtain then
-                                toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
-                            end
-                            if toObtain then
-                                room:obtainCard(wujing, toObtain, false)
-                            end
-                        end
-                        room:useCard(card_use)
-                    end
-                end
+            local victim = use.to:at(0)
+            if not victim:isAlive() then
+                return false
+            end
+            local wujings = room:findPlayersBySkillName(self:objectName())
+            for _, wujing in sgs.qlist(wujings) do
+                askForHeji(self, wujing, victim)
             end
         end
         return false
@@ -105,7 +111,7 @@ LuaLiubing = sgs.CreateTriggerSkill {
                 ['from'] = player,
                 ['card_str'] = card:toString(),
                 ['arg2'] = card:toString(),
-                ['arg'] = self:objectName()
+                ['arg'] = self:objectName(),
             })
             card:setSuit(sgs.Card_Diamond)
             if event == sgs.CardUsed then
@@ -123,7 +129,7 @@ LuaLiubing = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
-    end
+    end,
 }
 
 LuaLiubingObtain = sgs.CreateTriggerSkill {
