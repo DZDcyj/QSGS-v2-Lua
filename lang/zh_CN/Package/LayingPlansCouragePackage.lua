@@ -42,6 +42,7 @@ return {
     ['luachuifeng'] = '椎锋',
     [':LuaChuifeng'] = '<font color="#547998"><b>魏势力技</b></font>，<font color="green"><b>出牌阶段限两次</b></font>，你可以失去一点体力，视为使用一张【决斗】。\
     当你受到此【决斗】的伤害时，你防止此伤害，然后此技能于此阶段内失效',
+    ['#LuaChuifeng'] = '%from 的“%arg”被触发，防止了 %card 带来的伤害',
     ['LuaChongjian'] = '冲坚',
     ['luachongjian'] = '冲坚',
     [':LuaChongjian'] = '<font color="#4DB873"><b>吴势力技</b></font>，你可以将一张装备牌当【酒】或无距离限制且无视目标防具的【杀】使用。\

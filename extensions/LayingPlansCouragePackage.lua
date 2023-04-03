@@ -423,7 +423,7 @@ LuaChuifengVS = sgs.CreateZeroCardViewAsSkill {
         if player:getKingdom() ~= 'wei' then
             return false
         end
-        return player:usedTimes('#LuaChuifengCard') < 2 and (not player:hasFlag('LuaChuifengSelfDamaged'))
+        return player:usedTimes('#LuaChuifengCard') < 2 and player:getMark('LuaChuifengSelfDamaged_biu') == 0
     end,
 }
 
@@ -434,9 +434,13 @@ LuaChuifeng = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         if damage.card and damage.card:getSkillName() == self:objectName() then
-            room:sendCompulsoryTriggerLog(player, self:objectName())
+            rinsan.sendLogMessage(room, '#LuaChuifeng', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+                ['card_str'] = damage.card:toString(),
+            })
             room:broadcastSkillInvoke(self:objectName())
-            room:setPlayerFlag(player, 'LuaChuifengSelfDamaged')
+            room:addPlayerMark(player, 'LuaChuifengSelfDamaged_biu')
             return true
         end
         return false
