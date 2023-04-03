@@ -19,6 +19,133 @@ local function targetTrigger(self, target)
     return target
 end
 
+-- 吴景
+ExWujing = sgs.General(extension, 'ExWujing', 'wu', '4', true, true)
+
+LuaHeji = sgs.CreateTriggerSkill {
+    name = 'LuaHeji',
+    events = {sgs.CardFinished},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and ((use.card:isKindOf('Slash') and use.card:isRed()) or use.card:isKindOf('Duel')) then
+            if use.to:length() == 1 then
+                local victim = use.to:at(0)
+                if not victim:isAlive() then
+                    return false
+                end
+                local wujings = room:findPlayersBySkillName(self:objectName())
+                for _, wujing in sgs.qlist(wujings) do
+                    local pattern = 'Slash,Duel|.'
+                    local card = room:askForCard(wujing, pattern, string.format('LuaHeji_ask:%s', victim:objectName()),
+                        sgs.QVariant(), sgs.Card_MethodNone)
+                    if card then
+                        local card_use = sgs.CardUseStruct()
+                        card_use.card = card
+                        card_use.from = wujing
+                        card_use.to:append(victim)
+                        room:notifySkillInvoked(wujing, self:objectName())
+                        room:broadcastSkillInvoke(self:objectName())
+                        rinsan.skill(self, room, wujing, true)
+                        if not card:isVirtualCard() then
+                            local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
+                            if not toObtain then
+                                toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
+                            end
+                            if toObtain then
+                                room:obtainCard(wujing, toObtain, false)
+                            end
+                        end
+                        room:useCard(card_use, false)
+                    end
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return target
+    end
+}
+
+LuaLiubing = sgs.CreateTriggerSkill {
+    name = 'LuaLiubing',
+    events = {sgs.CardUsed, sgs.CardResponded},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:hasFlag('LuaLiubingInvoked') then
+            return false
+        end
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            if data:toCardResponse().m_isUse then
+                card = data:toCardResponse().m_card
+            end
+        end
+        if card and card:isKindOf('Slash') and (not card:isVirtualCard()) then
+            room:setPlayerFlag(player, 'LuaLiubingInvoked')
+            rinsan.sendLogMessage(room, '#LuaLiubingSuitChange', {
+                ['from'] = player,
+                ['card_str'] = card:toString(),
+                ['arg2'] = card:toString(),
+                ['arg'] = self:objectName()
+            })
+            card:setSuit(sgs.Card_Diamond)
+            if event == sgs.CardUsed then
+                local use = data:toCardUse()
+                use.card = card
+                data:setValue(use)
+            else
+                if data:toCardResponse().m_isUse then
+                    local resp = data:toCardResponse()
+                    resp.m_card = card
+                    data:setValue(resp)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end
+}
+
+LuaLiubingObtain = sgs.CreateTriggerSkill {
+    name = 'LuaLiubingObtain',
+    global = true,
+    events = {sgs.CardFinished, sgs.Damage},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardFinished then
+            local wujing = room:findPlayerBySkillName('LuaLiubing')
+            if not wujing then
+                return false
+            end
+            local use = data:toCardUse()
+            if use.card and use.card:isKindOf('Slash') and use.card:isBlack() and (not use.card:isVirtualCard()) then
+                if use.card:hasFlag('LuaLiubingDamaged') or use.from:objectName() == wujing:objectName() then
+                    return false
+                end
+                room:sendCompulsoryTriggerLog(wujing, 'LuaLiubing')
+                room:obtainCard(wujing, use.card)
+            end
+        else
+            local damage = data:toDamage()
+            if damage.card and damage.card:isKindOf('Slash') and damage.card:isBlack() and
+                (not damage.card:isVirtualCard()) then
+                room:setCardFlag(damage.card, 'LuaLiubingDamaged');
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return true
+    end
+}
+
+ExWujing:addSkill(LuaHeji)
+ExWujing:addSkill(LuaLiubing)
+SkillAnjiang:addSkill(LuaLiubingObtain)
+
 -- 周处
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
 
