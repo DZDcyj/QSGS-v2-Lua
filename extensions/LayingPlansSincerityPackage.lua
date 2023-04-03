@@ -37,8 +37,24 @@ LuaHeji = sgs.CreateTriggerSkill {
                 local wujings = room:findPlayersBySkillName(self:objectName())
                 for _, wujing in sgs.qlist(wujings) do
                     local pattern = 'Slash,Duel|.'
-                    local card = room:askForCard(wujing, pattern, string.format('LuaHeji_ask:%s', victim:objectName()),
-                        sgs.QVariant(), sgs.Card_MethodNone)
+                    if wujing:getMark(self:objectName()) == 0 then
+                        local choices = {
+                            [1] = self:objectName() .. 'Slash',
+                            [2] = self:objectName() .. 'Duel',
+                            [3] = self:objectName() .. 'NoMoreHint',
+                            [4] = 'cancel',
+                        }
+                        local choice = room:askForChoice(wujing, self:objectName(), table.concat(choices, '+'))
+                        if choice == choices[3] then
+                            room:addPlayerMark(wujing, self:objectName())
+                        elseif choice ~= choices[4] then
+                            pattern = rinsan.firstToLower(string.gsub(choice, self:objectName(), ''))
+                        else
+                            return false
+                        end
+                    end
+                    local card = room:askForCard(wujing, pattern, string.format('LuaHeji_ask:%s::%s', victim:objectName(), pattern),
+                        sgs.QVariant(), sgs.Card_MethodResponse, nil, true)
                     if card then
                         local card_use = sgs.CardUseStruct()
                         card_use.card = card
@@ -56,15 +72,14 @@ LuaHeji = sgs.CreateTriggerSkill {
                                 room:obtainCard(wujing, toObtain, false)
                             end
                         end
-                        room:useCard(card_use, false)
+                        room:useCard(card_use)
                     end
                 end
             end
         end
+        return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end
+    can_trigger = targetTrigger,
 }
 
 LuaLiubing = sgs.CreateTriggerSkill {
@@ -137,9 +152,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return true
-    end
+    can_trigger = globalTrigger,
 }
 
 ExWujing:addSkill(LuaHeji)
