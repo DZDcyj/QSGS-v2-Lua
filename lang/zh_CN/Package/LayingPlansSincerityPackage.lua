@@ -2,6 +2,20 @@
 
 return {
     ['LayingPlansSincerityPackage'] = '始计篇-信包',
+    ['ExWujing'] = '吴景',
+    ['&ExWujing'] = '吴景',
+    ['#ExWujing'] = '助吴征战',
+    ['LuaHeji'] = '合击',
+    [':LuaHeji'] = '当一名角色对其他角色使用仅指定一个目标的【决斗】或红色【杀】结算结束后，你可以对该目标角色使用一张无距离与次数限制的【杀】或【决斗】，然后若你使用的牌不为转化牌，你随机获得一张红色牌',
+    ['LuaHeji_ask'] = '你可以发动“合击”对 %src 使用一张 【%arg】',
+    ['LuaHejiSlash'] = '使用一张【杀】',
+    ['LuaHejiDuel'] = '使用一张【决斗】',
+    ['LuaHejiNoMoreHint'] = '本局游戏不再弹窗',
+    ['Slash,Duel|.'] = '杀】 或 【决斗',
+    ['LuaLiubing'] = '流兵',
+    [':LuaLiubing'] = '锁定技，①当你于出牌阶段内使用第一张非虚拟【杀】时，此牌的花色视为方块；\
+    ②当其他角色于其出牌阶段内使用非转化的黑色【杀】结算结束后，若此牌未造成过伤害，你获得之',
+    ['#LuaLiubingSuitChange'] = '%from 使用的 %card 花色因“%arg”效果被视为方块',
     ['ExZhouchu'] = '周处',
     ['&ExZhouchu'] = '周处',
     ['#ExZhouchu'] = '英情天逸',

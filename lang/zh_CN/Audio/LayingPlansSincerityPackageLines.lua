@@ -1,6 +1,10 @@
 -- lines for LayingPlans Sincerity Package
 
 return {
+    -- 吴景
+    ['$LuaHeji1'] = '你我合势而击之，区区贼寇岂会费力？',
+    ['$LuaHeji2'] = '伯符！今日之战，务必全力攻之！',
+    ['~ExWujing'] = '贼寇未除，奈何……吾身先丧！',
     -- 周处
     ['$LuaXianghai1'] = '快快闪开，伤到你们可就不好啦，哈哈哈哈哈哈！',
     ['$LuaXianghai2'] = '你自己撞上来的，这可怪不得小爷我！',
