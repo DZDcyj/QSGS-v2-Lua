@@ -952,9 +952,27 @@ function landlordsGeneralChoose(room)
         shuffleTable(all)
     end
     for _, p in sgs.qlist(players) do
+        local generalName = p:getTag('LandlordsGeneral'):toString()
+        local general = sgs.Sanguosha:getGeneral(generalName)
+        local toChange
+        if general:getKingdom() == 'god' then
+            toChange = room:askForKingdom(p)
+        elseif generalName == 'ExWenyang' then
+            toChange = room:askForChoice(p, 'LuaWenyangKingdomChoose', 'wei+wu')
+            room:addPlayerMark(p, 'LuaWenyangKingdomChoose')
+        end
+        if toChange then
+            p:setTag('KingdomChosen', sgs.QVariant(toChange))
+        end
+    end
+    for _, p in sgs.qlist(players) do
         local general = p:getTag('LandlordsGeneral'):toString()
         if general then
             room:changeHero(p, general, false, false, false, false)
+            if p:getTag('KingdomChosen') then
+                local kingdom = p:getTag('KingdomChosen'):toString()
+                room:setPlayerProperty(p, 'kingdom', sgs.QVariant(kingdom))
+            end
         end
     end
 end
@@ -2064,7 +2082,7 @@ function defaultOnUse(card, room, source, targets)
         ids:append(card:getId())
     end
     local moves = sgs.CardsMoveList()
-    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_USE, source:objectName(),'',card:getSkillName(), '')
+    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_USE, source:objectName(), '', card:getSkillName(), '')
     if #targets == 1 then
         reason.m_targetId = targets:first():objectName()
     end
