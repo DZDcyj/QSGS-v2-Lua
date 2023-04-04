@@ -42,7 +42,19 @@ local function askForHeji(self, wujing, victim)
         end
     end
     local prompt = string.format('LuaHeji_ask:%s::%s', victim:objectName(), pattern)
+    for _, cd in sgs.qlist(wujing:getCards('he')) do
+        if wujing:isCardLimited(cd, sgs.Card_MethodUse) or room:isProhibited(wujing, victim, cd) then
+            room:setCardFlag(cd, 'HejiDisabled')
+            room:setPlayerCardLimitation(wujing, 'use, response', cd:toString(), false)
+        end
+    end
     local card = room:askForCard(wujing, pattern, prompt, sgs.QVariant(), sgs.Card_MethodResponse, nil, true)
+    for _, cd in sgs.qlist(wujing:getCards('he')) do
+        if cd:hasFlag('HejiDisabled') then
+            room:setCardFlag(cd, '-HejiDisabled')
+            room:removePlayerCardLimitation(wujing, 'use, response', cd:toString() .. '$0')
+        end
+    end
     if card then
         local card_use = sgs.CardUseStruct()
         card_use.card = card
