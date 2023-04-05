@@ -403,7 +403,7 @@ LuaChuifengCard = sgs.CreateSkillCard {
                 return false
             end
             if duel:targetFilter(targets_list, to_select, sgs.Self) then
-                return not sgs.Self:isProhibited(to_select, duel, targets_list)
+                return not sgs.Self:isProhibited(to_select, duel)
             end
         end
         return false

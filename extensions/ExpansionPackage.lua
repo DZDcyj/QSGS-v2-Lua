@@ -6645,7 +6645,7 @@ LuaOLShizhanCard = sgs.CreateSkillCard {
                 return false
             end
             if duel:targetFilter(targets_list, sgs.Self, to_select) then
-                return not to_select:isProhibited(sgs.Self, duel, targets_list)
+                return not to_select:isProhibited(sgs.Self, duel)
             end
         end
         return false
