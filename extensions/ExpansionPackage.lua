@@ -6640,7 +6640,10 @@ LuaOLShizhanCard = sgs.CreateSkillCard {
             local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
             duel:setSkillName('LuaOLShizhan')
             duel:deleteLater()
-            -- 不知为何没有生效
+            -- 特殊处理李丰
+            if to_select:hasSkill('tunchu') and (not to_select:getPile('food'):isEmpty()) then
+                return false
+            end
             if to_select:isCardLimited(duel, sgs.Card_MethodUse) then
                 return false
             end
