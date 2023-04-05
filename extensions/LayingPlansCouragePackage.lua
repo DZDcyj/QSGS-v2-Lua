@@ -420,7 +420,6 @@ LuaChuifengCard = sgs.CreateSkillCard {
 LuaChuifengVS = sgs.CreateZeroCardViewAsSkill {
     name = 'LuaChuifeng',
     view_as = function(self, cards)
-        local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
         return LuaChuifengCard:clone()
     end,
     enabled_at_play = function(self, player)
