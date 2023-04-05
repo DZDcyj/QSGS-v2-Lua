@@ -6638,7 +6638,7 @@ LuaOLShizhanCard = sgs.CreateSkillCard {
                 targets_list:append(target)
             end
             local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
-            duel:setSkillName('LuaOLShizhan')
+            duel:setSkillName('_LuaOLShizhan')
             duel:deleteLater()
             -- 特殊处理李丰
             if to_select:hasSkill('tunchu') and (not to_select:getPile('food'):isEmpty()) then
@@ -6656,7 +6656,7 @@ LuaOLShizhanCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local target = targets[1]
         local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
-        duel:setSkillName('LuaOLShizhan')
+        duel:setSkillName('_LuaOLShizhan')
         room:useCard(sgs.CardUseStruct(duel, target, source))
     end,
 }
