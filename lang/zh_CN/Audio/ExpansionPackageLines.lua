@@ -288,4 +288,10 @@ return {
     ['$LuaBingqing1'] = '常怀圣言，以是自励！',
     ['$LuaBingqing2'] = '身受贵宠，不忘初心！',
     ['~ExMaojie'] = '废立大事，公不可不慎……',
+    -- OL界华雄
+    ['$LuaOLYaowu1'] = '这些杂兵，我有何惧！',
+    ['$LuaOLYaowu2'] = '有吾在此，解太师烦忧',
+    ['$LuaOLShizhan1'] = '兀那汉子，且报上名来！',
+    ['$LuaOLShizhan2'] = '看你能坚持几个回合！',
+    ['~OLJieHuaxiong'] = '我掉以轻心了……',
 }
