@@ -6601,3 +6601,72 @@ LuaBingqing = sgs.CreateTriggerSkill {
 }
 
 ExMaojie:addSkill(LuaBingqing)
+
+-- OL 界华雄
+OLJieHuaxiong = sgs.General(extension, 'OLJieHuaxiong', 'qun', '6', true, true)
+
+LuaOLYaowu = sgs.CreateTriggerSkill {
+    name = 'LuaOLYaowu',
+    events = {sgs.DamageInflicted},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card then
+            room:broadcastSkillInvoke(self:objectName())
+            room:sendCompulsoryTriggerLog(damage.to, self:objectName())
+            if damage.card:isRed() then
+                if damage.from and damage.from:isAlive() then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, damage.to:objectName(), damage.from:objectName())
+                    damage.from:drawCards(1, self:objectName())
+                end
+            else
+                damage.to:drawCards(1, self:objectName())
+            end
+        end
+        return false
+    end,
+}
+
+LuaOLShizhanCard = sgs.CreateSkillCard {
+    name = 'LuaOLShizhanCard',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        if rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) then
+            local targets_list = sgs.PlayerList()
+            for _, target in ipairs(selected) do
+                targets_list:append(target)
+            end
+            local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
+            duel:setSkillName('LuaOLShizhan')
+            duel:deleteLater()
+            -- 不知为何没有生效
+            if to_select:isCardLimited(duel, sgs.Card_MethodUse) then
+                return false
+            end
+            if duel:targetFilter(targets_list, sgs.Self, to_select) then
+                return not to_select:isProhibited(sgs.Self, duel, targets_list)
+            end
+        end
+        return false
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
+        duel:setSkillName('LuaOLShizhan')
+        room:useCard(sgs.CardUseStruct(duel, target, source))
+    end,
+}
+
+LuaOLShizhan = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaOLShizhan',
+    view_as = function(self, cards)
+        return LuaOLShizhanCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:usedTimes('#LuaOLShizhanCard') < 2
+    end,
+}
+
+OLJieHuaxiong:addSkill(LuaOLYaowu)
+OLJieHuaxiong:addSkill(LuaOLShizhan)

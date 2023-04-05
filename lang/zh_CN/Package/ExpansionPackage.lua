@@ -578,4 +578,12 @@ return {
     ['LuaBingqing-invoke2'] = '你可以发动“秉清”令一名角色摸两张牌',
     ['LuaBingqing-invoke3'] = '你可以发动“秉清”弃置一名角色区域内的一张牌',
     ['LuaBingqing-invoke4'] = '你可以发动“秉清”对一名其他角色造成一点伤害',
+    ['OLJieHuaxiong'] = 'OL界华雄',
+    ['&OLJieHuaxiong'] = '界华雄',
+    ['#OLJieHuaxiong'] = '飞扬跋扈',
+    ['LuaOLYaowu'] = '耀武',
+    [':LuaOLYaowu'] = '锁定技，当你受到伤害时，若造成伤害的牌：为红色，伤害来源摸一张牌；不为红色，你摸一张牌',
+    ['LuaOLShizhan'] = '势斩',
+    [':LuaOLShizhan'] = '<font color="green"><b>出牌阶段限两次</b></font>，你可以令一名其他角色视为对你使用一张【决斗】',
+    ['luaolshizhan'] = '势斩',
 }
