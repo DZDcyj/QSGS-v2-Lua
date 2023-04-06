@@ -108,7 +108,7 @@ return {
     ['$LuaJingxie1-ExMajun_2'] = '墨守成规，不如改而善之',
     ['$LuaJingxie2-ExMajun_2'] = '弃巧具，吾安矣',
     ['$LuaQiaosi1-ExMajun_2'] = '才通墨翟，巧比公输',
-    ['$LuaQiaosi2-ExMajun_2'] = '沉机照物。妙思考神',
+    ['$LuaQiaosi2-ExMajun_2'] = '沉机照物，妙思考神',
     ['~ExMajun-ExMajun_2'] = '古今巧器，未能尽见，实乃憾事',
     -- 麴义
     ['$fuji1-quyi_1'] = '白马？不足挂齿！',
