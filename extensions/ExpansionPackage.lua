@@ -2898,19 +2898,19 @@ JieLiru:addSkill(LuaFencheng)
 JieManchong = sgs.General(extension, 'JieManchong', 'wei', '3', true)
 
 LuaJunxingCard = sgs.CreateSkillCard {
-    name = 'LuaJunxingCard',
+    name = 'LuaJunxing',
     filter = function(self, selected, to_select)
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
-        room:broadcastSkillInvoke('LuaJunxing')
+        room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
         local len = self:subcardsLength()
-        if room:askForDiscard(target, 'LuaJunxing', len, len, true, true, '@LuaJunxing:::' .. len) then
+        if room:askForDiscard(target, self:objectName(), len, len, true, true, '@LuaJunxing:::' .. len) then
             room:loseHp(target)
         else
             target:turnOver()
-            target:drawCards(len, 'LuaJunxing')
+            target:drawCards(len, self:objectName())
         end
     end,
 }
@@ -2932,7 +2932,7 @@ LuaJunxing = sgs.CreateViewAsSkill {
         return nil
     end,
     enabled_at_play = function(self, player)
-        return not player:hasUsed('#LuaJunxingCard') and not player:isKongcheng()
+        return not player:hasUsed('#LuaJunxing') and not player:isKongcheng()
     end,
 }
 
