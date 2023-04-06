@@ -62,12 +62,22 @@ return {
     ['$jiuyuan2-sunquan_1'] = '顿感雄师百万来援！',
     ['~sunquan-sunquan_1'] = '终究还是不如父亲和大哥……',
     -- 界徐盛
+    -- 勇烈却敌
     ['$LuaPojun1-JieXusheng_1'] = '以攻为守，破敌卫疆！',
     ['$LuaPojun2-JieXusheng_1'] = '这长江天险后，便是江东铁壁！',
     ['~JieXusheng-JieXusheng_1'] = '望吾死后，江东依然无人敢犯……',
+    -- 知著侠
     ['$LuaPojun1-JieXusheng_2'] = '盛一出杀，必然是一场腥风血雨',
     ['$LuaPojun2-JieXusheng_2'] = '因为，盛一刀便砍了你四血',
     ['~JieXusheng-JieXusheng_2'] = '主公，盛盛错了',
+    -- 万夫莫开
+    ['$LuaPojun1-JieXusheng_3'] = '江东铁壁，御敌于千里之外！',
+    ['$LuaPojun2-JieXusheng_3'] = '破军剑舞，正在此时！',
+    ['~JieXusheng-JieXusheng_3'] = '贼军连绵不绝，盛力已竭……',
+    -- 破军杀将
+    ['$LuaPojun1-JieXusheng_4'] = '战将临阵，斩关刈城！',
+    ['$LuaPojun2-JieXusheng_4'] = '区区数百魏军，看我一击灭之！',
+    ['~JieXusheng-JieXusheng_4'] = '来世…愿再为我江东之臣！',
     -- 杨彪
     ['$LuaZhaohan1-ExYangbiao_1'] = '兴复汉室，文先自当尽力而为',
     ['$LuaZhaohan2-ExYangbiao_1'] = '风雨飘摇，徒增忠臣嗟叹',
