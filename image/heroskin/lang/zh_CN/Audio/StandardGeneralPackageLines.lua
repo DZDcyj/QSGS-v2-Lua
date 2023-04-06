@@ -283,4 +283,10 @@ return {
     ["$guixin1-shencaocao_2"] = '我麾下众将短命无妨',
     ["$guixin2-shencaocao_2"] = '好计，就依奉孝说的办吧',
     ["~shencaocao-shencaocao_2"] = '我命休矣',
+    -- 界满宠
+    ['$LuaJunxing1-JieManchong_1'] = '看你如何诡辩！',
+    ['$LuaJunxing2-JieManchong_1'] = '天子犯法，也与庶民同罪！',
+    ['$LuaYuce1-JieManchong_1'] = '亡羊补牢，为时未晚',
+    ['$LuaYuce2-JieManchong_1'] = '坚守城阙，以待援军',
+    ['~JieManchong-JieManchong_1'] = '酷法峻刑，不得人心啊……',
 }
