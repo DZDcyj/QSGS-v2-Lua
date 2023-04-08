@@ -356,8 +356,8 @@ end
 
 -- 界满宠
 -- 峻刑
-sgs.ai_use_value['LuaJunxingCard'] = 10
-sgs.ai_use_priority['LuaJunxingCard'] = 1.2
+sgs.ai_use_value['LuaJunxing'] = 10
+sgs.ai_use_priority['LuaJunxing'] = 1.2
 
 local LuaJunxing_skill = {}
 LuaJunxing_skill.name = 'LuaJunxing'
@@ -366,19 +366,19 @@ table.insert(sgs.ai_skills, LuaJunxing_skill)
 
 -- 是否发动过“峻刑”，如果没有，进行选择
 LuaJunxing_skill.getTurnUseCard = function(self, inclusive)
-    if not self.player:isKongcheng() and not self.player:hasUsed('#LuaJunxingCard') then
-        return sgs.Card_Parse('#LuaJunxingCard:.:')
+    if not self.player:isKongcheng() and not self.player:hasUsed('#LuaJunxing') then
+        return sgs.Card_Parse('#LuaJunxing:.:')
     end
 end
 
-sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
+sgs.ai_skill_use_func['#LuaJunxing'] = function(_card, use, self)
     -- 简单处理，丢最不值钱的一张手牌
     local cards = sgs.QList2Table(self.player:getHandcards())
     self:sortByKeepValue(cards)
     -- 如果有队友翻面，翻队友
     for _, friend in ipairs(self.friends_noself) do
         if not friend:faceUp() then
-            use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
+            use.card = sgs.Card_Parse('#LuaJunxing:' .. cards[1]:getEffectiveId() .. ':')
             if use.to then
                 use.to:append(friend)
             end
@@ -389,7 +389,7 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
     self:sort(self.enemies, 'defense')
     for _, enemy in ipairs(self.enemies) do
         if enemy:faceUp() and not enemy:hasSkill('zhaxiang') then
-            use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
+            use.card = sgs.Card_Parse('#LuaJunxing:' .. cards[1]:getEffectiveId() .. ':')
             if use.to then
                 use.to:append(enemy)
             end
@@ -403,7 +403,7 @@ sgs.ai_skill_use_func['#LuaJunxingCard'] = function(_card, use, self)
             table.insert(face_up_enemies, enemy)
         end
     end
-    use.card = sgs.Card_Parse('#LuaJunxingCard:' .. cards[1]:getEffectiveId() .. ':')
+    use.card = sgs.Card_Parse('#LuaJunxing:' .. cards[1]:getEffectiveId() .. ':')
     if use.to then
         use.to:append(face_up_enemies[rinsan.random(1, #face_up_enemies)])
     end
