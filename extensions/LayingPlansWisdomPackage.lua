@@ -52,7 +52,7 @@ LuaDingyi = sgs.CreateTriggerSkill {
 
 LuaDingyiBuff = sgs.CreateTriggerSkill {
     name = 'LuaDingyiBuff',
-    events = {sgs.DrawNCards, sgs.QuitDying},
+    events = {sgs.DrawNCards, sgs.QuitDying, sgs.Death},
     global = true,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.QuitDying then
@@ -68,7 +68,7 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
                 })
                 rinsan.recover(room, player, getDingyiCount(player))
             end
-        else
+        elseif event == sgs.DrawNCards then
             if player:getMark('@LuaDingyi') == 1 then
                 local count = data:toInt() + getDingyiCount(player)
                 room:broadcastSkillInvoke('LuaDingyi')
@@ -78,6 +78,19 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
                     ['arg2'] = getDingyiCount(player),
                 })
                 data:setValue(count)
+            end
+        else
+            local death = data:toDeath()
+            local death = data:toDeath()
+            local splayer = death.who
+            if splayer:objectName() ~= player:objectName() then
+                return false
+            end
+            if not player:hasSkill('LuaDingyi') then
+                return false
+            end
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                room:setPlayerMark(p, '@LuaDingyi', 0)
             end
         end
     end,
