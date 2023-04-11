@@ -81,7 +81,6 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
             end
         else
             local death = data:toDeath()
-            local death = data:toDeath()
             local splayer = death.who
             if splayer:objectName() ~= player:objectName() then
                 return false
