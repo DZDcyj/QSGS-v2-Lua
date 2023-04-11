@@ -90,6 +90,7 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
             end
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 room:setPlayerMark(p, '@LuaDingyi', 0)
+                room:setPlayerMark(p, '@LuaFubi', 0)
             end
         end
     end,
