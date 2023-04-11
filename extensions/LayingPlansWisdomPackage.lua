@@ -19,6 +19,192 @@ local function targetTrigger(self, target)
     return target
 end
 
+-- 孙邵
+ExSunshao = sgs.General(extension, 'ExSunshao', 'wu', '3', true, true)
+
+local function getDingyiCount(target, value)
+    value = value or 1
+    for i = 1, target:getMark('@LuaFubi'), 1 do
+        value = value * 2
+    end
+    return value
+end
+
+LuaDingyi = sgs.CreateTriggerSkill {
+    name = 'LuaDingyi',
+    events = {sgs.GameStart},
+    on_trigger = function(self, event, player, data, room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
+        local choices = {}
+        for i = 1, 4, 1 do
+            local mark = string.format('%s%d', self:objectName(), i)
+            table.insert(choices, mark)
+        end
+        local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+        local pos = rinsan.getPos(choices, choice)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerMark(p, '@LuaDingyi', pos)
+        end
+        return false
+    end,
+}
+
+LuaDingyiBuff = sgs.CreateTriggerSkill {
+    name = 'LuaDingyiBuff',
+    events = {sgs.DrawNCards, sgs.QuitDying},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.QuitDying then
+            if player:getMark('@LuaDingyi') ~= 4 then
+                return false
+            end
+            if data:toDying().who:objectName() == player:objectName() then
+                room:broadcastSkillInvoke('LuaDingyi')
+                rinsan.sendLogMessage(room, '#LuaDingyi4', {
+                    ['from'] = player,
+                    ['arg'] = 'LuaDingyi',
+                    ['arg2'] = getDingyiCount(player),
+                })
+                rinsan.recover(room, player, getDingyiCount(player))
+            end
+        else
+            if player:getMark('@LuaDingyi') == 1 then
+                local count = data:toInt() + getDingyiCount(player)
+                room:broadcastSkillInvoke('LuaDingyi')
+                rinsan.sendLogMessage(room, '#LuaDingyi1', {
+                    ['from'] = player,
+                    ['arg'] = 'LuaDingyi',
+                    ['arg2'] = getDingyiCount(player),
+                })
+                data:setValue(count)
+            end
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+LuaDingyiAttackRange = sgs.CreateAttackRangeSkill {
+    name = 'LuaDingyiAttackRange',
+    extra_func = function(self, from, card)
+        if from:getMark('@LuaDingyi') == 3 then
+            return getDingyiCount(from)
+        else
+            return 0
+        end
+    end,
+}
+
+LuaDingyiMaxCards = sgs.CreateMaxCardsSkill {
+    name = '#LuaDingyiMaxCards',
+    extra_func = function(self, target)
+        if target:getMark('@LuaDingyi') == 2 then
+            return getDingyiCount(target, 2)
+        end
+        return 0
+    end,
+}
+
+LuaZuici = sgs.CreateTriggerSkill {
+    name = 'LuaZuici',
+    events = {sgs.Damaged},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.from and damage.from:getMark('@LuaDingyi') > 0 then
+            local data2 = sgs.QVariant()
+            data2:setValue(damage.from)
+            if room:askForSkillInvoke(player, self:objectName(), data2) then
+                room:broadcastSkillInvoke(self:objectName())
+                room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.from:objectName())
+                room:setPlayerMark(damage.from, '@LuaDingyi', 0)
+                local cardName = room:askForChoice(player, self:objectName(), 'ex_nihilo+dismantlement+nullification')
+                local obtain = rinsan.obtainCardFromPile(function(cd)
+                    return cd:objectName() == cardName
+                end, room:getDrawPile())
+                if obtain then
+                    damage.from:obtainCard(obtain, true)
+                end
+            end
+        end
+        return false
+    end,
+}
+
+LuaFubiCard = sgs.CreateSkillCard {
+    name = 'LuaFubi',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return #selected == 0 and to_select:getMark('@LuaDingyi') > 0
+    end,
+    on_use = function(self, room, source, targets)
+        room:addPlayerMark(source, self:objectName() .. '_lun')
+        source:setTag('InvokeFubiTurnCount', sgs.QVariant(room:getTag('TurnLengthCount'):toInt()))
+        local target = targets[1]
+        local len = self:subcardsLength()
+        if len > 0 then
+            room:addPlayerMark(target, '@' .. self:objectName())
+            return
+        end
+        local choices = {}
+        local originChoices = {}
+        for i = 1, 4, 1 do
+            local mark = string.format('%s%d', 'LuaDingyi', i)
+            table.insert(choices, mark)
+            table.insert(originChoices, mark)
+        end
+        table.removeOne(choices, string.format('%s%d', 'LuaDingyi', target:getMark('@LuaDingyi')))
+        local choice = room:askForChoice(source, self:objectName(), table.concat(choices, '+'))
+        local pos = rinsan.getPos(originChoices, choice)
+        room:setPlayerMark(target, '@LuaDingyi', pos)
+    end,
+}
+
+LuaFubiVS = sgs.CreateViewAsSkill {
+    name = 'LuaFubi',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        return #selected == 0
+    end,
+    view_as = function(self, cards)
+        local vs_card = LuaFubiCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark(self:objectName() .. '_lun') == 0
+    end,
+}
+
+LuaFubi = sgs.CreateTriggerSkill {
+    name = 'LuaFubi',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaFubiVS,
+    on_trigger = function(self, event, player, data, room)
+        local curr = player:getTag('InvokeFubiTurnCount')
+        if curr then
+            if curr:toInt() == room:getTag('TurnLengthCount'):toInt() then
+                return false
+            end
+        end
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerMark(p, '@' .. self:objectName(), 0)
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_RoundStart)
+    end,
+}
+
+ExSunshao:addSkill(LuaDingyi)
+ExSunshao:addSkill(LuaZuici)
+ExSunshao:addSkill(LuaFubi)
+SkillAnjiang:addSkill(LuaDingyiBuff)
+SkillAnjiang:addSkill(LuaDingyiMaxCards)
+SkillAnjiang:addSkill(LuaDingyiAttackRange)
+
 -- 杜预
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
 
