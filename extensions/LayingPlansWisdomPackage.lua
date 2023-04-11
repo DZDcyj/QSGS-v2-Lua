@@ -24,7 +24,7 @@ ExSunshao = sgs.General(extension, 'ExSunshao', 'wu', '3', true, true)
 
 local function getDingyiCount(target, value)
     value = value or 1
-    for i = 1, target:getMark('@LuaFubi'), 1 do
+    for _ = 1, target:getMark('@LuaFubi'), 1 do
         value = value * 2
     end
     return value
