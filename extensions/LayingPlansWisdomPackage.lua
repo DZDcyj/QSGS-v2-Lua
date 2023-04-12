@@ -20,7 +20,7 @@ local function targetTrigger(self, target)
 end
 
 -- 卞夫人
-ExBianfuren = sgs.General(extension, 'ExBianfuren', 'wei', '3', true, true)
+ExBianfuren = sgs.General(extension, 'ExBianfuren', 'wei', '3', false, true)
 
 LuaWanweiCard = sgs.CreateSkillCard {
     name = 'LuaWanwei',
