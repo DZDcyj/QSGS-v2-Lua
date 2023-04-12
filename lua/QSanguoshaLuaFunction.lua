@@ -449,7 +449,15 @@ end
 
 -- 巧思封装函数
 function LuaDoQiaosiShow(room, player, dummyCard)
-    local choices = {'king', 'merchant', 'artisan', 'farmer', 'scholar', 'general', 'cancel'}
+    local choices = {
+        'king',
+        'merchant',
+        'artisan',
+        'farmer',
+        'scholar',
+        'general',
+        'cancel',
+    }
     local chosenRoles = {}
     local index = 0
     local continuePlaying = true
@@ -530,14 +538,56 @@ end
 -- 巧思获得牌的类型判断
 function LuaGetRoleCardType(roleType, kingActivated, generalActivated)
     local map = {
-        ['king'] = {'TrickCard', 'TrickCard'},
-        ['general'] = {'EquipCard', 'EquipCard'},
-        ['artisan'] = {'Slash', 'Slash', 'Slash', 'Slash', 'Analeptic'},
-        ['farmer'] = {'Jink', 'Jink', 'Jink', 'Jink', 'Peach'},
-        ['scholar'] = {'TrickCard', 'TrickCard', 'TrickCard', 'TrickCard', 'JinkOrPeach'},
-        ['scholarKing'] = {'Peach', 'Peach', 'Peach', 'Peach', 'Jink'},
-        ['merchant'] = {'EquipCard', 'EquipCard', 'EquipCard', 'EquipCard', 'SlashOrAnaleptic'},
-        ['merchantGeneral'] = {'Analeptic', 'Analeptic', 'Analeptic', 'Analeptic', 'Slash'},
+        ['king'] = {
+            'TrickCard',
+            'TrickCard',
+        },
+        ['general'] = {
+            'EquipCard',
+            'EquipCard',
+        },
+        ['artisan'] = {
+            'Slash',
+            'Slash',
+            'Slash',
+            'Slash',
+            'Analeptic',
+        },
+        ['farmer'] = {
+            'Jink',
+            'Jink',
+            'Jink',
+            'Jink',
+            'Peach',
+        },
+        ['scholar'] = {
+            'TrickCard',
+            'TrickCard',
+            'TrickCard',
+            'TrickCard',
+            'JinkOrPeach',
+        },
+        ['scholarKing'] = {
+            'Peach',
+            'Peach',
+            'Peach',
+            'Peach',
+            'Jink',
+        },
+        ['merchant'] = {
+            'EquipCard',
+            'EquipCard',
+            'EquipCard',
+            'EquipCard',
+            'SlashOrAnaleptic',
+        },
+        ['merchantGeneral'] = {
+            'Analeptic',
+            'Analeptic',
+            'Analeptic',
+            'Analeptic',
+            'Slash',
+        },
     }
     if roleType == 'scholar' and kingActivated then
         roleType = roleType .. 'King'
@@ -1457,7 +1507,12 @@ end
 
 function playerCanInvokeLingce(player, card)
     -- 判断是否为固定可以发动的【无中生有】【过河拆桥】【无懈可击】【奇正相生】
-    local fixed_types = {'ExNihilo', 'Dismantlement', 'Nullification', 'IndirectCombination'}
+    local fixed_types = {
+        'ExNihilo',
+        'Dismantlement',
+        'Nullification',
+        'IndirectCombination',
+    }
     for _, type in ipairs(fixed_types) do
         if card:isKindOf(type) then
             return true
@@ -1732,10 +1787,20 @@ YUQI_KEEP_COUNT = 3
 YUQI_DISTANCE = 4
 
 -- 函数映射
-YUQI_FUNCS = {getYuqiPreviewCardCount, getYuqiGiveCardCount, getYuqiKeepCardCount, getYuqiAvailableDistance}
+YUQI_FUNCS = {
+    getYuqiPreviewCardCount,
+    getYuqiGiveCardCount,
+    getYuqiKeepCardCount,
+    getYuqiAvailableDistance,
+}
 
 -- 映射位置
-YUQI_MAP = {'LuaYuqiPreviewCardCount', 'LuaYuqiGiveCardCount', 'LuaYuqiKeepCardCount', 'LuaYuqiDistance'}
+YUQI_MAP = {
+    'LuaYuqiPreviewCardCount',
+    'LuaYuqiGiveCardCount',
+    'LuaYuqiKeepCardCount',
+    'LuaYuqiDistance',
+}
 
 -- 孙寒华系列判断
 
@@ -1856,7 +1921,12 @@ end
 
 -- 获取秉清标记数
 function getBingQingMarkCount(player)
-    local suits = {sgs.Card_Diamond, sgs.Card_Spade, sgs.Card_Heart, sgs.Card_Club}
+    local suits = {
+        sgs.Card_Diamond,
+        sgs.Card_Spade,
+        sgs.Card_Heart,
+        sgs.Card_Club,
+    }
     local count = 0
     for _, suit in ipairs(suits) do
         local mark = string.format('@%s%s_biu', 'LuaBingqing', Suit2String(suit))
@@ -1867,8 +1937,18 @@ function getBingQingMarkCount(player)
     return count
 end
 
-local SHENCAI_KEYWORDS = {'体力', '武器', '打出', '距离'}
-local SHENCAI_MARKS = {'@LuaShencai-Chi', '@LuaShencai-Zhang', '@LuaShencai-Tu', '@LuaShencai-Liu'}
+local SHENCAI_KEYWORDS = {
+    '体力',
+    '武器',
+    '打出',
+    '距离',
+}
+local SHENCAI_MARKS = {
+    '@LuaShencai-Chi',
+    '@LuaShencai-Zhang',
+    '@LuaShencai-Tu',
+    '@LuaShencai-Liu',
+}
 
 -- 清除神张飞标记
 function clearShencaiMark(player)

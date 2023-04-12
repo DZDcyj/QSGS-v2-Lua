@@ -1,6 +1,14 @@
 -- lines for LayingPlans Wisdom Package
 
 return {
+    -- 孙邵
+    ['$LuaDingyi1'] = '经国序民，还需制礼定仪',
+    ['$LuaDingyi2'] = '无礼而治世，欲使国泰，安可得哉？',
+    ['$LuaZuici1'] = '既为朝堂宁定，吾请辞便是',
+    ['$LuaZuici2'] = '国事为先，何惧清名有损！',
+    ['$LuaFubi1'] = '辅君弼主，士之所志也',
+    ['$LuaFubi2'] = '献策思计，佐定江山',
+    ['~ExSunshao'] = '江东将相各有所能，奈何心向不一……',
     -- 杜预
     ['$LuaWuku1'] = '损益万枢，竭世运机',
     ['$LuaWuku2'] = '胸藏万卷，充盈如库',

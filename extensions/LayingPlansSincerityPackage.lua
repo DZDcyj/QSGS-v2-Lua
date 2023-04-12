@@ -271,6 +271,9 @@ LuaChuhai = sgs.CreateTriggerSkill {
         if (not damage.from) or damage.from:objectName() ~= player:objectName() then
             return false
         end
+        if player:getMark('LuaChuhaiWake') > 0 then
+            return false
+        end
         if damage.to and damage.to:getMark(self:objectName()) > 0 then
             local equip_index = -1
             for i = 0, 4, 1 do
