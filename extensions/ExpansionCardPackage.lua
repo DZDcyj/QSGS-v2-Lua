@@ -91,7 +91,7 @@ adjust_salt_plum = sgs.CreateTrickCard {
             end
             table.insert(handcardNums, curr)
         end
-        local to_select_handcards_num =  to_select:getHandcardNum()
+        local to_select_handcards_num = to_select:getHandcardNum()
         if to_select:objectName() == sgs.Self:objectName() then
             to_select_handcards_num = to_select_handcards_num - 1
         end
@@ -227,5 +227,54 @@ for i = 1, 4, 1 do
     local card = adjust_salt_plum:clone()
     card:setSuit(suits[i])
     card:setNumber(6)
+    card:setParent(extension)
+end
+
+-- 兵临城下
+city_under_siege = sgs.CreateTrickCard {
+    name = 'city_under_siege',
+    class_name = 'CityUnderSiege',
+    subtype = 'single_target_trick',
+    target_fixed = false,
+    can_recast = false,
+    is_cancelable = true,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
+    end,
+    feasible = function(self, targets)
+        return #targets == 1
+    end,
+    -- 无需覆写 on_use，否则会造成一系列结算问题
+    on_effect = function(self, effect)
+        local source = effect.from
+        local target = effect.to
+        local room = source:getRoom()
+        local card_ids = room:getNCards(4, false)
+        room:fillAG(card_ids)
+        room:getThread():delay(500)
+        local goback = sgs.IntList()
+        for _, id in sgs.qlist(card_ids) do
+            local cd = sgs.Sanguosha:getCard(id)
+            if cd:isKindOf('Slash') then
+                room:useCard(sgs.CardUseStruct(cd, source, target), false)
+            else
+                goback:append(id)
+            end
+        end
+        room:clearAG()
+        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', self:objectName(), nil)
+        local move = sgs.CardsMoveStruct(goback, nil, nil, sgs.Player_PlaceTable, sgs.Player_DrawPile, reason)
+        local moves = sgs.CardsMoveList()
+        moves:append(move)
+        room:notifyMoveCards(true, moves, false)
+        room:notifyMoveCards(false, moves, false)
+        room:returnToTopDrawPile(goback)
+    end,
+}
+
+for i = 1, 3, 1 do
+    local card = city_under_siege:clone()
+    card:setSuit(i ~= 1 and sgs.Card_Club or sgs.Card_Spade)
+    card:setNumber(i == 3 and 13 or 7)
     card:setParent(extension)
 end
