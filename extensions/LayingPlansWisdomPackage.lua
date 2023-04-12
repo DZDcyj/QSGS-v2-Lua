@@ -19,6 +19,90 @@ local function targetTrigger(self, target)
     return target
 end
 
+-- 卞夫人
+ExBianfuren = sgs.General(extension, 'ExBianfuren', 'wei', '3', true, true)
+
+LuaWanweiCard = sgs.CreateSkillCard {
+    name = 'LuaWanwei',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, selected, to_select)
+        -- 使用 getLostHp 避免“归命”影响
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and to_select:getLostHp() > 0
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local x = source:getHp()
+        rinsan.recover(target, x + 1, source)
+        room:loseHp(source, x)
+    end,
+}
+
+LuaWanweiVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaWanwei',
+    view_as = function(self, cards)
+        return LuaWanweiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark(self:objectName() .. '_lun') == 0
+    end,
+}
+
+LuaWanwei = sgs.CreateTriggerSkill {
+    name = 'LuaWanwei',
+    events = {sgs.Dying},
+    view_as_skill = LuaWanweiVS,
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if dying.who:objectName() == player:objectName() then
+            return false
+        end
+        local data2 = sgs.QVariant()
+        data2:setValue(dying.who)
+        if room:askForSkillInvoke(player, self:objectName(), data2) then
+            local x = math.max(player:getHp(), 1 - dying.who:getHp())
+            room:addPlayerMark(player, self:objectName() .. '_lun')
+            rinsan.recover(dying.who, x, player)
+            room:loseHp(player, player:getHp())
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getMark(self:objectName() .. '_lun') == 0
+    end,
+}
+
+LuaYuejian = sgs.CreateTriggerSkill {
+    name = 'LuaYuejian',
+    events = {sgs.Dying},
+    on_trigger = function(self, event, player, data, room)
+        local dying = data:toDying()
+        if dying.who:objectName() ~= player:objectName() then
+            return false
+        end
+        if room:askForDiscard(player, self:objectName(), 2, 2, true, true, 'LuaYuejian-Discard') then
+            rinsan.skill(self, room, player, true)
+            rinsan.recover(player, 1)
+        end
+        return false
+    end,
+}
+
+LuaYuejianMaxCards = sgs.CreateMaxCardsSkill {
+    name = 'LuaYuejianMaxCards',
+    fixed_func = function(self, target)
+        if target:hasSkill('LuaYuejian') then
+            return target:getMaxHp()
+        else
+            return -1
+        end
+    end,
+}
+
+ExBianfuren:addSkill(LuaWanwei)
+ExBianfuren:addSkill(LuaYuejian)
+SkillAnjiang:addSkill(LuaYuejianMaxCards)
+
 -- 孙邵
 ExSunshao = sgs.General(extension, 'ExSunshao', 'wu', '3', true, true)
 

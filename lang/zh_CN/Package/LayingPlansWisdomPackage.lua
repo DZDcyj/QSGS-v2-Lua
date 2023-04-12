@@ -2,6 +2,15 @@
 
 return {
     ['LayingPlansWisdomPackage'] = '始计篇-智包',
+    ['ExBianfuren'] = '卞夫人',
+    ['&ExBianfuren'] = '卞夫人',
+    ['#ExBianfuren'] = '内助贤后',
+    ['LuaWanwei'] = '挽危',
+    [':LuaWanwei'] = '每轮限一次，当一名其他角色进入濒死状态时，或出牌阶段内你可以选择一名其他角色，你可以令其回复X+1点体力（若不足使其脱离濒死，改为回复至1点体力），然后你失去X点体力（X为你的体力值）',
+    ['luawanwei'] = '挽危',
+    ['LuaYuejian'] = '约俭',
+    [':LuaYuejian'] = '你的手牌上限等于体力上限；当你进入濒死状态时，你可以弃置两张牌，回复1点体力',
+    ['LuaYuejian-Discard'] = '你可以弃置两张牌发动“约俭”回复一点体力',
     ['ExSunshao'] = '孙邵',
     ['&ExSunshao'] = '孙邵',
     ['#ExSunshao'] = '创基抉政',
