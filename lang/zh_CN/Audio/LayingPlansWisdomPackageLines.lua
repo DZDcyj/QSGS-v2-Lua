@@ -1,6 +1,12 @@
 -- lines for LayingPlans Wisdom Package
 
 return {
+    -- 卞夫人
+    ['$LuaWanwei1'] = '梁沛之间，无子廉焉有今日？',
+    ['$LuaWanwei2'] = '汝兄弟既为手足，何必苦苦相逼？',
+    ['$LuaYuejian1'] = '吾母仪天下，于节俭处当率先垂范',
+    ['$LuaYuejian2'] = '取上为贪，取下为伪，妾则取其中者',
+    ['~ExBianfuren'] = '夫君，妾身终于要随您而去了',
     -- 孙邵
     ['$LuaDingyi1'] = '经国序民，还需制礼定仪',
     ['$LuaDingyi2'] = '无礼而治世，欲使国泰，安可得哉？',

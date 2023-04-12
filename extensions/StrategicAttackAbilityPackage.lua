@@ -37,7 +37,7 @@ LuaMouYaowu = sgs.CreateTriggerSkill {
                     room:doAnimate(rinsan.ANIMATE_INDICATE, damage.to:objectName(), damage.from:objectName())
                     local choice = room:askForChoice(damage.from, 'yaowu', table.concat(choices, '+'))
                     if choice == 'recover' then
-                        rinsan.recover(room, damage.from, 1)
+                        rinsan.recover(damage.from, 1)
                     else
                         damage.from:drawCards(1, self:objectName())
                     end
@@ -159,7 +159,7 @@ LuaMouLiangzhuCard = sgs.CreateSkillCard {
         table.insert(choices, 'LuaMouLiangzhuChoice2')
         local choice = room:askForChoice(zhuTarget, self:objectName(), table.concat(choices, '+'))
         if choice == 'LuaMouLiangzhuChoice1' then
-            rinsan.recover(room, zhuTarget)
+            rinsan.recover(zhuTarget)
         else
             zhuTarget:drawCards(2, self:objectName())
         end
@@ -206,7 +206,7 @@ LuaMouJieyinAwakeHelper = sgs.CreateTriggerSkill {
         room:broadcastSkillInvoke('LuaMouJieyin', 2)
         if room:changeMaxHpForAwakenSkill(mousunshangxiang, 0) then
             room:addPlayerMark(mousunshangxiang, jieyinMark)
-            rinsan.recover(room, mousunshangxiang)
+            rinsan.recover(mousunshangxiang)
             local to_obtain = sgs.IntList()
             local card_table = {}
             for _, id in sgs.qlist(mousunshangxiang:getPile('LuaMouLiangzhuPile')) do

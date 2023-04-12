@@ -1296,7 +1296,8 @@ end
 -- value 要回复的体力值，默认为1
 -- source 体力回复来源，默认为 nil
 -- card 体力回复来源卡牌，默认为 nil
-function recover(room, target, value, source, card)
+function recover(target, value, source, card)
+    local room = target:getRoom()
     value = value or 1
     room:recover(target, sgs.RecoverStruct(source, card, value))
 end

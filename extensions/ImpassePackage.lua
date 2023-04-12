@@ -190,7 +190,7 @@ LuaJizhan = sgs.CreateTriggerSkill {
                 local damage = data:toDamage()
                 if damage.to:objectName() ~= player:objectName() and player:isWounded() then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
-                    rinsan.recover(room, player, damage.damage)
+                    rinsan.recover(player, damage.damage)
                 end
             end
         else
@@ -392,7 +392,7 @@ LuaBaozou = sgs.CreateTriggerSkill {
                                 local x = p:getHp()
                                 room:loseHp(p, x)
                                 if x > 1 then
-                                    rinsan.recover(room, p, x - 1)
+                                    rinsan.recover(p, x - 1)
                                 end
                             end
                         end

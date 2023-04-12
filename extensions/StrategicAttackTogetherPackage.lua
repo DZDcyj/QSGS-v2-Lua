@@ -32,7 +32,7 @@ LuaMouQiaoshi = sgs.CreateTriggerSkill {
                 })
                 room:broadcastSkillInvoke(self:objectName())
                 room:doAnimate(rinsan.ANIMATE_INDICATE, damage.from:objectName(), player:objectName())
-                rinsan.recover(room, player, damage.damage, damage.from)
+                rinsan.recover(player, damage.damage, damage.from)
                 damage.from:drawCards(2, self:objectName())
                 room:addPlayerMark(player, self:objectName() .. '-Clear')
             end

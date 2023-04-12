@@ -338,7 +338,7 @@ LuaChuhaiWake = sgs.CreateTriggerSkill {
                     room:addPlayerMark(player, 'LuaChuhaiWake')
                     local toRecover = player:getMaxHp() - player:getHp()
                     if toRecover > 0 then
-                        rinsan.recover(room, player, toRecover)
+                        rinsan.recover(player, toRecover)
                     end
                     room:detachSkillFromPlayer(player, 'LuaXianghai')
                     room:acquireSkill(player, 'LuaZhangming')
@@ -732,7 +732,7 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
             ['arg'] = 'LuaPowei',
         })
         room:broadcastSkillInvoke('LuaPowei', 3)
-        rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
+        rinsan.recover(dying.who, 1 - dying.who:getHp(), player)
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             room:setPlayerMark(p, '@LuaPowei', 0)
         end
