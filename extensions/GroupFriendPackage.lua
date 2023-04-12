@@ -219,58 +219,6 @@ LuaWanneng = sgs.CreateTriggerSkill {
 
 LuaWanneng:setGuhuoDialog('lr')
 
-LuaXiaosa = sgs.CreateTriggerSkill {
-    name = 'LuaXiaosa',
-    events = {sgs.TargetConfirmed, sgs.TurnStart},
-    on_trigger = function(self, event, player, data, room)
-        if event == sgs.TurnStart then
-            room:setPlayerMark(player, self:objectName(), 0)
-        elseif event == sgs.TargetConfirmed then
-            local use = data:toCardUse()
-            if use.from:objectName() == player:objectName() then
-                return false
-            end -- 使用者不为玩家
-            if use.card:isKindOf('BasicCard') or use.card:isNDTrick() then
-                if use.to:contains(player) then
-                    if player:getMark(self:objectName()) == 0 then
-                        if room:askForSkillInvoke(player, self:objectName(), data) then
-                            room:addPlayerMark(player, self:objectName())
-                            local nullified_list = use.nullified_list
-                            for _, dest in sgs.qlist(use.to) do
-                                table.insert(nullified_list, dest:objectName())
-                            end
-                            use.nullified_list = nullified_list
-                            data:setValue(use)
-                        end
-                    end
-                end
-            end
-        end
-        return false
-    end,
-}
-
-LuaMasochism = sgs.CreateTriggerSkill {
-    name = 'LuaMasochism',
-    frequency = sgs.Skill_Compulsory,
-    events = {sgs.CardEffected},
-    on_trigger = function(self, event, player, data, room)
-        local effect = data:toCardEffect()
-        local card = effect.card
-        local hp = player:getHp()
-        if hp > 0 then
-            if player:isAlive() then
-                if card:isKindOf('Peach') then
-                    if player:hasSkill(self:objectName()) then
-                        room:sendCompulsoryTriggerLog(player, self:objectName())
-                        return true
-                    end
-                end
-            end
-        end
-    end,
-}
-
 LuaZibao = sgs.CreateTriggerSkill {
     name = 'LuaZibao',
     frequency = sgs.Skill_NotFrequent,
@@ -1980,8 +1928,6 @@ SkillAnjiang:addSkill(LuaGeidian)
 SkillAnjiang:addSkill(LuaWanneng)
 Fuhua:addSkill(LuaGeidian)
 Rinsan:addSkill(LuaWanneng)
-SkillAnjiang:addSkill(LuaXiaosa)
-SkillAnjiang:addSkill(LuaMasochism)
 SkillAnjiang:addSkill(LuaZibao)
 SkillAnjiang:addSkill(LuaSoutuVS)
 Rinsan:addSkill(LuaSoutu)

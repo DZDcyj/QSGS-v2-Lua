@@ -33,6 +33,6 @@ return {
     ['@LuaMouQingzheng'] = '你可以发动“清正”，弃置 %arg 种花色的所有手牌然后观看并弃置一名角色一种花色的手牌',
     ['~LuaMouQingzheng'] = '选择若干张牌→选择一名其他角色→点击“确定”',
     ['LuaMouHujia'] = '护驾',
-    [':LuaMouHujia'] = '主公技，<font color="green"><b>每轮限一次</b></font>，当你受到伤害时，你可以将此伤害转移给一名其他魏势力角色',
+    [':LuaMouHujia'] = '主公技，每轮限一次，当你受到伤害时，你可以将此伤害转移给一名其他魏势力角色',
     ['LuaMouHujia-choose'] = '你可以发动“护驾”，将伤害转移给另一名魏势力角色',
 }
