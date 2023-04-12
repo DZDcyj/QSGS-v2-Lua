@@ -1,6 +1,9 @@
 -- this script to store the basic configuration for game program itself
 -- and it is a little different from config.ini
 
+-- 忽略本文件中未引用 global variable 的警告
+-- luacheck: push ignore 131
+
 config = {
     big_font = 56,
     small_font = 27,
@@ -648,3 +651,5 @@ config = {
         shu = 'jg_soul_liubei+jg_soul_zhugeliang+jg_soul_huangyueying+jg_soul_pangtong',
     },
 }
+
+-- luacheck: pop
