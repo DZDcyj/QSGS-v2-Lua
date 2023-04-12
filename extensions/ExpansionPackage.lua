@@ -970,7 +970,7 @@ LuaWanlan = sgs.CreateTriggerSkill {
             player:loseMark('@LuaWanlan')
             player:throwAllHandCards()
             room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), dying.who:objectName())
-            rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
+            rinsan.recover(dying.who, 1 - dying.who:getHp(), player)
             room:damage(sgs.DamageStruct(self:objectName(), player, current))
         end
         return false
@@ -1303,7 +1303,7 @@ LuaJingxie = sgs.CreateTriggerSkill {
                 })
                 room:broadcastSkillInvoke('@recast')
                 player:drawCards(1, 'recast')
-                rinsan.recover(room, dying.who, 1 - dying.who:getHp(), player)
+                rinsan.recover(dying.who, 1 - dying.who:getHp(), player)
                 room:broadcastSkillInvoke(self:objectName(), 1)
             end
             room:filterCards(player, player:getCards('he'), false)
@@ -2393,7 +2393,7 @@ LuaZhaohan = sgs.CreateTriggerSkill {
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName(), 1)
                 rinsan.addPlayerMaxHp(player, 1)
-                rinsan.recover(room, player, 1, player)
+                rinsan.recover(player, 1, player)
                 room:addPlayerMark(player, self:objectName() .. 'up')
             elseif player:getMark(self:objectName() .. 'down') < 3 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
@@ -2959,7 +2959,7 @@ LuaYuce = sgs.CreateTriggerSkill {
                 not room:askForCard(damage.from, table.concat(typeName, ',') .. '|.|.|hand', '@yuce-discard:' ..
                     player:objectName() .. '::' .. typeName[1] .. ':' .. typeName[2], data) then
                 room:getThread():delay(1500)
-                rinsan.recover(room, player, 1, player)
+                rinsan.recover(player, 1, player)
             end
         end
         return false
@@ -3019,7 +3019,7 @@ LuaFuli = sgs.CreateTriggerSkill {
             room:broadcastSkillInvoke(self:objectName())
             room:removePlayerMark(player, '@laoji')
             local value = math.min(rinsan.getKingdomCount(room), player:getMaxHp()) - player:getHp()
-            rinsan.recover(room, player, value)
+            rinsan.recover(player, value)
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if p:getHp() >= player:getHp() then
                     return false
@@ -3401,7 +3401,7 @@ LuaHunzi = sgs.CreateTriggerSkill {
         if room:changeMaxHpForAwakenSkill(player) then
             room:broadcastSkillInvoke(self:objectName())
             room:getThread():delay(6500)
-            rinsan.recover(room, player, 1, player)
+            rinsan.recover(player, 1, player)
             room:setEmotion(player, 'skill/hunzi')
             room:handleAcquireDetachSkills(player, 'LuaYingzi|LuaYinghun')
             room:addPlayerMark(player, 'hunzi')
@@ -4131,7 +4131,7 @@ LuaFuhan = sgs.CreateTriggerSkill {
                         end
                     end
                     if hasMinHp and player:isWounded() then
-                        rinsan.recover(room, player)
+                        rinsan.recover(player)
                     end
                 end
             end
@@ -4189,7 +4189,7 @@ LuaZili = sgs.CreateTriggerSkill {
             room:broadcastSkillInvoke(self:objectName())
             if player:isWounded() and room:askForChoice(player, self:objectName(), 'zilirecover+zilidraw') ==
                 'zilirecover' then
-                rinsan.recover(room, player, 1, player)
+                rinsan.recover(player, 1, player)
             else
                 room:drawCards(player, 2, self:objectName())
             end
@@ -4341,7 +4341,7 @@ LuaZhengnan = sgs.CreateTriggerSkill {
                 room:broadcastSkillInvoke(self:objectName())
                 room:addPlayerMark(dying.who, self:objectName() .. player:objectName())
                 if player:isWounded() then
-                    rinsan.recover(room, player)
+                    rinsan.recover(player)
                 end
                 player:drawCards(1, self:objectName())
                 local gainableSkills = rinsan.getGainableSkillTable(player, {'LuaDangxian', 'wusheng', 'LuaZhiman'})
@@ -4657,7 +4657,7 @@ LuaChengzhang = sgs.CreateTriggerSkill {
                     ['arg2'] = self:objectName(),
                 })
                 if room:changeMaxHpForAwakenSkill(player, 0) then
-                    rinsan.recover(room, player)
+                    rinsan.recover(player)
                     room:setPlayerMark(player, '@' .. self:objectName() .. 'damage', 0)
                     player:drawCards(1, self:objectName())
                     room:addPlayerMark(player, self:objectName())
@@ -5451,7 +5451,7 @@ LuaZunweiCard = sgs.CreateSkillCard {
                 -- 回复体力
                 local x = target:getHp() - source:getHp()
                 if x > 0 then
-                    rinsan.recover(room, source, x)
+                    rinsan.recover(source, x)
                 end
             end
         end
@@ -5606,7 +5606,7 @@ LuaLeiji = sgs.CreateTriggerSkill {
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local damageValue = 2
                 if judge.card:getSuit() == sgs.Card_Club then
-                    rinsan.recover(room, player)
+                    rinsan.recover(player)
                     damageValue = 1
                 end
                 local target = room:askForPlayerChosen(player, room:getOtherPlayers(player), self:objectName(),
@@ -6293,7 +6293,7 @@ LuaShanshen = sgs.CreateTriggerSkill {
                 room:broadcastSkillInvoke(self:objectName())
                 rinsan.askForYuqiIncreaseChoice(sp, 2, self:objectName())
                 if death.who:getMark(string.format('LuaDamagedBy%s', sp:objectName())) == 0 then
-                    rinsan.recover(room, sp)
+                    rinsan.recover(sp)
                 end
             end
         end

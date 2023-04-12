@@ -66,7 +66,7 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
                     ['arg'] = 'LuaDingyi',
                     ['arg2'] = getDingyiCount(player),
                 })
-                rinsan.recover(room, player, getDingyiCount(player))
+                rinsan.recover(player, getDingyiCount(player))
             end
         elseif event == sgs.DrawNCards then
             if player:getMark('@LuaDingyi') == 1 then
@@ -252,7 +252,7 @@ LuaSanchen = sgs.CreateTriggerSkill {
         })
         if room:changeMaxHpForAwakenSkill(player, 1) then
             room:broadcastSkillInvoke(self:objectName())
-            rinsan.recover(room, player, 1, player)
+            rinsan.recover(player, 1, player)
             room:handleAcquireDetachSkills(player, 'LuaMiewu')
             room:addPlayerMark(player, self:objectName())
         end
@@ -406,7 +406,7 @@ LuaQiaiCard = sgs.CreateSkillCard {
         if choice == 'letdraw2' then
             source:drawCards(2, 'LuaQiai')
         else
-            rinsan.recover(room, source, 1, target)
+            rinsan.recover(source, 1, target)
         end
     end,
 }
@@ -721,7 +721,7 @@ LuaTianyi = sgs.CreateTriggerSkill {
             ['arg'] = self:objectName(),
         })
         if room:changeMaxHpForAwakenSkill(player, 2) then
-            rinsan.recover(room, player)
+            rinsan.recover(player)
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName())
             local target =

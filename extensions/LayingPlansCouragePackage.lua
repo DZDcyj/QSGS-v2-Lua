@@ -176,10 +176,10 @@ LuaZhibian = sgs.CreateTriggerSkill {
                 if choice == 'LuaZhibianChoice1' then
                     rinsan.askForMoveCards(player, target, player, self:objectName())
                 elseif choice == 'LuaZhibianChoice2' then
-                    rinsan.recover(room, player)
+                    rinsan.recover(player)
                 else
                     rinsan.askForMoveCards(player, target, player, self:objectName())
-                    rinsan.recover(room, player)
+                    rinsan.recover(player)
                     room:addPlayerMark(player, 'LuaZhibianSkipDraw')
                 end
             else

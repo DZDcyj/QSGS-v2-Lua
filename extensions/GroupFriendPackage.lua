@@ -1187,7 +1187,7 @@ LuaYingshi = sgs.CreateTriggerSkill {
         for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
             if sp:isWounded() then
                 room:sendCompulsoryTriggerLog(sp, self:objectName())
-                rinsan.recover(room, sp)
+                rinsan.recover(sp)
             end
         end
         local killer
@@ -1772,7 +1772,7 @@ LuaZhiyuanCard = sgs.CreateSkillCard {
                 target:drawCards(1, self:objectName())
                 room:setPlayerFlag(source, 'LuaZhiyuanDraw')
             else
-                rinsan.recover(room, target, 1, source)
+                rinsan.recover(target, 1, source)
                 room:setPlayerFlag(source, 'LuaZhiyuanRecover')
             end
         end

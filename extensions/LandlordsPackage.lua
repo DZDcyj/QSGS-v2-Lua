@@ -123,7 +123,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
 
         -- 为自己增加一点体力上限
         rinsan.addPlayerMaxHp(player, 1)
-        rinsan.recover(room, player, 1, player)
+        rinsan.recover(player, 1, player)
 
         -- 初始技能触发
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -206,7 +206,7 @@ LuaDoudizhuScenario = sgs.CreateTriggerSkill {
                     table.insert(choices, 'cancel')
                     local choice = room:askForChoice(target, 'LuaNongmin', table.concat(choices, '+'))
                     if choice == 'LuaNongminChoice1' then
-                        rinsan.recover(room, target, 1, player)
+                        rinsan.recover(target, 1, player)
                     elseif choice == 'LuaNongminChoice2' then
                         target:drawCards(2)
                     end

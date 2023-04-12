@@ -122,7 +122,7 @@ zhaoyue_silver_lion = sgs.CreateArmor {
         if player:isAlive() and player:hasArmorEffect(self:objectName()) then
             local room = player:getRoom()
             room:setEmotion(player, 'armor/silver_lion')
-            rinsan.recover(room, player)
+            rinsan.recover(player)
             player:drawCards(2, self:objectName())
         end
     end,
