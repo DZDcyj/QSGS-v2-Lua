@@ -89,6 +89,7 @@ lua/ai/[^A-Z]*.lua
 lua/lib
 lua/*.lua
 !QSanguoshaLuaFunction.lua
+!config.lua
 platforms/
 qml1tooling/
 qss/
