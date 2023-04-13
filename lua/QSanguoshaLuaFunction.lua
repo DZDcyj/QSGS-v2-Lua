@@ -2224,7 +2224,7 @@ ZHINANG_CARDS = {
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_UPDATE_PILE'] = 58,
-    ['S_COMMAND_CHANGE_HP'] = 41,
+    ['S_COMMAND_CHANGE_HP'] = 31,
 }
 
 -- CardType 参数，用于 getCardMostProbably 方法
