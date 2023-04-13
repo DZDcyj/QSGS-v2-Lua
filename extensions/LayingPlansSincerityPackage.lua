@@ -96,7 +96,9 @@ LuaHeji = sgs.CreateTriggerSkill {
             end
             local wujings = room:findPlayersBySkillName(self:objectName())
             for _, wujing in sgs.qlist(wujings) do
-                askForHeji(self, wujing, victim)
+                if wujing:objectName() ~= victim:objectName() then
+                    askForHeji(self, wujing, victim)
+                end
             end
         end
         return false
