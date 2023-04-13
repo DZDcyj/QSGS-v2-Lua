@@ -1303,6 +1303,7 @@ LuaShengxi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
             if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
                 local checker = function(card)
                     return card:isKindOf('AdjustSaltPlum') and card:getNumber() == 6
                 end

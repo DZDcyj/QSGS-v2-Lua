@@ -2209,6 +2209,11 @@ function obtainCardFromOutsideOrPile(player, cardChecker)
         return
     end
     local id = available_ids[random(1, #available_ids)]
+    if room:getCardPlace(id) == sgs.Player_DrawPile then
+        player:obtainCard(sgs.Sanguosha:getCard(id))
+        room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
+        return
+    end
     local id_list = sgs.IntList()
     id_list:append(id)
     obtainCard(id_list, player)
