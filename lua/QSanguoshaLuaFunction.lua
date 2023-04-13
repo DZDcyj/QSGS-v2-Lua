@@ -980,7 +980,7 @@ function askForLuckCard(room)
         end
         time = time + 1
     end
-    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
+    room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
 -- 斗地主模式武将选择
@@ -2010,7 +2010,7 @@ function initIndirectCombination(room)
     sendLogMessage(room, '$LuaTianzuo', {
         ['card_str'] = table.concat(ids, '+'),
     })
-    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+    room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
 
 -- 将马钧装备包移出游戏
@@ -2031,7 +2031,7 @@ function removeMajunEquipsFromPile(room)
         drawPile:removeOne(id)
         room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
     end
-    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+    room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
 
 -- 升级装备对应
@@ -2108,7 +2108,7 @@ function moveOutCardFromGame(card_ids, mover, place)
         room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
     end
     room:notifyMoveCards(false, moves, false)
-    room:doBroadcastNotify(sgs.CommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
+    room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
 -- 获取卡牌
@@ -2125,6 +2125,7 @@ function obtainCard(ids, player)
         room:setCardMapping(id, player, sgs.Player_PlaceHand)
     end
     room:notifyMoveCards(false, moves, true)
+    room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
 -- 判断是否是智囊牌
@@ -2180,6 +2181,12 @@ function defaultOnUse(card, room, source, targets)
         room:moveCardsAtomic(moves, true)
     end
 end
+
+-- 手动修正
+FixedCommandType = {
+    ['S_COMMAND_UPDATE_PILE'] = 58,
+    ['S_COMMAND_CHANGE_HP'] = 41,
+}
 
 -- CardType 参数，用于 getCardMostProbably 方法
 BASIC_CARD = 1

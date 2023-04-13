@@ -65,7 +65,7 @@ LuaShield = sgs.CreateTriggerSkill {
         local newHp = damage.to:getHp() - math.max(0, damage.damage - rinsan.getShieldCount(damage.to))
 
         local jsonArray = string.format('"%s",%d,%d', damage.to:objectName(), -damage.damage, damage.nature)
-        room:doBroadcastNotify(sgs.CommandType['S_COMMAND_CHANGE_HP'], jsonArray)
+        room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_CHANGE_HP'], jsonArray)
 
         room:setTag('HpChangedData', data)
 

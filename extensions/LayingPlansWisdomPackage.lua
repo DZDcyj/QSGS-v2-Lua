@@ -1099,34 +1099,10 @@ LuaShengxi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
             if room:askForSkillInvoke(player, self:objectName(), data) then
-                local ids = {}
-                for i = 0, 10000 do
-                    local card = sgs.Sanguosha:getEngineCard(i)
-                    if card == nil then
-                        break
-                    end
-                    if card:isKindOf('AdjustSaltPlum') and card:getNumber() == 6 then
-                        table.insert(ids, card:getId())
-                    end
+                local checker = function(card)
+                    return card:isKindOf('AdjustSaltPlum') and card:getNumber() == 6
                 end
-                local available_ids = {}
-                for _, id in ipairs(ids) do
-                    local place = room:getCardPlace(id)
-                    local owner = room:getCardOwner(id)
-                    if not owner then
-                        if place ~= sgs.Player_DiscardPile then
-                            table.insert(available_ids, id)
-                        end
-                    end
-                end
-                if #available_ids == 0 then
-                    return false
-                end
-                local id = available_ids[rinsan.random(1, #available_ids)]
-                local id_list = sgs.IntList()
-                id_list:append(id)
-                room:broadcastSkillInvoke(self:objectName())
-                rinsan.obtainCard(id_list, player)
+                rinsan.obtainCardFromOutsideOrPile(player, checker)
             end
         elseif player:getPhase() == sgs.Player_Finish then
             if player:hasFlag('LuaShengxiCardUsed') and not player:hasFlag('LuaShengxiDamageCaused') then
