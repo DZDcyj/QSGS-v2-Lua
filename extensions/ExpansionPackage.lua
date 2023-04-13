@@ -6673,3 +6673,110 @@ LuaOLShizhan = sgs.CreateZeroCardViewAsSkill {
 
 OLJieHuaxiong:addSkill(LuaOLYaowu)
 OLJieHuaxiong:addSkill(LuaOLShizhan)
+
+-- 裴秀
+ExPeixiu = sgs.General(extension, 'ExPeixiu', 'qun', '3', true, true)
+
+LuaXingtu = sgs.CreateTriggerSkill {
+    name = 'LuaXingtu',
+    events = {sgs.CardUsed, sgs.CardFinished},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or use.card:isKindOf('SkillCard') then
+            return false
+        end
+        if event == sgs.CardFinished then
+            local record = use.card:getNumber()
+            if use.card:isVirtualCard() then
+                if use.card:subcardsLength() == 0 then
+                    return false
+                else
+                    record = 0
+                    for _, id in sgs.qlist(use.card:getSubcards()) do
+                        local cd = sgs.Sanguosha:getCard(id)
+                        record = record + cd:getNumber()
+                    end
+                end
+            end
+            room:setPlayerMark(player, '@LuaXingtu', record)
+        else
+            local recorded = player:getMark('@LuaXingtu')
+            if recorded == 0 then
+                return false
+            end
+            if recorded % use.card:getNumber() == 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                player:drawCards(1, self:objectName())
+            end
+        end
+        return false
+    end,
+}
+
+LuaXingtuTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaXingtuTargetMod',
+    frequency = sgs.Skill_Compulsory,
+    pattern = '.',
+    residue_func = function(self, player, card)
+        if player:hasSkill('LuaXingtu') then
+            local num = card:getNumber()
+            local recorded = player:getMark('@LuaXingtu')
+            if num == 0 then
+                return 0
+            end
+            if num % recorded == 0 then
+                return 1000
+            end
+        end
+        return 0
+    end,
+}
+
+LuaJuezhiCard = sgs.CreateSkillCard {
+    name = 'LuaJuezhi',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        local count = 0
+        room:notifySkillInvoked(source, self:objectName())
+        for _, id in sgs.qlist(self:getSubcards()) do
+            local cd = sgs.Sanguosha:getCard(id)
+            count = count + cd:getNumber()
+        end
+        count = count % 13
+        if count == 0 then
+            count = 13
+        end
+        local checker = function(cd)
+            return cd:getNumber() == count
+        end
+        local card = rinsan.obtainCardFromPile(checker, room:getDrawPile())
+        if card then
+            source:obtainCard(card, false)
+        end
+    end,
+}
+
+LuaJuezhi = sgs.CreateViewAsSkill {
+    name = 'LuaJuezhi',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return true
+    end,
+    view_as = function(self, cards)
+        if #cards < 2 then
+            return nil
+        end
+        local vs_card = LuaJuezhiCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+}
+
+ExPeixiu:addSkill(LuaXingtu)
+SkillAnjiang:addSkill(LuaXingtuTargetMod)
+ExPeixiu:addSkill(LuaJuezhi)
