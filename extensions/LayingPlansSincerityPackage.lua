@@ -42,6 +42,10 @@ local function askForHeji(self, wujing, victim)
         end
     end
     local prompt = string.format('LuaHeji_ask:%s::%s', victim:objectName(), pattern)
+    -- 手动调整【决斗】pattern
+    if pattern == 'duel' then
+        pattern = 'Duel'
+    end
     for _, cd in sgs.qlist(wujing:getCards('he')) do
         if wujing:isCardLimited(cd, sgs.Card_MethodUse) or room:isProhibited(wujing, victim, cd) then
             room:setCardFlag(cd, 'HejiDisabled')
