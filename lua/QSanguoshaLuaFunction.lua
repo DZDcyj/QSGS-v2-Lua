@@ -2182,6 +2182,45 @@ function defaultOnUse(card, room, source, targets)
     end
 end
 
+-- 获取牌堆/游戏外卡牌
+function obtainCardFromOutsideOrPile(player, cardChecker)
+    local room = player:getRoom()
+    local ids = {}
+    for i = 0, 10000 do
+        local card = sgs.Sanguosha:getEngineCard(i)
+        if card == nil then
+            break
+        end
+        if cardChecker(card) then
+            table.insert(ids, card:getId())
+        end
+    end
+    local available_ids = {}
+    for _, id in ipairs(ids) do
+        local place = room:getCardPlace(id)
+        local owner = room:getCardOwner(id)
+        if not owner then
+            if place ~= sgs.Player_DiscardPile then
+                table.insert(available_ids, id)
+            end
+        end
+    end
+    if #available_ids == 0 then
+        return
+    end
+    local id = available_ids[random(1, #available_ids)]
+    local id_list = sgs.IntList()
+    id_list:append(id)
+    obtainCard(id_list, player)
+end
+
+-- 智囊牌名
+ZHINANG_CARDS = {
+    'ex_nihilo',
+    'dismantlement',
+    'nullification',
+}
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_UPDATE_PILE'] = 58,
