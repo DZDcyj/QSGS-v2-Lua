@@ -214,7 +214,7 @@ LuaZuici = sgs.CreateTriggerSkill {
                 room:broadcastSkillInvoke(self:objectName())
                 room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.from:objectName())
                 room:setPlayerMark(damage.from, '@LuaDingyi', 0)
-                local cardName = room:askForChoice(player, self:objectName(), 'ex_nihilo+dismantlement+nullification')
+                local cardName = room:askForChoice(player, self:objectName(), table.concat(rinsan.ZHINANG_CARDS, '+'))
                 local obtain = rinsan.obtainCardFromPile(function(cd)
                     return cd:objectName() == cardName
                 end, room:getDrawPile())
@@ -1017,6 +1017,210 @@ ExShenGuojia:addSkill(LuaLimitHuishi)
 SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
 
+-- 荀谌
+ExXunchen = sgs.General(extension, 'ExXunchen', 'qun', '3', true, true)
+
+-- 危迫、获得牌
+LuaWeipoCard = sgs.CreateSkillCard {
+    name = 'LuaWeipoVS',
+    will_throw = true,
+    target_fixed = true,
+    on_use = function(self, room, source, targets)
+        local cardName = source:getTag('LuaWeipoCard'):toString()
+        room:removePlayerMark(source, '@LuaWeipo')
+        local checker = function(cd)
+            return cd:objectName() == cardName and cd:getSuit() ~= sgs.Card_NoSuit
+        end
+        rinsan.obtainCardFromOutsideOrPile(source, checker)
+        room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
+        source:removeTag('LuaWeipoCard')
+    end,
+}
+
+LuaWeipoVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaWeipoVS&',
+    filter_pattern = 'Slash',
+    view_as = function(self, card)
+        local vs_card = LuaWeipoCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('@LuaWeipo') > 0
+    end,
+}
+
+LuaWeipoTargetCard = sgs.CreateSkillCard {
+    name = 'LuaWeipo',
+    will_throw = true,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return #targets == 0
+    end,
+    on_use = function(self, room, source, targets)
+        room:addPlayerMark(source, self:objectName() .. '-Clear')
+        local target = targets[1]
+        local choices = table.concat(rinsan.ZHINANG_CARDS, '+') .. '+city_under_siege'
+        local choice = room:askForChoice(source, self:objectName(), choices)
+        room:addPlayerMark(target, '@LuaWeipo')
+        rinsan.sendLogMessage(room, '#LuaWeipoTarget', {
+            ['from'] = source,
+            ['to'] = target,
+            ['arg'] = self:objectName(),
+            ['arg2'] = choice,
+        })
+        target:setTag('LuaWeipoCard', sgs.QVariant(choice))
+    end,
+}
+
+LuaWeipoTargetVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaWeipo',
+    view_as = function(self, cards)
+        return LuaWeipoTargetCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark(self:objectName() .. '-Clear') == 0
+    end,
+}
+
+LuaWeipo = sgs.CreateTriggerSkill {
+    name = 'LuaWeipo',
+    events = {sgs.GameStart, sgs.EventAcquireSkill, sgs.EventLoseSkill, sgs.EventPhaseStart},
+    view_as_skill = LuaWeipoTargetVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() == sgs.Player_RoundStart then
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerMark(p, '@LuaWeipo', 0)
+                    p:removeTag('LuaWeipoTag')
+                end
+            end
+            return false
+        end
+        local xunchens = room:findPlayersBySkillName(self:objectName())
+        local isGameStart = (event == sgs.GameStart)
+        local isAcquireSkill = (event == sgs.EventAcquireSkill and data:toString() == self:objectName())
+        local isLoseSkill = (event == sgs.EventLoseSkill and data:toString() == self:objectName())
+        if isGameStart or isAcquireSkill then
+            if xunchens:isEmpty() then
+                return false
+            end
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if not p:hasSkill('LuaWeipoVS') then
+                    room:attachSkillToPlayer(p, 'LuaWeipoVS')
+                end
+            end
+        elseif isLoseSkill then
+            if not xunchens:isEmpty() then
+                return false
+            end
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:hasSkill('LuaWeipoVS') then
+                    room:detachSkillFromPlayer(p, 'LuaWeipoVS')
+                end
+            end
+        end
+        return false
+    end,
+}
+
+local slashChecker = function(card, inverse)
+    if inverse then
+        return not card:isKindOf('Slash')
+    end
+    return card:isKindOf('Slash')
+end
+
+local function doChenshi(player, inverse)
+    local room = player:getRoom()
+    local drawPile = room:getDrawPile()
+    local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+    for i = 0, 2, 1 do
+        local cd = sgs.Sanguosha:getCard(drawPile:at(i))
+        if slashChecker(cd, inverse) then
+            dummy:addSubcard(drawPile:at(i))
+        end
+    end
+    if dummy:subcardsLength() > 0 then
+        room:throwCard(dummy, player)
+    end
+end
+
+LuaChenshi = sgs.CreateTriggerSkill {
+    name = 'LuaChenshi',
+    events = {sgs.TargetSpecified, sgs.TargetConfirmed},
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        local xunchen = room:findPlayerBySkillName(self:objectName())
+        local invoke
+        local target
+        if use.card and use.card:isKindOf('CityUnderSiege') then
+            local prompt
+            if event == sgs.TargetSpecified then
+                target = use.from
+                prompt = string.format('LuaChenshi-From-Give:%s', xunchen:objectName())
+            else
+                if use.to:contains(player) then
+                    target = player
+                    prompt = string.format('LuaChenshi-To-Give:%s', xunchen:objectName())
+                end
+            end
+            if target then
+                if target:objectName() == xunchen:objectName() then
+                    invoke = room:askForSkillInvoke(xunchen, self:objectName(), data)
+                else
+                    invoke = room:askForCard(target, '.', prompt, sgs.QVariant(), sgs.Card_MethodNone)
+                    if invoke then
+                        xunchen:obtainCard(invoke, true)
+                    end
+                end
+            end
+        end
+        if invoke then
+            room:broadcastSkillInvoke(self:objectName())
+            doChenshi(target, event == sgs.TargetSpecified)
+        end
+    end,
+    can_trigger = targetTrigger,
+}
+
+LuaMoushi = sgs.CreateTriggerSkill {
+    name = 'LuaMoushi',
+    events = {sgs.Damaged, sgs.DamageInflicted},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card then
+            if event == sgs.DamageInflicted then
+                local preCard = player:getTag('LuaMoushiPreDamageCard')
+                if preCard then
+                    preCard = preCard:toString()
+                end
+                if damage.card:getSuitString() == preCard then
+                    rinsan.sendLogMessage(room, '$LuaMoushi', {
+                        ['from'] = player,
+                        ['arg'] = self:objectName(),
+                        ['card_str'] = damage.card:toString(),
+                    })
+                    room:notifySkillInvoked(player, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    return true
+                end
+            else
+                rinsan.clearAllMarksContains(room, player, self:objectName())
+                player:setTag('LuaMoushiPreDamageCard', sgs.QVariant(damage.card:getSuitString()))
+                local suitStr = rinsan.firstToUpper(damage.card:getSuitString())
+                room:setPlayerMark(player, string.format('@LuaMoushi%s', suitStr), 1)
+            end
+        end
+    end,
+}
+
+ExXunchen:addSkill(LuaWeipo)
+SkillAnjiang:addSkill(LuaWeipoVS)
+ExXunchen:addSkill(LuaChenshi)
+ExXunchen:addSkill(LuaMoushi)
+
 -- 费祎
 ExFeiyi = sgs.General(extension, 'ExFeiyi', 'shu', '3', true, true)
 
@@ -1099,34 +1303,10 @@ LuaShengxi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
             if room:askForSkillInvoke(player, self:objectName(), data) then
-                local ids = {}
-                for i = 0, 10000 do
-                    local card = sgs.Sanguosha:getEngineCard(i)
-                    if card == nil then
-                        break
-                    end
-                    if card:isKindOf('AdjustSaltPlum') and card:getNumber() == 6 then
-                        table.insert(ids, card:getId())
-                    end
+                local checker = function(card)
+                    return card:isKindOf('AdjustSaltPlum') and card:getNumber() == 6
                 end
-                local available_ids = {}
-                for _, id in ipairs(ids) do
-                    local place = room:getCardPlace(id)
-                    local owner = room:getCardOwner(id)
-                    if not owner then
-                        if place ~= sgs.Player_DiscardPile then
-                            table.insert(available_ids, id)
-                        end
-                    end
-                end
-                if #available_ids == 0 then
-                    return false
-                end
-                local id = available_ids[rinsan.random(1, #available_ids)]
-                local id_list = sgs.IntList()
-                id_list:append(id)
-                room:broadcastSkillInvoke(self:objectName())
-                rinsan.obtainCard(id_list, player)
+                rinsan.obtainCardFromOutsideOrPile(player, checker)
             end
         elseif player:getPhase() == sgs.Player_Finish then
             if player:hasFlag('LuaShengxiCardUsed') and not player:hasFlag('LuaShengxiDamageCaused') then
