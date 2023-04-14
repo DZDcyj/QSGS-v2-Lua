@@ -631,11 +631,12 @@ LuaLiegong = sgs.CreateTriggerSkill {
                 end
             end
             if #suits > 0 then
-                room:setPlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','), false)
+                room:setPlayerCardLimitation(effect.to, 'use', 'Jink|' .. table.concat(suits, ','), false)
                 local source = room:findPlayerBySkillName(self:objectName())
                 local prompt = string.format('@LuaLiegong-jink:%s:%s:%s', effect.from:objectName(), source:objectName(),
                     self:objectName())
                 local jink = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, source)
+                room:removePlayerCardLimitation(effect.to, 'use', 'Jink|' .. table.concat(suits, ','))
                 if jink then
                     local invalid_jink = table.contains(suits, jink:getSuitString())
                     if invalid_jink then
@@ -650,7 +651,6 @@ LuaLiegong = sgs.CreateTriggerSkill {
                 else
                     room:slashResult(effect, nil)
                 end
-                room:removePlayerCardLimitation(effect.to, 'use, response', 'Jink|' .. table.concat(suits, ','))
                 return true
             end
         end
