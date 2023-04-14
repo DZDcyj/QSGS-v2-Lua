@@ -840,7 +840,7 @@ ExWenyang:addSkill(LuaChoujue)
 SkillAnjiang:addSkill(LuaWenyangKingdomChoose)
 
 -- 王双
-ExWangshuang = sgs.General(extension, 'ExWangshuang', 'wei', '4', true, true)
+ExWangshuang = sgs.General(extension, 'ExWangshuang', 'wei', '4', true)
 LuaYiyong = sgs.CreateTriggerSkill {
     name = 'LuaYiyong',
     events = {sgs.Damaged, sgs.DamageCaused},
@@ -859,12 +859,13 @@ LuaYiyong = sgs.CreateTriggerSkill {
             if damage.card:isVirtualCard() and damage.card:subcardsLength() == 0 then
                 return false
             end
-            if room:askForSkillInvoke(player, self:objectName(), data) then
+            local data2 = sgs.QVariant()
+            data2:setValue(damage.from)
+            if room:askForSkillInvoke(player, self:objectName(), data2) then
                 player:obtainCard(damage.card)
                 room:broadcastSkillInvoke(self:objectName())
                 local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                 if damage.card:isVirtualCard() then
-
                     slash:addSubcards(damage.card:getSubcards())
                 else
                     slash:addSubcard(damage.card)
