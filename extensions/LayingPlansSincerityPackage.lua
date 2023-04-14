@@ -701,6 +701,7 @@ LuaPowei = sgs.CreateTriggerSkill {
             ['from'] = player,
             ['arg'] = self:objectName(),
         })
+        room:notifySkillInvoked(player, self:objectName())
         room:broadcastSkillInvoke('LuaPowei', 2)
         if room:changeMaxHpForAwakenSkill(player, 0) then
             room:acquireSkill(player, 'LuaShenzhu')
@@ -737,6 +738,7 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
             ['from'] = player,
             ['arg'] = 'LuaPowei',
         })
+        room:notifySkillInvoked(player, 'LuaPowei')
         room:broadcastSkillInvoke('LuaPowei', 3)
         rinsan.recover(dying.who, 1 - dying.who:getHp(), player)
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -770,8 +772,10 @@ LuaShenzhu = sgs.CreateTriggerSkill {
             elseif choice == choices[2] then
                 -- 摸三牌，然后本回合内不能用杀
                 player:drawCards(3, self:objectName())
-                room:addPlayerMark(player, 'LuaShenzhuForbid')
-                room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', true)
+                if player:getMark('LuaShenzhuForbid') == 0 then
+                    room:addPlayerMark(player, 'LuaShenzhuForbid')
+                    room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', true)                    
+                end
             end
         end
     end,
