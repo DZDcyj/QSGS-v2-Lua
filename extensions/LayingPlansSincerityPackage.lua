@@ -774,7 +774,7 @@ LuaShenzhu = sgs.CreateTriggerSkill {
                 player:drawCards(3, self:objectName())
                 if player:getMark('LuaShenzhuForbid') == 0 then
                     room:addPlayerMark(player, 'LuaShenzhuForbid')
-                    room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', true)                    
+                    room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', true)
                 end
             end
         end
