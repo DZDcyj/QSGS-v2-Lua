@@ -64,6 +64,7 @@ return {
     ['@LuaShanxie-jink'] = '%src 的“擅械”被触发，请使用一张点数大于 %arg 的【闪】',
     ['@LuaShanxie-multi-jink-start'] = '%src 使用了【杀】，你须连续使用 %arg 张点数大于 %arg2 的【闪】',
 	['@LuaShanxie-multi-jink'] = '%src 使用了【杀】，你须再使用 %arg 张点数大于 %arg2 的【闪】',
+    ['$LuaShanxieInvalidJink'] = '%from 使用的【%arg2】因其点数不大于 %to 的攻击范围两倍 %arg 无效',
     ['ExGaolan'] = '高览',
     ['&ExGaolan'] = '高览',
     ['#ExGaolan'] = '绝击坚营',

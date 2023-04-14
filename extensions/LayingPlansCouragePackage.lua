@@ -864,7 +864,7 @@ LuaYiyong = sgs.CreateTriggerSkill {
                 room:broadcastSkillInvoke(self:objectName())
                 local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                 if damage.card:isVirtualCard() then
-                    
+
                     slash:addSubcards(damage.card:getSubcards())
                 else
                     slash:addSubcard(damage.card)
@@ -934,13 +934,25 @@ LuaShanxie = sgs.CreateTriggerSkill {
             room:broadcastSkillInvoke(self:objectName())
             local number = slasher:getAttackRange() * 2
             local pattern = string.format('Jink|.|1~%d|.|.|.', number)
-            room:setPlayerCardLimitation(effect.to, 'use, response', pattern, false)
+            room:setPlayerCardLimitation(effect.to, 'use', pattern, false)
             local prompt = string.format('@LuaShanxie-jink:%s::%s', slasher:objectName(), number)
             local jink
             if effect.jink_num == 1 then
                 jink = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, effect.from)
+                room:removePlayerCardLimitation(effect.to, 'use', pattern)
                 if room:isJinkEffected(effect.to, jink) then
-                    room:slashResult(effect, jink)
+                    local valid = jink:getNumber() > number
+                    if valid then
+                        room:slashResult(effect, jink)
+                    else
+                        rinsan.sendLogMessage(room, '$LuaShanxieInvalidJink', {
+                            ['from'] = effect.to,
+                            ['arg'] = number,
+                            ['to'] = slasher,
+                            ['arg2'] = 'jink',
+                        })
+                        room:slashResult(effect, nil)
+                    end
                 else
                     room:slashResult(effect, nil)
                 end
@@ -949,7 +961,8 @@ LuaShanxie = sgs.CreateTriggerSkill {
                 local index = effect.jink_num
                 while index > 0 do
                     local suffix = index == effect.jink_num and '-start' or ''
-                    prompt = string.format('@LuaShanxie-multi-jink%s:%s::%s:%s', suffix, slasher:objectName(), index, number)
+                    prompt = string.format('@LuaShanxie-multi-jink%s:%s::%s:%s', suffix, slasher:objectName(), index,
+                        number)
                     local temp = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, effect.from)
                     if room:isJinkEffected(effect.to, temp) then
                         jink:addSubcard(temp:getEffectiveId())
@@ -959,8 +972,19 @@ LuaShanxie = sgs.CreateTriggerSkill {
                     end
                     index = index - 1
                 end
+                local valid = jink:getNumber() > number
+                if valid then
+                    room:slashResult(effect, jink)
+                else
+                    rinsan.sendLogMessage(room, '$LuaShanxieInvalidJink', {
+                        ['from'] = effect.to,
+                        ['arg'] = number,
+                        ['to'] = slasher,
+                        ['arg2'] = 'jink',
+                    })
+                    room:slashResult(effect, nil)
+                end
             end
-            room:removePlayerCardLimitation(effect.to, 'use, response', pattern)
             return true
         end
         return false
