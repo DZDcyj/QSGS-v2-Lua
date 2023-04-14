@@ -839,6 +839,139 @@ SkillAnjiang:addSkill(LuaChongjianQinggang)
 ExWenyang:addSkill(LuaChoujue)
 SkillAnjiang:addSkill(LuaWenyangKingdomChoose)
 
+-- 王双
+ExWangshuang = sgs.General(extension, 'ExWangshuang', 'wei', '4', true, true)
+LuaYiyong = sgs.CreateTriggerSkill {
+    name = 'LuaYiyong',
+    events = {sgs.Damaged, sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if (not damage.card) or (not damage.card:isKindOf('Slash')) then
+            return false
+        end
+        if event == sgs.Damaged then
+            if not player:getWeapon() then
+                return false
+            end
+            if (not damage.from) or damage.from:objectName() == player:objectName() then
+                return false
+            end
+            if damage.card:isVirtualCard() and damage.card:subcardsLength() == 0 then
+                return false
+            end
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                player:obtainCard(damage.card)
+                room:broadcastSkillInvoke(self:objectName())
+                local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                if damage.card:isVirtualCard() then
+                    
+                    slash:addSubcards(damage.card:getSubcards())
+                else
+                    slash:addSubcard(damage.card)
+                end
+                slash:setSkillName(self:objectName())
+                room:useCard(sgs.CardUseStruct(slash, player, damage.from))
+            end
+        else
+            if damage.card and damage.card:getSkillName() == self:objectName() then
+                if damage.to:getWeapon() then
+                    return false
+                end
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                damage.damage = damage.damage + 1
+                data:setValue(damage)
+            end
+        end
+    end,
+}
+
+local function isWeapon(cd)
+    return cd:isKindOf('Weapon')
+end
+
+LuaShanxieCard = sgs.CreateSkillCard {
+    name = 'LuaShanxie',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        local weapon = rinsan.obtainCardFromPile(isWeapon, room:getDrawPile())
+        if weapon then
+            source:obtainCard(weapon, true)
+            return
+        end
+        local ids = {}
+        for _, p in sgs.qlist(room:getOtherPlayers(source)) do
+            if p:getWeapon() then
+                table.insert(ids, p:getWeapon():getEffectiveId())
+            end
+        end
+        if #ids == 0 then
+            return
+        end
+        source:obtainCard(ids[rinsan.random(1, #ids)], false)
+    end,
+}
+
+LuaShanxieVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaShanxie',
+    view_as = function(self, cards)
+        return LuaShanxieCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaShanxie')
+    end,
+}
+
+LuaShanxie = sgs.CreateTriggerSkill {
+    name = 'LuaShanxie',
+    events = {sgs.SlashProceed},
+    view_as_skill = LuaShanxieVS,
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toSlashEffect()
+        local slasher = effect.from
+        if slasher:hasSkill(self:objectName()) then
+            room:sendCompulsoryTriggerLog(slasher, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            local number = slasher:getAttackRange() * 2
+            local pattern = string.format('Jink|.|1~%d|.|.|.', number)
+            room:setPlayerCardLimitation(effect.to, 'use, response', pattern, false)
+            local prompt = string.format('@LuaShanxie-jink:%s::%s', slasher:objectName(), number)
+            local jink
+            if effect.jink_num == 1 then
+                jink = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, effect.from)
+                if room:isJinkEffected(effect.to, jink) then
+                    room:slashResult(effect, jink)
+                else
+                    room:slashResult(effect, nil)
+                end
+            else
+                jink = sgs.Sanguosha:cloneCard('jink', sgs.Card_NoSuit, 0)
+                local index = effect.jink_num
+                while index > 0 do
+                    local suffix = index == effect.jink_num and '-start' or ''
+                    prompt = string.format('@LuaShanxie-multi-jink%s:%s::%s:%s', suffix, slasher:objectName(), index, number)
+                    local temp = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, effect.from)
+                    if room:isJinkEffected(effect.to, temp) then
+                        jink:addSubcard(temp:getEffectiveId())
+                    else
+                        room:slashResult(effect, nil)
+                        break
+                    end
+                    index = index - 1
+                end
+            end
+            room:removePlayerCardLimitation(effect.to, 'use, response', pattern)
+            return true
+        end
+        return false
+    end,
+    can_trigger = globalTrigger,
+}
+
+ExWangshuang:addSkill(LuaYiyong)
+ExWangshuang:addSkill(LuaShanxie)
+
+-- 高览
 ExGaolan = sgs.General(extension, 'ExGaolan', 'qun', '4', true, true)
 
 LuaJungongCard = sgs.CreateSkillCard {
