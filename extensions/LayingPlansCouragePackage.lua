@@ -909,7 +909,8 @@ LuaShanxieCard = sgs.CreateSkillCard {
         if #ids == 0 then
             return
         end
-        source:obtainCard(ids[rinsan.random(1, #ids)], false)
+        local cd = sgs.Sanguosha:getCard(ids[rinsan.random(1, #ids)])
+        source:obtainCard(cd, false)
     end,
 }
 
