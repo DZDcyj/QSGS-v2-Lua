@@ -99,6 +99,7 @@ LuaHeji = sgs.CreateTriggerSkill {
     name = 'LuaHeji',
     events = {sgs.CardFinished},
     global = true,
+    priority = -1,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
         if use.to:length() > 1 then
