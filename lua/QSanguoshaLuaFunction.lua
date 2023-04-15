@@ -606,7 +606,6 @@ function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
         local card
         local params = {
             ['existed'] = {},
-            ['findDiscardPile'] = true,
         }
         if type == 1 then
             params['type'] = cardType1
