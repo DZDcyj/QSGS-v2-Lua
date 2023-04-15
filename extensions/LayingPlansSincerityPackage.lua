@@ -52,14 +52,29 @@ local function askForHeji(self, wujing, victim)
             room:setPlayerCardLimitation(wujing, 'use, response', cd:toString(), false)
         end
     end
-    local card = room:askForCard(wujing, pattern, prompt, sgs.QVariant(), sgs.Card_MethodResponse, nil, true)
+    local card
+    if pattern ~= 'slash' then
+        for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
+            if p:objectName() ~= victim:objectName() then
+                room:setPlayerFlag(p, 'LuaHejiProhibit')
+            end
+        end
+        card = room:askForCard(wujing, pattern, prompt, sgs.QVariant(), sgs.Card_MethodUse, nil, true)
+        for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
+            if p:objectName() ~= victim:objectName() then
+                room:setPlayerFlag(p, '-LuaHejiProhibit')
+            end
+        end
+    else
+        card = room:askForUseSlashTo(wujing, victim, prompt, false)
+    end
     for _, cd in sgs.qlist(wujing:getCards('he')) do
         if cd:hasFlag('HejiDisabled') then
             room:setCardFlag(cd, '-HejiDisabled')
             room:removePlayerCardLimitation(wujing, 'use, response', cd:toString() .. '$0')
         end
     end
-    if card then
+    if card and pattern ~= 'slash' then
         local card_use = sgs.CardUseStruct()
         card_use.card = card
         card_use.from = wujing
@@ -104,6 +119,13 @@ LuaHeji = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = targetTrigger,
+}
+
+LuaHejiProhibit = sgs.CreateProhibitSkill {
+    name = 'LuaHejiProhibit',
+    is_prohibited = function(self, from, to, card)
+        return to:hasFlag('LuaHejiProhibit')
+    end,
 }
 
 LuaLiubing = sgs.CreateTriggerSkill {
@@ -182,6 +204,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
 ExWujing:addSkill(LuaHeji)
 ExWujing:addSkill(LuaLiubing)
 SkillAnjiang:addSkill(LuaLiubingObtain)
+SkillAnjiang:addSkill(LuaHejiProhibit)
 
 -- 周处
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
