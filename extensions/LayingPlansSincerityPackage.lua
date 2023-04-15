@@ -59,14 +59,18 @@ local function askForHeji(self, wujing, victim)
                 room:setPlayerFlag(p, 'LuaHejiProhibit')
             end
         end
-        card = room:askForCard(wujing, pattern, prompt, sgs.QVariant(), sgs.Card_MethodUse, nil, true)
+        room:setPlayerFlag(wujing, 'LuaHejiInvoking')
+        card = room:askForUseCard(wujing, pattern, prompt)
+        room:setPlayerFlag(wujing, '-LuaHejiInvoking')
         for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
             if p:objectName() ~= victim:objectName() then
                 room:setPlayerFlag(p, '-LuaHejiProhibit')
             end
         end
     else
+        room:setPlayerFlag(wujing, 'LuaHejiInvoking')
         card = room:askForUseSlashTo(wujing, victim, prompt, false)
+        room:setPlayerFlag(wujing, '-LuaHejiInvoking')
     end
     for _, cd in sgs.qlist(wujing:getCards('he')) do
         if cd:hasFlag('HejiDisabled') then
@@ -74,34 +78,31 @@ local function askForHeji(self, wujing, victim)
             room:removePlayerCardLimitation(wujing, 'use, response', cd:toString() .. '$0')
         end
     end
-    if card and pattern ~= 'slash' then
-        local card_use = sgs.CardUseStruct()
-        card_use.card = card
-        card_use.from = wujing
-        card_use.to:append(victim)
-        room:notifySkillInvoked(wujing, self:objectName())
-        room:broadcastSkillInvoke(self:objectName())
-        rinsan.skill(self, room, wujing, true)
-        if not card:isVirtualCard() then
-            local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
-            if not toObtain then
-                toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
-            end
-            if toObtain then
-                room:obtainCard(wujing, toObtain, false)
-            end
-        end
-        room:useCard(card_use)
-    end
 end
 
 LuaHeji = sgs.CreateTriggerSkill {
     name = 'LuaHeji',
-    events = {sgs.CardFinished},
+    events = {sgs.PreCardUsed, sgs.CardFinished},
     global = true,
     priority = -1,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
+        if event == sgs.PreCardUsed then
+            if use.from:hasFlag('LuaHejiInvoking') then
+                room:setPlayerFlag(use.from, '-LuaHejiInvoking')
+                rinsan.skill(self, room, use.from, true)
+                if not use.card:isVirtualCard() then
+                    local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
+                    if not toObtain then
+                        toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
+                    end
+                    if toObtain then
+                        room:obtainCard(use.from, toObtain, false)
+                    end
+                end
+            end
+            return false
+        end
         if use.to:length() > 1 then
             return false
         end
