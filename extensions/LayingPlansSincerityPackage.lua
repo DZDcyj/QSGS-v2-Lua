@@ -52,7 +52,6 @@ local function askForHeji(self, wujing, victim)
             room:setPlayerCardLimitation(wujing, 'use, response', cd:toString(), false)
         end
     end
-    local card
     if pattern ~= 'slash' then
         for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
             if p:objectName() ~= victim:objectName() then
@@ -60,7 +59,7 @@ local function askForHeji(self, wujing, victim)
             end
         end
         room:setPlayerFlag(wujing, 'LuaHejiInvoking')
-        card = room:askForUseCard(wujing, pattern, prompt)
+        room:askForUseCard(wujing, pattern, prompt)
         room:setPlayerFlag(wujing, '-LuaHejiInvoking')
         for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
             if p:objectName() ~= victim:objectName() then
@@ -69,7 +68,7 @@ local function askForHeji(self, wujing, victim)
         end
     else
         room:setPlayerFlag(wujing, 'LuaHejiInvoking')
-        card = room:askForUseSlashTo(wujing, victim, prompt, false)
+        room:askForUseSlashTo(wujing, victim, prompt, false)
         room:setPlayerFlag(wujing, '-LuaHejiInvoking')
     end
     for _, cd in sgs.qlist(wujing:getCards('he')) do
