@@ -280,6 +280,7 @@ LuaQuediCard = sgs.CreateSkillCard {
         return #targets <= 1
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local target
         if #targets > 0 then
             target = targets[1]
@@ -409,6 +410,7 @@ LuaChuifengCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         room:loseHp(source)
         local victim = targets[1]
         local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
@@ -641,6 +643,7 @@ LuaChongjianUseCard = sgs.CreateSkillCard {
         end
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local pattern = #targets > 0 and 'slash' or 'analeptic'
         repeat
             if pattern == 'slash' then
@@ -895,6 +898,7 @@ LuaShanxieCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local weapon = rinsan.obtainCardFromPile(isWeapon, room:getDrawPile())
         if weapon then
             source:obtainCard(weapon, true)
@@ -1018,6 +1022,7 @@ LuaJungongCard = sgs.CreateSkillCard {
         return sgs.Self:canSlash(to_select, card, false) and #targets < total_num
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local len = self:subcardsLength()
         if len == 0 then
             -- 此时已经 used 了，不必特别 +1

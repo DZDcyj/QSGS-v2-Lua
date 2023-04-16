@@ -46,6 +46,7 @@ LuaMouYanyuCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         source:drawCards(1, self:objectName())
     end,
 }

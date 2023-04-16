@@ -208,6 +208,7 @@ LuaMouQingzhengCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
         local suits = {}
         for _, cd in sgs.qlist(target:getHandcards()) do
