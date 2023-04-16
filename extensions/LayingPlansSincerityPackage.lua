@@ -228,6 +228,7 @@ LuaChuhaiCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) and sgs.Self:canPindian(to_select, 'LuaChuhai')
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
         source:drawCards(1, 'LuaChuhai')
         room:broadcastSkillInvoke('LuaChuhai', rinsan.random(1, 2))
@@ -600,6 +601,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaPowei')
         room:broadcastSkillInvoke('LuaPowei', 1)
         local target = room:getCurrent()
         repeat
@@ -834,6 +836,7 @@ LuaYingbaCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.LESS, 1) and to_select:getMaxHp() > 1
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaYingba')
         local target = targets[1]
         room:broadcastSkillInvoke('LuaYingba')
         room:loseMaxHp(target)
@@ -998,6 +1001,7 @@ LuaPingheCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaPinghe')
         local target = targets[1]
         room:loseMaxHp(source)
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
