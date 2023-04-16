@@ -1011,6 +1011,17 @@ function landlordsGeneralChoose(room)
             room:addPlayerMark(p, 'LuaWenyangKingdomChoose')
         end
         if toChange then
+            -- 合法选项：魏蜀吴群
+            local validChoices = {
+                'wei',
+                'shu',
+                'wu',
+                'qun',
+            }
+            -- 手动随机
+            if not table.contains(validChoices, toChange) then
+                toChange = validChoices[random(1, 4)]
+            end
             p:setTag('KingdomChosen', sgs.QVariant(toChange))
         end
     end
