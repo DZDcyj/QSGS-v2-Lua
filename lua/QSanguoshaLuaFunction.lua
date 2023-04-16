@@ -2138,18 +2138,43 @@ function obtainCard(ids, player)
     room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
--- 判断是否是智囊牌
-function isZhinangCard(card)
-    if card:isKindOf('ExNihilo') then
-        return true
+-- 判断是否是基本智囊牌
+function isBasicZhinangCard(card)
+    local cardName
+    if type(card) == 'string' then
+        cardName = card
+    else
+        cardName = card:objectName()
     end
-    if card:isKindOf('Dismantlement') then
-        return true
-    end
-    if card:isKindOf('Nullification') then
+    if table.contains(ZHINANG_CARDS, cardName) then
         return true
     end
     return false
+end
+
+-- 判断是否是扩展智囊牌
+function isExpansionZhinangCard(card)
+    local cardName
+    if type(card) == 'string' then
+        cardName = card
+    else
+        cardName = card:objectName()
+    end
+    if table.contains(EXPANSION_ZHINANG_CARDS, cardName) then
+        return true
+    end
+    return false
+end
+
+-- 是否是智囊牌
+function isZhinangCard(card)
+    local cardName
+    if type(card) == 'string' then
+        cardName = card
+    else
+        cardName = card:objectName()
+    end
+    return isBasicZhinangCard(cardName) or isExpansionZhinangCard(cardName)
 end
 
 -- 常规 on_use
@@ -2193,8 +2218,16 @@ function defaultOnUse(card, room, source, targets)
 end
 
 -- 获取牌堆/游戏外卡牌
-function obtainCardFromOutsideOrPile(player, cardChecker)
+function obtainCardFromOutsideOrPile(player, cardChecker, onlyDrawPile)
+    -- onlyDrawPile 代表仅仅检索牌堆，不检索被禁用卡包（主要用于非额外智囊牌）
     local room = player:getRoom()
+    if onlyDrawPile then
+        local obtain = obtainCardFromPile(cardChecker, room:getDrawPile())
+        if obtain then
+            player:obtainCard(obtain, false)
+            return
+        end
+    end
     local ids = {}
     for i = 0, 10000 do
         local card = sgs.Sanguosha:getEngineCard(i)
@@ -2229,11 +2262,18 @@ function obtainCardFromOutsideOrPile(player, cardChecker)
     obtainCard(id_list, player)
 end
 
--- 智囊牌名
+-- 扩展智囊牌名
+EXPANSION_ZHINANG_CARDS = {
+    'indirect_combination', -- 奇正相生
+    'adjust_salt_plum', -- 调剂盐梅
+    'city_under_siege', -- 兵临城下
+}
+
+-- 基本智囊牌名（仅三种）
 ZHINANG_CARDS = {
-    'ex_nihilo',
-    'dismantlement',
-    'nullification',
+    'ex_nihilo', -- 无中生有
+    'dismantlement', -- 过河拆桥
+    'nullification', -- 无懈可击
 }
 
 -- 手动修正

@@ -1032,7 +1032,7 @@ LuaWeipoCard = sgs.CreateSkillCard {
         local checker = function(cd)
             return cd:objectName() == cardName and cd:getSuit() ~= sgs.Card_NoSuit
         end
-        rinsan.obtainCardFromOutsideOrPile(source, checker)
+        rinsan.obtainCardFromOutsideOrPile(source, checker, (not rinsan.isExpansionZhinangCard(cardName)))
         room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
         source:removeTag('LuaWeipoCard')
     end,
@@ -1316,7 +1316,7 @@ LuaShengxi = sgs.CreateTriggerSkill {
                     room:broadcastSkillInvoke(self:objectName())
                     local choice = room:askForChoice(player, self:objectName(), 'LuaShengxiZhinang+LuaShengxiDraw')
                     if choice == 'LuaShengxiZhinang' then
-                        local obtain = rinsan.obtainCardFromPile(rinsan.isZhinangCard, room:getDrawPile())
+                        local obtain = rinsan.obtainCardFromPile(rinsan.isBasicZhinangCard, room:getDrawPile())
                         if obtain then
                             player:obtainCard(obtain, false)
                             return
