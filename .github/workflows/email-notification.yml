@@ -4,11 +4,13 @@ on:
   pull_request:
     branches:
       - master
+    types: [synchronize, opened, reopened, ready_for_review]
 
 jobs:
   Email-Notification:
     name: "Email Notification"
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
       - name: List commits on the pull request
         run: |
