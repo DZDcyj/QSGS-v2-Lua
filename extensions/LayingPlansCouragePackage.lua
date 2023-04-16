@@ -280,7 +280,7 @@ LuaQuediCard = sgs.CreateSkillCard {
         return #targets <= 1
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaQuedi')
         local target
         if #targets > 0 then
             target = targets[1]
@@ -410,7 +410,7 @@ LuaChuifengCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaChuifeng')
         room:loseHp(source)
         local victim = targets[1]
         local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)

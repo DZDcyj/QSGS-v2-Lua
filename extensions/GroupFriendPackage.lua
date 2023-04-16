@@ -1047,7 +1047,7 @@ LuaShaikaCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) and to_select:getMark('LuaShaikaTarget') == 0
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaShaika')
         local target = targets[1]
         local len = self:subcardsLength() + 1
         if not room:askForDiscard(target, 'LuaShaika', len, len, true, false,
@@ -1310,7 +1310,7 @@ LuaZhixieCard = sgs.CreateSkillCard {
         return #selected < sgs.Self:getMark('LuaZhixie')
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaZhixie')
         for _, target in ipairs(targets) do
             target:setChained(true)
             room:broadcastProperty(target, 'chained')
@@ -1552,7 +1552,7 @@ LuaTaoseCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaTaose')
         local target = targets[1]
         room:obtainCard(target, self:getSubcards():first())
         rinsan.doTaoseGetCard('LuaTaose', room, source, 'h', target)

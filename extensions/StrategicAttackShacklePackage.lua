@@ -424,7 +424,7 @@ LuaFenweiCard = sgs.CreateSkillCard {
         return to_select:hasFlag('trickcardtarget')
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaFenwei')
         source:loseMark('@fenwei')
         for _, p in ipairs(targets) do
             room:setPlayerFlag(p, 'luafenwei')

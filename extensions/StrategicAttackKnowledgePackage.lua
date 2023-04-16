@@ -26,7 +26,7 @@ LuaMouDuanliangCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaMouDuanliang')
         local attacks = {'LuaMouDuanliangAttack1', 'LuaMouDuanliangAttack2'}
         local defenses = {'LuaMouDuanliangDefense1', 'LuaMouDuanliangDefense2'}
         local target = targets[1]
