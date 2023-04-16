@@ -9,6 +9,7 @@ jobs:
   Email-Notification:
     name: "Email Notification"
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
       - name: List commits on the pull request
         run: |
