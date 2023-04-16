@@ -55,10 +55,8 @@ local function askForHeji(self, wujing, victim)
         room:setPlayerFlag(wujing, 'LuaHejiInvoking')
         room:askForUseCard(wujing, pattern, prompt)
         room:setPlayerFlag(wujing, '-LuaHejiInvoking')
-        for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
-            if p:objectName() ~= victim:objectName() then
-                room:setPlayerFlag(p, '-LuaHejiProhibit')
-            end
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerFlag(p, '-LuaHejiProhibit')
         end
     else
         room:setPlayerFlag(wujing, 'LuaHejiInvoking')
@@ -78,6 +76,9 @@ LuaHeji = sgs.CreateTriggerSkill {
             if use.from:hasFlag('LuaHejiInvoking') then
                 room:setPlayerFlag(use.from, '-LuaHejiInvoking')
                 rinsan.skill(self, room, use.from, true)
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerFlag(p, '-LuaHejiProhibit')
+                end
                 if not use.card:isVirtualCard() then
                     local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
                     if not toObtain then
@@ -113,7 +114,10 @@ LuaHeji = sgs.CreateTriggerSkill {
 LuaHejiProhibit = sgs.CreateProhibitSkill {
     name = 'LuaHejiProhibit',
     is_prohibited = function(self, from, to, card)
-        return to:hasFlag('LuaHejiProhibit')
+        if card:isKindOf('SkillCard') then
+            return false
+        end
+        return to:hasFlag('LuaHejiProhibit') and (card:isKindOf('Slash') or card:isKindOf('Duel'))
     end,
 }
 
