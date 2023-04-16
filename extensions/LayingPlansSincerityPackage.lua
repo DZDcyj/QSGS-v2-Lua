@@ -46,46 +46,51 @@ local function askForHeji(self, wujing, victim)
     if pattern == 'duel' then
         pattern = 'Duel'
     end
-    for _, cd in sgs.qlist(wujing:getCards('he')) do
-        if wujing:isCardLimited(cd, sgs.Card_MethodUse) or room:isProhibited(wujing, victim, cd) then
-            room:setCardFlag(cd, 'HejiDisabled')
-            room:setPlayerCardLimitation(wujing, 'use, response', cd:toString(), false)
-        end
-    end
-    local card = room:askForCard(wujing, pattern, prompt, sgs.QVariant(), sgs.Card_MethodResponse, nil, true)
-    for _, cd in sgs.qlist(wujing:getCards('he')) do
-        if cd:hasFlag('HejiDisabled') then
-            room:setCardFlag(cd, '-HejiDisabled')
-            room:removePlayerCardLimitation(wujing, 'use, response', cd:toString() .. '$0')
-        end
-    end
-    if card then
-        local card_use = sgs.CardUseStruct()
-        card_use.card = card
-        card_use.from = wujing
-        card_use.to:append(victim)
-        room:notifySkillInvoked(wujing, self:objectName())
-        room:broadcastSkillInvoke(self:objectName())
-        rinsan.skill(self, room, wujing, true)
-        if not card:isVirtualCard() then
-            local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
-            if not toObtain then
-                toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
-            end
-            if toObtain then
-                room:obtainCard(wujing, toObtain, false)
+    if pattern ~= 'slash' then
+        for _, p in sgs.qlist(room:getOtherPlayers(wujing)) do
+            if p:objectName() ~= victim:objectName() then
+                room:setPlayerFlag(p, 'LuaHejiProhibit')
             end
         end
-        room:useCard(card_use)
+        room:setPlayerFlag(wujing, 'LuaHejiInvoking')
+        room:askForUseCard(wujing, pattern, prompt)
+        room:setPlayerFlag(wujing, '-LuaHejiInvoking')
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            room:setPlayerFlag(p, '-LuaHejiProhibit')
+        end
+    else
+        room:setPlayerFlag(wujing, 'LuaHejiInvoking')
+        room:askForUseSlashTo(wujing, victim, prompt, false)
+        room:setPlayerFlag(wujing, '-LuaHejiInvoking')
     end
 end
 
 LuaHeji = sgs.CreateTriggerSkill {
     name = 'LuaHeji',
-    events = {sgs.CardFinished},
+    events = {sgs.PreCardUsed, sgs.CardFinished},
     global = true,
+    priority = -1,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
+        if event == sgs.PreCardUsed then
+            if use.from:hasFlag('LuaHejiInvoking') then
+                room:setPlayerFlag(use.from, '-LuaHejiInvoking')
+                rinsan.skill(self, room, use.from, true)
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    room:setPlayerFlag(p, '-LuaHejiProhibit')
+                end
+                if not use.card:isVirtualCard() then
+                    local toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDrawPile())
+                    if not toObtain then
+                        toObtain = rinsan.obtainCardFromPile(rinsan.isRedCard, room:getDiscardPile())
+                    end
+                    if toObtain then
+                        room:obtainCard(use.from, toObtain, false)
+                    end
+                end
+            end
+            return false
+        end
         if use.to:length() > 1 then
             return false
         end
@@ -104,6 +109,16 @@ LuaHeji = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = targetTrigger,
+}
+
+LuaHejiProhibit = sgs.CreateProhibitSkill {
+    name = 'LuaHejiProhibit',
+    is_prohibited = function(self, from, to, card)
+        if card:isKindOf('SkillCard') then
+            return false
+        end
+        return to:hasFlag('LuaHejiProhibit') and (card:isKindOf('Slash') or card:isKindOf('Duel'))
+    end,
 }
 
 LuaLiubing = sgs.CreateTriggerSkill {
@@ -182,6 +197,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
 ExWujing:addSkill(LuaHeji)
 ExWujing:addSkill(LuaLiubing)
 SkillAnjiang:addSkill(LuaLiubingObtain)
+SkillAnjiang:addSkill(LuaHejiProhibit)
 
 -- 周处
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
