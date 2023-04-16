@@ -838,6 +838,7 @@ LuaShanjiaCard = sgs.CreateSkillCard {
         return #targets >= 0
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaShanjia')
         local targets_list = sgs.SPlayerList()
         for _, target in ipairs(targets) do
             if source:canSlash(target) then
@@ -1263,6 +1264,7 @@ LuaJingxieCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         room:showCard(source, card:getEffectiveId())
         rinsan.majunUpgradeCard(card, source)
@@ -1336,6 +1338,7 @@ LuaQiaosiCard = sgs.CreateSkillCard {
         return #targets >= 0
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaQiaosi')
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         for _, cd in sgs.qlist(self:getSubcards()) do
             to_goback:addSubcard(cd)
@@ -1500,6 +1503,7 @@ LuaTunchuCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaTunchu')
         local subs = self:getSubcards()
         for _, card_id in sgs.qlist(subs) do
             source:addToPile('LuaLiang', card_id)
@@ -1594,6 +1598,7 @@ LuaShuliangCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaShuliang')
         room:broadcastSkillInvoke('LuaShuliang')
         local current = room:getCurrent()
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), current:objectName())
@@ -2319,6 +2324,7 @@ LuaLiezhiCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaLiezhi')
         room:broadcastSkillInvoke('LuaLiezhi')
         for _, p in ipairs(targets) do
             local card_id = room:askForCardChosen(source, p, 'hej', 'LuaLiezhi', false, sgs.Card_MethodDiscard)
@@ -2560,6 +2566,7 @@ LuaYizhengCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local target = targets[1]
         room:broadcastSkillInvoke('LuaYizheng')
+        room:notifySkillInvoked(source, 'LuaYizheng')
         if source:pindian(target, 'LuaYizheng') then
             room:addPlayerMark(target, 'LuaYizhengSkipDrawPhase')
         else
@@ -2764,7 +2771,7 @@ LuaMiejiCard = sgs.CreateSkillCard {
     end,
     on_use = function(self, room, source, targets)
         local target = targets[1]
-
+        room:notifySkillInvoked(source, 'LuaMieji')
         room:broadcastSkillInvoke('LuaMieji')
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, source:objectName(), '', 'LuaMieji', '')
         local miejiCard = sgs.Sanguosha:getCard(self:getSubcards():first())
@@ -2846,6 +2853,7 @@ LuaFenchengCard = sgs.CreateSkillCard {
         source:loseMark('@burn')
         room:setTag('LuaFenchengDiscard', sgs.QVariant(0))
         room:broadcastSkillInvoke('LuaFencheng')
+        room:notifySkillInvoked(source, 'LuaFencheng')
         room:setEmotion(source, 'skill/fencheng')
         for _, p in sgs.qlist(room:getOtherPlayers(source)) do
             room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), p:objectName())
@@ -3100,6 +3108,7 @@ LuaJieyueCard = sgs.CreateSkillCard {
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         target:obtainCard(card, false)
         room:broadcastSkillInvoke('LuaJieyue')
+        room:notifySkillInvoked(source, 'LuaJieyue')
         local data = sgs.QVariant()
         data:setValue(source)
         local choice = room:askForChoice(target, 'LuaJieyue', 'luajieyuediscard+luajieyuedraw', data)
@@ -3558,6 +3567,7 @@ LuaLvemingCard = sgs.CreateSkillCard {
         return #selected == 0 and to_select:getEquips():length() < sgs.Self:getEquips():length()
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaLveming')
         local target = targets[1]
         local numbers = {}
         for i = 1, 13 do
@@ -3610,6 +3620,7 @@ LuaTunjunCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local target = targets[1]
         room:broadcastSkillInvoke('LuaTunjun')
+        room:notifySkillInvoked(source, 'LuaTunjun')
         source:loseMark('@LuaTunjun')
         local times = source:getMark('LuaLveming')
         local i = 0
@@ -3666,6 +3677,7 @@ LuaXuezhaoCard = sgs.CreateSkillCard {
         return #selected < sgs.Self:getHp() and to_select:objectName() ~= sgs.Self:objectName()
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaXuezhao')
         for _, target in ipairs(targets) do
             local card = room:askForCard(target, '.', '@LuaXuezhao-give:' .. source:objectName(), sgs.QVariant(),
                 sgs.Card_MethodNone)
@@ -3794,6 +3806,7 @@ LuaGusheCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local from_id = self:getSubcards():first()
         room:broadcastSkillInvoke('LuaGushe')
+        room:notifySkillInvoked(source, 'LuaGushe')
         -- 只有一个目标直接可以使用 pindian 方法
         if #targets == 1 then
             room:setPlayerFlag(source, 'LuaGusheSingleTarget')
@@ -4257,6 +4270,7 @@ LuaZhiyanDrawCard = sgs.CreateSkillCard {
     end,
     on_use = function(self, room, source, targets)
         room:broadcastSkillInvoke('LuaZhiyan')
+        room:notifySkillInvoked(source, 'LuaZhiyan')
         local x = source:getMaxHp() - source:getHandcardNum()
         source:drawCards(x, 'LuaZhiyan')
     end,
@@ -4270,6 +4284,7 @@ LuaZhiyanGiveCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaZhiyan')
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         for _, cd in sgs.qlist(self:getSubcards()) do
             to_goback:addSubcard(cd)
@@ -4392,6 +4407,7 @@ LuaJinfanCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaJinfan')
         local to_pile = sgs.IntList()
         for _, cd in sgs.qlist(self:getSubcards()) do
             to_pile:append(cd)
@@ -4682,6 +4698,7 @@ LuaDingpinCard = sgs.CreateSkillCard {
         return #selected == 0 and not to_select:hasFlag('LuaDingpinSucceed')
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaDingpin')
         local subcard = sgs.Sanguosha:getCard(self:getSubcards():first())
         local target = targets[1]
         room:broadcastSkillInvoke('LuaDingpin')
@@ -4774,6 +4791,7 @@ LuaQuhuCard = sgs.CreateSkillCard {
         -- 驱虎吞狼，被驱的自然是 tiger
         local tiger = targets[1]
         room:broadcastSkillInvoke('LuaQuhu')
+        room:notifySkillInvoked(source, 'LuaQuhu')
         if source:pindian(tiger, 'LuaQuhu') then
             -- 要被吞的狼
             local wolves = sgs.SPlayerList()
@@ -5091,6 +5109,7 @@ LuaZhanyiCard = sgs.CreateSkillCard {
         room:broadcastSkillInvoke('LuaZhanyi')
         room:loseHp(source)
         room:setPlayerFlag(source, 'LuaZhanyiUsed')
+        room:notifySkillInvoked(source, 'LuaZhanyi')
 
         -- 根据不同牌型，用不同 flag 标识
         if card:isKindOf('BasicCard') then
@@ -5396,6 +5415,7 @@ LuaZunweiCard = sgs.CreateSkillCard {
     end,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaZunwei')
         local target = targets[1]
         local choices = {}
 
@@ -5681,6 +5701,7 @@ LuaNeifaCard = sgs.CreateSkillCard {
         return #targets <= 1
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaNeifa')
         if #targets == 0 then
             source:drawCards(2, 'LuaNeifa')
         else
@@ -5892,6 +5913,7 @@ LuaLuanwuCard = sgs.CreateSkillCard {
     target_fixed = true,
     on_use = function(self, room, source, targets)
         room:broadcastSkillInvoke('LuaLuanwu')
+        room:notifySkillInvoked(source, 'LuaLuanwu')
         room:removePlayerMark(source, '@chaos')
         room:setEmotion(source, 'skill/luanwu')
         local players = room:getOtherPlayers(source)
@@ -6335,6 +6357,7 @@ LuaChongxuCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         -- 固定 5 分
         room:broadcastSkillInvoke('LuaChongxu')
+        room:notifySkillInvoked(source, 'LuaChongxu')
         local score = 5
         while score > 1 do
             local choices = {}
@@ -6396,6 +6419,7 @@ LuaMiaojianUseCard = sgs.CreateSkillCard {
         return true
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaMiaojian')
         local pattern = #targets > 0 and 'slash' or 'ex_nihilo'
         local card = sgs.Sanguosha:cloneCard(pattern, sgs.Card_NoSuit, -1)
         card:setSkillName(self:objectName())
@@ -6654,6 +6678,7 @@ LuaOLShizhanCard = sgs.CreateSkillCard {
         return false
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaOLShizhan')
         local target = targets[1]
         local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
         duel:setSkillName('_LuaOLShizhan')

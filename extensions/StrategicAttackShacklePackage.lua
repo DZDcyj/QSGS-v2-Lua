@@ -334,6 +334,7 @@ LuaMouJieweiCard = sgs.CreateSkillCard {
     end,
     on_use = function(self, room, source, targets)
         rinsan.decreaseShield(source, 1)
+        room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
         if target:getHandcardNum() > 0 then
             local cards = sgs.IntList()
@@ -423,6 +424,7 @@ LuaFenweiCard = sgs.CreateSkillCard {
         return to_select:hasFlag('trickcardtarget')
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaFenwei')
         source:loseMark('@fenwei')
         for _, p in ipairs(targets) do
             room:setPlayerFlag(p, 'luafenwei')
@@ -732,6 +734,7 @@ LuaMouKurouCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         local loseHp = 1
         if card:isKindOf('Peach') or card:isKindOf('Analeptic') then

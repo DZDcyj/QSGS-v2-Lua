@@ -174,6 +174,7 @@ LuaPingxiangCard = sgs.CreateSkillCard {
         return sgs.Self:canSlash(to_select, fire_slash) and #targets < total_num
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         if not source:hasFlag('LuaPingxiang-Invoking') then
             source:loseMark('@LuaPingxiang')
             room:detachSkillFromPlayer(source, 'LuaJiufa')
@@ -246,6 +247,7 @@ LuaShencaiCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local victim = targets[1]
         local judge = rinsan.createJudgeStruct({
             ['play_animation'] = true,

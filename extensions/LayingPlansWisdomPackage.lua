@@ -31,6 +31,7 @@ LuaWanweiCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and to_select:getLostHp() > 0
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
         local x = source:getHp()
         rinsan.recover(target, x + 1, source)

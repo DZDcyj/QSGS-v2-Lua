@@ -140,6 +140,7 @@ LuaMouLiangzhuCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and to_select:hasEquip()
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local zhuTarget
         for _, p in sgs.qlist(room:getOtherPlayers(source)) do
             if p:getMark('@LuaMouLiangzhu') > 0 then
