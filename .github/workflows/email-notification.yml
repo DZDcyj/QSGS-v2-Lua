@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+    types: [synchronize, opened, reopened, ready_for_review]
 
 jobs:
   Email-Notification:
