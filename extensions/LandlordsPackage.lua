@@ -98,6 +98,25 @@ local function LuaIsDizhu(target)
     return (target:hasSkill('LuaDizhu') or target:getMark('@Landlords') > 0)
 end
 
+local function getSeatString(i)
+    return string.format('BroadcastSeat%d', i)
+end
+
+-- 通报座次
+local function broadcastSeat(landlord)
+    local room = landlord:getRoom()
+    local curr = landlord
+    local index = 1
+    repeat
+        rinsan.sendLogMessage(room, '#BroadcastSeat', {
+            ['arg'] = curr:screenName(),
+            ['arg2'] = getSeatString(index),
+        })
+        curr = curr:getNextAlive(1)
+        index = index + 1
+    until curr:objectName() == landlord:objectName()
+end
+
 LuaDizhu = sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
     events = {sgs.TurnStart},
@@ -109,6 +128,8 @@ LuaDizhu = sgs.CreateTriggerSkill {
         -- 优化 UI 显示
         room:setPlayerMark(player, '@Landlords', 0)
         room:addPlayerMark(player, self:objectName())
+
+        broadcastSeat(player)
 
         rinsan.landlordsGeneralChoose(room)
         room:sendCompulsoryTriggerLog(player, self:objectName())

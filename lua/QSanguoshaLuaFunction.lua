@@ -982,6 +982,17 @@ function askForLuckCard(room)
     room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
 end
 
+function askForKingdom(player)
+    -- 合法选项：魏蜀吴群
+    local validChoices = {
+        'wei',
+        'shu',
+        'wu',
+        'qun',
+    }
+    return player:getRoom():askForChoice(player, 'choose_kingdom', table.concat(validChoices, '+'))
+end
+
 -- 斗地主模式武将选择
 function landlordsGeneralChoose(room)
     local all = sgs.Sanguosha:getRandomGenerals(sgs.Sanguosha:getGeneralCount())
@@ -1005,23 +1016,12 @@ function landlordsGeneralChoose(room)
         local general = sgs.Sanguosha:getGeneral(generalName)
         local toChange
         if general:getKingdom() == 'god' then
-            toChange = room:askForKingdom(p)
+            toChange = askForKingdom(p)
         elseif generalName == 'ExWenyang' then
             toChange = room:askForChoice(p, 'LuaWenyangKingdomChoose', 'wei+wu')
             room:addPlayerMark(p, 'LuaWenyangKingdomChoose')
         end
         if toChange then
-            -- 合法选项：魏蜀吴群
-            local validChoices = {
-                'wei',
-                'shu',
-                'wu',
-                'qun',
-            }
-            -- 手动随机
-            if not table.contains(validChoices, toChange) then
-                toChange = validChoices[random(1, 4)]
-            end
             p:setTag('KingdomChosen', sgs.QVariant(toChange))
         end
     end
