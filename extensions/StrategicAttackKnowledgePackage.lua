@@ -84,9 +84,67 @@ LuaMouDuanliang = sgs.CreateZeroCardViewAsSkill {
     end,
 }
 
+function doMouShipoAsk(from, to)
+    local room = from:getRoom()
+    local card = room:askForCard(to, '.', 'LuaMouShipo-give:' .. from:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
+    if card then
+        from:obtainCard(card, false)
+        room:addPlayerMark(from, string.format('%s-%d-Clear', 'LuaMouShipo', card:getEffectiveId()))
+    else
+        rinsan.doDamage(room, nil, to, 1)
+    end
+    return card ~= nil
+end
+
+LuaMouShipoCard = sgs.CreateSkillCard {
+    name = 'LuaMouShipo',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        for _, cd in sgs.qlist(self:getSubcards()) do
+            to_goback:addSubcard(cd)
+        end
+        local target = targets[1]
+        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, source:objectName(), target:objectName(),
+            self:objectName(), nil)
+        -- 不需要可见
+        room:moveCardTo(to_goback, source, target, sgs.Player_PlaceHand, reason)
+    end,
+}
+
+LuaMouShipoVS = sgs.CreateViewAsSkill {
+    name = 'LuaMouShipo',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return sgs.Self:getMark(string.format('%s-%d-Clear', self:objectName(), to_select:getEffectiveId())) > 0
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local vs_card = LuaMouShipoCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return string.startsWith(pattern, '@@LuaMouShipo')
+    end,
+}
+
 LuaMouShipo = sgs.CreateTriggerSkill {
     name = 'LuaMouShipo',
     events = {sgs.EventPhaseStart},
+    view_as_skill = LuaMouShipoVS,
     on_trigger = function(self, event, player, data, room)
         local choices = {}
         local victims = sgs.SPlayerList()
@@ -111,22 +169,20 @@ LuaMouShipo = sgs.CreateTriggerSkill {
             if choice ~= 'cancel' then
                 rinsan.skill(self, room, player, true)
             end
+            local obtained
             if choice == 'LuaMouShipoChoice1' then
                 local victim = room:askForPlayerChosen(player, victims, self:objectName(), 'LuaMouShipo-choose', true,
                     true)
                 if victim then
-                    if not room:askForDiscard(victim, self:objectName(), 1, 1, true, true,
-                        'LuaMouShipo-discard:' .. player:objectName()) then
-                        player:drawCards(1, self:objectName())
-                    end
+                    obtained = obtained or doMouShipoAsk(player, victim)
                 end
             elseif choice == 'LuaMouShipoChoice2' then
                 for _, p in sgs.qlist(shortages) do
-                    if not room:askForDiscard(p, self:objectName(), 1, 1, true, true,
-                        'LuaMouShipo-discard:' .. player:objectName()) then
-                        player:drawCards(1, self:objectName())
-                    end
+                    obtained = obtained or doMouShipoAsk(player, p)
                 end
+            end
+            if obtained then
+                room:askForUseCard(player, '@@LuaMouShipo', 'LuaMouShipo-Give', -1, sgs.Card_MethodNone)
             end
         end
         return false
