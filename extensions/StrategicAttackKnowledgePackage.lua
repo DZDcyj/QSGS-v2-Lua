@@ -169,7 +169,7 @@ LuaMouShipo = sgs.CreateTriggerSkill {
             if choice ~= 'cancel' then
                 rinsan.skill(self, room, player, true)
             end
-            local obtained
+            local obtained = false
             if choice == 'LuaMouShipoChoice1' then
                 local victim = room:askForPlayerChosen(player, victims, self:objectName(), 'LuaMouShipo-choose', true,
                     true)
