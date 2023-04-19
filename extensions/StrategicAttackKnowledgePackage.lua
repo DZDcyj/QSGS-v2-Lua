@@ -97,7 +97,7 @@ function doMouShipoAsk(from, to)
 end
 
 LuaMouShipoCard = sgs.CreateSkillCard {
-    name = 'LuaMouShipo',
+    name = 'LuaMouShipoCard',
     will_throw = false,
     target_fixed = false,
     filter = function(self, targets, to_select)
@@ -174,11 +174,11 @@ LuaMouShipo = sgs.CreateTriggerSkill {
                 local victim = room:askForPlayerChosen(player, victims, self:objectName(), 'LuaMouShipo-choose', true,
                     true)
                 if victim then
-                    obtained = obtained or doMouShipoAsk(player, victim)
+                    obtained = doMouShipoAsk(player, victim) or obtained
                 end
             elseif choice == 'LuaMouShipoChoice2' then
                 for _, p in sgs.qlist(shortages) do
-                    obtained = obtained or doMouShipoAsk(player, p)
+                    obtained = doMouShipoAsk(player, p) or obtained
                 end
             end
             if obtained then
