@@ -32,6 +32,7 @@ LuaWanweiCard = sgs.CreateSkillCard {
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
+        room:addPlayerMark(source, self:objectName() .. '_lun')
         local target = targets[1]
         local x = source:getHp()
         rinsan.recover(target, x + 1, source)
