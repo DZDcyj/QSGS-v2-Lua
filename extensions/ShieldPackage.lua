@@ -14,6 +14,7 @@ SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, tr
 -- 初始护甲值表
 local START_SHIELDS = {
     ['ExMouHuaxiong'] = 1,
+    ['ExMouCaoren'] = 1,
 }
 
 local function globalTrigger(self, target)
