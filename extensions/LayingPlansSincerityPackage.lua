@@ -121,6 +121,19 @@ LuaHejiProhibit = sgs.CreateProhibitSkill {
     end,
 }
 
+LuaHejiTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaHejiTargetMod',
+    frequency = sgs.Skill_Compulsory,
+    pattern = 'Slash',
+    distance_limit_func = function(self, from, card)
+        if from:hasFlag('LuaHejiInvoking') then
+            return 1000
+        else
+            return 0
+        end
+    end,
+}
+
 LuaLiubing = sgs.CreateTriggerSkill {
     name = 'LuaLiubing',
     events = {sgs.CardUsed, sgs.CardResponded},
@@ -197,6 +210,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
 ExWujing:addSkill(LuaHeji)
 ExWujing:addSkill(LuaLiubing)
 SkillAnjiang:addSkill(LuaLiubingObtain)
+SkillAnjiang:addSkill(LuaHejiTargetMod)
 SkillAnjiang:addSkill(LuaHejiProhibit)
 
 -- 周处
