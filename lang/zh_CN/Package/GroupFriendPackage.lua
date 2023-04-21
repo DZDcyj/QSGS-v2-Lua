@@ -183,4 +183,18 @@ return {
     ['LuaManyanChain'] = '横置一名角色',
     ['@LuaManyanChain-choose'] = '你须选择一名未横置的角色横置之',
     ['@LuaManyanFireDamage-choose'] = '你须选择一名横置的角色，对其造成一点火属性伤害',
+    ['Zhongliao'] = '往事终了',
+    ['&Zhongliao'] = '终了',
+    ['#Zhongliao'] = '指点江山',
+    ['LuaRuiping'] = '锐评',
+    [':LuaRuiping'] = '出牌阶段限两次，你可以随机抽取一个技能（随机前可令其中一个技能随机到的概率翻倍），然后令一名本回合内未以此法获得过技能、且没有该技能的角色获得此技能直到你的下个回合结束；\
+    可以随机到的技能有：崩坏，恃勇，英姿（旧），激昂，无言（新）',
+    ['#LuaRuiping'] = '%from 随机到了技能“%arg”',
+    ['luaruiping'] = '锐评',
+    ['LuaKuangzheng'] = '匡正',
+    [':LuaKuangzheng'] = '准备阶段，你可以依次弃置任意名角色各一张牌，结束阶段，这些角色中本回合未受到伤害的角色摸一张牌',
+    ['luakuangzheng'] = '匡正',
+    ['LuaRuiping-Choose'] = '你须选择一名角色获得技能“%src”',
+    ['@LuaKuangzheng'] = '你可以发动“匡正”，弃置任意名角色的一张牌',
+    ['~LuaKuangzheng'] = '选择任意名可以弃置牌的角色→点击“确定”',
 }
