@@ -1034,7 +1034,7 @@ LuaWeipoCard = sgs.CreateSkillCard {
         local checker = function(cd)
             return cd:objectName() == cardName and cd:getSuit() ~= sgs.Card_NoSuit
         end
-        rinsan.obtainCardFromOutsideOrPile(source, checker, (not rinsan.isExpansionZhinangCard(cardName)))
+        rinsan.obtainCardFromOutsideOrPile(source, checker, (rinsan.isBasicZhinangCard(cardName)))
         room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(room:getDrawPile():length()))
         source:removeTag('LuaWeipoCard')
     end,

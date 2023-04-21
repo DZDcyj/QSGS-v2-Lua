@@ -2225,8 +2225,8 @@ function obtainCardFromOutsideOrPile(player, cardChecker, onlyDrawPile)
         local obtain = obtainCardFromPile(cardChecker, room:getDrawPile())
         if obtain then
             player:obtainCard(obtain, false)
-            return
         end
+        return
     end
     local ids = {}
     for i = 0, 10000 do
