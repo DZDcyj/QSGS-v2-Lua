@@ -160,9 +160,9 @@ LuaMouJianxiong = sgs.CreateTriggerSkill {
             local x = 2 - player:getMark('@LuaZhishi')
             if x > 0 then
                 player:drawCards(x, self:objectName())
-            end
-            if room:askForChoice(player, self:objectName(), 'RemoveLuaZhishiMark+cancel') ~= 'cancel' then
-                player:loseMark('@LuaZhishi')
+                if room:askForChoice(player, self:objectName(), 'RemoveLuaZhishiMark+cancel') ~= 'cancel' then
+                    player:loseMark('@LuaZhishi')
+                end
             end
         end
     end,
