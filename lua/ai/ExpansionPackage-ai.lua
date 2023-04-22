@@ -2346,10 +2346,29 @@ LuaZhiyan_skill.getTurnUseCard = function(self, inclusive)
         return nil
     end
 
-    -- 可摸可给的情况下，优先给出去，因此先判断能不能给
-    if LuaZhiyanGiveAvailable and not self.player:isKongcheng() then
+    local willUseHandcard = false
+    -- 判断是否还要用牌
+    for _, cd in sgs.qlist(self.player:getHandcards()) do
+        local dummy_use = {
+            isDummy = true,
+        }
+        self:useCardByClassName(cd, dummy_use)
+        if dummy_use.card then
+            willUseHandcard = true
+            break
+        end
+    end
+
+    -- 同时可行
+    if LuaZhiyanDrawAvailable and LuaZhiyanGiveAvailable then
+        if not willUseHandcard then
+            -- 不再使用手牌则先摸
+            return sgs.Card_Parse('#LuaZhiyanDrawCard:.:')
+        end
+    end
+    if LuaZhiyanGiveAvailable then
         return sgs.Card_Parse('#LuaZhiyanGiveCard:.:')
-    elseif LuaZhiyanDrawAvailable then
+    elseif LuaZhiyanDrawAvailable and (not willUseHandcard) then
         return sgs.Card_Parse('#LuaZhiyanDrawCard:.:')
     end
     return nil
@@ -2404,16 +2423,6 @@ end
 
 -- 治严摸牌
 sgs.ai_skill_use_func['#LuaZhiyanDrawCard'] = function(_card, use, self)
-    -- 要是还有会使用的手牌，就暂时不摸
-    for _, cd in sgs.qlist(self.player:getHandcards()) do
-        local dummy_use = {
-            isDummy = true,
-        }
-        self:useCardByClassName(cd, dummy_use)
-        if dummy_use.card then
-            return
-        end
-    end
     use.card = sgs.Card_Parse('#LuaZhiyanDrawCard:.:')
 end
 
