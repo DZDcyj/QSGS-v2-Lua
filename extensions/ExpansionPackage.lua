@@ -6877,6 +6877,7 @@ end
 
 local function transferGold(from, to, gold)
     local room = from:getRoom()
+    room:notifySkillInvoked(from, 'LuaYijin')
     room:doAnimate(rinsan.ANIMATE_INDICATE, from:objectName(), to:objectName())
     gainGoldEffect(to, rinsan.getPos(GOLDS, gold))
     room:removePlayerMark(from, gold)
@@ -6927,6 +6928,7 @@ LuaYijin = sgs.CreateTriggerSkill {
             if targets:isEmpty() then
                 return false
             end
+            room:sendCompulsoryTriggerLog(player, self:objectName())
             local gold = room:askForChoice(player, self:objectName(), table.concat(getGoldTable(player), '+'))
             local target = room:askForPlayerChosen(player, targets, self:objectName(), 'LuaYijin-invoke:' .. gold)
             if target then
