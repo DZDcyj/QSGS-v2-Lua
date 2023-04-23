@@ -118,7 +118,7 @@ local function broadcastSeat(landlord)
 end
 
 local available_call_option = {
-    [1] = 'cancel',
+    [1] = '0x',
     [2] = '1x',
     [3] = '2x',
     [4] = '3x',
