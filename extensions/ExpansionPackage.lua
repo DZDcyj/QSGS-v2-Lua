@@ -6805,6 +6805,25 @@ ExPeixiu:addSkill(LuaXingtu)
 SkillAnjiang:addSkill(LuaXingtuTargetMod)
 ExPeixiu:addSkill(LuaJuezhi)
 
+-- 手杀界公孙瓒
+JieGongsunzan = sgs.General(extension, 'JieGongsunzan', 'qun', '4', true, true)
+
+JieYicong = sgs.CreateDistanceSkill {
+    name = 'JieYicong',
+    correct_func = function(self, from, to)
+        if from:hasSkill('JieYicong') then
+            return -from:getHp() + 1
+        end
+        if to:hasSkill('JieYicong') then
+            return to:getLostHp() - 1
+        end
+        return 0
+    end,
+}
+
+JieGongsunzan:addSkill(JieYicong)
+JieGongsunzan:addSkill('qiaomeng')
+
 -- 曹嵩
 ExCaosong = sgs.General(extension, 'ExCaosong', 'wei', '3', true, true)
 
