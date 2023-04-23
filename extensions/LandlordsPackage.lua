@@ -167,7 +167,6 @@ LuaDizhu = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, splayer, data, room)
         -- 优化 UI 显示
         room:setPlayerMark(splayer, '@Landlords', 0)
-        room:addPlayerMark(splayer, self:objectName())
 
         local player = callLandholder(splayer)
         adjustPlayer(player)
@@ -176,6 +175,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
             room:setPlayerProperty(splayer, 'role', sgs.QVariant('rebel'))
             room:setPlayerProperty(player, 'role', sgs.QVariant('lord'))
         end
+        room:addPlayerMark(player, self:objectName())
 
         broadcastSeat(player)
 

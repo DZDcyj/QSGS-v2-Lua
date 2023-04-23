@@ -993,6 +993,10 @@ function askForKingdom(player)
     return player:getRoom():askForChoice(player, 'choose_kingdom', table.concat(validChoices, '+'))
 end
 
+function getGeneralCount(player)
+    return player:getMark('LuaDizhu') > 0 and 5 or 3
+end
+
 -- 斗地主模式武将选择
 function landlordsGeneralChoose(room)
     local all = sgs.Sanguosha:getRandomGenerals(sgs.Sanguosha:getGeneralCount())
@@ -1000,7 +1004,7 @@ function landlordsGeneralChoose(room)
     shuffleTable(all)
     for _, sp in sgs.qlist(players) do
         local available = {}
-        for _ = 0, 4, 1 do
+        for _ = 0, getGeneralCount(sp) - 1, 1 do
             local choice = findReasonable(all)
             table.insert(available, choice)
             table.removeOne(all, choice)
