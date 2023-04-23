@@ -594,4 +594,9 @@ return {
     ['LuaJuezhi'] = '爵制',
     [':LuaJuezhi'] = '出牌阶段，你可以弃置至少两张牌，然后随机获得牌堆中一张点数为X的牌（X为你弃置的牌的点数之和除以13的余数，若余数为0，则X为13）',
     ['luajuezhi'] = '爵制',
+    ['JieGongsunzan'] = '界公孙瓒',
+    ['&JieGongsunzan'] = '界公孙瓒',
+    ['#JieGongsunzan'] = '白马将军',
+    ['JieYicong'] = '义从',
+    [':JieYicong'] = '锁定技，你计算与其他角色的距离-X（X为你的体力值-1）；其他角色计算与你的距离+Y（Y为你已损失的体力值-1）',
 }
