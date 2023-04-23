@@ -6852,15 +6852,19 @@ end
 local function gainGoldEffect(player, effectIndex)
     local room = player:getRoom()
     room:addPlayerMark(player, string.format('@LuaYijin%d', effectIndex))
+    local index = 1
     -- 额外处理跳过阶段
     if effectIndex == 4 then
         -- 金迷
         room:addPlayerMark(player, 'LuaYijinPlay')
         room:addPlayerMark(player, 'LuaYijinDiscard')
+        index = 2
     elseif effectIndex == 6 then
         -- 拥蔽
         room:addPlayerMark(player, 'LuaYijinDraw')
+        index = 2
     end
+    room:broadcastSkillInvoke('LuaYijin', index)
 end
 
 local function clearGoldEffect(player)
@@ -6889,6 +6893,10 @@ LuaYijinStart = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         local caosongs = room:findPlayersBySkillName('LuaYijin')
+        if caosongs:isEmpty() then
+            return false
+        end
+        room:broadcastSkillInvoke('LuaYijin', 1)
         for _, caosong in sgs.qlist(caosongs) do
             if getGoldCount(caosong) == 0 then
                 initialGolds(caosong)
@@ -6906,6 +6914,7 @@ LuaYijin = sgs.CreateTriggerSkill {
         if player:getPhase() == sgs.Player_RoundStart then
             if getGoldCount(player) == 0 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName(), 3)
                 room:killPlayer(player)
             end
         elseif player:getPhase() == sgs.Player_Play then
@@ -7082,6 +7091,7 @@ LuaGuanzongCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local from = targets[1]
         local to = targets[2]
+        room:notifySkillInvoked(source, self:objectName())
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), from:objectName())
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), to:objectName())
         local damage = sgs.DamageStruct()
