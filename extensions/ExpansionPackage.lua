@@ -7128,12 +7128,15 @@ LuaGuanzongCard = sgs.CreateSkillCard {
             ['arg2'] = 1,
         })
         sgs.Sanguosha:playSystemAudioEffect('injure1', true)
-        room:setEmotion(damage.to, 'damage')
+        room:setEmotion(to, 'damage')
         room:doAnimate(rinsan.ANIMATE_INDICATE, from:objectName(), to:objectName())
+        room:getThread():trigger(sgs.PreDamageDone, room, to, data)
+        room:addPlayerMark(from, 'damage_point_round')
+        room:setPlayerFlag(to, 'LuaGuanzongProceeding')
+        room:getThread():trigger(sgs.DamageDone, room, to, data)
+        room:setPlayerFlag(to, '-LuaGuanzongProceeding')
         room:getThread():trigger(sgs.Damage, room, from, data)
         room:getThread():trigger(sgs.Damaged, room, to, data)
-        -- 针对钟繇佐定特殊处理
-        room:setTag('zuoding', sgs.QVariant(true))
     end,
 }
 
@@ -7147,9 +7150,25 @@ LuaGuanzong = sgs.CreateZeroCardViewAsSkill {
     end,
 }
 
+LuaGuanzongDamageDone = sgs.CreateTriggerSkill {
+    name = 'LuaGuanzongDamageDone',
+    events = {sgs.DamageDone},
+    priority = 10000,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.to and damage.to:hasFlag('LuaGuanzongProceeding') then
+            return true
+        end
+        return false
+    end,
+    can_trigger = globalTrigger,
+}
+
 ExCaosong:addSkill(LuaYijin)
 SkillAnjiang:addSkill(LuaYijinEffect)
 SkillAnjiang:addSkill(LuaYijinStart)
 SkillAnjiang:addSkill(LuaYijinMaxCards)
 SkillAnjiang:addSkill(LuaYijinTargetMod)
 ExCaosong:addSkill(LuaGuanzong)
+SkillAnjiang:addSkill(LuaGuanzongDamageDone)
