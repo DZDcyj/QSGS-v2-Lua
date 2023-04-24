@@ -17,7 +17,8 @@ jobs:
       - name: Get Tag Name
         run : |
           echo "Ref Name: $env:GITHUB_REF"
-          $TAG_NAME=$env:GITHUB_REF.Split("/")[2]
+          $TAG_REF=$env:GITHUB_REF
+          $TAG_NAME=$TAG_REF.Split("/")[2]
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "Tag Name: $env:TAG_NAME"
       - name: Copy Total File
@@ -31,7 +32,7 @@ jobs:
           Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          title: "日神杀武将包 $env:TAG_NAME"
+          title: "日神杀武将包 ${{env.TAG_NAME}}"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
           draft: true
