@@ -2,9 +2,6 @@
 
 on:
   push:
-    # branches just for test
-    branches:
-      - ci/*
     tags:
       - "v*"
 
@@ -19,22 +16,21 @@ jobs:
       - name: Get Tag Name
         run : |
           echo "Ref Name: $env:GITHUB_REF"
-          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "Tag Name: $env:TAG_NAME"
-      # - name: Copy Total File
-      #   run: |
-      #     Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
-      # - name: Clear Old Files
-      #   run: |
-      #     if (Test-Path .\*.zip) { Remove-Item .\*.zip | Write-Host "Old Files Cleared!" } else { Write-Host "No Old Files to Clear!" }
-      # - name: Compress Total File
-      #   run: |
-      #     Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
-      # - uses: "marvinpinto/action-automatic-releases@latest"
-      #   with:
-      #     title: "日神杀武将包 ${{env.TAG_NAME}}"
-      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
-      #     prerelease: true
-      #     draft: true
-      #     files: |
-      #       *.zip
+          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
+      - name: Copy Total File
+        run: |
+          Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
+      - name: Clear Old Files
+        run: |
+          if (Test-Path .\*.zip) { Remove-Item .\*.zip | Write-Host "Old Files Cleared!" } else { Write-Host "No Old Files to Clear!" }
+      - name: Compress Total File
+        run: |
+          Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          title: "日神杀武将包 ${{env.TAG_NAME}}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          draft: true
+          files: |
+            *.zip
