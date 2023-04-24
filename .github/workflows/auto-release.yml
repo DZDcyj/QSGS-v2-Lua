@@ -31,7 +31,9 @@ jobs:
       - name: Checkout Branch
         uses: actions/checkout@v3
         with:
-          lfs: 'true'
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
 
   prepare-package:
     name: "Prepare Package"
