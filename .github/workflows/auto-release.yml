@@ -1,0 +1,24 @@
+﻿name: Auto-Release
+
+on:
+  push:
+    # branches just for test
+    branches:
+      - ci/*
+    tags:
+      - "v*"
+
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          draft: true
+          files: |
+            LICENSE.txt
+            *.jar
