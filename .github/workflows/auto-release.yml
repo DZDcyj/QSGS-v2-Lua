@@ -1,0 +1,37 @@
+﻿name: Auto Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+
+      - name: Get Tag Name
+        run : |
+          echo "Ref Name: $env:GITHUB_REF"
+          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
+
+      - name: Copy Basic Files
+        run: |
+          Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
+
+      - name: Archive Package
+        run: |
+          Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
+
+      - name: Publish Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          title: "日神杀武将包 ${{env.TAG_NAME}}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: false
+          files: |
+            *.zip
