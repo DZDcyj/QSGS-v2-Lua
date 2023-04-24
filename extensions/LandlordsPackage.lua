@@ -136,9 +136,9 @@ local function callLandholder(first)
             return curr
         end
         -- 同样叫分先到者行
-        if rinsan.getPos(available_call_option,call) > biggestNumber then
+        if rinsan.getPos(available_call_option, call) > biggestNumber then
             biggest = curr
-            biggestNumber = rinsan.getPos(available_call_option,call)
+            biggestNumber = rinsan.getPos(available_call_option, call)
         end
         curr = curr:getNextAlive(1)
     until curr:objectName() == first:objectName()
@@ -199,7 +199,10 @@ LuaDizhu = sgs.CreateTriggerSkill {
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 触发游戏开始时时机，例如先辅、怀橘
             room:getThread():trigger(sgs.GameStart, room, p)
+        end
 
+        -- 摸牌在初始技能全部触发完毕之后
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 统一在这里进行初始牌的摸取，避免提前摸牌导致一些问题
             room:setTag('FirstRound', sgs.QVariant(true))
             local draw_data = sgs.QVariant(4)
