@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Get Tag Name
         run : |
-          echo "Ref Name: $env:GITHUB_REF"
-          echo "TAG_NAME=${GITHUB_REF##*/}" >> $env:GITHUB_ENV
+          echo "Ref Name: $GITHUB_REF"
+          echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Publish Release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -30,11 +30,11 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
-        #with:
-          #lfs: true
+        with:
+          lfs: true
 
   prepare-package:
-    name: "Branch Checkout"
+    name: "Prepare Package"
     runs-on: self-hosted
     needs: branch-checkout
     steps:
