@@ -16,18 +16,19 @@ jobs:
         uses: actions/checkout@v3
       - name: Get Tag Name
         run : |
-          echo "Ref Name: $env:GITHUB_REF"
-          echo $env:GITHUB_REF.Split(",")[2] >> $env:TAG_NAME
-          echo "Tag Name: $env:TAG_NAME"
+          echo "Ref Name: $GITHUB_REF"
+          echo $GITHUB_REF.Split(",")[2] >> $TAG_NAME
+          echo "Tag Name: $TAG_NAME"
+          echo "TAG_NAME=hello" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Copy Total File
         run: |
           Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
       - name: Clear Old Files
         run: |
-          if (Test-Path ..\Deployment\*.zip) { Remove-Item ..\Deployment\*.zip | Write-Host "Old Files Cleared!" } else { Write-Host "No Old Files to Clear!" }
+          if (Test-Path .\*.zip) { Remove-Item .\*.zip | Write-Host "Old Files Cleared!" } else { Write-Host "No Old Files to Clear!" }
       - name: Compress Total File
         run: |
-          Compress-Archive -Path "..\Deployment\*" -DestinationPath .."\Deployment\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
+          Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           title: "日神杀武将包 $env:TAG_NAME"
@@ -35,4 +36,4 @@ jobs:
           prerelease: true
           draft: true
           files: |
-            ..\Deployment\*.zip
+            *.zip
