@@ -19,8 +19,8 @@ jobs:
       - name: Get Tag Name
         run : |
           echo "Ref Name: $env:GITHUB_REF"
-          echo "Try to Get Tag Name: $env:GITHUB_REF.Split("/")[2]"
-          echo "TAG_NAME=$env:GITHUB_REF.Split("/")[2]" >> $GITHUB_ENV
+          echo "Try to Get Tag Name: $($env:GITHUB_REF.Split("/")[2])"
+          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $GITHUB_ENV
           echo "Tag Name: $env:TAG_NAME"
       # - name: Copy Total File
       #   run: |
