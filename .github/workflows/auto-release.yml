@@ -14,6 +14,12 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
+      - name: Copy Total File
+        run: |
+        Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
+      - name: Compress Total File
+        run: |
+        Compress-Archive -Path "..\Deployment\*" -DestinationPath "..\Deployment\日神杀武将包 ${{GITHUB_REF##*/}}.zip" -Force
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           title: "日神杀武将包 ${{GITHUB_REF##*/}}"
@@ -21,5 +27,4 @@ jobs:
           prerelease: true
           draft: true
           files: |
-            LICENSE.txt
-            *.jar
+            ..\Deployment\*.zip
