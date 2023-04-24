@@ -30,7 +30,7 @@ jobs:
           Compress-Archive -Path "..\Deployment\*" -DestinationPath .."\Deployment\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          title: "日神杀武将包 ${{GITHUB_REF##*/}}"
+          title: "日神杀武将包 $env:TAG_NAME"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
           draft: true
