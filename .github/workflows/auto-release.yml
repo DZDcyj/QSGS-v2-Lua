@@ -31,7 +31,7 @@ jobs:
       - name: Checkout Branch
         uses: actions/checkout@v3
         with:
-          lfs: true
+          lfs: 'true'
 
   prepare-package:
     name: "Prepare Package"
