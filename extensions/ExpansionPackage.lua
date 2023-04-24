@@ -5823,7 +5823,6 @@ LuaNeifaTargetMod = sgs.CreateTargetModSkill {
         end
         return 0
     end,
-
 }
 
 ExYuantanYuanshang:addSkill(LuaNeifa)
@@ -6824,3 +6823,352 @@ JieYicong = sgs.CreateDistanceSkill {
 
 JieGongsunzan:addSkill(JieYicong)
 JieGongsunzan:addSkill('qiaomeng')
+
+-- 曹嵩
+ExCaosong = sgs.General(extension, 'ExCaosong', 'wei', '3', true, true)
+
+local GOLDS = {
+    [1] = '@LuaYijin1',
+    [2] = '@LuaYijin2',
+    [3] = '@LuaYijin3',
+    [4] = '@LuaYijin4',
+    [5] = '@LuaYijin5',
+    [6] = '@LuaYijin6',
+}
+
+-- 从 1 到 6 分别是
+-- 膴仕：摸牌阶段多摸四张牌、出牌阶段使用【杀】的次数上限+1
+-- 厚任：回合结束时，回复3点体力
+-- 通神：受到非雷电伤害时，防止之
+-- 金迷：跳过下一个出牌阶段和弃牌阶段
+-- 贾凶：出牌阶段开始时失去1点体力，本回合手牌上限-3
+-- 拥蔽：准备阶段，跳过下一个摸牌阶段
+local function getGoldTable(player)
+    local golds = {}
+    for i = 1, 6, 1 do
+        local mark = string.format('@LuaYijin%d', i)
+        if player:getMark(mark) > 0 then
+            table.insert(golds, mark)
+        end
+    end
+    return golds
+end
+
+local function getGoldCount(player)
+    return #getGoldTable(player)
+end
+
+local function initialGolds(player)
+    local room = player:getRoom()
+    room:sendCompulsoryTriggerLog(player, 'LuaYijin')
+    for i = 1, 6, 1 do
+        local mark = string.format('@LuaYijin%d', i)
+        room:addPlayerMark(player, mark)
+    end
+end
+
+-- 令 player 获取第 effectIndex 个金
+local function gainGoldEffect(player, effectIndex)
+    local room = player:getRoom()
+    room:addPlayerMark(player, string.format('@LuaYijin%d', effectIndex))
+    local index = 1
+    -- 额外处理跳过阶段
+    if effectIndex == 4 then
+        -- 金迷
+        room:addPlayerMark(player, 'LuaYijinPlay')
+        room:addPlayerMark(player, 'LuaYijinDiscard')
+        index = 2
+    elseif effectIndex == 6 then
+        -- 拥蔽
+        room:addPlayerMark(player, 'LuaYijinDraw')
+        index = 2
+    end
+    room:broadcastSkillInvoke('LuaYijin', index)
+end
+
+local function clearGoldEffect(player)
+    local room = player:getRoom()
+    for i = 1, 6, 1 do
+        local mark = string.format('@LuaYijin%d', i)
+        room:setPlayerMark(player, mark, 0)
+    end
+end
+
+local function transferGold(from, to, gold)
+    local room = from:getRoom()
+    room:notifySkillInvoked(from, 'LuaYijin')
+    room:doAnimate(rinsan.ANIMATE_INDICATE, from:objectName(), to:objectName())
+    gainGoldEffect(to, rinsan.getPos(GOLDS, gold))
+    room:removePlayerMark(from, gold)
+    rinsan.sendLogMessage(room, '#LuaYijinTransfer', {
+        ['from'] = from,
+        ['to'] = to,
+        ['arg'] = gold,
+    })
+end
+
+LuaYijinStart = sgs.CreateTriggerSkill {
+    name = 'LuaYijinStart',
+    events = {sgs.GameStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local caosongs = room:findPlayersBySkillName('LuaYijin')
+        if caosongs:isEmpty() then
+            return false
+        end
+        room:broadcastSkillInvoke('LuaYijin', 1)
+        for _, caosong in sgs.qlist(caosongs) do
+            if getGoldCount(caosong) == 0 then
+                initialGolds(caosong)
+            end
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+LuaYijin = sgs.CreateTriggerSkill {
+    name = 'LuaYijin',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_RoundStart then
+            if getGoldCount(player) == 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName(), 3)
+                room:killPlayer(player)
+            end
+        elseif player:getPhase() == sgs.Player_Play then
+            local targets = sgs.SPlayerList()
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                if getGoldCount(p) == 0 then
+                    targets:append(p)
+                end
+            end
+            if targets:isEmpty() then
+                return false
+            end
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            local gold = room:askForChoice(player, self:objectName(), table.concat(getGoldTable(player), '+'))
+            local target = room:askForPlayerChosen(player, targets, self:objectName(), 'LuaYijin-invoke:' .. gold)
+            if target then
+                transferGold(player, target, gold)
+            end
+        end
+        return false
+    end,
+}
+
+LuaYijinEffect = sgs.CreateTriggerSkill {
+    name = 'LuaYijinEffect',
+    events = {sgs.DrawNCards, sgs.EventPhaseChanging, sgs.DamageInflicted, sgs.EventPhaseStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        -- 有亿金的曹嵩不需要执行
+        if player:hasSkill('LuaYijin') then
+            return false
+        end
+        -- 无金的也不需要
+        if getGoldCount(player) == 0 then
+            return false
+        end
+        if event == sgs.DrawNCards then
+            -- 膴仕：摸牌阶段多摸四张牌
+            if player:getMark('@LuaYijin1') > 0 then
+                rinsan.sendLogMessage(room, '#LuaYijin1', {
+                    ['from'] = player,
+                    ['arg'] = '@LuaYijin1',
+                    ['arg2'] = 4,
+                })
+                data:setValue(data:toInt() + 4)
+            end
+        elseif event == sgs.EventPhaseChanging then
+            local change = data:toPhaseChange()
+            if change.to == sgs.Player_Finish then
+                -- 厚任：回合结束时，回复3点体力
+                if player:getMark('@LuaYijin2') > 0 then
+                    if player:getLostHp() > 0 then
+                        rinsan.sendLogMessage(room, '#LuaYijin2', {
+                            ['from'] = player,
+                            ['arg'] = '@LuaYijin2',
+                            ['arg2'] = 3,
+                        })
+                    end
+                    rinsan.recover(player, 3)
+                end
+                clearGoldEffect(player)
+            else
+                -- 金迷：跳过下一个出牌阶段和弃牌阶段
+                if player:getMark('@LuaYijin4') > 0 then
+                    if player:getMark('LuaYijinPlay') > 0 and change.to == sgs.Player_Play then
+                        rinsan.sendLogMessage(room, '#LuaYijin4', {
+                            ['from'] = player,
+                            ['arg'] = '@LuaYijin4',
+                            ['arg2'] = 'play',
+                        })
+                        player:skip(change.to)
+                        room:removePlayerMark(player, 'LuaYijinPlay')
+                    elseif player:getMark('LuaYijinDiscard') > 0 and change.to == sgs.Player_Discard then
+                        rinsan.sendLogMessage(room, '#LuaYijin4', {
+                            ['from'] = player,
+                            ['arg'] = '@LuaYijin4',
+                            ['arg2'] = 'discard',
+                        })
+                        player:skip(change.to)
+                        room:removePlayerMark(player, 'LuaYijinDiscard')
+                    end
+                end
+            end
+        elseif event == sgs.DamageInflicted then
+            if player:getMark('@LuaYijin3') > 0 then
+                -- 通神：受到非雷电伤害时，防止之
+                local damage = data:toDamage()
+                if damage.damage ~= sgs.DamageStruct_Thunder then
+                    rinsan.sendLogMessage(room, '#LuaYijin3', {
+                        ['from'] = player,
+                        ['arg'] = '@LuaYijin3',
+                    })
+                    return true
+                end
+            end
+        else
+            if player:getPhase() == sgs.Player_Play then
+                -- 贾凶：出牌阶段开始时失去1点体力
+                if player:getMark('@LuaYijin5') > 0 then
+                    rinsan.sendLogMessage(room, '#LuaYijin5', {
+                        ['from'] = player,
+                        ['arg'] = '@LuaYijin5',
+                        ['arg2'] = 1,
+                    })
+                    room:loseHp(player)
+                end
+            elseif player:getPhase() == sgs.Player_Start then
+                -- 拥蔽：准备阶段，跳过下一个摸牌阶段
+                if player:getMark('@LuaYijin6') > 0 then
+                    rinsan.sendLogMessage(room, '#LuaYijin6', {
+                        ['from'] = player,
+                        ['arg'] = '@LuaYijin6',
+                        ['arg2'] = 'draw',
+                    })
+                    player:skip(sgs.Player_Draw)
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = targetTrigger,
+}
+
+LuaYijinMaxCards = sgs.CreateMaxCardsSkill {
+    name = 'LuaYijinMaxCards',
+    extra_func = function(self, target)
+        if target:hasSkill('LuaYijin') then
+            return 0
+        end
+        if target:getMark('@LuaYijin5') > 0 and target:getPhase() ~= sgs.Player_NotActive then
+            -- 贾凶：本回合手牌上限-3
+            return -3
+        end
+        return 0
+    end,
+}
+
+LuaYijinTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaYijinTargetMod',
+    pattern = 'Slash',
+    residue_func = function(self, player)
+        if player:hasSkill('LuaYijin') then
+            return 0
+        end
+        if player:getMark('@LuaYijin1') > 0 then
+            return 1
+        end
+        return 0
+    end,
+}
+
+LuaGuanzongCard = sgs.CreateSkillCard {
+    name = 'LuaGuanzong',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return #selected < 2 and to_select:objectName() ~= sgs.Self:objectName()
+    end,
+    feasible = function(self, targets)
+        return #targets == 2
+    end,
+    about_to_use = function(self, room, use)
+        local thread = room:getThread()
+        local data = sgs.QVariant()
+        data:setValue(use)
+        thread:trigger(sgs.PreCardUsed, room, use.from, data)
+        rinsan.sendLogMessage(room, '#ChoosePlayerWithSkill', {
+            ['from'] = use.from,
+            ['tos'] = use.to,
+            ['arg'] = self:objectName(),
+        })
+        thread:trigger(sgs.CardUsed, room, use.from, data)
+        thread:trigger(sgs.CardFinished, room, use.from, data)
+    end,
+    on_use = function(self, room, source, targets)
+        local from = targets[1]
+        local to = targets[2]
+        room:notifySkillInvoked(source, self:objectName())
+        room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), from:objectName())
+        room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), to:objectName())
+        local damage = sgs.DamageStruct()
+        damage.from = from
+        damage.to = to
+        damage.nature = sgs.DamageStruct_Normal
+        local data = sgs.QVariant()
+        data:setValue(damage)
+        rinsan.sendLogMessage(room, '#LuaGuanzong', {
+            ['from'] = from,
+            ['to'] = to,
+            ['arg'] = self:objectName(),
+            ['arg2'] = 1,
+        })
+        sgs.Sanguosha:playSystemAudioEffect('injure1', true)
+        room:setEmotion(to, 'damage')
+        room:doAnimate(rinsan.ANIMATE_INDICATE, from:objectName(), to:objectName())
+        room:getThread():trigger(sgs.PreDamageDone, room, to, data)
+        room:addPlayerMark(from, 'damage_point_round')
+        room:setPlayerFlag(to, 'LuaGuanzongProceeding')
+        room:getThread():trigger(sgs.DamageDone, room, to, data)
+        room:setPlayerFlag(to, '-LuaGuanzongProceeding')
+        room:getThread():trigger(sgs.Damage, room, from, data)
+        room:getThread():trigger(sgs.Damaged, room, to, data)
+    end,
+}
+
+LuaGuanzong = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaGuanzong',
+    view_as = function(self, cards)
+        return LuaGuanzongCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaGuanzong')
+    end,
+}
+
+LuaGuanzongDamageDone = sgs.CreateTriggerSkill {
+    name = 'LuaGuanzongDamageDone',
+    events = {sgs.DamageDone},
+    priority = 10000,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.to and damage.to:hasFlag('LuaGuanzongProceeding') then
+            return true
+        end
+        return false
+    end,
+    can_trigger = globalTrigger,
+}
+
+ExCaosong:addSkill(LuaYijin)
+SkillAnjiang:addSkill(LuaYijinEffect)
+SkillAnjiang:addSkill(LuaYijinStart)
+SkillAnjiang:addSkill(LuaYijinMaxCards)
+SkillAnjiang:addSkill(LuaYijinTargetMod)
+ExCaosong:addSkill(LuaGuanzong)
+SkillAnjiang:addSkill(LuaGuanzongDamageDone)
