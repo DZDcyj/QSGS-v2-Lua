@@ -122,7 +122,7 @@ SkillAnjiang:addSkill(LuaJishiMaxCards)
 LuaDaji = sgs.CreateTriggerSkill {
     name = 'LuaDaji',
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.EventPhaseStart, sgs.DamageInflicted, sgs.TargetSpecified},
+    events = {sgs.EventPhaseStart, sgs.DamageInflicted, sgs.TargetConfirmed},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Finish then
@@ -300,14 +300,19 @@ LuaBoss = sgs.CreateTriggerSkill {
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 触发游戏开始时时机，例如先辅、怀橘
             room:getThread():trigger(sgs.GameStart, room, p)
+        end
 
-            -- 涉及到摸初始牌的，补一下，例如挫锐、七星
-            local draw_data = sgs.QVariant(0)
+        -- 摸牌在初始技能全部触发完毕之后
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            -- 统一在这里进行初始牌的摸取，避免提前摸牌导致一些问题
+            room:setTag('FirstRound', sgs.QVariant(true))
+            local draw_data = sgs.QVariant(4)
             room:getThread():trigger(sgs.DrawInitialCards, room, p, draw_data)
             local to_draw = draw_data:toInt()
             if to_draw > 0 then
                 p:drawCards(to_draw, self:objectName())
             end
+            room:setTag('FirstRound', sgs.QVariant(false))
         end
 
         -- 手气卡

@@ -117,6 +117,47 @@ local function broadcastSeat(landlord)
     until curr:objectName() == landlord:objectName()
 end
 
+local available_call_option = {
+    [1] = '0x',
+    [2] = '1x',
+    [3] = '2x',
+    [4] = '3x',
+}
+
+-- 叫地主环节
+local function callLandholder(first)
+    local room = first:getRoom()
+    local curr = first
+    local biggest = first
+    local biggestNumber = 1
+    repeat
+        local call = room:askForChoice(curr, 'rob-landlord', table.concat(available_call_option, '+'))
+        if call == '3x' then
+            return curr
+        end
+        -- 同样叫分先到者行
+        if rinsan.getPos(available_call_option, call) > biggestNumber then
+            biggest = curr
+            biggestNumber = rinsan.getPos(available_call_option, call)
+        end
+        curr = curr:getNextAlive(1)
+    until curr:objectName() == first:objectName()
+    return biggest
+end
+
+local function adjustPlayer(landlord)
+    local room = landlord:getRoom()
+    local players = room:getPlayers()
+    while not players:isEmpty() do
+        players:removeAt(0)
+    end
+    local curr = landlord
+    repeat
+        players:append(curr)
+        curr = curr:getNextAlive(1)
+    until curr:objectName() == landlord:objectName()
+end
+
 LuaDizhu = sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
     events = {sgs.TurnStart},
@@ -124,9 +165,17 @@ LuaDizhu = sgs.CreateTriggerSkill {
     -- priority 调整为最优先
     priority = 10,
     global = true,
-    on_trigger = function(self, event, player, data, room)
+    on_trigger = function(self, event, splayer, data, room)
         -- 优化 UI 显示
-        room:setPlayerMark(player, '@Landlords', 0)
+        room:setPlayerMark(splayer, '@Landlords', 0)
+
+        local player = callLandholder(splayer)
+        adjustPlayer(player)
+        room:setCurrent(player)
+        if splayer:objectName() ~= player:objectName() then
+            room:setPlayerProperty(splayer, 'role', sgs.QVariant('rebel'))
+            room:setPlayerProperty(player, 'role', sgs.QVariant('lord'))
+        end
         room:addPlayerMark(player, self:objectName())
 
         broadcastSeat(player)
@@ -150,7 +199,10 @@ LuaDizhu = sgs.CreateTriggerSkill {
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 触发游戏开始时时机，例如先辅、怀橘
             room:getThread():trigger(sgs.GameStart, room, p)
+        end
 
+        -- 摸牌在初始技能全部触发完毕之后
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
             -- 统一在这里进行初始牌的摸取，避免提前摸牌导致一些问题
             room:setTag('FirstRound', sgs.QVariant(true))
             local draw_data = sgs.QVariant(4)
