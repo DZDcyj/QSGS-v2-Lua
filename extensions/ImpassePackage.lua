@@ -122,7 +122,7 @@ SkillAnjiang:addSkill(LuaJishiMaxCards)
 LuaDaji = sgs.CreateTriggerSkill {
     name = 'LuaDaji',
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.EventPhaseStart, sgs.DamageInflicted, sgs.TargetSpecified},
+    events = {sgs.EventPhaseStart, sgs.DamageInflicted, sgs.TargetConfirmed},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Finish then
