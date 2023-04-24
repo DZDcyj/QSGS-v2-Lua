@@ -14,15 +14,18 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
+      - name: Get Tag Name
+        run : |
+          echo $env:GITHUB_REF.Split(",")[2] >> $env:TAG_NAME
       - name: Copy Total File
         run: |
           Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
       - name: Compress Total File
         run: |
-          Compress-Archive -Path "..\Deployment\*" -DestinationPath "..\Deployment\日神杀武将包 ${{GITHUB_REF##*/}}.zip" -Force
+          Compress-Archive -Path "..\Deployment\*" -DestinationPath "..\Deployment\日神杀武将包 $env:TAG_NAME.zip" -Force
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          title: "日神杀武将包 ${{GITHUB_REF##*/}}"
+          title: "日神杀武将包 $env:TAG_NAME"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
           draft: true
