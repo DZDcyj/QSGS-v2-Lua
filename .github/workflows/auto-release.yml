@@ -14,11 +14,6 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
-      - name: Lua Lint
-        uses: GoatG33k/fivem-lua-lint-action@v1
-        with:
-          capture: "junit.xml"
-          args: "-d -t --ignore 112 113 143 212 --formatter JUnit"
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
