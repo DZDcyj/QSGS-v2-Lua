@@ -994,7 +994,8 @@ function askForKingdom(player)
 end
 
 function getGeneralCount(player)
-    return player:getMark('LuaDizhu') > 0 and 5 or 3
+    local bonus = 2 -- 换将卡，后续调整为动态
+    return player:getMark('LuaDizhu') > 0 and (5 * bonus) or (3 * bonus)
 end
 
 -- 斗地主模式武将选择

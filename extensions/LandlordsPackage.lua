@@ -135,7 +135,8 @@ local function callLandholder(first)
         if call == '3x' then
             return curr
         end
-        if rinsan.getPos(available_call_option,call) >= biggestNumber then
+        -- 同样叫分先到者行
+        if rinsan.getPos(available_call_option,call) > biggestNumber then
             biggest = curr
             biggestNumber = rinsan.getPos(available_call_option,call)
         end
