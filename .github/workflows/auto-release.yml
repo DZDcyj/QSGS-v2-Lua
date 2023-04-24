@@ -6,13 +6,38 @@ on:
       - "v*"
 
 jobs:
-  tagged-release:
-    name: "Tagged Release"
+  # Just Publish the Release Information
+  publish-release:
+    name: "Publish Release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Tag Name
+        run : |
+          echo "Ref Name: $env:GITHUB_REF"
+          echo "TAG_NAME=${GITHUB_REF##*/}" >> $env:GITHUB_ENV
+
+      - name: Publish Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          title: "日神杀武将包 ${{ env.TAG_NAME }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: false
+
+  branch-checkout:
+    name: "Branch Checkout"
     runs-on: self-hosted
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
+        #with:
+          #lfs: true
 
+  prepare-package:
+    name: "Branch Checkout"
+    runs-on: self-hosted
+    needs: branch-checkout
+    steps:
       - name: Get Tag Name
         run : |
           echo "Ref Name: $env:GITHUB_REF"
@@ -26,12 +51,18 @@ jobs:
         run: |
           Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
 
-      - name: Publish Release
-        uses: "marvinpinto/action-automatic-releases@latest"
+  upload-artifacts:
+    name: "Upload Artifacts"
+    runs-on: self-hosted
+    needs: [branch-checkout, prepare-package]
+    steps:
+      - name: Get Tag Name
+        run : |
+          echo "Ref Name: $env:GITHUB_REF"
+          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
+      - name: "Upload Package"
+        uses: svenstaro/upload-release-action@2.5.0
         with:
-          title: "日神杀武将包 ${{env.TAG_NAME}}"
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          draft: false
-          files: |
-            *.zip
+          file: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
