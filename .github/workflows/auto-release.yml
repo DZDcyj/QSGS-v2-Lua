@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          title: "日神杀武将包 ${GITHUB_REF##*/}"
+          title: "日神杀武将包 ${{GITHUB_REF##*/}}"
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
           draft: true
