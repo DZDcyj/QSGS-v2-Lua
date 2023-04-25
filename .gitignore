@@ -21,7 +21,7 @@ font/
 iconengines/
 image/animate
 image/compact
-image/equips
+image/equips/**
 image/gender
 image/heroskin/audio/[^A-Z]*
 image/heroskin/fullskin/generals/full/[^A-Z]*
@@ -32,7 +32,7 @@ image/kingdom
 image/logo
 image/mark/**/*.ahu
 image/mark/**/*.psd
-image/small-equips
+image/small-equips/**
 image/system
 image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
@@ -78,9 +78,15 @@ lang/zh_CN/Package/*.lua
 !jingang_renwang*
 !LandlordsPackage.lua
 !LayingPlans*.lua
+!poison_knife*
+!PuyuanEquipCardPackage.lua
+!quench_blade*
+!red_satin_spear*
+!ripple_sword*
 !StrategicAttack*.lua
 !ShieldPackage.lua
 !ShieldPackageLines.lua
+!thunder_blade*
 !tongyou_vine*
 !xiantian_eightdiagram*
 !yuanrong_crossbow*
