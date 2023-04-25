@@ -2044,7 +2044,7 @@ function removeMajunEquipsFromPile(room)
     end
     for _, id in ipairs(ids) do
         drawPile:removeOne(id)
-        room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+        room:setCardMapping(id, nil, sgs.Player_DiscardPile)
     end
     room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
@@ -2110,16 +2110,21 @@ function majunUpgradeCard(card, player)
 end
 
 -- 将卡牌移出游戏
-function moveOutCardFromGame(card_ids, mover, place)
+function moveOutCardFromGame(card_ids, mover, place, toPlace, placesTable)
     local room = mover:getRoom()
+    toPlace = toPlace or sgs.Player_DrawPile
     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, mover:objectName(), 'moveout', '')
     local moves = sgs.CardsMoveList()
-    local move = sgs.CardsMoveStruct(card_ids, mover, nil, place, sgs.Player_DrawPile, reason)
+    local move = sgs.CardsMoveStruct(card_ids, mover, nil, place, toPlace, reason)
     moves:append(move)
     room:notifyMoveCards(true, moves, false)
     for _, id in sgs.qlist(move.card_ids) do
+        local tempPlace
+        if placesTable then
+            tempPlace = placesTable[id]
+        end
         local card = sgs.Sanguosha:getCard(id)
-        mover:removeCard(card, place)
+        mover:removeCard(card, tempPlace and tempPlace or place)
         room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
     end
     room:notifyMoveCards(false, moves, false)

@@ -11,6 +11,10 @@ local function weaponTrigger(self, target)
     return target and weapon and weapon:objectName() == self:objectName()
 end
 
+local globalTrigger = function(self, target)
+    return true
+end
+
 local skillList = sgs.SkillList()
 
 -- 混毒弯匕
@@ -290,6 +294,84 @@ end
 
 if not sgs.Sanguosha:getSkill('quench_blade_target_mod') then
     skillList:append(quench_blade_target_mod)
+end
+
+local PUYUAN_EQUIPS = {
+    [1] = 'poison_knife',
+    [2] = 'thunder_blade',
+    [3] = 'ripple_sword',
+    [4] = 'red_satin_spear',
+    [5] = 'quench_blade',
+}
+
+local function isPuyuanEquip(card)
+    return table.contains(PUYUAN_EQUIPS, card:objectName())
+end
+
+-- 将蒲元装备包移出游戏
+local function removePuyuanEquipsFromPile(room)
+    -- 被 Ban 了就不用操作
+    if rinsan.isPackageBanned('PuyuanEquipCardPackage') then
+        return
+    end
+    local drawPile = room:getDrawPile()
+    local ids = {}
+    for _, id in sgs.qlist(drawPile) do
+        local cd = sgs.Sanguosha:getCard(id)
+        if isPuyuanEquip(cd) then
+            table.insert(ids, id)
+        end
+    end
+    for _, id in ipairs(ids) do
+        drawPile:removeOne(id)
+        room:setCardMapping(id, nil, sgs.Player_DiscardPile)
+    end
+    room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+end
+
+-- 游戏开始、进入弃牌堆后移除装备牌
+LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
+    name = 'LuaMoveOutPuyuanEquips',
+    events = {sgs.GameStart, sgs.BeforeCardsMove},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.BeforeCardsMove then
+            local move = data:toMoveOneTime()
+            local ids = sgs.IntList()
+            if move.to_place == sgs.Player_DiscardPile then
+                for _, id in sgs.qlist(move.card_ids) do
+                    local cd = sgs.Sanguosha:getCard(id)
+                    if isPuyuanEquip(cd) then
+                        ids:append(id)
+                    end
+                end
+            end
+            if ids:isEmpty() then
+                return false
+            end
+            local places = {}
+            for _, id in sgs.qlist(ids) do
+                if move.card_ids:contains(id) then
+                    places[id] = move.from_places:at(listIndexOf(move.card_ids, id))
+                    move.from_places:removeAt(listIndexOf(move.card_ids, id))
+                    move.card_ids:removeOne(id)
+                    data:setValue(move)
+                end
+            end
+            rinsan.moveOutCardFromGame(ids, player, sgs.Player_PlaceUnknown, sgs.Player_PlaceUnknown, places)
+            return false
+        end
+        if not room:getTag('PuyuanEquipsRemoved'):toBool() then
+            removePuyuanEquipsFromPile(room)
+            room:setTag('PuyuanEquipsRemoved', sgs.QVariant(true))
+        end
+        return false
+    end,
+    can_trigger = globalTrigger,
+}
+
+if not sgs.Sanguosha:getSkill('LuaMoveOutPuyuanEquips') then
+    skillList:append(LuaMoveOutPuyuanEquips)
 end
 
 sgs.Sanguosha:addSkills(skillList)
