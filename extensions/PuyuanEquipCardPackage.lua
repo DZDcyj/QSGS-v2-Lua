@@ -327,30 +327,24 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
-            if (not move.from) or move.from:objectName() ~= player:objectName() then
-                return false
-            end
-            local ids = sgs.IntList()
             if move.to_place == sgs.Player_DiscardPile then
+                local ids = sgs.IntList()
                 for _, id in sgs.qlist(move.card_ids) do
                     local cd = sgs.Sanguosha:getCard(id)
                     if rinsan.isPuyuanEquip(cd) then
                         ids:append(id)
                     end
                 end
+                if ids:isEmpty() then
+                    return false
+                end
+                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', 'moveout', '')
+                local moves = sgs.CardsMoveList()
+                local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceTable, reason)
+                moves:append(move2)
+                room:notifyMoveCards(true, moves, false)
+                room:notifyMoveCards(false, moves, false)
             end
-            if ids:isEmpty() then
-                return false
-            end
-            local discardPile = room:getDiscardPile()
-            for _, id in sgs.qlist(ids) do
-                discardPile:removeOne(id)
-                room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
-            end
-            room:setTag('SwapPile', sgs.QVariant(room:getTag('SwapPile'):toInt() - 1))
-            local jsonArray = string.format('[%s]',  table.concat(sgs.QList2Table(discardPile), ','))
-            room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_RESET_PILE'], sgs.QVariant())
-            room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_SYCHRONIZE_DISCARD_PILE'], jsonArray)
             return false
         end
         if not room:getTag('PuyuanEquipsRemoved'):toBool() then

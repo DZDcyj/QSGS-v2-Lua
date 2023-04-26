@@ -2110,7 +2110,7 @@ function majunUpgradeCard(card, player)
 end
 
 -- 将卡牌移出游戏
-function moveOutCardFromGame(card_ids, mover, place, toPlace, placesTable)
+function moveOutCardFromGame(card_ids, mover, place, toPlace)
     local room = mover:getRoom()
     toPlace = toPlace or sgs.Player_DrawPile
     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, mover:objectName(), 'moveout', '')
@@ -2119,12 +2119,8 @@ function moveOutCardFromGame(card_ids, mover, place, toPlace, placesTable)
     moves:append(move)
     room:notifyMoveCards(true, moves, false)
     for _, id in sgs.qlist(move.card_ids) do
-        local tempPlace
-        if placesTable then
-            tempPlace = placesTable[id]
-        end
         local card = sgs.Sanguosha:getCard(id)
-        mover:removeCard(card, tempPlace and tempPlace or place)
+        mover:removeCard(card, place)
         room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
     end
     room:notifyMoveCards(false, moves, false)
