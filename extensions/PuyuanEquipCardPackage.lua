@@ -304,17 +304,23 @@ local function removePuyuanEquipsFromPile(room)
         return
     end
     local drawPile = room:getDrawPile()
-    local ids = {}
+    local ids = sgs.IntList()
     for _, id in sgs.qlist(drawPile) do
         local cd = sgs.Sanguosha:getCard(id)
         if rinsan.isPuyuanEquip(cd) then
-            table.insert(ids, id)
+            ids:append(id)
+            drawPile:removeOne(id)
         end
     end
-    for _, id in ipairs(ids) do
-        drawPile:removeOne(id)
-        room:setCardMapping(id, nil, sgs.Player_DiscardPile)
+    if ids:isEmpty() then
+        return false
     end
+    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', 'moveout', '')
+    local moves = sgs.CardsMoveList()
+    local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceTable, reason)
+    moves:append(move2)
+    room:notifyMoveCards(true, moves, false)
+    room:notifyMoveCards(false, moves, false)
     room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
 
@@ -323,7 +329,7 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
     name = 'LuaMoveOutPuyuanEquips',
     events = {sgs.GameStart, sgs.CardsMoveOneTime},
     global = true,
-    priority = -2,
+    priority = 10,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()

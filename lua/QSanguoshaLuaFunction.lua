@@ -2284,11 +2284,11 @@ ZHINANG_CARDS = {
 
 -- 蒲元装备
 local PUYUAN_EQUIPS = {
-    [1] = 'poison_knife',
-    [2] = 'thunder_blade',
-    [3] = 'ripple_sword',
-    [4] = 'red_satin_spear',
-    [5] = 'quench_blade',
+    'poison_knife',
+    'thunder_blade',
+    'ripple_sword',
+    'red_satin_spear',
+    'quench_blade',
 }
 
 -- 锻造装备花色
