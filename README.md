@@ -79,7 +79,7 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
 
 #### 参考修改方案
 在`extra.lua`的相关代码中添加获取`room`语句即可：
-```
+```Lua
 on_phasechange = function(self, player)
     local invoke = false
     -- 这里使用了未定义的 room，添加即可
@@ -100,7 +100,7 @@ end
 
 #### 参考修改方案
 在`extra.lua`的相关代码中调整条件即可：
-```
+```Lua
 -- 这里限定了 use.to length 必须大于二才询问
 if use.card:isKindOf("TrickCard") and use.to and use.to:contains(player) and use.to:length() > 2 then
 	local targets = use.to
@@ -113,4 +113,23 @@ if use.card:isKindOf("TrickCard") and use.to and use.to:contains(player) and use
 		room:removePlayerMark(p, self:objectName())
 	end
 end
+```
+
+### 潘濬【观微】不能对队友发动
+#### 原因
+系源代码中使用了默认的 can_trigger，使得在队友回合中不能询问
+
+#### 参考修改方案
+在`extra.lua`的相关代码中调整条件即可：
+```Lua
+guanwei = sgs.CreateTriggerSkill {
+    -- ...
+    on_trigger = function(self, event, player, data, room)
+        -- ...
+    end,
+    -- 在此处添加 can_trigger 条件即可
+    can_trigger = function(self, target)
+        return target
+    end
+}
 ```
