@@ -697,7 +697,8 @@ LuaZishu = sgs.CreateTriggerSkill {
             if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() then
                 if player:getPhase() == sgs.Player_NotActive then
                     for _, id in sgs.qlist(move.card_ids) do
-                        if room:getCardOwner(id):objectName() == player:objectName() and room:getCardPlace(id) ==
+                        local owner = room:getCardOwner(id)
+                        if owner and owner:objectName() == player:objectName() and room:getCardPlace(id) ==
                             sgs.Player_PlaceHand then
                             room:addPlayerMark(player, self:objectName() .. id)
                         end
