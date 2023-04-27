@@ -321,8 +321,12 @@ local function removePuyuanEquipsFromPile(room)
     end
     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', 'moveout', '')
     local moves = sgs.CardsMoveList()
-    local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceTable, reason)
+    local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceUnknown, reason)
     moves:append(move2)
+    for _, id in sgs.qlist(ids) do
+        room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+        room:getDiscardPile():removeOne(id)
+    end
     room:notifyMoveCards(true, moves, false)
     room:notifyMoveCards(false, moves, false)
     room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
@@ -350,8 +354,12 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
                 end
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', 'moveout', '')
                 local moves = sgs.CardsMoveList()
-                local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceTable, reason)
+                local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceUnknown, reason)
                 moves:append(move2)
+                for _, id in sgs.qlist(ids) do
+                    room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+                    room:getDiscardPile():removeOne(id)
+                end
                 room:notifyMoveCards(true, moves, false)
                 room:notifyMoveCards(false, moves, false)
             end
@@ -368,6 +376,27 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
 
 if not sgs.Sanguosha:getSkill('LuaMoveOutPuyuanEquips') then
     skillList:append(LuaMoveOutPuyuanEquips)
+end
+
+quench_blade_bug = sgs.CreateTriggerSkill {
+    name = 'quench_blade_bug',
+    global = true,
+    events = {sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if ((move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceEquip) or
+            (move.from and move.from:objectName() == player:objectName() and
+                move.from_places:contains(sgs.Player_PlaceEquip))) then
+            if player:hasSkill('quench_blade') then
+                room:detachSkillFromPlayer(player, 'quench_blade', true)
+            end
+        end
+        return false
+    end,
+}
+
+if not sgs.Sanguosha:getSkill('quench_blade_bug') then
+    skillList:append(quench_blade_bug)
 end
 
 sgs.Sanguosha:addSkills(skillList)
