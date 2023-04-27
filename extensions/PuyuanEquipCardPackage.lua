@@ -377,14 +377,14 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'moveout', '')
                 local moves = sgs.CardsMoveList()
                 if not hand_ids:isEmpty() then
-                    local move = sgs.CardsMoveStruct(hand_ids, player, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile,
+                    local hand_move = sgs.CardsMoveStruct(hand_ids, player, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile,
                         reason)
-                    moves:append(move)
+                    moves:append(hand_move)
                 end
                 if not equip_ids:isEmpty() then
-                    local move2 = sgs.CardsMoveStruct(equip_ids, player, nil, sgs.Player_PlaceEquip,
+                    local equip_move = sgs.CardsMoveStruct(equip_ids, player, nil, sgs.Player_PlaceEquip,
                         sgs.Player_DrawPile, reason)
-                    moves:append(move2)
+                    moves:append(equip_move)
                 end
                 room:notifyMoveCards(true, moves, false)
                 for _, id in sgs.qlist(ids) do
