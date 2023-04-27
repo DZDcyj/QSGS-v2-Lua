@@ -267,8 +267,11 @@ quench_blade_skill = sgs.CreateTriggerSkill {
             if player:getMark(self:objectName() .. '-Clear') < 2 then
                 local card
                 if player:getCardCount(true) >= 2 then
+                    local armor_id = player:getWeapon():getId()
+                    room:setCardFlag(armor_id, 'using')
                     card = room:askForCard(player, '@quench_blade', '@quench_blade:' .. damage.to:objectName(), data,
                         self:objectName());
+                    room:setCardFlag(armor_id, '-using')
                 end
                 if card then
                     room:addPlayerMark(player, self:objectName() .. '-Clear')
@@ -352,16 +355,21 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
                 if ids:isEmpty() then
                     return false
                 end
+                if move.from and move.from:objectName() ~= player:objectName() then
+                    return false
+                end
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', 'moveout', '')
                 local moves = sgs.CardsMoveList()
-                local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_PlaceUnknown, reason)
+                local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_DrawPile, reason)
                 moves:append(move2)
-                for _, id in sgs.qlist(ids) do
-                    room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
-                    room:getDiscardPile():removeOne(id)
-                end
                 room:notifyMoveCards(true, moves, false)
+                for _, id in sgs.qlist(ids) do
+                    room:getDrawPile():removeOne(id)
+                    room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+                end
                 room:notifyMoveCards(false, moves, false)
+                room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'],
+                    tostring(room:getDrawPile():length()))
             end
             return false
         end
