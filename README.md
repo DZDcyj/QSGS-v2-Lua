@@ -43,7 +43,7 @@
 添加 AI 伤害判断后，smart-ai 文件需要同步更新
 
 **请在 smart-ai.lua 文件中添加如下代码**
-```
+```Lua
 for _, callback in ipairs(sgs.ai_damage_effect) do
     if type(callback) == "function" then
         -- 在最后添加 damage 参数，以传入伤害值
