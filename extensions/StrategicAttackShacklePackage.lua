@@ -336,19 +336,10 @@ LuaMouJieweiCard = sgs.CreateSkillCard {
         rinsan.decreaseShield(source, 1)
         room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
+        room:showAllCards(target, source)
+        room:clearAG(source)
         if target:getHandcardNum() > 0 then
-            local cards = sgs.IntList()
-            local cards_table = {}
-            for _, cd in sgs.qlist(target:getHandcards()) do
-                cards:append(cd:getEffectiveId())
-                table.insert(cards_table, cd:getEffectiveId())
-            end
-            local cardString = table.concat(cards_table, '+')
-            rinsan.sendLogMessage(room, '$ViewAllCards', {
-                ['from'] = source,
-                ['to'] = target,
-                ['card_str'] = cardString,
-            })
+            local cards = target:handCards()
             room:fillAG(cards, source)
             local id = room:askForAG(source, cards, false, self:objectName())
             if id ~= -1 then
