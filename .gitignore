@@ -72,6 +72,7 @@ lang/zh_CN/Package/*.lua
 !ExpansionPackageLines.lua
 !ExpansionPackage.lua
 !ExpansionCardPackage.lua
+!ExtraordinaryPeoplePackage*
 !ImpassePackage.lua
 !MajunEquipCardPackage.lua
 !GroupFriendPackage.lua
