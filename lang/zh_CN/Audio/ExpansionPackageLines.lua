@@ -307,4 +307,10 @@ return {
     ['$LuaGuanzong1'] = '汝为叔父，怎可与小辈计较！',
     ['$LuaGuanzong2'] = '阿瞒生龙活虎，汝切勿胡言！',
     ['~ExCaosong'] = '长恨人心不如水，等闲平地起波澜……',
+    -- 贾逵重制
+    ['$LuaTongqu1'] = '断山蓄水，以备不虞之变',
+    ['$LuaTongqu2'] = '开渠联镇，但求百姓得利',
+    ['$LuaWanlanTongqu1'] = '挽狂澜于既倒，扶大厦于将倾！',
+    ['$LuaWanlanTongqu2'] = '深受国恩，今日便是报偿之时！',
+    ['~ExTongquJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
 }

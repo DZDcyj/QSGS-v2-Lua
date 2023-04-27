@@ -2631,3 +2631,29 @@ sgs.ai_skill_playerchosen['LuaZhiyi'] = function(self, targets, data)
     end
     return targets[random(1, #targets)]
 end
+
+-- 通渠给牌
+sgs.ai_skill_use['@@LuaTongqu!'] = function(self, prompt, method)
+    local target
+    self:sort(self.friends_noself)
+    for _, friend in ipairs(self.friends_noself) do
+        if not playerHasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+            target = friend
+            break
+        end
+    end
+    local x = 1
+    local cards = self.player:getCards('he')
+    cards = sgs.QList2Table(cards)
+    self:sortByUseValue(cards, true)
+    local to_give = {}
+    local index = 0
+    while index < x do
+        index = index + 1
+        table.insert(to_give, cards[index]:getEffectiveId())
+    end
+    if target then
+        return '#LuaTongqu:' .. table.concat(to_give, '+') .. ':->' .. target:objectName()
+    end
+    return '#LuaTongqu:' .. table.concat(to_give, '+') .. ':.'
+end

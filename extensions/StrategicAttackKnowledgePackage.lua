@@ -86,7 +86,7 @@ LuaMouDuanliang = sgs.CreateZeroCardViewAsSkill {
 
 function doMouShipoAsk(from, to)
     local room = from:getRoom()
-    local card = room:askForCard(to, '.', 'LuaMouShipo-give:' .. from:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
+    local card = room:askForCard(to, '.', 'LuaMouShipo-discard:' .. from:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
     if card then
         from:obtainCard(card, false)
         room:addPlayerMark(from, string.format('%s-%d-Clear', 'LuaMouShipo', card:getEffectiveId()))

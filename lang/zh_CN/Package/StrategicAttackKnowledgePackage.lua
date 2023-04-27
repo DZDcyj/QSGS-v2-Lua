@@ -28,7 +28,7 @@ return {
     ['luamoushipo'] = '势迫',
     ['LuaMouShipoChoice1'] = '令一名体力值小于你的角色进行选择',
     ['LuaMouShipoChoice2'] = '令所有判定区里有【兵粮寸断】的其他角色依次选择',
-    ['LuaMouShipo-discard'] = '你需要交给 %src 一张牌或者点击取消受到一点伤害',
+    ['LuaMouShipo-discard'] = '你需要交给 %src 一张牌或者受到一点伤害',
     ['LuaMouShipo-choose'] = '请选择一名其他角色，令其选择交给你牌或是受到伤害',
     ['LuaMouShipo-Give'] = '你可以发动“势迫”，将任意张获得的牌交给其他角色',
     ['~LuaMouShipo'] = '选择任意张牌→选择一名其他角色→点击“确定”',
