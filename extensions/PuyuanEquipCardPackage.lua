@@ -337,18 +337,28 @@ end
 -- 游戏开始、进入弃牌堆后移除装备牌
 LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
     name = 'LuaMoveOutPuyuanEquips',
-    events = {sgs.GameStart, sgs.CardsMoveOneTime},
+    events = {sgs.GameStart, sgs.BeforeCardsMove},
     global = true,
     priority = 10,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.CardsMoveOneTime then
+        if event == sgs.BeforeCardsMove then
             local move = data:toMoveOneTime()
             if move.to_place == sgs.Player_DiscardPile then
                 local ids = sgs.IntList()
+                local hand_ids = sgs.IntList()
+                local equip_ids = sgs.IntList()
+                local places = {}
                 for _, id in sgs.qlist(move.card_ids) do
                     local cd = sgs.Sanguosha:getCard(id)
                     if rinsan.isPuyuanEquip(cd) then
                         ids:append(id)
+                        local place = room:getCardPlace(id)
+                        places[id] = place
+                        if place == sgs.Player_PlaceEquip then
+                            equip_ids:append(id)
+                        else
+                            hand_ids:append(id)
+                        end
                     end
                 end
                 if ids:isEmpty() then
@@ -357,13 +367,29 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
                 if move.from and move.from:objectName() ~= player:objectName() then
                     return false
                 end
-                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', 'moveout', '')
+                for _, id in sgs.qlist(ids) do
+                    if move.card_ids:contains(id) then
+                        move.from_places:removeAt(listIndexOf(move.card_ids, id))
+                        move.card_ids:removeOne(id)
+                        data:setValue(move)
+                    end
+                end
+                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, player:objectName(), 'moveout', '')
                 local moves = sgs.CardsMoveList()
-                local move2 = sgs.CardsMoveStruct(ids, nil, nil, sgs.Player_DiscardPile, sgs.Player_DrawPile, reason)
-                moves:append(move2)
+                if not hand_ids:isEmpty() then
+                    local move = sgs.CardsMoveStruct(hand_ids, player, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile,
+                        reason)
+                    moves:append(move)
+                end
+                if not equip_ids:isEmpty() then
+                    local move2 = sgs.CardsMoveStruct(equip_ids, player, nil, sgs.Player_PlaceEquip,
+                        sgs.Player_DrawPile, reason)
+                    moves:append(move2)
+                end
                 room:notifyMoveCards(true, moves, false)
                 for _, id in sgs.qlist(ids) do
-                    room:getDrawPile():removeOne(id)
+                    local card = sgs.Sanguosha:getCard(id)
+                    player:removeCard(card, places[id])
                     room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
                 end
                 room:notifyMoveCards(false, moves, false)
