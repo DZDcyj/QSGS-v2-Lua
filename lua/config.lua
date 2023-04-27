@@ -597,6 +597,7 @@ config = {
         'tannang:15',
         'yicong:15',
         'feiying:20',
+        'nosqianxun:20',
         --少量收益、过牌（30~50）
       --'wangzun:30',这玩意在这个模式并不能用
         'yingzi:40',
@@ -623,13 +624,12 @@ config = {
         --防御（30~50）
         'kongcheng:30',
         'weijing:40',
-        'nosqianxun:30',
-        'qianjie:40',
+        'qianjie:30',
         'weimu:30',
-        'bazhen:30',
-        'yizhong:30',
+        'yuce:50',
+        'jiushi:40',
         'huituo:50',
-        'zhenlie:50',
+        'zhenlie:40',
         --大量收益、过牌（60~100）
         'juejing:70',
         'bosszuijiu:90',
