@@ -7172,3 +7172,158 @@ SkillAnjiang:addSkill(LuaYijinMaxCards)
 SkillAnjiang:addSkill(LuaYijinTargetMod)
 ExCaosong:addSkill(LuaGuanzong)
 SkillAnjiang:addSkill(LuaGuanzongDamageDone)
+
+-- 贾逵重制
+ExTongquJiakui = sgs.General(extension, 'ExTongquJiakui', 'wei', '4', true, true)
+
+LuaTongquCard = sgs.CreateSkillCard {
+    name = 'LuaTongqu',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and to_select:getMark('@LuaTongqu') > 0
+    end,
+    feasible = function(self, targets)
+        return #targets <= 1
+    end,
+    on_use = function(self, room, source, targets)
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        local target
+        if #targets > 0 then
+            target = targets[1]
+        end
+        if target then
+            target:obtainCard(card, false)
+            if card:isKindOf('EquipCard') then
+                room:useCard(sgs.CardUseStruct(card, target, target))
+            end
+        else
+            room:throwCard(card, source)
+        end
+    end,
+}
+
+LuaTongquVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaTongqu',
+    filter_pattern = '.',
+    view_as = function(self, card)
+        local vs_card = LuaTongquCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return string.startsWith(pattern, '@@LuaTongqu')
+    end,
+}
+
+LuaTongqu = sgs.CreateTriggerSkill {
+    name = 'LuaTongqu',
+    events = {sgs.DrawNCards, sgs.EventPhaseEnd, sgs.Dying},
+    view_as_skill = LuaTongquVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DrawNCards then
+            if player:getMark('@LuaTongqu') == 0 then
+                return false
+            end
+            room:addPlayerMark(player, self:objectName() .. '_biu')
+            room:broadcastSkillInvoke(self:objectName())
+            rinsan.sendLogMessage(room, '#LuaTongqu', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+                ['arg2'] = 1,
+            })
+            data:setValue(data:toInt() + 1)
+        elseif event == sgs.Dying then
+            local dying = data:toDying()
+            if dying.who:objectName() == player:objectName() then
+                if player:getMark('@LuaTongqu') > 0 then
+                    player:loseMark('@LuaTongqu')
+                end
+            end
+        elseif player:getPhase() == sgs.Player_Draw then
+            if player:getMark('@LuaTongqu') == 0 then
+                return false
+            end
+            if player:getMark(self:objectName() .. '_biu') > 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:askForUseCard(player, '@@LuaTongqu!', 'LuaTongqu-Invoke', -1, sgs.Card_MethodNone)
+            end
+        elseif player:getPhase() == sgs.Player_Start then
+            if not player:hasSkill(self:objectName()) then
+                return false
+            end
+            local available_targets = sgs.SPlayerList()
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:getMark('@LuaTongqu') == 0 then
+                    available_targets:append(p)
+                end
+            end
+            local target = room:askForPlayerChosen(player, available_targets, self:objectName(),
+            'LuaTongqu-Give', true, true)
+            if target then
+                room:broadcastSkillInvoke('LuaTongqu')
+                room:loseHp(player)
+                target:gainMark('@LuaTongqu')
+            end
+        end
+        return false
+    end,
+    can_trigger = targetTrigger,
+}
+
+LuaTongquStart = sgs.CreateTriggerSkill {
+    name = 'LuaTongquStart',
+    events = {sgs.GameStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local tongqujiakuis = room:findPlayersBySkillName('LuaTongqu')
+        if tongqujiakuis:isEmpty() then
+            return false
+        end
+        for _, tongqujiakui in sgs.qlist(tongqujiakuis) do
+            if tongqujiakui:getMark('@LuaTongqu') == 0 then
+                room:broadcastSkillInvoke('LuaTongqu')
+                room:sendCompulsoryTriggerLog(tongqujiakui, 'LuaTongqu')
+                tongqujiakui:gainMark('@LuaTongqu')
+            end
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
+LuaWanlanTongqu = sgs.CreateTriggerSkill {
+    name = 'LuaWanlanTongqu',
+    events = {sgs.DamageInflicted},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.damage >= player:getHp() + rinsan.getShieldCount(player) then
+            local data2 = sgs.QVariant()
+            data2:setValue(damage.to)
+            for _, tongqujiakui in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                if tongqujiakui:hasEquip() then
+                    if room:askForSkillInvoke(tongqujiakui, self:objectName(), data2) then
+                        room:broadcastSkillInvoke(self:objectName())
+                        room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
+                        tongqujiakui:throwAllEquips()
+                        rinsan.sendLogMessage(room, '#LuaWanlanTongqu', {
+                            ['from'] = tongqujiakui,
+                            ['to'] = damage.to,
+                            ['arg'] = self:objectName(),
+                            ['arg2'] = damage.damage,
+                        })
+                        return true
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = targetTrigger,
+}
+
+ExTongquJiakui:addSkill(LuaTongqu)
+SkillAnjiang:addSkill(LuaTongquStart)
+ExTongquJiakui:addSkill(LuaWanlanTongqu)
