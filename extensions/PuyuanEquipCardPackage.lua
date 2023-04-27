@@ -151,12 +151,12 @@ ripple_sword_skill = sgs.CreateTriggerSkill {
             if available_targets:isEmpty() then
                 return false
             end
-            local prompt = '@RippleSword-add:::' .. use.card:objectName()
+            local prompt = '@RippleSword-add:' .. use.card:objectName()
             local aiData = sgs.QVariant()
             aiData:setValue(use)
-            player:setTag('Ai-RippleSwordData', aiData)
+            player:setTag('AI-RippleSwordData', aiData)
             local extra = room:askForPlayerChosen(player, available_targets, self:objectName(), prompt, true)
-            player:removeTag('Ai-RippleSwordData')
+            player:removeTag('AI-RippleSwordData')
             if not extra then
                 return false
             end

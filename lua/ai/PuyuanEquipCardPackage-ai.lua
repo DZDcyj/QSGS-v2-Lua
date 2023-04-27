@@ -32,10 +32,10 @@ sgs.ai_skill_invoke.thunder_blade_skill = function(self, data)
 end
 
 -- 水波剑选择目标
-sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
+sgs.ai_skill_playerchosen['ripple_sword'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets)
-    local use = self.player:getTag('AI-RippleSwordData')
+    local use = self.player:getTag('AI-RippleSwordData'):toCardUse()
     local card = use.card
     if card:isKindOf('ExNihilo') then
         local friend = self:findPlayerToDraw(false, 2)
