@@ -5,7 +5,6 @@ extension = sgs.Package('PuyuanEquipCardPackage', sgs.Package_CardPack)
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
-local json = require('json')
 
 local function weaponTrigger(self, target)
     local weapon = target:getWeapon()

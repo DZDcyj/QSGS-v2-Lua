@@ -7223,7 +7223,6 @@ local function initialTianjiang(puyuan)
     room:sendCompulsoryTriggerLog(puyuan, 'LuaTianjiang')
     room:broadcastSkillInvoke('LuaTianjiang')
     for _ = 1, 2, 1 do
-        local index = 0
         local checker = function(cd)
             if cd:isKindOf('EquipCard') then
                 local equip = cd:getRealCard():toEquipCard()

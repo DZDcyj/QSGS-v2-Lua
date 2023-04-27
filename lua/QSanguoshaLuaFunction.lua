@@ -2315,14 +2315,13 @@ end
 -- 获取蒲元锻造装备
 function getPuyuanEquip(card)
     local puyuanEquipName = getPuyuanEquipName(card)
-    local ids = {}
     for i = 0, 10000 do
-        local card = sgs.Sanguosha:getEngineCard(i)
-        if card == nil then
+        local cd = sgs.Sanguosha:getEngineCard(i)
+        if cd == nil then
             break
         end
-        if card:objectName() == puyuanEquipName then
-            return card
+        if cd:objectName() == puyuanEquipName then
+            return cd
         end
     end
     return nil
