@@ -1,5 +1,7 @@
 -- 限定-奇人异士包
 -- Created by DZDcyj at 2023/4/27
+module('extensions.ExtraordinaryPeoplePackage', package.seeall)
+extension = sgs.Package('ExtraordinaryPeoplePackage')
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
