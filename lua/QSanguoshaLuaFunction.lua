@@ -2044,7 +2044,7 @@ function removeMajunEquipsFromPile(room)
     end
     for _, id in ipairs(ids) do
         drawPile:removeOne(id)
-        room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
+        room:setCardMapping(id, nil, sgs.Player_DiscardPile)
     end
     room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
@@ -2110,11 +2110,12 @@ function majunUpgradeCard(card, player)
 end
 
 -- 将卡牌移出游戏
-function moveOutCardFromGame(card_ids, mover, place)
+function moveOutCardFromGame(card_ids, mover, place, toPlace)
     local room = mover:getRoom()
+    toPlace = toPlace or sgs.Player_DrawPile
     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, mover:objectName(), 'moveout', '')
     local moves = sgs.CardsMoveList()
-    local move = sgs.CardsMoveStruct(card_ids, mover, nil, place, sgs.Player_DrawPile, reason)
+    local move = sgs.CardsMoveStruct(card_ids, mover, nil, place, toPlace, reason)
     moves:append(move)
     room:notifyMoveCards(true, moves, false)
     for _, id in sgs.qlist(move.card_ids) do
@@ -2281,10 +2282,57 @@ ZHINANG_CARDS = {
     'nullification', -- 无懈可击
 }
 
+-- 蒲元装备
+local PUYUAN_EQUIPS = {
+    'poison_knife',
+    'thunder_blade',
+    'ripple_sword',
+    'red_satin_spear',
+    'quench_blade',
+}
+
+-- 锻造装备花色
+local PUYUAN_EQUIPS_SUIT_MAP = {
+    [sgs.Card_Spade] = 'poison_knife',
+    [sgs.Card_Club] = 'ripple_sword',
+    [sgs.Card_Heart] = 'red_satin_spear',
+    [sgs.Card_Diamond] = 'quench_blade',
+}
+
+
+-- 是否是蒲元装备
+function isPuyuanEquip(card)
+    return table.contains(PUYUAN_EQUIPS, card:objectName())
+end
+
+function getPuyuanEquipName(card)
+    if card:isKindOf('Lightning') then
+        return 'thunder_blade'
+    end
+    return PUYUAN_EQUIPS_SUIT_MAP[card:getSuit()]
+end
+
+-- 获取蒲元锻造装备
+function getPuyuanEquip(card)
+    local puyuanEquipName = getPuyuanEquipName(card)
+    for i = 0, 10000 do
+        local cd = sgs.Sanguosha:getEngineCard(i)
+        if cd == nil then
+            break
+        end
+        if cd:objectName() == puyuanEquipName then
+            return cd
+        end
+    end
+    return nil
+end
+
 -- 手动修正
 FixedCommandType = {
-    ['S_COMMAND_UPDATE_PILE'] = 58,
     ['S_COMMAND_CHANGE_HP'] = 32,
+    ['S_COMMAND_UPDATE_PILE'] = 58,
+    ['S_COMMAND_RESET_PILE'] = 59,
+    ['S_COMMAND_SYCHRONIZE_DISCARD_PILE'] = 60,
 }
 
 -- CardType 参数，用于 getCardMostProbably 方法

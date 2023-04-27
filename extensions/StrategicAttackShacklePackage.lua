@@ -560,6 +560,9 @@ LuaLiegong = sgs.CreateTriggerSkill {
             if use.to:length() > 1 then
                 return false
             end
+            if not player:hasSkill(self:objectName()) then
+                return false
+            end
             if card and card:isKindOf('Slash') then
                 local x = rinsan.getLiegongSuitNum(player)
                 if x > 0 then
