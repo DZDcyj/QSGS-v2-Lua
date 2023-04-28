@@ -298,4 +298,8 @@ return {
     ['$LuaYuce1-JieManchong_1'] = '亡羊补牢，为时未晚',
     ['$LuaYuce2-JieManchong_1'] = '坚守城阙，以待援军',
     ['~JieManchong-JieManchong_1'] = '酷法峻刑，不得人心啊……',
+    -- 张让
+    ['$taoluan1-zhangrang_1'] = '皇上视我如父，天下之事，岂可不顺我意？',
+    ['$taoluan2-zhangrang_1'] = '功名利禄，只需我一言便可！',
+    ['~zhangrang-zhangrang_1'] = '皇上，皇上救我啊……',
 }
