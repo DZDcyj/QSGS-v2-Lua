@@ -57,7 +57,7 @@ image/**/[^A-Z]*.[pP][nN][gG]
 !madai_2*
 !bgm_zhaoyun_1*
 !ol_weiyan_1*
-!ol_xuyou_1*
+!ol_xuyou_*
 !liuyan_1*
 !liufeng_1*
 !wolong_1*

@@ -185,6 +185,7 @@ return {
     ['$qimou2-ol_weiyan_1'] = '为将需勇，更要善奇谋！',
     ['~ol_weiyan-ol_weiyan_1'] = '怨气，终难平...',
     -- 许攸
+    -- 南阳狂才
     ['$chenglve1-ol_xuyou_1'] = '须知进之，谋略即成',
     ['$chenglve2-ol_xuyou_1'] = '计略已成，此战必胜',
     ['$ol_shicai1-ol_xuyou_1'] = '天下局势，皆因我计更易',
@@ -192,6 +193,14 @@ return {
     ['$cunmu1-ol_xuyou_1'] = '一计只划一事',
     ['$cunmu2-ol_xuyou_1'] = '今日不考明日事',
     ['~ol_xuyou-ol_xuyou_1'] = '你这莽夫……额……呃……',
+    -- 逆转官渡
+    ['$chenglve1-ol_xuyou_2'] = '破敌之策，我已了然于胸',
+    ['$chenglve2-ol_xuyou_2'] = '胸腹万卷兵略，故而计出不穷',
+    ['$ol_shicai1-ol_xuyou_2'] = '曹阿瞒，还不快快倒履相迎！',
+    ['$ol_shicai2-ol_xuyou_2'] = '袁败曹胜，正所谓得我者得天下！',
+    ['$cunmu1-ol_xuyou_2'] = '寸目短视，井中窥天',
+    ['$cunmu2-ol_xuyou_2'] = '今朝有酒且醉，管甚来日方长',
+    ['~ol_xuyou-ol_xuyou_2'] = '匹夫，你当真敢杀我不成！',
     -- 刘焉
     ['$tushe1-liuyan_1'] = '拒险以图进，备策而施为',
     ['$tushe2-liuyan_1'] = '夫战者，可施以奇险之策而图常谋！',
@@ -275,11 +284,11 @@ return {
     ['$LuaShenzhu1-ExShenTaishici_1'] = '看我此箭，取那冒进之人性命',
     ['$LuaShenzhu2-ExShenTaishici_1'] = '燕人张飞在此',
     ['~ExShenTaishici-ExShenTaishici_1'] = '神鸦不佑……',
-    --曹昂
+    -- 曹昂
     ['$kangkai1-caoang_1'] = '阿瞒上马，你父亲我随后便来',
     ['$kangkai2-caoang_1'] = '叛军来得贼快，我替阿瞒殿后',
     ['~caoang-caoang_1'] = '……（马嘶鸣声）',
-    --神曹操
+    -- 神曹操
     ["$guixin1-shencaocao_2"] = '我麾下众将短命无妨',
     ["$guixin2-shencaocao_2"] = '好计，就依奉孝说的办吧',
     ["~shencaocao-shencaocao_2"] = '我命休矣',
