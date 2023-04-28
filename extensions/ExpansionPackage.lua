@@ -7435,7 +7435,7 @@ LuaOLYajiao = sgs.CreateTriggerSkill {
                     dealt = true
                     local reason2 = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_DRAW, target:objectName(),
                         self:objectName(), '')
-                    room:obtainCard(target, topCard, reason)
+                    room:obtainCard(target, topCard, reason2)
                 end
             else
                 local available_targets = sgs.SPlayerList()
