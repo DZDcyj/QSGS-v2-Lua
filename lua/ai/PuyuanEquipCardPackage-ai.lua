@@ -89,6 +89,13 @@ sgs.ai_skill_cardask['@quench_blade'] = function(self, data, pattern, target)
     if self.player:isNude() then
         return '.'
     end
+    -- temp, for AI
+    self.room:setCardFlag(damage.card, 'drank')
+    local doHeavyCheckSuccess = self:hasHeavySlashDamage(self.player, damage.card, damage.to)
+    self.room:setCardFlag(damage.card, '-drank')
+    if not doHeavyCheckSuccess then
+        return '.'
+    end
     if self:isWeak() or self.player:getCardCount(true) < 2 then
         return '.'
     end
@@ -103,14 +110,22 @@ sgs.ai_skill_cardask['@quench_blade'] = function(self, data, pattern, target)
 end
 
 function sgs.ai_weapon_value.quench_blade(self, enemy)
-	if not enemy then return end
-	local value = 2.5
-	if enemy:getHandcardNum() < 1 and not enemy:hasArmorEffect('silver_lion') then value = 4.5 end
-	return value
+    if not enemy then
+        return
+    end
+    local value = 2.5
+    if enemy:getHandcardNum() < 1 and not enemy:hasArmorEffect('silver_lion') then
+        value = 4.5
+    end
+    return value
 end
 
 function sgs.ai_weapon_value.red_satin_spear(self, enemy, player)
-	return 3.5
+    local value = 3
+    if player:isWounded() then
+        value = value + 2
+    end
+    return value
 end
 
 function sgs.ai_weapon_value.poison_knife(self, enemy)
