@@ -3,7 +3,7 @@
 -- 是否发动混毒弯匕
 sgs.ai_skill_invoke.poison_knife = function(self, data)
     local target = data:toPlayer()
-    local toLoseHp = math.min(5, self.player:getMark(self:objectName() .. '-Clear') + 1)
+    local toLoseHp = math.min(5, self.player:getMark('poison_knife-Clear') + 1)
     if not self:isFriend(target) then
         -- 如果对面没有这种失去体力受益技能，就嗯造
         if not target:hasSkills('LuaMouKurou|zhaxiang') then
@@ -89,10 +89,81 @@ sgs.ai_skill_cardask['@quench_blade'] = function(self, data, pattern, target)
     if self.player:isNude() then
         return '.'
     end
-    if self.player:isWeak() or self.player:getCardCount(true) < 2 then
+    -- temp, for AI
+    self.room:setCardFlag(damage.card, 'drank')
+    local doHeavyCheckSuccess = self:hasHeavySlashDamage(self.player, damage.card, damage.to)
+    self.room:setCardFlag(damage.card, '-drank')
+    if not doHeavyCheckSuccess then
         return '.'
     end
-    local cards = sgs.QList2Table(self.player:getCards('he'))
+    if self:isWeak() or self.player:getCardCount(true) < 2 then
+        return '.'
+    end
+    local cards = {}
+    for _, cd in sgs.qlist(self.player:getCards('he')) do
+        if cd:objectName() ~= 'quench_blade' then
+            table.insert(cards, cd)
+        end
+    end
     self:sortByKeepValue(cards, true)
-    return cards[1]
+    return string.format('$%s', cards[1]:getEffectiveId())
+end
+
+function sgs.ai_weapon_value.quench_blade(self, enemy)
+    if not enemy then
+        return
+    end
+    local value = 2.5
+    if enemy:getHandcardNum() < 1 and not enemy:hasArmorEffect('silver_lion') then
+        value = 4.5
+    end
+    return value
+end
+
+function sgs.ai_weapon_value.red_satin_spear(self, enemy, player)
+    local value = 3
+    if player:isWounded() then
+        value = value + 2
+    end
+    return value
+end
+
+function sgs.ai_weapon_value.poison_knife(self, enemy)
+    local mark = self.player:getMark('poison_knife-Clear')
+    local value = 2
+    if enemy:hasSkills('LuaMouKurou|zhaxiang') then
+        if mark < enemy:getHp() then
+            value = value - 1
+        end
+    end
+    if self.player:hasSkills(sgs.double_slash_skill) then
+        value = value + 1
+    end
+    return value
+end
+
+function sgs.ai_weapon_value.thunder_blade(self, enemy)
+    local value = 6
+    for _, friend in ipairs(self.friends) do
+        if friend:hasSkill('zhuji') then
+            value = value + 1
+        end
+    end
+    if self.player:hasSkill('zhuji') then
+        value = value + 2
+    end
+    if enemy:hasSkill('hongyan') and (not self.player:isWounded()) then
+        value = value - 2
+    end
+    if not self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player) then
+        value = value - 4
+    end
+    if enemy:hasSkills(sgs.wizard_harm_skill) then
+        value = value - 3
+    end
+    return value
+end
+
+function sgs.ai_weapon_value.ripple_sword(self, enemy)
+    return 3
 end

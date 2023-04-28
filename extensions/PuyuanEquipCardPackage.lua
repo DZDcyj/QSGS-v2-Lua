@@ -269,7 +269,7 @@ quench_blade_skill = sgs.CreateTriggerSkill {
                     local armor_id = player:getWeapon():getId()
                     room:setCardFlag(armor_id, 'using')
                     card = room:askForCard(player, '@quench_blade', '@quench_blade:' .. damage.to:objectName(), data,
-                        self:objectName());
+                        self:objectName())
                     room:setCardFlag(armor_id, '-using')
                 end
                 if card then
@@ -329,8 +329,8 @@ local function removePuyuanEquipsFromPile(room)
         room:setCardMapping(id, nil, sgs.Player_PlaceUnknown)
         room:getDiscardPile():removeOne(id)
     end
-    room:notifyMoveCards(true, moves, false)
-    room:notifyMoveCards(false, moves, false)
+    room:notifyMoveCards(true, moves, true)
+    room:notifyMoveCards(false, moves, true)
     room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
 
