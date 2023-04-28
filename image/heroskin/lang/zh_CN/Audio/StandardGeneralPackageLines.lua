@@ -302,4 +302,10 @@ return {
     ['$taoluan1-zhangrang_1'] = '皇上视我如父，天下之事，岂可不顺我意？',
     ['$taoluan2-zhangrang_1'] = '功名利禄，只需我一言便可！',
     ['~zhangrang-zhangrang_1'] = '皇上，皇上救我啊……',
+    -- 星甘宁
+    ['$LuaJinfan1-ExStarGanning_1'] = '锦绣系帆，威风炫赫！',
+    ['$LuaJinfan2-ExStarGanning_1'] = '披服锦绣，光彩斐然！',
+    ['$LuaSheque1-ExStarGanning_1'] = '量你多甲一件，又如何？',
+    ['$LuaSheque2-ExStarGanning_1'] = '举弓劲射，贯却心扉！',
+    ['~ExStarGanning-ExStarGanning_1'] = '刘表既不识，那复论黄祖！',
 }
