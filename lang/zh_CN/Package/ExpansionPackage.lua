@@ -643,4 +643,13 @@ return {
     ['LuaWanlanTongqu'] = '挽澜',
     [':LuaWanlanTongqu'] = '当一名角色受到会令其进入濒死状态的伤害时，你可以弃置装备区里的所有牌（至少一张），防止此伤害',
     ['#LuaWanlanTongqu'] = '%from 发动了“%arg”，防止了 %to 即将受到的 %arg2 点伤害',
+    ['OLJieZhaoyun'] = 'OL界赵云',
+    ['&OLJieZhaoyun'] = '界赵云',
+    ['#OLJieZhaoyun'] = '虎威将军',
+    ['LuaOLLongdan'] = '龙胆',
+    [':LuaOLLongdan'] = '你可以将一张【杀】当【闪】、【闪】当【杀】、【酒】当【桃】、【桃】当【酒】使用或打出',
+    ['LuaOLYajiao'] = '涯角',
+    [':LuaOLYajiao'] = '当你于回合外使用或打出手牌时，你可以亮出牌堆顶的一张牌，然后若这两张牌：类别相同，你将之交给一名角色；类别不同，你可以弃置攻击范围内包含你的角色区域里的一张牌',
+    ['LuaOLYajiao-discard'] = '你可以弃置攻击范围内包含你的角色区域里的一张牌',
+    ['LuaOLYajiao-give'] = '你须令一名角色获得 %arg[%arg2]',
 }
