@@ -79,6 +79,7 @@ return {
     ['$LuaPojun2-JieXusheng_4'] = '区区数百魏军，看我一击灭之！',
     ['~JieXusheng-JieXusheng_4'] = '来世…愿再为我江东之臣！',
     -- 杨彪
+    -- 舐犊情深
     ['$LuaZhaohan1-ExYangbiao_1'] = '兴复汉室，文先自当尽力而为',
     ['$LuaZhaohan2-ExYangbiao_1'] = '风雨飘摇，徒增忠臣嗟叹',
     ['$LuaYizheng1-ExYangbiao_1'] = '国祚尚为汉，天子尚姓刘，岂有妄为之理？',
@@ -86,6 +87,14 @@ return {
     ['$LuaRangjie1-ExYangbiao_1'] = '百般忍让，只求皇上不受波及',
     ['$LuaRangjie2-ExYangbiao_1'] = '天下动之至易，安之甚难，惟明公虑焉',
     ['~ExYangbiao-ExYangbiao_1'] = '朝代更迭，难道真是天意难改……',
+    -- 忧心国事
+    ['$LuaZhaohan1-ExYangbiao_2'] = '天子尚犹蒙尘，自当奔问官守！',
+    ['$LuaZhaohan2-ExYangbiao_2'] = '身居崇高之位，却负陛下之寄！',
+    ['$LuaYizheng1-ExYangbiao_2'] = '卿若怀忠，则奉天子还阙，何为此逆乱之举！',
+    ['$LuaYizheng2-ExYangbiao_2'] = '前有劳顿之辛，今受相争之苦，此为卿之忠邪？',
+    ['$LuaRangjie1-ExYangbiao_2'] = '弼君以礼，公定晓此人臣之节！',
+    ['$LuaRangjie2-ExYangbiao_2'] = '公既受国之恩，自当遵主之命！',
+    ['~ExYangbiao-ExYangbiao_2'] = '脚挛不复行，请辞归家养病……',
     -- 神甘宁
     ['$jieyingy1-shenganning_1'] = '劫敌营寨，以破其胆！',
     ['$jieyingy2-shenganning_1'] = '百骑劫魏营，功震天下英！',

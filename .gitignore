@@ -64,7 +64,6 @@ image/**/[^A-Z]*.[pP][nN][gG]
 !caoang_1*
 !shencaocao_2*
 !zhangrang_*
-!ExStarGanning_*
 imageformats/
 lang/zh_CN/*.lua
 lang/zh_CN/Audio/*.lua
