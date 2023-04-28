@@ -1430,7 +1430,8 @@ function cardNumInitialize(room, source)
         for _, pile in sgs.list(p:getPileNames()) do
             for _, cid in sgs.qlist(p:getPile(pile)) do
                 local cd = sgs.Sanguosha:getCard(cid)
-                if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
+                if cd:hasFlag('visible') or
+                    cd:hasFlag(string.format('%s_%s_%s', 'visible', source:objectName(), p:objectName())) then
                     if cd:isKindOf('BasicCard') then
                         totalBasic = totalBasic + 1
                     elseif cd:isKindOf('TrickCard') then
@@ -1500,7 +1501,8 @@ function unknownAnalyze(resultList, source, target, room)
         for _, pile in sgs.list(p:getPileNames()) do
             for _, cid in sgs.qlist(p:getPile(pile)) do
                 local cd = sgs.Sanguosha:getCard(cid)
-                if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
+                if cd:hasFlag('visible') or
+                    cd:hasFlag(string.format('%s_%s_%s', 'visible', source:objectName(), p:objectName())) then
                     if cd:isKindOf('BasicCard') then
                         basicRemain = basicRemain - 1
                     elseif cd:isKindOf('TrickCard') then
@@ -2298,7 +2300,6 @@ local PUYUAN_EQUIPS_SUIT_MAP = {
     [sgs.Card_Heart] = 'red_satin_spear',
     [sgs.Card_Diamond] = 'quench_blade',
 }
-
 
 -- 是否是蒲元装备
 function isPuyuanEquip(card)
