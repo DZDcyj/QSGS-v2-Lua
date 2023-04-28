@@ -267,13 +267,9 @@ quench_blade_skill = sgs.CreateTriggerSkill {
                 local card
                 if player:getCardCount(true) >= 2 then
                     local armor_id = player:getWeapon():getId()
-                    local aiData = sgs.QVariant()
-                    aiData:setValue(damage)
-                    player:setTag('quench_blade_damage', aiData)
                     room:setCardFlag(armor_id, 'using')
                     card = room:askForCard(player, '@quench_blade', '@quench_blade:' .. damage.to:objectName(), data,
                         self:objectName())
-                    player:removeTag('quench_blade_damage')
                     room:setCardFlag(armor_id, '-using')
                 end
                 if card then

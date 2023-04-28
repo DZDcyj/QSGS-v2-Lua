@@ -148,3 +148,7 @@ function sgs.ai_weapon_value.thunder_blade(self, enemy)
     end
     return value
 end
+
+function sgs.ai_weapon_value.ripple_sword(self, enemy)
+    return 3
+end
