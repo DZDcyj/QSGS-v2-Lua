@@ -7307,7 +7307,7 @@ LuaWanlanTongqu = sgs.CreateTriggerSkill {
                 if tongqujiakui:hasEquip() then
                     if room:askForSkillInvoke(tongqujiakui, self:objectName(), data2) then
                         room:broadcastSkillInvoke(self:objectName())
-                        room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
+                        room:doAnimate(rinsan.ANIMATE_INDICATE, tongqujiakui:objectName(), damage.to:objectName())
                         tongqujiakui:throwAllEquips()
                         rinsan.sendLogMessage(room, '#LuaWanlanTongqu', {
                             ['from'] = tongqujiakui,
