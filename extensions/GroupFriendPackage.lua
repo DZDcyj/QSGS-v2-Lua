@@ -1930,11 +1930,11 @@ LuaManyan = sgs.CreateTriggerSkill {
 
 -- 锐评技能组
 local RUIPING_SKILLS = {
-    [1] = 'benghuai', -- 崩坏
+    [1] = 'chouhai', -- 仇海
     [2] = 'shiyong', -- 恃勇
-    [3] = 'nosyingzi', -- 英姿（标）
-    [4] = 'jiang', -- 激昂
-    [5] = 'wuyan', -- 无言（新）
+    -- [3] = 'LuaBaijia', -- 败家（暂未实现）
+    [3] = 'yingzi', -- 英姿（新）
+    [4] = 'bosszuijiu', -- 醉酒（BOSS 战）
 }
 
 -- 是否可以通过锐评获取技能
@@ -2025,8 +2025,8 @@ LuaRuiping = sgs.CreateTriggerSkill {
     end,
 }
 
-LuaKuangzhengCard = sgs.CreateSkillCard {
-    name = 'LuaKuangzheng',
+LuaJiuwenCard = sgs.CreateSkillCard {
+    name = 'LuaJiuwen',
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)
@@ -2040,38 +2040,49 @@ LuaKuangzhengCard = sgs.CreateSkillCard {
             room:throwCard(card_id, p, source)
             room:addPlayerMark(p, self:objectName())
         end
+        room:addPlayerMark(source, 'LuaJiuwen-Chosen', #targets)
     end,
 }
 
-LuaKuangzhengVS = sgs.CreateZeroCardViewAsSkill {
-    name = 'LuaKuangzheng',
+LuaJiuwenVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaJiuwen',
     view_as = function(self)
-        return LuaKuangzhengCard:clone()
+        return LuaJiuwenCard:clone()
     end,
     enabled_at_play = function(self, player)
         return false
     end,
     enabled_at_response = function(self, target, pattern)
-        return pattern == '@@LuaKuangzheng'
+        return pattern == '@@LuaJiuwen'
     end,
 }
 
-LuaKuangzheng = sgs.CreateTriggerSkill {
-    name = 'LuaKuangzheng',
+LuaJiuwen = sgs.CreateTriggerSkill {
+    name = 'LuaJiuwen',
     events = {sgs.EventPhaseStart},
-    view_as_skill = LuaKuangzhengVS,
+    view_as_skill = LuaJiuwenVS,
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() == sgs.Player_Start then
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if rinsan.canDiscard(player, p, 'he') then
-                    room:askForUseCard(player, '@@LuaKuangzheng', '@LuaKuangzheng')
+                    room:askForUseCard(player, '@@LuaJiuwen', '@LuaJiuwen')
                     break
                 end
             end
         elseif player:getPhase() == sgs.Player_Finish then
+            local x = player:getMark('LuaJiuwen-Chosen')
+            room:setPlayerMark(player, 'LuaJiuwen-Chosen', 0)
+            player:drawCards(x, self:objectName())
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 if p:getMark(self:objectName()) > 0 then
-                    p:drawCards(1, self:objectName())
+                    if player:isNude() then
+                        break
+                    end
+                    if p:objectName() ~= player:objectName() then
+                        local prompt = string.format('LuaJiuwen-Give:%s', p:objectName())
+                        local card = room:askForExchange(player, self:objectName(), 1, 1, true, prompt)
+                        p:obtainCard(card, false)    
+                    end
                 end
                 room:setPlayerMark(p, self:objectName(), 0)
             end
@@ -2079,13 +2090,13 @@ LuaKuangzheng = sgs.CreateTriggerSkill {
     end,
 }
 
-LuaKuangzhengDamaged = sgs.CreateTriggerSkill {
-    name = 'LuaKuangzhengDamaged',
+LuaJiuwenDamaged = sgs.CreateTriggerSkill {
+    name = 'LuaJiuwenDamaged',
     events = {sgs.Damaged},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        if player:getMark('LuaKuangzheng') > 0 then
-            room:setPlayerMark(player, 'LuaKuangzheng', 0)
+        if player:getMark('LuaJiuwen') > 0 then
+            room:setPlayerMark(player, 'LuaJiuwen', 0)
         end
     end,
     can_trigger = globalTrigger,
@@ -2138,8 +2149,8 @@ SkillAnjiang:addSkill(LuaXiandengTargetMod)
 Dalaojiang:addSkill(LuaYishi)
 Dalaojiang:addSkill(LuaManyan)
 Zhongliao:addSkill(LuaRuiping)
-Zhongliao:addSkill(LuaKuangzheng)
+Zhongliao:addSkill(LuaJiuwen)
 for _, relateSkill in ipairs(RUIPING_SKILLS) do
     Zhongliao:addRelateSkill(relateSkill)
 end
-SkillAnjiang:addSkill(LuaKuangzhengDamaged)
+SkillAnjiang:addSkill(LuaJiuwenDamaged)
