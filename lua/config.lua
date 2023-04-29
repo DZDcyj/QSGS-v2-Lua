@@ -617,12 +617,13 @@ config = {
         'longyin:60',
         --不明显收益（30~60）
         'guanxing:40',
+        'longdan:40',
         'dangxian:60',
         'wushuang:40',
         'fuji:50',
         'wusheng:60',
         --防御（30~50）
-        'kongcheng:30',
+      --'kongcheng:30',几乎没用
         'weijing:40',
         'qianjie:30',
         'weimu:30',
