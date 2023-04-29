@@ -4490,6 +4490,7 @@ LuaJinfan = sgs.CreateTriggerSkill {
                             return check:getSuit() == curr_card:getSuit()
                         end)
                         if togain then
+                            room:notifySkillInvoked(player, self:objectName())
                             room:broadcastSkillInvoke(self:objectName())
                             player:obtainCard(togain, false)
                         end
@@ -4503,7 +4504,7 @@ LuaJinfan = sgs.CreateTriggerSkill {
 
 LuaSheque = sgs.CreateTriggerSkill {
     name = 'LuaSheque',
-    events = {sgs.EventPhaseStart, sgs.PreCardUsed},
+    events = {sgs.EventPhaseStart, sgs.TargetSpecified},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.EventPhaseStart then
             if player:getPhase() == sgs.Player_Start then
@@ -4521,6 +4522,7 @@ LuaSheque = sgs.CreateTriggerSkill {
             local use = data:toCardUse()
             if use.from and use.from:hasFlag(self:objectName()) and use.card:isKindOf('Slash') then
                 room:broadcastSkillInvoke(self:objectName())
+                room:notifySkillInvoked(player, self:objectName())
                 for _, p in sgs.qlist(use.to) do
                     rinsan.addQinggangTag(p, use.card)
                 end
