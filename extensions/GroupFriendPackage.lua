@@ -1928,13 +1928,44 @@ LuaManyan = sgs.CreateTriggerSkill {
     end,
 }
 
+LuaBaijia = sgs.CreateTriggerSkill {
+    name = 'LuaBaijia',
+    events = {sgs.CardUsed, sgs.CardResponded},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            card = data:toCardResponse().m_card
+        end
+        if card and (not card:isKindOf('SkillCard')) then
+            room:setPlayerCardLimitation(player, 'discard', card:toString(), false)
+            local available_cards = {}
+            for _, cd in sgs.qlist(player:getCards('he')) do
+                if not player:isCardLimited(cd, sgs.Card_MethodDiscard) then
+                    table.insert(available_cards, cd)
+                end
+            end
+            if #available_cards > 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                if not room:askForDiscard(player, self:objectName(), 1, 1, false, true, '@LuaBaijia-Discard') then
+                    local c = available_cards[rinsan.random(1, #available_cards)]
+                    room:throwCard(c, player)
+                end
+            end
+            room:removePlayerCardLimitation(player, 'discard', card:toString() .. '$0')
+        end
+    end,
+}
+
 -- 锐评技能组
 local RUIPING_SKILLS = {
     [1] = 'chouhai', -- 仇海
     [2] = 'shiyong', -- 恃勇
-    -- [3] = 'LuaBaijia', -- 败家（暂未实现）
-    [3] = 'yingzi', -- 英姿（新）
-    [4] = 'bosszuijiu', -- 醉酒（BOSS 战）
+    [3] = 'LuaBaijia', -- 败家
+    [4] = 'yingzi', -- 英姿（新）
+    [5] = 'bosszuijiu', -- 醉酒（BOSS 战）
 }
 
 -- 是否可以通过锐评获取技能
@@ -2081,7 +2112,7 @@ LuaJiuwen = sgs.CreateTriggerSkill {
                     if p:objectName() ~= player:objectName() then
                         local prompt = string.format('LuaJiuwen-Give:%s', p:objectName())
                         local card = room:askForExchange(player, self:objectName(), 1, 1, true, prompt)
-                        p:obtainCard(card, false)    
+                        p:obtainCard(card, false)
                     end
                 end
                 room:setPlayerMark(p, self:objectName(), 0)
@@ -2150,6 +2181,7 @@ Dalaojiang:addSkill(LuaYishi)
 Dalaojiang:addSkill(LuaManyan)
 Zhongliao:addSkill(LuaRuiping)
 Zhongliao:addSkill(LuaJiuwen)
+SkillAnjiang:addSkill(LuaBaijia)
 for _, relateSkill in ipairs(RUIPING_SKILLS) do
     Zhongliao:addRelateSkill(relateSkill)
 end

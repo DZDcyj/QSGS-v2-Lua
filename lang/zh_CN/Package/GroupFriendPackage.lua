@@ -198,4 +198,7 @@ return {
     ['@LuaJiuwen'] = '你可以发动“纠问”，弃置任意名角色的一张牌',
     ['~LuaJiuwen'] = '选择任意名可以弃置牌的角色→点击“确定”',
     ['LuaJiuwen-Give'] = '“纠问”被触发，你须交给 %src 一张牌',
+    ['LuaBaijia'] = '败家',
+    [':LuaBaijia'] = '锁定技，当你使用一张牌时，你弃置一张牌',
+    ['@LuaBaijia-Discard'] = '“败家”被触发，请弃置一张牌',
 }
