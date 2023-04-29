@@ -313,4 +313,10 @@ return {
     ['$LuaWanlanTongqu1'] = '挽狂澜于既倒，扶大厦于将倾！',
     ['$LuaWanlanTongqu2'] = '深受国恩，今日便是报偿之时！',
     ['~ExTongquJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
+    -- OL界赵云
+    ['$LuaOLLongdan1'] = '进退自如，游刃有余！',
+    ['$LuaOLLongdan2'] = '龙威虎胆，斩敌破阵！',
+    ['$LuaOLYajiao1'] = '遍寻天下，但求一败！',
+    ['$LuaOLYajiao2'] = '策马趋前，斩敌当先！',
+    ['~OLJieZhaoyun'] = '你们谁……还敢再上？',
 }
