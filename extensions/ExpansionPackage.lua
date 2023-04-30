@@ -7587,7 +7587,7 @@ LuaFireAttack = sgs.CreateTrickCard {
         toDiscard = toDiscard or room:askForCard(source, pattern, prompt, sgs.QVariant(), sgs.Card_MethodNone)
         if toDiscard then
             room:throwCard(toDiscard, source)
-            rinsan.doDamage(room, source, target, 1, sgs.DamageStruct_Fire, effect.card)
+            rinsan.doDamage(room, source, target, 1, sgs.DamageStruct_Fire, self)
         end
     end,
 }
@@ -7608,6 +7608,7 @@ LuaHuoji = sgs.CreateTriggerSkill {
             end
             room:sendCompulsoryTriggerLog(source, self:objectName())
             local fireAttack = LuaFireAttack:clone()
+            fireAttack:addSubcard(effect.card)
             fireAttack:setSuit(effect.card:getSuit())
             fireAttack:setNumber(effect.card:getNumber())
             fireAttack:setId(effect.card:getId())
