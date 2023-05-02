@@ -7565,17 +7565,18 @@ LuaFireAttack = sgs.CreateTrickCard {
             card_ids:removeOne(id)
             room:takeAG(nil, id, false)
         end
-        while not card_ids:isEmpty() do
-            local card_id = room:askForAG(source, card_ids, true, self:objectName())
-            if card_id == -1 then
-                room:clearAG(source)
+        if not card_ids:isEmpty() then
+            repeat
+                local card_id = room:askForAG(source, card_ids, true, self:objectName())
+                if card_id == -1 then
+                    room:clearAG(source)
+                    break
+                end
+                card_ids:removeOne(card_id)
+                room:takeAG(source, card_id, false)
+                toDiscard = sgs.Sanguosha:getCard(card_id)
                 break
-            end
-            local card_number = sgs.Sanguosha:getCard(card_id):getNumber()
-            card_ids:removeOne(card_id)
-            room:takeAG(source, card_id, false)
-            toDiscard = sgs.Sanguosha:getCard(card_id)
-            break
+            until true
         end
         for _, id in sgs.qlist(card_ids) do
             to_return:append(id)
@@ -7583,7 +7584,7 @@ LuaFireAttack = sgs.CreateTrickCard {
         room:returnToTopDrawPile(to_return)
         room:clearAG(source)
         local pattern = string.format('.|%s|.|hand', rinsan.getColorString(toShow))
-        local prompt = string.format('@LuaHuoji-Discard:%s::%s',target:objectName(), rinsan.getColorString(toShow))
+        local prompt = string.format('@LuaHuoji-Discard:%s::%s', target:objectName(), rinsan.getColorString(toShow))
         toDiscard = toDiscard or room:askForCard(source, pattern, prompt, sgs.QVariant(), sgs.Card_MethodNone)
         if toDiscard then
             room:throwCard(toDiscard, source)
@@ -7697,7 +7698,7 @@ LuaCangzhuo = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTNOTATPHASE(self, target, sgs.Player_NotActive)
-    end
+    end,
 }
 
 LuaCangzhuoMaxCards = sgs.CreateMaxCardsSkill {
