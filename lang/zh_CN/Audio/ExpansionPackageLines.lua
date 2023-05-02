@@ -159,12 +159,6 @@ return {
     ['$LuaTunjun1'] = '得封侯爵，屯军弘农',
     ['$LuaTunjun2'] = '屯军弘农，养精蓄锐',
     ['~ExZhangji'] = '哪，哪里来的乱箭？',
-    -- 赵襄-十周年
-    ['$LuaFanghun1'] = '龙胆虎威，摄敌胆寒',
-    ['$LuaFanghun2'] = '父亲的教导铭记心上',
-    ['$LuaFuhan1'] = '我知道，你们一直都在我身边',
-    ['$LuaFuhan2'] = '我也不会输给先辈们',
-    ['~ExTenYearZhaoxiang'] = '难道，真的都过去了吗？',
     -- 界钟会
     ['$LuaQuanji1'] = '备兵驯马，以待战机',
     ['$LuaQuanji2'] = '避其锋芒，权且忍让',
@@ -177,11 +171,6 @@ return {
     ['$LuaZhiyan1'] = '精兵当严于律己，束身自修！',
     ['$LuaZhiyan2'] = '治军严谨，方得精锐之师！',
     ['~ExStarXuhuang'] = '唉，明主未遇，大功未成……',
-    -- 关索-十周年
-    ['$LuaZhengnan'] = '先父大任，不敢忘怀！',
-    ['$LuaDangxian3'] = '我先行一步啦！',
-    ['$LuaZhiman'] = '大汉仁义，且放尔等一条生路！',
-    ['~ExTenYearGuansuo'] = '花开堪折直须折，莫待无花空折枝……',
     -- 星甘宁
     ['$LuaJinfan1'] = '扬锦帆，劫四方，快意逍遥！',
     ['$LuaJinfan2'] = '铃声所至之处，再无安宁！',

@@ -2402,6 +2402,27 @@ function hasArmorEffect(player, armorName)
     return player:hasArmorEffect(armorName) or privateHasArmorEffect(player, armorName)
 end
 
+-- 添加隐藏技能，避免过多的 SkillAnjiang 武将（影响头像选择）
+function addSingleHiddenSkill(skillObject)
+    local skillName = skillObject:objectName()
+    local skillList = sgs.SkillList()
+    if not sgs.Sanguosha:getSkill(skillName) then
+        skillList:append(skillObject)
+    end
+    sgs.Sanguosha:addSkills(skillList)
+end
+
+function addHiddenSkills(skillTable)
+    local skillList = sgs.SkillList()
+    for _, skill in ipairs(skillTable) do
+        local skillName = skill:objectName()
+        if not sgs.Sanguosha:getSkill(skillName) then
+            skillList:append(skill)
+        end
+    end
+    sgs.Sanguosha:addSkills(skillList)
+end
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_CHANGE_HP'] = 32,
