@@ -7575,7 +7575,6 @@ LuaFireAttack = sgs.CreateTrickCard {
                 card_ids:removeOne(card_id)
                 room:takeAG(source, card_id, false)
                 toDiscard = sgs.Sanguosha:getCard(card_id)
-                break
             until true
         end
         for _, id in sgs.qlist(card_ids) do
