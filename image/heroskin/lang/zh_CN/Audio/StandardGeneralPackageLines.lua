@@ -79,6 +79,7 @@ return {
     ['$LuaPojun2-JieXusheng_4'] = '区区数百魏军，看我一击灭之！',
     ['~JieXusheng-JieXusheng_4'] = '来世…愿再为我江东之臣！',
     -- 杨彪
+    -- 舐犊情深
     ['$LuaZhaohan1-ExYangbiao_1'] = '兴复汉室，文先自当尽力而为',
     ['$LuaZhaohan2-ExYangbiao_1'] = '风雨飘摇，徒增忠臣嗟叹',
     ['$LuaYizheng1-ExYangbiao_1'] = '国祚尚为汉，天子尚姓刘，岂有妄为之理？',
@@ -86,6 +87,14 @@ return {
     ['$LuaRangjie1-ExYangbiao_1'] = '百般忍让，只求皇上不受波及',
     ['$LuaRangjie2-ExYangbiao_1'] = '天下动之至易，安之甚难，惟明公虑焉',
     ['~ExYangbiao-ExYangbiao_1'] = '朝代更迭，难道真是天意难改……',
+    -- 忧心国事
+    ['$LuaZhaohan1-ExYangbiao_2'] = '天子尚犹蒙尘，自当奔问官守！',
+    ['$LuaZhaohan2-ExYangbiao_2'] = '身居崇高之位，却负陛下之寄！',
+    ['$LuaYizheng1-ExYangbiao_2'] = '卿若怀忠，则奉天子还阙，何为此逆乱之举！',
+    ['$LuaYizheng2-ExYangbiao_2'] = '前有劳顿之辛，今受相争之苦，此为卿之忠邪？',
+    ['$LuaRangjie1-ExYangbiao_2'] = '弼君以礼，公定晓此人臣之节！',
+    ['$LuaRangjie2-ExYangbiao_2'] = '公既受国之恩，自当遵主之命！',
+    ['~ExYangbiao-ExYangbiao_2'] = '脚挛不复行，请辞归家养病……',
     -- 神甘宁
     ['$jieyingy1-shenganning_1'] = '劫敌营寨，以破其胆！',
     ['$jieyingy2-shenganning_1'] = '百骑劫魏营，功震天下英！',
@@ -185,6 +194,7 @@ return {
     ['$qimou2-ol_weiyan_1'] = '为将需勇，更要善奇谋！',
     ['~ol_weiyan-ol_weiyan_1'] = '怨气，终难平...',
     -- 许攸
+    -- 南阳狂才
     ['$chenglve1-ol_xuyou_1'] = '须知进之，谋略即成',
     ['$chenglve2-ol_xuyou_1'] = '计略已成，此战必胜',
     ['$ol_shicai1-ol_xuyou_1'] = '天下局势，皆因我计更易',
@@ -192,6 +202,14 @@ return {
     ['$cunmu1-ol_xuyou_1'] = '一计只划一事',
     ['$cunmu2-ol_xuyou_1'] = '今日不考明日事',
     ['~ol_xuyou-ol_xuyou_1'] = '你这莽夫……额……呃……',
+    -- 逆转官渡
+    ['$chenglve1-ol_xuyou_2'] = '破敌之策，我已了然于胸',
+    ['$chenglve2-ol_xuyou_2'] = '胸腹万卷兵略，故而计出不穷',
+    ['$ol_shicai1-ol_xuyou_2'] = '曹阿瞒，还不快快倒履相迎！',
+    ['$ol_shicai2-ol_xuyou_2'] = '袁败曹胜，正所谓得我者得天下！',
+    ['$cunmu1-ol_xuyou_2'] = '寸目短视，井中窥天',
+    ['$cunmu2-ol_xuyou_2'] = '今朝有酒且醉，管甚来日方长',
+    ['~ol_xuyou-ol_xuyou_2'] = '匹夫，你当真敢杀我不成！',
     -- 刘焉
     ['$tushe1-liuyan_1'] = '拒险以图进，备策而施为',
     ['$tushe2-liuyan_1'] = '夫战者，可施以奇险之策而图常谋！',
@@ -275,11 +293,11 @@ return {
     ['$LuaShenzhu1-ExShenTaishici_1'] = '看我此箭，取那冒进之人性命',
     ['$LuaShenzhu2-ExShenTaishici_1'] = '燕人张飞在此',
     ['~ExShenTaishici-ExShenTaishici_1'] = '神鸦不佑……',
-    --曹昂
+    -- 曹昂
     ['$kangkai1-caoang_1'] = '阿瞒上马，你父亲我随后便来',
     ['$kangkai2-caoang_1'] = '叛军来得贼快，我替阿瞒殿后',
     ['~caoang-caoang_1'] = '……（马嘶鸣声）',
-    --神曹操
+    -- 神曹操
     ["$guixin1-shencaocao_2"] = '我麾下众将短命无妨',
     ["$guixin2-shencaocao_2"] = '好计，就依奉孝说的办吧',
     ["~shencaocao-shencaocao_2"] = '我命休矣',
@@ -289,4 +307,14 @@ return {
     ['$LuaYuce1-JieManchong_1'] = '亡羊补牢，为时未晚',
     ['$LuaYuce2-JieManchong_1'] = '坚守城阙，以待援军',
     ['~JieManchong-JieManchong_1'] = '酷法峻刑，不得人心啊……',
+    -- 张让
+    ['$taoluan1-zhangrang_1'] = '皇上视我如父，天下之事，岂可不顺我意？',
+    ['$taoluan2-zhangrang_1'] = '功名利禄，只需我一言便可！',
+    ['~zhangrang-zhangrang_1'] = '皇上，皇上救我啊……',
+    -- 星甘宁
+    ['$LuaJinfan1-ExStarGanning_1'] = '锦绣系帆，威风炫赫！',
+    ['$LuaJinfan2-ExStarGanning_1'] = '披服锦绣，光彩斐然！',
+    ['$LuaSheque1-ExStarGanning_1'] = '量你多甲一件，又如何？',
+    ['$LuaSheque2-ExStarGanning_1'] = '举弓劲射，贯却心扉！',
+    ['~ExStarGanning-ExStarGanning_1'] = '刘表既不识，那复论黄祖！',
 }

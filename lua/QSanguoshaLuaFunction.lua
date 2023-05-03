@@ -1430,7 +1430,8 @@ function cardNumInitialize(room, source)
         for _, pile in sgs.list(p:getPileNames()) do
             for _, cid in sgs.qlist(p:getPile(pile)) do
                 local cd = sgs.Sanguosha:getCard(cid)
-                if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
+                if cd:hasFlag('visible') or
+                    cd:hasFlag(string.format('%s_%s_%s', 'visible', source:objectName(), p:objectName())) then
                     if cd:isKindOf('BasicCard') then
                         totalBasic = totalBasic + 1
                     elseif cd:isKindOf('TrickCard') then
@@ -1500,7 +1501,8 @@ function unknownAnalyze(resultList, source, target, room)
         for _, pile in sgs.list(p:getPileNames()) do
             for _, cid in sgs.qlist(p:getPile(pile)) do
                 local cd = sgs.Sanguosha:getCard(cid)
-                if cd:hasFlag('visible') or cd:hasFlag(string.format('%s_%s_%s', source:objectName(), p:objectName())) then
+                if cd:hasFlag('visible') or
+                    cd:hasFlag(string.format('%s_%s_%s', 'visible', source:objectName(), p:objectName())) then
                     if cd:isKindOf('BasicCard') then
                         basicRemain = basicRemain - 1
                     elseif cd:isKindOf('TrickCard') then
@@ -1930,6 +1932,16 @@ function Suit2String(suit)
     return 'no_suit'
 end
 
+-- 获取颜色字符
+function getColorString(card)
+    if card:isRed() then
+        return 'red'
+    elseif card:isBlack() then
+        return 'black'
+    end
+    return 'no_suit'
+end
+
 -- 判断字符串是否以给定前缀开头
 function startsWith(str, prefix)
     return string.sub(str, 1, string.len(prefix)) == prefix
@@ -2299,7 +2311,6 @@ local PUYUAN_EQUIPS_SUIT_MAP = {
     [sgs.Card_Diamond] = 'quench_blade',
 }
 
-
 -- 是否是蒲元装备
 function isPuyuanEquip(card)
     return table.contains(PUYUAN_EQUIPS, card:objectName())
@@ -2325,6 +2336,70 @@ function getPuyuanEquip(card)
         end
     end
     return nil
+end
+
+-- 装备技能
+local ARMOR_SKILLS = {
+    -- 八卦
+    ['eight_diagram'] = {
+        'bazhen', -- 卧龙诸葛：八阵
+        'linglong', -- SP 黄月英：玲珑
+        'LuaBazhen', -- 界卧龙诸葛：八阵
+    },
+    -- 藤甲
+    ['vine'] = {
+        'bossmanjia', -- 牛头：蛮甲
+    },
+}
+
+function privateHasArmorEffect(player, armorName)
+    local qinggangTags = player:getTag('Qinggang'):toStringList()
+    if #qinggangTags > 0 or player:getMark('Armor_Nullified') > 0 or player:getMark('Equips_Nullified_to_Yourself') > 0 then
+        return false
+    end
+    local curr
+    for _, p in sgs.qlist(player:getAliveSiblings()) do
+        if p:getPhase() ~= sgs.Player_NotActive then
+            curr = p
+            break
+        end
+    end
+    -- 吴懿-奔袭
+    if curr and curr:hasSkill('benxi') then
+        local alladj = true
+        for _, p in sgs.qlist(curr:getAliveSiblings()) do
+            if curr:distanceTo(p) ~= 1 then
+                alladj = false
+                break
+            end
+        end
+        if alladj then
+            return false
+        end
+    end
+
+    if (not player:getArmor()) and player:isAlive() then
+        if ARMOR_SKILLS[armorName] then
+            for _, skill in ipairs(ARMOR_SKILLS[armorName]) do
+                if player:hasSkill(skill) then
+                    return true
+                end
+            end
+        end
+    end
+    if (not player:getArmor()) then
+        return false
+    end
+    local armor = player:getArmor()
+    if armor:objectName() == armorName or armor:isKindOf(armorName) then
+        return true
+    end
+    local realArmor = sgs.Sanguosha:getEngineCard(armor:getEffectiveId())
+    return realArmor:objectName() == armorName or realArmor:isKindOf(armorName)
+end
+
+function hasArmorEffect(player, armorName)
+    return player:hasArmorEffect(armorName) or privateHasArmorEffect(player, armorName)
 end
 
 -- 手动修正
