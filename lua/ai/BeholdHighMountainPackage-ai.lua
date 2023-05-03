@@ -1,7 +1,5 @@
 -- 限定-高山仰止包 AI
 -- Created by DZDcyj at 2023/5/2
--- 引入封装函数包
-local rinsan = require('QSanguoshaLuaFunction')
 
 -- 王朗
 -- 鼓舌
