@@ -1,7 +1,7 @@
 -- translation for Pray Fortune Package
 
 return {
-    ['BeholdHighMountainPackage'] = '限定-祈福包',
+    ['PrayFortunePackage'] = '限定-祈福包',
     ['ExTenYearZhaoxiang'] = '赵襄',
     ['&ExTenYearZhaoxiang'] = '赵襄',
     ['#ExTenYearZhaoxiang'] = '拾梅鹊影',
