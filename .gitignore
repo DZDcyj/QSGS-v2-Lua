@@ -76,6 +76,7 @@ lang/zh_CN/Package/*.lua
 !ExtraordinaryPeoplePackage*
 !BeholdHighMountainPackage*
 !PrayFortunePackage*
+!BraveWarriorsPackage*
 !ImpassePackage.lua
 !MajunEquipCardPackage.lua
 !GroupFriendPackage.lua
