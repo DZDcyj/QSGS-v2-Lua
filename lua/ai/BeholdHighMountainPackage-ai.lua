@@ -26,6 +26,9 @@ sgs.ai_skill_use_func['#LuaGusheCard'] = function(_card, use, self)
     self:sortByUseValue(cards, true)
     self:sort(self.enemies, 'handcard')
     local mostTargets = math.min(3, 7 - self.player:getMark('@LuaGushe'))
+    if #mostTargets <= 1 then
+        return
+    end
     for _, enemy in ipairs(self.enemies) do
         if self.player:canPindian(enemy, 'LuaGushe') then
             if use.to and use.to:length() < mostTargets then

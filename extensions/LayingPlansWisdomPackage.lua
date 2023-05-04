@@ -62,6 +62,7 @@ LuaWanwei = sgs.CreateTriggerSkill {
         local data2 = sgs.QVariant()
         data2:setValue(dying.who)
         if room:askForSkillInvoke(player, self:objectName(), data2) then
+            room:broadcastSkillInvoke(self:objectName())
             local x = math.max(player:getHp(), 1 - dying.who:getHp())
             room:addPlayerMark(player, self:objectName() .. '_lun')
             rinsan.recover(dying.who, x, player)
