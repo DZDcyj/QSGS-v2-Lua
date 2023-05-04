@@ -245,14 +245,6 @@ return {
     ['$LuaQingjian1'] = '福生于清俭，德生于卑退！',
     ['$LuaQingjian2'] = '钱财，乃身外之物！',
     ['~JieXiahoudun'] = '诸多败绩，有负丞相重托！',
-    -- 曹金玉-十周年
-    ['$LuaYuqi1'] = '孤影独泣，困于隅角',
-    ['$LuaYuqi2'] = '向隅而泣，黯然伤感',
-    ['$LuaShanshen1'] = '好善为德，坚守本心',
-    ['$LuaShanshen2'] = '洁身自爱，独善其身',
-    ['$LuaXianjing1'] = '文静闲丽，举止柔美',
-    ['$LuaXianjing2'] = '娴静淡雅，温婉穆穆',
-    ['~ExTenYearCaojinyu'] = '平叔之情，吾岂不明…',
     -- 孙寒华
     ['$LuaChongxu1'] = '阳炁冲三关，斩尸除阴魔',
     ['$LuaChongxu2'] = '蒲团清静坐，神归了道真',

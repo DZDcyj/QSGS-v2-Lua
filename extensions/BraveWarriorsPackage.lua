@@ -1,5 +1,5 @@
 -- 限定-百战虎贲包
--- Created by DZDcyj at 2023/2/14
+-- Created by DZDcyj at 2023/5/4
 module('extensions.BraveWarriorsPackage', package.seeall)
 extension = sgs.Package('BraveWarriorsPackage')
 
