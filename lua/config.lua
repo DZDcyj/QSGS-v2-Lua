@@ -600,7 +600,8 @@ config = {
         'nosqianxun:20',
         --少量收益、过牌（30~50）
       --'wangzun:30',这玩意在这个模式并不能用
-        'yingzi:40',
+        'yingzi:30',
+        'shenwei:40',
         'hongde:40',
       --'hongyuan:30',并没有人选这个
         'tuxi:30',
@@ -609,6 +610,7 @@ config = {
         'jieyuan:50',
         --辅助（20~60）
         'LuaZhiman:20',
+        'LuaKanpo:30',
         'guicai:40',
         'ziyuan:40',
         'mingce:40',
@@ -616,8 +618,9 @@ config = {
         'lizhan:50',
         'longyin:60',
         --不明显收益（30~60）
-        'guanxing:40',
-        'longdan:40',
+        'limu:30',
+        'guanxing:30',
+        'LuaOLLongdan:40',
         'dangxian:60',
         'wushuang:40',
         'fuji:50',
@@ -625,18 +628,20 @@ config = {
         --防御（30~50）
       --'kongcheng:30',几乎没用
         'weijing:40',
+        'sheyan:40',
         'qianjie:30',
         'weimu:30',
         'yuce:50',
         'jiushi:40',
         'huituo:50',
-        'zhenlie:40',
+        'zhenlie:30',
+        'anguo:50',
         --大量收益、过牌（60~100）
         'juejing:70',
-        'bosszuijiu:90',
+        'bosszuijiu:100',
         'ol_kuanggu:80',
         'LuaZhongzuo:60',
-        'zhiheng:90',
+        'zhiheng:80',
     },
 
     jiange_defense_kingdoms = {
