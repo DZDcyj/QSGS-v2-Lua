@@ -237,10 +237,6 @@ return {
     ['$LuaJiejiaxuWeimu1'] = '此伤与我无关',
     ['$LuaJiejiaxuWeimu2'] = '还是另寻他法吧！',
     ['~JieJiaxu'] = '此劫…我亦有所算！',
-    -- OL界荀彧
-    ['$LuaOLJieming1'] = '杀身成仁，不负皇恩',
-    ['$LuaOLJieming2'] = '因势利导，是为良计',
-    ['~OLJieXunyu'] = '命不由人，徒叹奈何……',
     -- 界夏侯惇
     ['$LuaQingjian1'] = '福生于清俭，德生于卑退！',
     ['$LuaQingjian2'] = '钱财，乃身外之物！',
@@ -257,12 +253,6 @@ return {
     ['$LuaBingqing1'] = '常怀圣言，以是自励！',
     ['$LuaBingqing2'] = '身受贵宠，不忘初心！',
     ['~ExMaojie'] = '废立大事，公不可不慎……',
-    -- OL界华雄
-    ['$LuaOLYaowu1'] = '这些杂兵，我有何惧！',
-    ['$LuaOLYaowu2'] = '有吾在此，解太师烦忧',
-    ['$LuaOLShizhan1'] = '兀那汉子，且报上名来！',
-    ['$LuaOLShizhan2'] = '看你能坚持几个回合！',
-    ['~OLJieHuaxiong'] = '我掉以轻心了……',
     -- 裴秀
     ['$LuaXingtu1'] = '制图之体有六，缺一不可言精',
     ['$LuaXingtu2'] = '图设分率，则宇内地域皆可绘于一尺',
@@ -282,10 +272,4 @@ return {
     ['$LuaWanlanTongqu1'] = '挽狂澜于既倒，扶大厦于将倾！',
     ['$LuaWanlanTongqu2'] = '深受国恩，今日便是报偿之时！',
     ['~ExTongquJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
-    -- OL界赵云
-    ['$LuaOLLongdan1'] = '进退自如，游刃有余！',
-    ['$LuaOLLongdan2'] = '龙威虎胆，斩敌破阵！',
-    ['$LuaOLYajiao1'] = '遍寻天下，但求一败！',
-    ['$LuaOLYajiao2'] = '策马趋前，斩敌当先！',
-    ['~OLJieZhaoyun'] = '你们谁……还敢再上？',
 }

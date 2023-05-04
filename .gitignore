@@ -78,6 +78,7 @@ lang/zh_CN/Package/*.lua
 !PrayFortunePackage*
 !BraveWarriorsPackage*
 !GoodMatchPackage*
+!OLBoundaryBreach*
 !ImpassePackage.lua
 !MajunEquipCardPackage.lua
 !GroupFriendPackage.lua
