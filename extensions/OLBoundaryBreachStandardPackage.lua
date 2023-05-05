@@ -220,3 +220,45 @@ LuaOLYajiao = sgs.CreateTriggerSkill {
 
 OLJieZhaoyun:addSkill(LuaOLLongdan)
 OLJieZhaoyun:addSkill(LuaOLYajiao)
+
+-- 界李典
+OLJieLidian = sgs.General(extension, 'OLJieLidian', 'wei', '4', true, true)
+
+LuaOLWangxi = sgs.CreateTriggerSkill {
+    name = 'LuaOLWangxi',
+    events = {sgs.Damage, sgs.Damaged},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        local target
+        if event == sgs.Damage and damage.to and (not damage.to:hasFlag('Global_DebutFlag')) then
+            target = damage.to
+        elseif event == sgs.Damaged then
+            target = damage.from
+        end
+        if (not target) or (target:objectName() == player:objectName()) then
+            return false
+        end
+        if (not target:isAlive()) or (not player:isAlive()) then
+            return false
+        end
+        for _ = 1, damage.damage, 1 do
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                player:drawCards(2, self:objectName())
+                local prompt = string.format('LuaOLWangxi-Give:%s', target:objectName())
+                if (not player:isAlive()) or (not target:isAlive()) then
+                    return false
+                end
+                local give = room:askForExchange(player, self:objectName(), 1, 1, true, prompt, false)
+                if give then
+                    room:moveCardTo(give, target, sgs.Player_PlaceHand, false)
+                end
+            else
+                break
+            end
+        end
+    end,
+}
+
+OLJieLidian:addSkill('ol_xunxun')
+OLJieLidian:addSkill(LuaOLWangxi)
