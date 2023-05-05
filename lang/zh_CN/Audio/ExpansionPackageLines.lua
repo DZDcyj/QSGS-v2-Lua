@@ -132,12 +132,6 @@ return {
     ['$LuaJieyue1'] = '按丞相之命，此部今由余统摄！',
     ['$LuaJieyue2'] = '奉法行令，事上之节，岂有宽宥之理？',
     ['~JieYujin'] = '如今临危处难，却负丞相三十年之赏识，唉……',
-    -- 留赞-十周年
-    ['$LuaFenyin1'] = '斗志高歌，士气昂扬！',
-    ['$LuaFenyin2'] = '抗音而歌，左右应之！',
-    ['$LuaLiji1'] = '破敌搴旗，未尝负败！',
-    ['$LuaLiji2'] = '鸷猛壮烈，万人不敌！',
-    ['~ExTenYearLiuzan'] = '若因病困此，命也……',
     -- 界孙策
     ['$LuaJiang1'] = '我会把胜利带回江东！',
     ['$LuaJiang2'] = '天下英雄，谁能与我一战？',
@@ -159,18 +153,6 @@ return {
     ['$LuaTunjun1'] = '得封侯爵，屯军弘农',
     ['$LuaTunjun2'] = '屯军弘农，养精蓄锐',
     ['~ExZhangji'] = '哪，哪里来的乱箭？',
-    -- 王朗-十周年
-    ['$LuaGushe1'] = '不必强逞兵刃之利，一切不过是个理字',
-    ['$LuaGushe2'] = '天命加之大魏，汝何必顽抗',
-    ['$LuaJici1'] = '休要多言，只需听我一语',
-    ['$LuaJici2'] = '以我凤鹛之能，何惧所谓卧龙？',
-    ['~ExTenYearWanglang'] = '诸葛村夫，你竟如此……',
-    -- 赵襄-十周年
-    ['$LuaFanghun1'] = '龙胆虎威，摄敌胆寒',
-    ['$LuaFanghun2'] = '父亲的教导铭记心上',
-    ['$LuaFuhan1'] = '我知道，你们一直都在我身边',
-    ['$LuaFuhan2'] = '我也不会输给先辈们',
-    ['~ExTenYearZhaoxiang'] = '难道，真的都过去了吗？',
     -- 界钟会
     ['$LuaQuanji1'] = '备兵驯马，以待战机',
     ['$LuaQuanji2'] = '避其锋芒，权且忍让',
@@ -183,11 +165,6 @@ return {
     ['$LuaZhiyan1'] = '精兵当严于律己，束身自修！',
     ['$LuaZhiyan2'] = '治军严谨，方得精锐之师！',
     ['~ExStarXuhuang'] = '唉，明主未遇，大功未成……',
-    -- 关索-十周年
-    ['$LuaZhengnan'] = '先父大任，不敢忘怀！',
-    ['$LuaDangxian3'] = '我先行一步啦！',
-    ['$LuaZhiman'] = '大汉仁义，且放尔等一条生路！',
-    ['~ExTenYearGuansuo'] = '花开堪折直须折，莫待无花空折枝……',
     -- 星甘宁
     ['$LuaJinfan1'] = '扬锦帆，劫四方，快意逍遥！',
     ['$LuaJinfan2'] = '铃声所至之处，再无安宁！',
@@ -260,22 +237,10 @@ return {
     ['$LuaJiejiaxuWeimu1'] = '此伤与我无关',
     ['$LuaJiejiaxuWeimu2'] = '还是另寻他法吧！',
     ['~JieJiaxu'] = '此劫…我亦有所算！',
-    -- OL界荀彧
-    ['$LuaOLJieming1'] = '杀身成仁，不负皇恩',
-    ['$LuaOLJieming2'] = '因势利导，是为良计',
-    ['~OLJieXunyu'] = '命不由人，徒叹奈何……',
     -- 界夏侯惇
     ['$LuaQingjian1'] = '福生于清俭，德生于卑退！',
     ['$LuaQingjian2'] = '钱财，乃身外之物！',
     ['~JieXiahoudun'] = '诸多败绩，有负丞相重托！',
-    -- 曹金玉-十周年
-    ['$LuaYuqi1'] = '孤影独泣，困于隅角',
-    ['$LuaYuqi2'] = '向隅而泣，黯然伤感',
-    ['$LuaShanshen1'] = '好善为德，坚守本心',
-    ['$LuaShanshen2'] = '洁身自爱，独善其身',
-    ['$LuaXianjing1'] = '文静闲丽，举止柔美',
-    ['$LuaXianjing2'] = '娴静淡雅，温婉穆穆',
-    ['~ExTenYearCaojinyu'] = '平叔之情，吾岂不明…',
     -- 孙寒华
     ['$LuaChongxu1'] = '阳炁冲三关，斩尸除阴魔',
     ['$LuaChongxu2'] = '蒲团清静坐，神归了道真',
@@ -288,12 +253,6 @@ return {
     ['$LuaBingqing1'] = '常怀圣言，以是自励！',
     ['$LuaBingqing2'] = '身受贵宠，不忘初心！',
     ['~ExMaojie'] = '废立大事，公不可不慎……',
-    -- OL界华雄
-    ['$LuaOLYaowu1'] = '这些杂兵，我有何惧！',
-    ['$LuaOLYaowu2'] = '有吾在此，解太师烦忧',
-    ['$LuaOLShizhan1'] = '兀那汉子，且报上名来！',
-    ['$LuaOLShizhan2'] = '看你能坚持几个回合！',
-    ['~OLJieHuaxiong'] = '我掉以轻心了……',
     -- 裴秀
     ['$LuaXingtu1'] = '制图之体有六，缺一不可言精',
     ['$LuaXingtu2'] = '图设分率，则宇内地域皆可绘于一尺',
@@ -313,10 +272,4 @@ return {
     ['$LuaWanlanTongqu1'] = '挽狂澜于既倒，扶大厦于将倾！',
     ['$LuaWanlanTongqu2'] = '深受国恩，今日便是报偿之时！',
     ['~ExTongquJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
-    -- OL界赵云
-    ['$LuaOLLongdan1'] = '进退自如，游刃有余！',
-    ['$LuaOLLongdan2'] = '龙威虎胆，斩敌破阵！',
-    ['$LuaOLYajiao1'] = '遍寻天下，但求一败！',
-    ['$LuaOLYajiao2'] = '策马趋前，斩敌当先！',
-    ['~OLJieZhaoyun'] = '你们谁……还敢再上？',
 }

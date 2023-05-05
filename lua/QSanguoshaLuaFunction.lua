@@ -376,13 +376,14 @@ end
 -- room 当前 room
 -- from 来源角色
 -- to 目标角色
--- damage_value 伤害点数
+-- damage_value 伤害点数，默认为 1
 -- nature 伤害类型，默认为无属性
-function doDamage(room, from, to, damage_value, nature, card)
+function doDamage(from, to, damage_value, nature, card)
+    local room = to:getRoom()
     local theDamage = sgs.DamageStruct()
     theDamage.from = from
     theDamage.to = to
-    theDamage.damage = damage_value
+    theDamage.damage = damage_value or 1
     if not nature then
         nature = sgs.DamageStruct_Normal
     end
@@ -2400,6 +2401,27 @@ end
 
 function hasArmorEffect(player, armorName)
     return player:hasArmorEffect(armorName) or privateHasArmorEffect(player, armorName)
+end
+
+-- 添加隐藏技能，避免过多的 SkillAnjiang 武将（影响头像选择）
+function addSingleHiddenSkill(skillObject)
+    local skillName = skillObject:objectName()
+    local skillList = sgs.SkillList()
+    if not sgs.Sanguosha:getSkill(skillName) then
+        skillList:append(skillObject)
+    end
+    sgs.Sanguosha:addSkills(skillList)
+end
+
+function addHiddenSkills(skillTable)
+    local skillList = sgs.SkillList()
+    for _, skill in ipairs(skillTable) do
+        local skillName = skill:objectName()
+        if not sgs.Sanguosha:getSkill(skillName) then
+            skillList:append(skill)
+        end
+    end
+    sgs.Sanguosha:addSkills(skillList)
 end
 
 -- 手动修正

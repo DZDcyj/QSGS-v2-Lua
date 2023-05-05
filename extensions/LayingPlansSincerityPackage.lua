@@ -646,7 +646,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
         until (true)
         local len = self:subcardsLength()
         if len > 0 then
-            rinsan.doDamage(room, source, target, 1)
+            rinsan.doDamage(source, target, 1)
         end
         rinsan.addToAttackRange(room, target, source)
     end,

@@ -177,58 +177,6 @@ sgs.ai_skill_playerchosen['LuaYingyuan'] = function(self, targets)
     end
 end
 
--- 是否发动制蛮
-sgs.ai_skill_invoke.LuaZhiman = function(self, data)
-    local damage = data:toDamage()
-    local target = damage.to
-    if self:isFriend(target) then
-        if damage.damage == 1 and self:getDamagedEffects(target, self.player) then
-            return false
-        end
-        return true
-    else
-        if self:hasHeavySlashDamage(self.player, damage.card, target) then
-            return false
-        end
-        if self:isWeak(target) then
-            return false
-        end
-        if self:doNotDiscard(target, 'e', true) then
-            return false
-        end
-        if self:getDamagedEffects(target, self.player, true) or
-            (target:getArmor() and not target:getArmor():isKindOf('SilverLion')) then
-            return true
-        end
-        if self:getDangerousCard(target) then
-            return true
-        end
-        if target:getDefensiveHorse() then
-            return true
-        end
-        return false
-    end
-end
-
--- 征南选择
-sgs.ai_skill_choice['LuaZhengnan'] = function(self, choices)
-    local items = choices:split('+')
-    if #items == 1 then
-        return items[1]
-    else
-        if table.contains(items, 'LuaDangxian') then
-            return 'LuaDangxian'
-        end
-        if table.contains(items, 'zhiman') then
-            return 'LuaZhiman'
-        end
-        if table.contains(items, 'wusheng') then
-            return 'wusheng'
-        end
-    end
-    return items[1]
-end
-
 -- 精械
 -- 加强连弩和防具，但不考虑加强未装备的
 sgs.ai_use_value['LuaJingxieCard'] = 10
@@ -755,48 +703,6 @@ sgs.ai_skill_choice['LuaQianchong'] = function(self, choices, data)
     end
     return items[1]
 end
-
--- 王朗-十周年
--- 鼓舌
-local LuaGushe_skill = {}
-LuaGushe_skill.name = 'LuaGushe'
-table.insert(sgs.ai_skills, LuaGushe_skill)
-LuaGushe_skill.getTurnUseCard = function(self)
-    -- 防止自爆
-    if self.player:getMark('@LuaGushe') >= 6 or self.player:isKongcheng() then
-        return
-    end
-    if self.player:getMark('LuaGusheWin') >= 7 - self.player:getMark('@LuaGushe') then
-        return
-    end
-    for _, enemy in ipairs(self.enemies) do
-        if self.player:canPindian(enemy, 'LuaGushe') then
-            return sgs.Card_Parse('#LuaGusheCard:.:')
-        end
-    end
-end
-
-sgs.ai_skill_use_func['#LuaGusheCard'] = function(_card, use, self)
-    local cards = sgs.QList2Table(self.player:getCards('h'))
-    self:sortByUseValue(cards, true)
-    self:sort(self.enemies, 'handcard')
-    for _, enemy in ipairs(self.enemies) do
-        if self.player:canPindian(enemy, 'LuaGushe') then
-            if use.to and use.to:length() < 3 then
-                use.to:append(enemy)
-            end
-        end
-    end
-    for _, card in ipairs(cards) do
-        if not card:isKindOf('Peach') and not card:isKindOf('ExNihilo') and not card:isKindOf('Jink') or
-            (card:getNumber() <= self.player:getMark('@LuaGushe')) then
-            use.card = sgs.Card_Parse('#LuaGusheCard:' .. card:getId() .. ':')
-        end
-    end
-end
-
-sgs.ai_use_value['LuaGusheCard'] = sgs.ai_use_value.ExNihilo - 0.1
-sgs.ai_use_priority['LuaGusheCard'] = sgs.ai_use_priority.ExNihilo - 0.1
 
 -- 杨彪
 -- 让节
@@ -2137,51 +2043,6 @@ sgs.ai_card_intention.LuaPaiyiCard = function(self, card, from, tos)
         return
     end
     sgs.updateIntention(from, to, 60)
-end
-
--- 留赞-十周年
--- 力激 
-local LuaLiji_skill = {}
-LuaLiji_skill.name = 'LuaLiji'
-table.insert(sgs.ai_skills, LuaLiji_skill)
-LuaLiji_skill.getTurnUseCard = function(self, inclusive)
-    if self.player:isKongcheng() then
-        return nil
-    end
-    if self.player:usedTimes('#LuaLijiCard') >= self.player:getMark('LuaLijiAvailableTimes') then
-        return nil
-    end
-    local cards = self.player:getCards('he')
-    cards = sgs.QList2Table(cards)
-    self:sortByUseValue(cards, true)
-    return sgs.Card_Parse('#LuaLijiCard:' .. cards[1]:getEffectiveId() .. ':')
-end
-
-sgs.ai_skill_use_func['#LuaLijiCard'] = function(card, use, self)
-    local target
-    if #self.enemies <= 0 then
-        return
-    end
-    self:sort(self.enemies, 'defense')
-    for _, enemy in ipairs(self.enemies) do
-        if self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) then
-            target = enemy
-            break
-        end
-    end
-    if target then
-        local cards = sgs.QList2Table(self.player:getHandcards())
-        self:sortByKeepValue(cards)
-        use.card = sgs.Card_Parse('#LuaLijiCard:' .. cards[1]:getEffectiveId() .. ':')
-        if use.to then
-            use.to:append(target)
-        end
-    end
-end
-
-sgs.ai_card_intention.LuaLijiCard = function(self, card, from, tos)
-    local to = tos[1]
-    sgs.updateIntention(from, to, 80)
 end
 
 -- 张济

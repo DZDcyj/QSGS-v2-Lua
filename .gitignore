@@ -74,6 +74,11 @@ lang/zh_CN/Package/*.lua
 !ExpansionPackage.lua
 !ExpansionCardPackage.lua
 !ExtraordinaryPeoplePackage*
+!BeholdHighMountainPackage*
+!PrayFortunePackage*
+!BraveWarriorsPackage*
+!GoodMatchPackage*
+!OLBoundaryBreach*
 !ImpassePackage.lua
 !MajunEquipCardPackage.lua
 !GroupFriendPackage.lua
