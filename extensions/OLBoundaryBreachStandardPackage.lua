@@ -222,7 +222,7 @@ OLJieZhaoyun:addSkill(LuaOLLongdan)
 OLJieZhaoyun:addSkill(LuaOLYajiao)
 
 -- 界李典
-OLJieLidian = sgs.General(extension, 'OLJieLidian', 'wei', '4', true, true)
+OLJieLidian = sgs.General(extension, 'OLJieLidian', 'wei', '3', true, true)
 
 LuaOLWangxi = sgs.CreateTriggerSkill {
     name = 'LuaOLWangxi',
