@@ -91,7 +91,7 @@ function doMouShipoAsk(from, to)
         from:obtainCard(card, false)
         room:addPlayerMark(from, string.format('%s-%d-Clear', 'LuaMouShipo', card:getEffectiveId()))
     else
-        rinsan.doDamage(room, nil, to, 1)
+        rinsan.doDamage(nil, to, 1)
     end
     return card ~= nil
 end

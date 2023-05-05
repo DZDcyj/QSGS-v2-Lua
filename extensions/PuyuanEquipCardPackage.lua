@@ -84,10 +84,10 @@ thunder_blade_skill = sgs.CreateTriggerSkill {
                     room:judge(judge)
                     if judge:isGood() then
                         if judge.card:getSuit() == sgs.Card_Spade then
-                            rinsan.doDamage(room, player, t, 3, sgs.DamageStruct_Thunder)
+                            rinsan.doDamage(player, t, 3, sgs.DamageStruct_Thunder)
                             return
                         end
-                        rinsan.doDamage(room, player, t, 1, sgs.DamageStruct_Thunder)
+                        rinsan.doDamage(player, t, 1, sgs.DamageStruct_Thunder)
                         rinsan.recover(player, 1)
                         player:drawCards(1, self:objectName())
                     end

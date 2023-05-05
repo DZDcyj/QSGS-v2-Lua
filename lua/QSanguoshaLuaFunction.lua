@@ -376,13 +376,14 @@ end
 -- room 当前 room
 -- from 来源角色
 -- to 目标角色
--- damage_value 伤害点数
+-- damage_value 伤害点数，默认为 1
 -- nature 伤害类型，默认为无属性
-function doDamage(room, from, to, damage_value, nature, card)
+function doDamage(from, to, damage_value, nature, card)
+    local room = to:getRoom()
     local theDamage = sgs.DamageStruct()
     theDamage.from = from
     theDamage.to = to
-    theDamage.damage = damage_value
+    theDamage.damage = damage_value or 1
     if not nature then
         nature = sgs.DamageStruct_Normal
     end

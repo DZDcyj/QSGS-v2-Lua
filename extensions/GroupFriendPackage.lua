@@ -1909,7 +1909,7 @@ LuaManyan = sgs.CreateTriggerSkill {
             if choice == 'LuaManyanChain' then
                 room:setPlayerChained(victim)
             else
-                rinsan.doDamage(room, player, victim, 1, sgs.DamageStruct_Fire)
+                rinsan.doDamage(player, victim, 1, sgs.DamageStruct_Fire)
             end
         end
         if choice == 'LuaManyanChain' then

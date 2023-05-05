@@ -229,7 +229,7 @@ LuaMouQingzhengCard = sgs.CreateSkillCard {
         room:throwCard(dummy, target, source)
         room:clearAG(source)
         if dummy:subcardsLength() < self:subcardsLength() then
-            rinsan.doDamage(room, source, target, 1)
+            rinsan.doDamage(source, target, 1)
             local x = source:getMark('@LuaZhishi')
             if x < 2 and source:hasSkill('LuaMouJianxiong') then
                 if room:askForChoice(source, self:objectName(), 'GainLuaZhishiMark+cancel') ~= 'cancel' then

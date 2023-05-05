@@ -327,7 +327,7 @@ LuaXionghuo = sgs.CreateTriggerSkill {
                 room:broadcastSkillInvoke(self:objectName())
                 local choice = rinsan.random(1, 3)
                 if choice == 1 then
-                    rinsan.doDamage(room, nil, player, 1, sgs.DamageStruct_Fire)
+                    rinsan.doDamage(nil, player, 1, sgs.DamageStruct_Fire)
                     room:setPlayerFlag(player, 'XionghuoSlashPro')
                 elseif choice == 2 then
                     room:loseHp(player)
@@ -673,7 +673,7 @@ LuaLangxi = sgs.CreateTriggerSkill {
                     if value == 0 then
                         return false
                     end
-                    rinsan.doDamage(room, player, target, value)
+                    rinsan.doDamage(player, target, value)
                 end
             end
         end
@@ -2013,7 +2013,7 @@ LuaXuanfengCard = sgs.CreateSkillCard {
             local target = room:askForPlayerChosen(source, damageAvailable, 'LuaXuanfeng', 'LuaXuanfengDamage-choose',
                 true, true)
             if target then
-                rinsan.doDamage(room, source, target, 1)
+                rinsan.doDamage(source, target, 1)
                 room:broadcastSkillInvoke('LuaXuanfeng')
             end
         end
@@ -2866,7 +2866,7 @@ LuaFenchengCard = sgs.CreateSkillCard {
                 if not rinsan.canDiscard(p, p, 'he') or p:getCardCount(true) < length or
                     not room:askForDiscard(p, 'fencheng', 10000, length, true, true, '@fencheng:::' .. length) then
                     room:setTag('LuaFenchengDiscard', sgs.QVariant(0))
-                    rinsan.doDamage(room, source, p, 2, sgs.DamageStruct_Fire)
+                    rinsan.doDamage(source, p, 2, sgs.DamageStruct_Fire)
                 end
             end
         end
@@ -3079,7 +3079,7 @@ LuaDanshou = sgs.CreateTriggerSkill {
                             if room:askForDiscard(sp, 'LuaDanshou', num, num, true, true, '@LuaDanshou:::' .. num) then
                                 rinsan.skill(self, room, sp, true)
                                 room:doAnimate(rinsan.ANIMATE_INDICATE, sp:objectName(), player:objectName())
-                                rinsan.doDamage(room, sp, player, 1)
+                                rinsan.doDamage(sp, player, 1)
                             end
                         end
                     end
@@ -3480,7 +3480,7 @@ LuaLvemingCard = sgs.CreateSkillCard {
         })
         room:judge(judge)
         if judge.card:getNumber() == tonumber(chosenNum) then
-            rinsan.doDamage(room, source, target, 2)
+            rinsan.doDamage(source, target, 2)
         else
             local cards = target:getCards('hej')
             if not cards:isEmpty() then
@@ -3633,7 +3633,7 @@ LuaPaiyiCard = sgs.CreateSkillCard {
         room:drawCards(target, 2, 'LuaPaiyi')
         room:setPlayerFlag(target, 'LuaPaiyiUsedFlag')
         if target:getHandcardNum() > source:getHandcardNum() then
-            rinsan.doDamage(room, source, target, 1)
+            rinsan.doDamage(source, target, 1)
         end
     end,
 }
@@ -4152,9 +4152,9 @@ LuaQuhuCard = sgs.CreateSkillCard {
                 return
             end
             local wolf = room:askForPlayerChosen(source, wolves, 'LuaQuhu', '@quhu-damage:' .. tiger:objectName())
-            rinsan.doDamage(room, tiger, wolf, 1)
+            rinsan.doDamage(tiger, wolf, 1)
         else
-            rinsan.doDamage(room, tiger, source, 1)
+            rinsan.doDamage(tiger, source, 1)
         end
     end,
 }
@@ -4980,7 +4980,7 @@ LuaLeiji = sgs.CreateTriggerSkill {
                     '@LuaLeiji-choose-damage:' .. tostring(damageValue), true, true)
                 if target then
                     room:broadcastSkillInvoke(self:objectName())
-                    rinsan.doDamage(room, player, target, damageValue, sgs.DamageStruct_Thunder)
+                    rinsan.doDamage(player, target, damageValue, sgs.DamageStruct_Thunder)
                 end
             end
         else
@@ -5768,7 +5768,7 @@ LuaBingqing = sgs.CreateTriggerSkill {
                     room:throwCard(id, target, player)
                 end
             elseif count == 4 then
-                rinsan.doDamage(room, player, target, 1)
+                rinsan.doDamage(player, target, 1)
             end
         end
         return false
@@ -6524,7 +6524,7 @@ LuaFireAttack = sgs.CreateTrickCard {
         toDiscard = toDiscard or room:askForCard(source, pattern, prompt, sgs.QVariant(), sgs.Card_MethodNone)
         if toDiscard then
             room:throwCard(toDiscard, source)
-            rinsan.doDamage(room, source, target, 1, sgs.DamageStruct_Fire, self)
+            rinsan.doDamage(source, target, 1, sgs.DamageStruct_Fire, self)
         end
     end,
 }
