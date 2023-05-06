@@ -6662,3 +6662,89 @@ JieWolong:addSkill(LuaHuoji)
 JieWolong:addSkill(LuaKanpo)
 JieWolong:addSkill(LuaCangzhuo)
 SkillAnjiang:addSkill(LuaCangzhuoMaxCards)
+
+-- 界祝融
+JieZhurong = sgs.General(extension, 'JieZhurong', 'shu', '4', true, true)
+
+LuaJuxiang = sgs.CreateTriggerSkill {
+    name = 'LuaJuxiang',
+    events = {sgs.CardEffected, sgs.BeforeCardsMove},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardEffected then
+            local effect = data:toCardEffect()
+            if not player:hasSkill(self:objectName()) then
+                return false
+            end
+            if effect.card and effect.card:isKindOf('SavageAssault') then
+                room:broadcastSkillInvoke(self:objectName())
+                room:notifySkillInvoked(player, self:objectName())
+                rinsan.sendLogMessage(room, '#SkillNullify', {
+                    ['from'] = player,
+                    ['arg'] = self:objectName(),
+                    ['arg2'] = 'savage_assault',
+                })
+                return true
+            end
+        else
+            local move = data:toMoveOneTime()
+            if move.card_ids:length() == 1 and move.from_places:contains(sgs.Player_PlaceTable) and move.to_place ==
+                sgs.Player_DiscardPile and move.reason.m_reason == sgs.CardMoveReason_S_REASON_USE then
+                local card = sgs.Sanguosha:getCard(move.card_ids:first())
+                if player:objectName() ~= move.from:objectName() then
+                    if card:isVirtualCard() and card:subcardsLength() == 0 then
+                        return false
+                    end
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    player:obtainCard(card)
+                    move.card_ids = sgs.IntList()
+                    data:setValue(move)
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = targetTrigger,
+}
+
+LuaLieren = sgs.CreateTriggerSkill {
+    name = 'LuaLieren',
+    events = {sgs.TargetSpecified, sgs.Pindian},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.TargetSpecified then
+            local use = data:toCardUse()
+            if use.card and use.card:isKindOf('Slash') then
+                for _, t in sgs.qlist(use.to) do
+                    local data2 = sgs.QVariant()
+                    data2:setValue(t)
+                    if player:canPindian(t, self:objectName()) and
+                        room:askForSkillInvoke(player, self:objectName(), data2) then
+                        room:broadcastSkillInvoke(self:objectName())
+                        player:pindian(t, self:objectName())
+                    end
+                end
+            end
+        else
+            local pindian = data:toPindian()
+            if pindian.reason ~= self:objectName() then
+                return false
+            end
+            if pindian.success then
+                if not pindian.to:isNude() then
+                    local card_id = room:askForCardChosen(pindian.from, pindian.to, 'he', self:objectName(), false,
+                        sgs.Card_MethodNone)
+                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, pindian.from:objectName())
+                    room:obtainCard(pindian.from, sgs.Sanguosha:getCard(card_id), reason, false)
+                end
+            else
+                pindian.from:obtainCard(pindian.to_card)
+                pindian.to:obtainCard(pindian.from_card)
+            end
+        end
+        return false
+    end,
+}
+
+JieZhurong:addSkill(LuaJuxiang)
+JieZhurong:addSkill(LuaLieren)

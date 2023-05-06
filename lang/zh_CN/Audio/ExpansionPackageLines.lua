@@ -272,4 +272,10 @@ return {
     ['$LuaWanlanTongqu1'] = '挽狂澜于既倒，扶大厦于将倾！',
     ['$LuaWanlanTongqu2'] = '深受国恩，今日便是报偿之时！',
     ['~ExTongquJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
+    -- 界祝融
+    ['$LuaJuxiang1'] = '今日就让这群汉人长长见识',
+    ['$LuaJuxiang2'] = '我的大象终于有了用武之地',
+    ['$LuaLieren1'] = '有我手中飞刀在，何惧蜀军！',
+    ['$LuaLieren2'] = '长矛，飞刀，烈火，都来吧！',
+    ['~JieZhurong'] = '这群汉人使……诈……',
 }
