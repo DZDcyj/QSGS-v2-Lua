@@ -13,4 +13,8 @@ return {
     ['$LuaOLYajiao1'] = '遍寻天下，但求一败！',
     ['$LuaOLYajiao2'] = '策马趋前，斩敌当先！',
     ['~OLJieZhaoyun'] = '你们谁……还敢再上？',
+    -- 界李典
+    ['$LuaOLWangxi1'] = '大丈夫，何拘小节？',
+    ['$LuaOLWangxi2'] = '前尘往事，莫再提起',
+    ['~OLJieLidiann'] = '报国杀敌，虽死犹荣',
 }
