@@ -19,4 +19,10 @@ return {
     [':LuaOLYajiao'] = '当你于回合外使用或打出手牌时，你可以亮出牌堆顶的一张牌，然后若这两张牌：类别相同，你将之交给一名角色；类别不同，你可以弃置攻击范围内包含你的角色区域里的一张牌',
     ['LuaOLYajiao-discard'] = '你可以弃置攻击范围内包含你的角色区域里的一张牌',
     ['LuaOLYajiao-give'] = '你须令一名角色获得 %arg[%arg2]',
+    ['OLJieLidian'] = '界李典',
+    ['&OLJieLidian'] = '界李典',
+    ['#OLJieLidian'] = '深明大义',
+    ['LuaOLWangxi'] = '忘隙',
+    [':LuaOLWangxi'] = '当你对其他角色造成1点伤害后，或当你受到其他角色造成的1点伤害后，你可以摸两张牌，交给其一张牌',
+    ['LuaOLWangxi-Give'] = '你发动了“忘隙”，请交给 %src 一张牌',
 }
