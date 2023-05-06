@@ -6664,11 +6664,11 @@ JieWolong:addSkill(LuaCangzhuo)
 SkillAnjiang:addSkill(LuaCangzhuoMaxCards)
 
 -- 界祝融
-JieZhurong = sgs.General(extension, 'JieZhurong', 'shu', '4', true, true)
+JieZhurong = sgs.General(extension, 'JieZhurong', 'shu', '4', false, true)
 
 LuaJuxiang = sgs.CreateTriggerSkill {
     name = 'LuaJuxiang',
-    events = {sgs.CardEffected, sgs.BeforeCardsMove},
+    events = {sgs.CardEffected, sgs.BeforeCardsMove, sgs.CardUsed},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardEffected then
@@ -6686,20 +6686,29 @@ LuaJuxiang = sgs.CreateTriggerSkill {
                 })
                 return true
             end
+        elseif event == sgs.CardUsed then
+            local use = data:toCardUse()
+            if use.card:isKindOf('SavageAssault') then
+                if use.card:isVirtualCard() and (use.card:subcardsLength() ~= 1) then
+                    return false
+                end
+                if sgs.Sanguosha:getEngineCard(use.card:getEffectiveId()) and
+                    sgs.Sanguosha:getEngineCard(use.card:getEffectiveId()):isKindOf('SavageAssault') then
+                    room:setCardFlag(use.card:getEffectiveId(), 'real_SA')
+                end
+            end
         else
-            local move = data:toMoveOneTime()
-            if move.card_ids:length() == 1 and move.from_places:contains(sgs.Player_PlaceTable) and move.to_place ==
-                sgs.Player_DiscardPile and move.reason.m_reason == sgs.CardMoveReason_S_REASON_USE then
-                local card = sgs.Sanguosha:getCard(move.card_ids:first())
-                if player:objectName() ~= move.from:objectName() then
-                    if card:isVirtualCard() and card:subcardsLength() == 0 then
-                        return false
+            if rinsan.RIGHT(self, player) then
+                local move = data:toMoveOneTime()
+                if (move.card_ids:length() == 1) and move.from_places:contains(sgs.Player_PlaceTable) and
+                    (move.to_place == sgs.Player_DiscardPile) and
+                    (move.reason.m_reason == sgs.CardMoveReason_S_REASON_USE) then
+                    local card = sgs.Sanguosha:getCard(move.card_ids:first())
+                    if card:hasFlag('real_SA') and (player:objectName() ~= move.from:objectName()) then
+                        player:obtainCard(card)
+                        move.card_ids = sgs.IntList()
+                        data:setValue(move)
                     end
-                    room:sendCompulsoryTriggerLog(player, self:objectName())
-                    room:broadcastSkillInvoke(self:objectName())
-                    player:obtainCard(card)
-                    move.card_ids = sgs.IntList()
-                    data:setValue(move)
                 end
             end
         end
