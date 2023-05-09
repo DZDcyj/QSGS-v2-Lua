@@ -126,7 +126,7 @@ LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
             local numberTable = getRectificationStringTable(player, NUMBER_TAG)
             local suitTable = getRectificationStringTable(player, SUIT_TAG)
             local number = use.card:getNumber()
-            local suit = use.card:getSuit()
+            local suit = use.card:getSuitString()
             table.insert(numberTable, suitTable)
             setRectificationStringTable(player, NUMBER_TAG, numberTable)
             setRectificationStringTable(player, SUIT_TAG, suitTable)
@@ -158,7 +158,7 @@ LuaRectificationDiscardPhaseRecord = {
         local discardSuitTable = getRectificationStringTable(player, DISCARD_TAG)
         for _, id in sgs.qlist(move.card_ids) do
             local cd = sgs.Sanguosha:getCard(id)
-            table.insert(discardSuitTable, cd:getSuit())
+            table.insert(discardSuitTable, cd:getSuitString())
         end
         setRectificationStringTable(player, DISCARD_TAG, discardSuitTable)
         return false
