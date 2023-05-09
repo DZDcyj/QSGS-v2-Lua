@@ -6,9 +6,8 @@ extension = sgs.Package('RectificationPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
+-- 忽略本文件中未引用 global variable 的警告
+-- luacheck: push ignore 131
 
 local RECTIFICATION_CHOICES = {
     [1] = 'RectificationPackage_Leijin', -- 擂进
@@ -127,7 +126,8 @@ LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
             local suitTable = getRectificationStringTable(player, SUIT_TAG)
             local number = use.card:getNumber()
             local suit = use.card:getSuitString()
-            table.insert(numberTable, suitTable)
+            table.insert(numberTable, number)
+            table.insert(suitTable, suit)
             setRectificationStringTable(player, NUMBER_TAG, numberTable)
             setRectificationStringTable(player, SUIT_TAG, suitTable)
         end
@@ -167,3 +167,5 @@ LuaRectificationDiscardPhaseRecord = {
         return target and target:isAlive() and target:getPhase() == sgs.Player_Discard
     end,
 }
+
+-- luacheck: pop
