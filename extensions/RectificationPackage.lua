@@ -229,20 +229,74 @@ local function askForBonus(player)
     end
 end
 
+-- 首先获取对应的 Marks
+local function getRectificationMarks(player)
+    local marks = {}
+    for i = 1, 3, 1 do
+        local markPrefix = string.format('%s-%s', RECTIFICATION_CHOICES[i], player:objectName())
+        for _, mark in sgs.list(player:getMarkNames()) do
+            -- 必须显式 plain
+            if string.find(mark, markPrefix, 1, true) and player:getMark(mark) > 0 then
+                table.insert(marks, mark)
+            end
+        end
+    end
+    return marks
+end
+
+-- 默认 2 为整肃成功语音，3 为失败语音
+local function doRetification(player)
+    local room = player:getRoom()
+    -- 获取所有涉及到整肃的标记
+    local marks = getRectificationMarks(player)
+    for _, mark in ipairs(marks) do
+        local items = mark:split('-')
+        local choice = items[1] -- 整肃类型
+        local toName = items[2] -- 整肃执行者
+        local to = findPlayerByName(room, toName)
+        local fromName = items[3] -- 整肃发起者
+        local from = findPlayerByName(room, fromName)
+        if not from then
+            return
+        end
+        local skillName = items[4] -- 整肃技能名称
+        local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
+        if success then
+            room:broadcastSkillInvoke(skillName, 2)
+            rinsan.sendLogMessage(room, '#Rectification-Success', {
+                ['from'] = player,
+                ['to'] = from,
+                ['arg'] = skillName .. 'Rectification',
+            })
+            if fromName ~= toName then
+                askForBonus(from)
+                askForBonus(player)
+            else
+                local other = room:askForPlayerChosen(player, room:getOtherPlayers(player), 'RectificationBonus',
+                    'RectificationBonus-choose', true)
+                askForBonus(player)
+                if other then
+                    askForBonus(other)
+                end
+            end
+        else
+            rinsan.sendLogMessage(room, '#Rectification-Failure', {
+                ['from'] = player,
+                ['to'] = from,
+                ['arg'] = skillName .. 'Rectification',
+            })
+            room:broadcastSkillInvoke(skillName, 3)
+        end
+    end
+end
+
 LuaRectificationCheck = sgs.CreateTriggerSkill {
     name = 'LuaRectificationCheck',
     events = {sgs.EventPhaseChanging},
     global = true,
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().from == sgs.Player_Discard then
-            local success = doRetificationCheck(player)
-            for _, choice in ipairs(success) do
-                local askers = getAskerTableOfRetification(player, choice)
-                for _, asker in ipairs(askers) do
-                    askForBonus(asker)
-                    askForBonus(player)
-                end
-            end
+            doRetification(player)
             player:removeTag(DISCARD_TAG)
             player:removeTag(SUIT_TAG)
             player:removeTag(NUMBER_TAG)

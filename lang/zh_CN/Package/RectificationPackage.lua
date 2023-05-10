@@ -12,4 +12,6 @@ return {
     ['rectification:recover'] = '回复一点体力',
     ['rectification:draw'] = '摸两张牌',
     ['#Rectification-Choose'] = '%from 选择了 %arg，需要 %arg2',
+    ['#Rectification-Success'] = '%from 执行 %to 的 %arg <font color="green"><b>成功</b></font>',
+    ['#Rectification-Failure'] = '%from 执行 %to 的 %arg <font color="red"><b>失败</b></font>',
 }

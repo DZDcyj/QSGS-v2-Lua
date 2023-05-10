@@ -14,4 +14,5 @@ return {
     ['@LuaZhujunJuxiang'] = '拒降',
     ['LuaHoufeng'] = '厚俸',
     [':LuaHoufeng'] = '每轮限一次，一名角色的出牌阶段开始时，若其在你攻击范围内，你可以令其选择一项“整肃”，然后本回合的弃牌阶段结束后，若“整肃”未失败，你与其均获得“整肃”奖励',
+    ['LuaHoufengRectification'] = '厚俸整肃',
 }
