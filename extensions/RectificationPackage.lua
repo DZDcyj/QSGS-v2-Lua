@@ -6,8 +6,14 @@ extension = sgs.Package('RectificationPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+local function targetTrigger(self, target)
+    return target
+end
+
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
+
+local hiddenSkills = {}
 
 local RECTIFICATION_CHOICES = {
     [1] = 'RectificationPackage_Leijin', -- 擂进
@@ -42,14 +48,20 @@ local function askForRectificationChoice(player, skillName)
 end
 
 -- 询问整肃，暴露的外部接口
-function askForRetification(from, to, skillName)
+function askForRetification(from, to, skillName, isFromChoose)
     local room = from:getRoom()
-    local choice = askForRectificationChoice(from, skillName)
+    local chooser = isFromChoose and from or to
+    local choice = askForRectificationChoice(chooser, skillName)
+    rinsan.sendLogMessage(room, '#Rectification-Choose', {
+        ['from'] = to,
+        ['arg'] = choice,
+        ['arg2'] = ':' .. choice,
+    })
     -- 标记整肃类型
     room:addPlayerMark(to, choice)
     -- 标记整肃发起者
-    -- 标记规则：整肃选项-执行者-发起者
-    local mark = string.format('%s-%s-%s', choice, to:objectName(), from:objectName())
+    -- 标记规则：整肃选项-执行者-发起者-技能名称
+    local mark = string.format('%s-%s-%s-%s', choice, to:objectName(), from:objectName(), skillName)
     room:addPlayerMark(to, mark)
 end
 
@@ -114,6 +126,39 @@ function doRetificationCheck(player)
     return successChoices
 end
 
+local function findPlayerByName(room, name)
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        if p:objectName() == name then
+            return p
+        end
+    end
+    return nil
+end
+
+-- 外部接口，返回整肃选项的发起人 table
+function getAskerTableOfRetification(player, choice)
+    local avaiable_asker_names = {}
+    local askers = {}
+    local markPrefix = string.format('%s-%s', choice, player:objectName())
+    for _, mark in sgs.list(player:getMarkNames()) do
+        -- 必须显式 plain
+        if string.find(mark, markPrefix, 1, true) and player:getMark(mark) > 0 then
+            local name = mark:split('-')[3]
+            table.insert(avaiable_asker_names, name)
+        end
+    end
+    if #avaiable_asker_names > 0 then
+        local room = player:getRoom()
+        for _, name in ipairs(avaiable_asker_names) do
+            local asker = findPlayerByName(room, name)
+            if asker then
+                table.insert(askers, asker)
+            end
+        end
+    end
+    return askers
+end
+
 -- 出牌阶段用牌记录
 LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
     name = 'LuaRectificationPlayPhaseRecord',
@@ -138,10 +183,16 @@ LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
     end,
 }
 
+local function broadcastRetificationSkillInvoke(player, isSuccessful)
+    local index = isSuccessful and 2 or 3
+
+end
+
 -- 弃牌阶段弃牌记录
-LuaRectificationDiscardPhaseRecord = {
+LuaRectificationDiscardPhaseRecord = sgs.CreateTriggerSkill {
     name = 'LuaRectificationDiscardPhaseRecord',
     events = {sgs.CardsMoveOneTime},
+    global = true,
     on_trigger = function(self, event, player, data, room)
         local move = data:toMoveOneTime()
         local source = move.from
@@ -167,5 +218,49 @@ LuaRectificationDiscardPhaseRecord = {
         return target and target:isAlive() and target:getPhase() == sgs.Player_Discard
     end,
 }
+
+local function askForBonus(player)
+    local room = player:getRoom()
+    local choices = {}
+    if player:isWounded() then
+        table.insert(choices, 'rectification:recover')
+    end
+    table.insert(choices, 'rectification:draw')
+    local choice = room:askForChoice(player, 'RectificationBonus', table.concat(choices, '+'))
+    if choice == 'rectification:draw' then
+        player:drawCards(2, 'RectificationBonus')
+    else
+        rinsan.recover(player, 1)
+    end
+end
+
+LuaRectificationCheck = sgs.CreateTriggerSkill {
+    name = 'LuaRectificationCheck',
+    events = {sgs.EventPhaseChanging},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().from == sgs.Player_Discard then
+            local success = doRetificationCheck(player)
+            for _, choice in ipairs(success) do
+                local askers = getAskerTableOfRetification(player, choice)
+                for _, asker in ipairs(askers) do
+                    askForBonus(asker)
+                    askForBonus(player)
+                end
+            end
+            player:removeTag(DISCARD_TAG)
+            player:removeTag(SUIT_TAG)
+            player:removeTag(NUMBER_TAG)
+            rinsan.clearAllMarksContains(player, 'RectificationPackage')
+        end
+    end,
+    can_trigger = targetTrigger,
+}
+
+table.insert(hiddenSkills, LuaRectificationCheck)
+table.insert(hiddenSkills, LuaRectificationDiscardPhaseRecord)
+table.insert(hiddenSkills, LuaRectificationPlayPhaseRecord)
+
+rinsan.addHiddenSkills(hiddenSkills)
 
 -- luacheck: pop

@@ -8,4 +8,8 @@ return {
     [':RectificationPackage_Bianzhen'] = '出牌阶段内，使用过至少两张牌，且这些牌的花色均相同',
     ['RectificationPackage_Mingzhi'] = '鸣止',
     [':RectificationPackage_Mingzhi'] = '弃牌阶段内，弃置过至少两张牌，且这些牌的花色均不相同',
+    ['RectificationBonus'] = '整肃奖励',
+    ['rectification:recover'] = '回复一点体力',
+    ['rectification:draw'] = '摸两张牌',
+    ['#Rectification-Choose'] = '%from 选择了 %arg，需要 %arg2',
 }
