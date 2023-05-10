@@ -36,7 +36,7 @@ LuaFenyin = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    rinsan.clearAllMarksContains(room, p, self:objectName())
+                    rinsan.clearAllMarksContains(p, self:objectName())
                 end
             end
         end
@@ -109,7 +109,7 @@ LuaLiji = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    rinsan.clearAllMarksContains(room, p, self:objectName())
+                    rinsan.clearAllMarksContains(p, self:objectName())
                 end
             end
         end

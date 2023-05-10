@@ -1204,7 +1204,8 @@ function getLiegongSuitMarkName(card)
 end
 
 -- 清除 player 所有包含有 content 内容的 mark
-function clearAllMarksContains(room, player, content)
+function clearAllMarksContains(player, content)
+    local room = player:getRoom()
     for _, mark in sgs.list(player:getMarkNames()) do
         if string.find(mark, content) and player:getMark(mark) > 0 then
             room:setPlayerMark(player, mark, 0)
