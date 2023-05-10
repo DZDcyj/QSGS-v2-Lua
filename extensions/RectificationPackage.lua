@@ -183,11 +183,6 @@ LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
     end,
 }
 
-local function broadcastRetificationSkillInvoke(player, isSuccessful)
-    local index = isSuccessful and 2 or 3
-
-end
-
 -- 弃牌阶段弃牌记录
 LuaRectificationDiscardPhaseRecord = sgs.CreateTriggerSkill {
     name = 'LuaRectificationDiscardPhaseRecord',
