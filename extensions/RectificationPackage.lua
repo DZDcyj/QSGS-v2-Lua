@@ -114,18 +114,6 @@ local RECTIFICATION_CHECK_FUNCTIONS = {
     end,
 }
 
--- 外部接口，返回整肃成功选项的 table
-function doRetificationCheck(player)
-    local successChoices = {}
-    for _, choice in ipairs(RECTIFICATION_CHOICES) do
-        local checkFunc = RECTIFICATION_CHECK_FUNCTIONS[choice]
-        if checkFunc(player) then
-            table.insert(successChoices, choice)
-        end
-    end
-    return successChoices
-end
-
 local function findPlayerByName(room, name)
     for _, p in sgs.qlist(room:getAlivePlayers()) do
         if p:objectName() == name then
@@ -133,30 +121,6 @@ local function findPlayerByName(room, name)
         end
     end
     return nil
-end
-
--- 外部接口，返回整肃选项的发起人 table
-function getAskerTableOfRetification(player, choice)
-    local avaiable_asker_names = {}
-    local askers = {}
-    local markPrefix = string.format('%s-%s', choice, player:objectName())
-    for _, mark in sgs.list(player:getMarkNames()) do
-        -- 必须显式 plain
-        if string.find(mark, markPrefix, 1, true) and player:getMark(mark) > 0 then
-            local name = mark:split('-')[3]
-            table.insert(avaiable_asker_names, name)
-        end
-    end
-    if #avaiable_asker_names > 0 then
-        local room = player:getRoom()
-        for _, name in ipairs(avaiable_asker_names) do
-            local asker = findPlayerByName(room, name)
-            if asker then
-                table.insert(askers, asker)
-            end
-        end
-    end
-    return askers
 end
 
 -- 出牌阶段用牌记录
