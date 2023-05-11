@@ -74,7 +74,7 @@ local RECTIFICATION_CHECK_FUNCTIONS = {
         end
         -- 点数需要严格递增
         for i = 1, #leijinTable - 1, 1 do
-            if leijinTable[i] >= leijinTable[i + 1] then
+            if tonumber(leijinTable[i]) >= tonumber(leijinTable[i + 1]) then
                 return false
             end
         end
@@ -240,6 +240,7 @@ local function doRetification(player)
                     'RectificationBonus-choose', true)
                 askForBonus(player)
                 if other then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), other:objectName())
                     askForBonus(other)
                 end
             end
