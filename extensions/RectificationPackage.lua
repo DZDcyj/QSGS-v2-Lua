@@ -216,6 +216,7 @@ local function doRetification(player)
     for _, mark in ipairs(marks) do
         local items = mark:split('-')
         local choice = items[1] -- 整肃类型
+        local toName = items[2] -- 整肃执行者
         local fromName = items[3] -- 整肃发起者
         local from = findPlayerByName(room, fromName)
         if not from then
@@ -225,6 +226,7 @@ local function doRetification(player)
         local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
         if success then
             room:broadcastSkillInvoke(skillName, 2)
+            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Success', {
                 ['from'] = player,
                 ['to'] = from,
@@ -242,6 +244,7 @@ local function doRetification(player)
                 end
             end
         else
+            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Failure', {
                 ['from'] = player,
                 ['to'] = from,
