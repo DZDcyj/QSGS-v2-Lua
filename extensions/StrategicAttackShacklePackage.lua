@@ -233,7 +233,7 @@ LuaMouDuojingClear = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         for _, p in sgs.qlist(room:getAlivePlayers()) do
-            rinsan.clearAllMarksContains(room, p, 'LuaMouDuojing')
+            rinsan.clearAllMarksContains(p, 'LuaMouDuojing')
         end
     end,
     can_trigger = globalTrigger,

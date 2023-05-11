@@ -603,7 +603,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.QuitDying then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
-                rinsan.clearAllMarksContains(room, p, self:objectName())
+                rinsan.clearAllMarksContains(p, self:objectName())
             end
         end
         return false
@@ -766,7 +766,7 @@ LuaYinyu = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
-                rinsan.clearAllMarksContains(room, player, self:objectName())
+                rinsan.clearAllMarksContains(player, self:objectName())
             end
         end
         return false
@@ -1113,7 +1113,7 @@ LuaShaika = sgs.CreateTriggerSkill {
         elseif event == sgs.EventPhaseChanging then
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    rinsan.clearAllMarksContains(room, p, self:objectName())
+                    rinsan.clearAllMarksContains(p, self:objectName())
                 end
             end
         end
@@ -1624,7 +1624,7 @@ LuaJiarenClear = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     events = {sgs.TurnStart},
     on_trigger = function(self, event, player, data, room)
-        rinsan.clearAllMarksContains(room, player, 'LuaJiaren')
+        rinsan.clearAllMarksContains(player, 'LuaJiaren')
     end,
 }
 

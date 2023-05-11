@@ -742,7 +742,7 @@ LuaZishu = sgs.CreateTriggerSkill {
             end
             -- 自书弃牌完毕后移除所有玩家的自书弃牌标记
             for _, p in sgs.qlist(room:getAlivePlayers()) do
-                rinsan.clearAllMarksContains(room, p, self:objectName())
+                rinsan.clearAllMarksContains(p, self:objectName())
             end
         end
         return false
@@ -797,7 +797,7 @@ LuaYingyuanClear = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().to == sgs.Player_NotActive then
-            rinsan.clearAllMarksContains(room, player, self:objectName())
+            rinsan.clearAllMarksContains(player, self:objectName())
         end
         return false
     end,
@@ -2688,7 +2688,7 @@ LuaZhiyi = sgs.CreateTriggerSkill {
                                 end
                             end
                         end
-                        rinsan.clearAllMarksContains(room, sp, self:objectName())
+                        rinsan.clearAllMarksContains(sp, self:objectName())
                     end
                 end
             end

@@ -1211,7 +1211,7 @@ LuaMoushi = sgs.CreateTriggerSkill {
                     return true
                 end
             else
-                rinsan.clearAllMarksContains(room, player, self:objectName())
+                rinsan.clearAllMarksContains(player, self:objectName())
                 player:setTag('LuaMoushiPreDamageCard', sgs.QVariant(damage.card:getSuitString()))
                 local suitStr = rinsan.firstToUpper(damage.card:getSuitString())
                 room:setPlayerMark(player, string.format('@LuaMoushi%s', suitStr), 1)

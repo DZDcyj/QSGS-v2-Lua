@@ -826,7 +826,7 @@ LuaShenzhuClear = sgs.CreateTriggerSkill {
                 if p:getMark('LuaShenzhuForbid') > 0 then
                     room:removePlayerCardLimitation(p, 'use', 'Slash|.|.|.$1')
                 end
-                rinsan.clearAllMarksContains(room, p, 'LuaShenzhu')
+                rinsan.clearAllMarksContains(p, 'LuaShenzhu')
             end
         end
     end,

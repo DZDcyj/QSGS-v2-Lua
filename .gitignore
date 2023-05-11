@@ -93,6 +93,7 @@ lang/zh_CN/Package/*.lua
 !StrategicAttack*.lua
 !ShieldPackage.lua
 !ShieldPackageLines.lua
+!RectificationPackage*
 !thunder_blade*
 !tongyou_vine*
 !xiantian_eightdiagram*
