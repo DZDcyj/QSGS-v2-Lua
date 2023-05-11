@@ -88,7 +88,7 @@ LuaZhujunJuxiang = sgs.CreateTriggerSkill {
 }
 
 local function canInvokeLuaHoufeng(zhujun, player)
-    return zhujun:getMark('LuaHoufeng-Clear') == 0 and zhujun:inMyAttackRange(player)
+    return zhujun:getMark('LuaHoufeng_lun') == 0 and zhujun:inMyAttackRange(player)
 end
 
 LuaHoufeng = sgs.CreateTriggerSkill {
@@ -102,6 +102,7 @@ LuaHoufeng = sgs.CreateTriggerSkill {
                 if room:askForSkillInvoke(zhujun, self:objectName(), data2) then
                     room:broadcastSkillInvoke(self:objectName(), 1)
                     room:doAnimate(rinsan.ANIMATE_INDICATE, zhujun:objectName(), player:objectName())
+                    room:addPlayerMark(zhujun, 'LuaHoufeng_lun')
                     rectification.askForRetification(zhujun, player, self:objectName())
                 end
             end
