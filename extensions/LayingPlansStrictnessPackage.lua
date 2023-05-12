@@ -194,6 +194,7 @@ LuaShiji = sgs.CreateTriggerSkill {
             if room:askForSkillInvoke(player ,self:objectName(), data2) then
                 room:broadcastSkillInvoke(self:objectName())
                 room:showAllCards(damage.to, player)
+                room:getThread():delay(500)
                 local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                 for _, cd in sgs.qlist(damage.to:getHandcards()) do
                     if cd:isRed() then
@@ -201,9 +202,9 @@ LuaShiji = sgs.CreateTriggerSkill {
                     end
                 end
                 local len = dummy:subcardsLength()
-                room:throwCard(dummy, damage.to, player)
                 room:clearAG(player)
                 if len > 0 then
+                    room:throwCard(dummy, damage.to, player)
                     player:drawCards(len, self:objectName())
                 end
             end

@@ -178,14 +178,15 @@ LuaRectificationDiscardPhaseRecord = sgs.CreateTriggerSkill {
     end,
 }
 
-local function askForBonus(player)
+local function askForBonus(player, chooser)
     local room = player:getRoom()
+    chooser = chooser or player
     local choices = {}
     if player:isWounded() then
         table.insert(choices, 'rectification:recover')
     end
     table.insert(choices, 'rectification:draw')
-    local choice = room:askForChoice(player, 'RectificationBonus', table.concat(choices, '+'))
+    local choice = room:askForChoice(chooser, 'RectificationBonus', table.concat(choices, '+'))
     if choice == 'rectification:draw' then
         player:drawCards(2, 'RectificationBonus')
     else
@@ -224,9 +225,9 @@ local function doRetification(player)
         end
         local skillName = items[4] -- 整肃技能名称
         local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
+        room:notifySkillInvoked(from, skillName)
         if success then
             room:broadcastSkillInvoke(skillName, 2)
-            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Success', {
                 ['from'] = player,
                 ['to'] = from,
@@ -241,11 +242,10 @@ local function doRetification(player)
                 askForBonus(player)
                 if other then
                     room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), other:objectName())
-                    askForBonus(other)
+                    askForBonus(other, player)
                 end
             end
         else
-            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Failure', {
                 ['from'] = player,
                 ['to'] = from,
