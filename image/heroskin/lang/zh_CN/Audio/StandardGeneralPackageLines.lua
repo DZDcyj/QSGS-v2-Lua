@@ -317,4 +317,10 @@ return {
     ['$LuaSheque1-ExStarGanning_1'] = '量你多甲一件，又如何？',
     ['$LuaSheque2-ExStarGanning_1'] = '举弓劲射，贯却心扉！',
     ['~ExStarGanning-ExStarGanning_1'] = '刘表既不识，那复论黄祖！',
+    -- 苏飞
+    ['$LuaZhengjian1'] = '君可一展雄才，以使明公知之',
+    ['$LuaZhengjian2'] = '明公求贤若渴，故应该重用此君',
+    ['$LuaGaoyuan1'] = '望君可以美言几句',
+    ['$LuaGaoyuan2'] = '吾之性命，尽在兴霸定夺之间',
+    ['~ExSufei'] = '未能和兴霸兄同佐明主，实在是……',
 }
