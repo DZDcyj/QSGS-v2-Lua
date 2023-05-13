@@ -139,9 +139,28 @@ local NUMBERS = {
 
 LuaTaoluan = sgs.CreateTriggerSkill {
     name = 'LuaTaoluan',
-    events = {sgs.AskForRetrial},
+    events = {sgs.AskForRetrial, sgs.FinishJudge},
     on_trigger = function(self, event, player, data, room)
         local judge = data:toJudge()
+        if event == sgs.FinishJudge then
+            local huangfusongs = room:findPlayersBySkillName(self:objectName())
+            for _, huangfusong in sgs.qlist(huangfusongs) do
+                local tag = huangfusong:getTag('LuaTaoluanObtain')
+                if tag then
+                    local id = tag:toInt()
+                    if id == -1 then
+                        return false
+                    end
+                    local cd = sgs.Sanguosha:getCard(id)
+                    huangfusong:obtainCard(cd)
+                    huangfusong:setTag('LuaTaoluanObtain', sgs.QVariant(-1))
+                end
+            end
+            return false
+        end
+        if not rinsan.RIGHT(self, player) then
+            return false
+        end
         if judge.card:getSuit() == sgs.Card_Spade and player:getMark(self:objectName() .. '-Clear') == 0 then
             if room:askForSkillInvoke(player, self:objectName(), data) then
                 room:broadcastSkillInvoke(self:objectName())
@@ -159,7 +178,7 @@ LuaTaoluan = sgs.CreateTriggerSkill {
                 end
                 local choice = room:askForChoice(player, self:objectName(), table.concat(taoluan_choices, '+'))
                 if choice == 'LuaTaoluanObtain' then
-                    player:obtainCard(judge.card)
+                    player:setTag('LuaTaoluanObtain', sgs.QVariant(judge.card:getId()))
                 else
                     room:addPlayerMark(player, self:objectName() .. '-Clear')
                     local fire_slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
@@ -170,6 +189,7 @@ LuaTaoluan = sgs.CreateTriggerSkill {
         end
         return false
     end,
+    can_trigger = targetTrigger,
 }
 
 LuaShiji = sgs.CreateTriggerSkill {
@@ -191,7 +211,7 @@ LuaShiji = sgs.CreateTriggerSkill {
         if canInvoke then
             local data2 = sgs.QVariant()
             data2:setValue(damage.to)
-            if room:askForSkillInvoke(player ,self:objectName(), data2) then
+            if room:askForSkillInvoke(player, self:objectName(), data2) then
                 room:broadcastSkillInvoke(self:objectName())
                 room:showAllCards(damage.to, player)
                 room:getThread():delay(500)
@@ -223,7 +243,7 @@ LuaZhengjun = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
-    end
+    end,
 }
 
 ExHuangfusong:addSkill(LuaTaoluan)
