@@ -41,19 +41,30 @@ local function setRectificationStringTable(player, tagName, strTable)
 end
 
 -- 询问整肃选项
-local function askForRectificationChoice(player, skillName)
+local function askForRectificationChoice(player, skillName, to, ignoreChosen)
     local room = player:getRoom()
     skillName = skillName or ''
-    return room:askForChoice(player, skillName, table.concat(RECTIFICATION_CHOICES, '+'))
+    local choices = {}
+    if ignoreChosen then
+        choices = RECTIFICATION_CHOICES
+    else
+        for _, choice in ipairs(RECTIFICATION_CHOICES) do
+            if to:getMark(choice) == 0 then
+                table.insert(choices, choice)
+            end
+        end
+    end
+    return room:askForChoice(player, skillName, table.concat(choices, '+'))
 end
 
 -- 询问整肃，暴露的外部接口
-function askForRetification(from, to, skillName, isFromChoose)
+function askForRetification(from, to, skillName, isFromChoose, ignoreChosen)
     local room = from:getRoom()
     local chooser = isFromChoose and from or to
-    local choice = askForRectificationChoice(chooser, skillName)
+    local choice = askForRectificationChoice(chooser, skillName, to, ignoreChosen)
     rinsan.sendLogMessage(room, '#Rectification-Choose', {
-        ['from'] = to,
+        ['from'] = from,
+        ['to'] = to,
         ['arg'] = choice,
         ['arg2'] = ':' .. choice,
     })

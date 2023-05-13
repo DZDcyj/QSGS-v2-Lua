@@ -11,7 +11,7 @@ return {
     ['RectificationBonus'] = '整肃奖励',
     ['rectification:recover'] = '回复一点体力',
     ['rectification:draw'] = '摸两张牌',
-    ['#Rectification-Choose'] = '%from 选择了 %arg，需要 %arg2',
+    ['#Rectification-Choose'] = '%from 为 %to 选择了 %arg，需要在 %arg2',
     ['#Rectification-Success'] = '%from 执行 %to 的 %arg <font color="green"><b>成功</b></font>',
     ['#Rectification-Failure'] = '%from 执行 %to 的 %arg <font color="red"><b>失败</b></font>',
     ['RectificationBonus-choose'] = '你可以选择一名其他角色获得“整肃”奖励',

@@ -104,7 +104,7 @@ LuaHoufeng = sgs.CreateTriggerSkill {
                     room:broadcastSkillInvoke(self:objectName(), 1)
                     room:doAnimate(rinsan.ANIMATE_INDICATE, zhujun:objectName(), player:objectName())
                     room:addPlayerMark(zhujun, 'LuaHoufeng_lun')
-                    rectification.askForRetification(zhujun, player, self:objectName())
+                    rectification.askForRetification(zhujun, player, self:objectName(), true)
                 end
             end
         end
