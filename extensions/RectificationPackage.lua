@@ -62,7 +62,8 @@ function askForRetification(from, to, skillName, isFromChoose, ignoreChosen)
     local room = from:getRoom()
     local chooser = isFromChoose and from or to
     local choice = askForRectificationChoice(chooser, skillName, to, ignoreChosen)
-    rinsan.sendLogMessage(room, '#Rectification-Choose', {
+    local msgType = isFromChoose and '#Rectification-Choose' or '#Rectification-Self-Choose'
+    rinsan.sendLogMessage(room, msgType, {
         ['from'] = from,
         ['to'] = to,
         ['arg'] = choice,
