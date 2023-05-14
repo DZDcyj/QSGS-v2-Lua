@@ -153,8 +153,8 @@ LuaTaoluan = sgs.CreateTriggerSkill {
                     end
                     local cd = sgs.Sanguosha:getCard(id)
                     huangfusong:obtainCard(cd)
-                    huangfusong:setTag('LuaTaoluanObtain', sgs.QVariant(-1))
                 end
+                huangfusong:setTag('LuaTaoluanObtain', sgs.QVariant(-1))
             end
             return false
         end
