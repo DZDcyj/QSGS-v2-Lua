@@ -148,7 +148,7 @@ LuaTaoluan = sgs.CreateTriggerSkill {
                 local tag = huangfusong:getTag('LuaTaoluanObtain')
                 if tag then
                     local id = tag:toInt()
-                    if id <= 0 then
+                    if id < 0 then
                         return false
                     end
                     local cd = sgs.Sanguosha:getCard(id)
@@ -158,6 +158,8 @@ LuaTaoluan = sgs.CreateTriggerSkill {
             end
             return false
         end
+        -- 标包黑桃 7 的 id 为 0，手动赋初值 -1
+        player:setTag('LuaTaoluanObtain', sgs.QVariant(-1))
         if not rinsan.RIGHT(self, player) then
             return false
         end
