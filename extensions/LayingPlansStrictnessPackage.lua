@@ -148,7 +148,7 @@ LuaTaoluan = sgs.CreateTriggerSkill {
                 local tag = huangfusong:getTag('LuaTaoluanObtain')
                 if tag then
                     local id = tag:toInt()
-                    if id == -1 then
+                    if id <= 0 then
                         return false
                     end
                     local cd = sgs.Sanguosha:getCard(id)
