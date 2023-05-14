@@ -147,19 +147,18 @@ LuaTaoluan = sgs.CreateTriggerSkill {
             for _, huangfusong in sgs.qlist(huangfusongs) do
                 local tag = huangfusong:getTag('LuaTaoluanObtain')
                 if tag then
-                    local id = tag:toInt()
-                    if id < 0 then
-                        return false
+                    local ids = tag:toIntList()
+                    for _, id in sgs.qlist(ids) do
+                        local cd = sgs.Sanguosha:getCard(id)
+                        huangfusong:obtainCard(cd)
                     end
-                    local cd = sgs.Sanguosha:getCard(id)
-                    huangfusong:obtainCard(cd)
                 end
-                huangfusong:setTag('LuaTaoluanObtain', sgs.QVariant(-1))
+                local data2 = sgs.QVariant()
+                data2:setValue(sgs.IntList())
+                huangfusong:setTag('LuaTaoluanObtain', data2)
             end
             return false
         end
-        -- 标包黑桃 7 的 id 为 0，手动赋初值 -1
-        player:setTag('LuaTaoluanObtain', sgs.QVariant(-1))
         if not rinsan.RIGHT(self, player) then
             return false
         end
@@ -180,7 +179,11 @@ LuaTaoluan = sgs.CreateTriggerSkill {
                 end
                 local choice = room:askForChoice(player, self:objectName(), table.concat(taoluan_choices, '+'))
                 if choice == 'LuaTaoluanObtain' then
-                    player:setTag('LuaTaoluanObtain', sgs.QVariant(judge.card:getId()))
+                    local ids = player:getTag('LuaTaoluanObtain'):toIntList()
+                    ids:append(judge.card:getId())
+                    local data2 = sgs.QVariant()
+                    data2:setValue(ids)
+                    player:setTag('LuaTaoluanObtain', data2)
                 else
                     room:addPlayerMark(player, self:objectName() .. '-Clear')
                     local fire_slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)

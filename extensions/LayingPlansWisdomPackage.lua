@@ -759,10 +759,10 @@ LuaHuishiCard = sgs.CreateSkillCard {
             room:judge(judge)
             local card = judge.card
             dummy:addSubcard(card)
-            if table.contains(suits, string.lower(card:getSuitString())) then
+            if not judge:isGood() then
                 break
             else
-                table.insert(suits, string.lower(card:getSuitString()))
+                table.insert(suits, string.lower(judge.pattern))
                 rinsan.addPlayerMaxHp(source, 1)
             end
             if source:getMaxHp() < 10 and not room:askForSkillInvoke(source, 'LuaHuishi') then
@@ -789,7 +789,7 @@ LuaHuishiCard = sgs.CreateSkillCard {
     end,
 }
 
-LuaHuishi = sgs.CreateZeroCardViewAsSkill {
+LuaHuishiVS = sgs.CreateZeroCardViewAsSkill {
     name = 'LuaHuishi',
     view_as = function(self)
         return LuaHuishiCard:clone()
@@ -797,6 +797,22 @@ LuaHuishi = sgs.CreateZeroCardViewAsSkill {
     enabled_at_play = function(self, player)
         return (not player:hasUsed('#LuaHuishiCard')) and player:getMaxHp() < 10
     end,
+}
+
+LuaHuishi = sgs.CreateTriggerSkill {
+    name = 'LuaHuishi',
+    events = {sgs.FinishJudge},
+    view_as_skill = LuaHuishiVS,
+    on_trigger = function(self, event, player, data, room)
+        local judge = data:toJudge()
+        if judge.reason ~= self:objectName() then
+            return false
+        end
+        judge.pattern = judge.card:getSuitString()
+        data:setValue(judge)
+        return false
+    end,
+    can_trigger = targetTrigger,
 }
 
 LuaTianyi = sgs.CreateTriggerSkill {
