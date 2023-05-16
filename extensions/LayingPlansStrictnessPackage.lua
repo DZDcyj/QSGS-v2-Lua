@@ -233,8 +233,7 @@ LuaTaoluanFix = sgs.CreateTriggerSkill {
     events = {sgs.PreCardUsed, sgs.PreCardResponded},
 	global = true,
     on_trigger = function(self, event, player, data, room)
-        local card, struct
-		local invoke = true
+        local card
 		if event == sgs.PreCardUsed then
 			card = data:toCardUse().card
 		else
