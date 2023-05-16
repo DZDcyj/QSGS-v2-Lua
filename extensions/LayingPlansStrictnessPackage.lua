@@ -239,7 +239,7 @@ LuaTaoluanFix = sgs.CreateTriggerSkill {
 		else
 			card = data:toCardResponse().m_card
 		end
-        if card:getSkillName() == 'LuaTaoluan' then
+        if card:getSkillName() == 'LuaTaoluan' and not card:isVirtualCard() then
             room:filterCards(player, player:getCards('he'), true)
             if event == sgs.PreCardUsed then
                 local use = data:toCardUse()
