@@ -1544,6 +1544,14 @@ LuaFumoTargetMod = sgs.CreateTargetModSkill {
     end,
 }
 
+-- 桃色获取卡牌
+local function doTaoseGetCard(skill_name, room, source, flags, target)
+    if target:getCards(flags):length() > 0 then
+        local card_id = room:askForCardChosen(source, target, flags, skill_name, false, sgs.Card_MethodNone)
+        room:obtainCard(source, card_id, false)
+    end
+end
+
 LuaTaoseCard = sgs.CreateSkillCard {
     name = 'LuaTaoseCard',
     will_throw = false,
@@ -1554,9 +1562,9 @@ LuaTaoseCard = sgs.CreateSkillCard {
         room:notifySkillInvoked(source, 'LuaTaose')
         local target = targets[1]
         room:obtainCard(target, self:getSubcards():first())
-        rinsan.doTaoseGetCard('LuaTaose', room, source, 'h', target)
-        rinsan.doTaoseGetCard('LuaTaose', room, source, 'e', target)
-        rinsan.doTaoseGetCard('LuaTaose', room, source, 'j', target)
+        doTaoseGetCard('LuaTaose', room, source, 'h', target)
+        doTaoseGetCard('LuaTaose', room, source, 'e', target)
+        doTaoseGetCard('LuaTaose', room, source, 'j', target)
         if target:getGender() ~= source:getGender() then
             local slash = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, 0)
             slash:setSkillName('LuaTaose')

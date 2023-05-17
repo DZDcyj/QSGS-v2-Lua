@@ -16,13 +16,17 @@ local hiddenSkills = {}
 -- 谋于禁
 ExMouYujin = sgs.General(extension, 'ExMouYujin', 'wei', '4', true, true)
 
+-- 是否可以发动狭援
+local function canInvokeXiayuan(player)
+    return player:hasFlag('ShieldAllLost')
+end
+
 LuaMouXiayuan = sgs.CreateTriggerSkill {
     name = 'LuaMouXiayuan',
     events = {sgs.Damaged},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local invoke = rinsan.canInvokeXiayuan(player)
-        if invoke then
+        if canInvokeXiayuan(player) then
             room:setPlayerFlag(player, '-ShieldAllLost')
             local lostCount = player:getTag('ShieldLostCount'):toInt()
             for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
@@ -117,6 +121,24 @@ LuaMouKejiDiscardCard = sgs.CreateSkillCard {
     end,
 }
 
+-- 是否可以发动克己
+-- player 角色
+-- option 选项，填卡牌名
+local function canInvokeKeji(player, option)
+    -- 不能超过最大
+    if rinsan.getShieldCount(player) >= rinsan.MAX_SHIELD_COUNT then
+        return false
+    end
+    -- 觉醒了只能选一个
+    if player:getMark('LuaMouDujiang') > 0 then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) and (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    if (not option) then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) or (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    return not player:hasUsed(string.format('#%s', option))
+end
+
 LuaMouKeji = sgs.CreateViewAsSkill {
     name = 'LuaMouKeji',
     n = 1,
@@ -127,18 +149,18 @@ LuaMouKeji = sgs.CreateViewAsSkill {
         return not to_select:isEquipped()
     end,
     view_as = function(self, cards)
-        if #cards == 1 and rinsan.canInvokeKeji(sgs.Self, 'LuaMouKejiDiscardCard') then
+        if #cards == 1 and canInvokeKeji(sgs.Self, 'LuaMouKejiDiscardCard') then
             local vs_card = LuaMouKejiDiscardCard:clone()
             vs_card:addSubcard(cards[1])
             return vs_card
         end
-        if rinsan.canInvokeKeji(sgs.Self, 'LuaMouKejiLoseHpCard') then
+        if canInvokeKeji(sgs.Self, 'LuaMouKejiLoseHpCard') then
             return LuaMouKejiLoseHpCard:clone()
         end
         return nil
     end,
     enabled_at_play = function(self, player)
-        return rinsan.canInvokeKeji(player)
+        return canInvokeKeji(player)
     end,
 }
 

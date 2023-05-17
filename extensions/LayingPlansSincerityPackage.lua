@@ -667,6 +667,42 @@ LuaPoweiVS = sgs.CreateViewAsSkill {
     end,
 }
 
+-- 封装方法用于轮回标记
+local function moveLuaPoweiMark(currentPlayer)
+    local room = currentPlayer:getRoom()
+    room:sendCompulsoryTriggerLog(currentPlayer, 'LuaPowei')
+    local froms = sgs.SPlayerList()
+    local maxIndex = room:alivePlayerCount() - 1
+    local targetMap = {}
+    -- 首先确定要动的来源
+    for i = 1, maxIndex do
+        local curr = currentPlayer:getNextAlive(i)
+        if curr:getMark('@LuaPowei') > 0 then
+            froms:append(curr)
+        end
+    end
+    -- 确认移动到的目标
+    for _, from in sgs.qlist(froms) do
+        for i = 1, maxIndex do
+            local curr = from:getNextAlive(i)
+            if not curr:hasSkill('LuaPowei') then
+                targetMap[from:objectName()] = i
+                goto label
+            end
+        end
+        ::label::
+    end
+    for _, from in sgs.qlist(froms) do
+        local toIndex = targetMap[from:objectName()]
+        if not toIndex then
+            return
+        end
+        local to = from:getNextAlive(toIndex)
+        room:removePlayerMark(from, '@LuaPowei')
+        room:addPlayerMark(to, '@LuaPowei')
+    end
+end
+
 LuaPoweiHelper = sgs.CreateTriggerSkill {
     name = 'LuaPoweiHelper',
     events = {sgs.GameStart, sgs.Damaged, sgs.EventPhaseStart, sgs.EventPhaseChanging},
@@ -709,7 +745,7 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
                     rinsan.removeFromAttackRange(room, player, stsc)
                 end
                 if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
-                    rinsan.moveLuaPoweiMark(player)
+                    moveLuaPoweiMark(player)
                 end
             end
         end

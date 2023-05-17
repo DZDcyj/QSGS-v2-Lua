@@ -18,9 +18,21 @@ BossMark = 'LuaBoss'
 -- 已经进入暴走状态标记
 BaozouStatusMark = 'LuaBaozou'
 
-local boss_can_trigger = function(self, target)
-    return target and target:isAlive() and rinsan.bossSkillEnabled(target, self:objectName(), BossMark)
+-- 判断是否可以使用 BOSS 技能
+local function bossSkillEnabled(player, skill_name, mark_name)
+    return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
 end
+
+-- 判断是否可以发动 BOSS 技能
+local boss_can_trigger = function(self, target)
+    return target and target:isAlive() and bossSkillEnabled(target, self:objectName(), BossMark)
+end
+
+-- 判断是否处于暴走状态
+local function isBaozou(player)
+    return player:getMark('LuaBaozou') > 0
+end
+
 
 -- BOSS 技能
 
@@ -32,7 +44,7 @@ LuaSilve = sgs.CreateTriggerSkill {
     events = {sgs.DrawNCards},
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
-        if rinsan.isBaozou(player) then
+        if isBaozou(player) then
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if not p:isNude() then
                     local id = room:askForCardChosen(player, p, 'he', self:objectName())
@@ -58,7 +70,7 @@ LuaKedi = sgs.CreateTriggerSkill {
     events = {sgs.Damaged},
     on_trigger = function(self, event, player, data, room)
         local x = player:getHp()
-        if rinsan.isBaozou(player) then
+        if isBaozou(player) then
             x = room:alivePlayerCount()
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
@@ -82,7 +94,7 @@ LuaJishi = sgs.CreateTriggerSkill {
         if player:getPhase() == sgs.Player_Start then
             local x = player:getHp()
             local loseHpNum = 1
-            if rinsan.isBaozou(player) then
+            if isBaozou(player) then
                 x = player:getMaxHp() + room:alivePlayerCount()
                 loseHpNum = 2
             end
@@ -106,7 +118,7 @@ LuaJishi = sgs.CreateTriggerSkill {
 LuaJishiMaxCards = sgs.CreateMaxCardsSkill {
     name = '#LuaJishiMaxCards',
     fixed_func = function(self, target)
-        if rinsan.bossSkillEnabled(target, 'LuaJishi', BossMark) and rinsan.isBaozou(target) then
+        if bossSkillEnabled(target, 'LuaJishi', BossMark) and isBaozou(target) then
             return target:getAliveSiblings():length() + 1
         end
         return -1
@@ -129,7 +141,7 @@ LuaDaji = sgs.CreateTriggerSkill {
             if player:getPhase() == sgs.Player_Finish then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local x = player:getHp()
-                if rinsan.isBaozou(player) then
+                if isBaozou(player) then
                     x = room:alivePlayerCount()
                 end
                 player:drawCards(x, self:objectName())
@@ -142,7 +154,7 @@ LuaDaji = sgs.CreateTriggerSkill {
                 data:setValue(damage)
             end
         elseif event == sgs.TargetConfirmed then
-            if (not rinsan.isBaozou(player)) or (not player:isWounded()) then
+            if (not isBaozou(player)) or (not player:isWounded()) then
                 return false
             end
             local use = data:toCardUse()
@@ -168,7 +180,7 @@ table.insert(hiddenSkills, LuaDaji)
 LuaGuzhan = sgs.CreateTargetModSkill {
     name = 'LuaGuzhan',
     residue_func = function(self, player)
-        if rinsan.bossSkillEnabled(player, self:objectName(), BossMark) and rinsan.isBaozou(player) and
+        if bossSkillEnabled(player, self:objectName(), BossMark) and isBaozou(player) and
             not player:getWeapon() then
             return 1000
         else
@@ -217,7 +229,7 @@ LuaJizhan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return boss_can_trigger(self, target) and rinsan.isBaozou(target)
+        return boss_can_trigger(self, target) and isBaozou(target)
     end,
 }
 
@@ -228,7 +240,7 @@ table.insert(hiddenSkills, LuaJizhan)
 LuaDuduan = sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
     is_prohibited = function(self, from, to, card)
-        if rinsan.bossSkillEnabled(to, self:objectName(), BossMark) and rinsan.isBaozou(to) then
+        if bossSkillEnabled(to, self:objectName(), BossMark) and isBaozou(to) then
             return card:isKindOf('DelayedTrick')
         end
     end,

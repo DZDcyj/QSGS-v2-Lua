@@ -77,6 +77,31 @@ LuaFanghun = sgs.CreateTriggerSkill {
     end,
 }
 
+-- 获取可扶汉的武将 Table
+-- 暂时没有排除已获得所有技能的武将
+local function getFuhanShuGenerals(general_num)
+    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
+    local shu_generals = {}
+    for _, name in ipairs(general_names) do
+        local general = sgs.Sanguosha:getGeneral(name)
+        if general:getKingdom() == 'shu' then
+            if not table.contains(shu_generals, name) then
+                table.insert(shu_generals, name)
+            end
+        end
+    end
+    local available_generals = {}
+    local i = 0
+    while i < general_num do
+        i = i + 1
+        local index = random(1, #shu_generals)
+        local selected = shu_generals[index]
+        table.insert(available_generals, selected)
+        table.removeOne(shu_generals, shu_generals[index])
+    end
+    return available_generals
+end
+
 LuaFuhan = sgs.CreateTriggerSkill {
     name = 'LuaFuhan',
     events = {sgs.EventPhaseStart},
@@ -91,7 +116,7 @@ LuaFuhan = sgs.CreateTriggerSkill {
                     player:loseAllMarks('@LuaFanghun')
                     player:loseMark('@LuaFuhan')
                     player:drawCards(x, self:objectName())
-                    local shu_generals = rinsan.getFuhanShuGenerals(math.max(4, room:alivePlayerCount()))
+                    local shu_generals = getFuhanShuGenerals(math.max(4, room:alivePlayerCount()))
                     local index = 0
                     while index < 2 and #shu_generals > 0 and
                         room:askForChoice(player, self:objectName(), 'LuaFuhan+cancel') ~= 'cancel' do

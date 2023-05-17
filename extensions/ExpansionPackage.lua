@@ -1347,6 +1347,150 @@ LuaQiaosiCard = sgs.CreateSkillCard {
     end,
 }
 
+-- 巧思获得牌的类型判断
+local function LuaGetRoleCardType(roleType, kingActivated, generalActivated)
+    local map = {
+        ['king'] = {
+            'TrickCard',
+            'TrickCard',
+        },
+        ['general'] = {
+            'EquipCard',
+            'EquipCard',
+        },
+        ['artisan'] = {
+            'Slash',
+            'Slash',
+            'Slash',
+            'Slash',
+            'Analeptic',
+        },
+        ['farmer'] = {
+            'Jink',
+            'Jink',
+            'Jink',
+            'Jink',
+            'Peach',
+        },
+        ['scholar'] = {
+            'TrickCard',
+            'TrickCard',
+            'TrickCard',
+            'TrickCard',
+            'JinkOrPeach',
+        },
+        ['scholarKing'] = {
+            'Peach',
+            'Peach',
+            'Peach',
+            'Peach',
+            'Jink',
+        },
+        ['merchant'] = {
+            'EquipCard',
+            'EquipCard',
+            'EquipCard',
+            'EquipCard',
+            'SlashOrAnaleptic',
+        },
+        ['merchantGeneral'] = {
+            'Analeptic',
+            'Analeptic',
+            'Analeptic',
+            'Analeptic',
+            'Slash',
+        },
+    }
+    if roleType == 'scholar' and kingActivated then
+        roleType = roleType .. 'King'
+    end
+    if roleType == 'merchant' and generalActivated then
+        roleType = roleType .. 'General'
+    end
+    return map[roleType]
+end
+
+-- 巧思获得牌
+local function LuaQiaosiGetCards(room, roleType)
+    -- 王、商、工、农、士、将
+    -- King、Merchant、Artisan、Farmer、Scholar、General
+    -- roleType 代表转的人类型，为 Table 类型
+    -- 例如{'king', 'artisan', 'general'}
+    local results = {}
+    local kingActivated = table.contains(roleType, 'king')
+    local generalActivated = table.contains(roleType, 'general')
+    for _, type in ipairs(roleType) do
+        local cardTypes = LuaGetRoleCardType(type, kingActivated, generalActivated)
+        table.insert(results, cardTypes)
+    end
+    return results
+end
+
+-- 巧思封装函数
+local function LuaDoQiaosiShow(player, dummyCard)
+    local room = player:getRoom()
+    local choices = {'king', 'merchant', 'artisan', 'farmer', 'scholar', 'general', 'cancel'}
+    local chosenRoles = {}
+    local index = 0
+    local continuePlaying = true
+    while index < 3 and continuePlaying do
+        local choice = room:askForChoice(player, 'LuaQiaosi', table.concat(choices, '+'))
+        if choice == 'cancel' then
+            continuePlaying = false
+        end
+        table.removeOne(choices, choice)
+        table.insert(chosenRoles, choice)
+        index = index + 1
+    end
+    local toGiveCardTypes = LuaQiaosiGetCards(room, chosenRoles)
+    local about_to_obtain = {}
+    -- 预期的总牌数
+    local expected_length = 0
+    for _, cardTypes in ipairs(toGiveCardTypes) do
+        local params = {
+            ['existed'] = about_to_obtain,
+            ['findDiscardPile'] = true,
+        }
+        if #cardTypes == 2 then
+            -- 确定的，王、将
+            params['type'] = cardTypes[1]
+            local card1 = obtainTargetedTypeCard(room, params)
+            expected_length = expected_length + 2
+            if card1 then
+                table.insert(about_to_obtain, card1:getId())
+                dummyCard:addSubcard(card1)
+                local card2 = obtainTargetedTypeCard(room, params)
+                if card2 then
+                    table.insert(about_to_obtain, card2:getId())
+                    dummyCard:addSubcard(card2)
+                end
+            end
+        else
+            -- 不确定的，要抽奖
+            local currType = random(1, 5)
+            expected_length = expected_length + 1
+            local type = cardTypes[currType]
+            if string.find(type, 'JinkOrPeach') then
+                type = LuaGetRoleCardType('scholarKing', true, true)
+            elseif string.find(type, 'SlashOrAnaleptic') then
+                type = LuaGetRoleCardType('merchantGeneral', true, true)
+            end
+            params['type'] = type
+            local card = obtainTargetedTypeCard(room, params)
+            if card then
+                table.insert(about_to_obtain, card:getId())
+                dummyCard:addSubcard(card)
+            end
+        end
+    end
+    player:obtainCard(dummyCard)
+    -- 直接从牌堆顶获取差额牌
+    if dummyCard:subcardsLength() < expected_length then
+        dummyCard:addSubcards(room:getNCards(expected_length - dummyCard:subCardsLength()))
+    end
+    return dummyCard:subcardsLength()
+end
+
 LuaQiaosiStartCard = sgs.CreateSkillCard {
     name = 'LuaQiaosiStartCard',
     target_fixed = true,
@@ -1355,7 +1499,7 @@ LuaQiaosiStartCard = sgs.CreateSkillCard {
         room:broadcastSkillInvoke('LuaQiaosi')
         room:notifySkillInvoked(source, 'LuaQiaosi')
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        local marks = rinsan.LuaDoQiaosiShow(source, dummy)
+        local marks = LuaDoQiaosiShow(source, dummy)
         if marks > 0 then
             room:addPlayerMark(source, 'LuaQiaosiCardsNum', marks)
             room:addPlayerMark(source, 'LuaQiaosiGiven')
@@ -3336,6 +3480,24 @@ LuaJuliao = sgs.CreateDistanceSkill {
     end,
 }
 
+-- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
+local function obtainOneCardAndGiveToOtherPlayer(self, from, card_source)
+    local room = from:getRoom()
+    local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
+    from:obtainCard(sgs.Sanguosha:getCard(card_id), false)
+    local targets = room:getOtherPlayers(card_source)
+    if targets:contains(from) then
+        targets:removeOne(from)
+    end
+    local togive = room:askForPlayerChosen(from, targets, self:objectName(),
+        '@LuaTaomie-give:' .. card_source:objectName(), true, true)
+    if togive then
+        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, from:objectName(), togive:objectName(),
+            self:objectName(), nil)
+        room:moveCardTo(sgs.Sanguosha:getCard(card_id), from, togive, sgs.Player_PlaceHand, reason, false)
+    end
+end
+
 LuaTaomie = sgs.CreateTriggerSkill {
     name = 'LuaTaomie',
     events = {sgs.Damage, sgs.Damaged, sgs.DamageCaused},
@@ -3398,13 +3560,13 @@ LuaTaomie = sgs.CreateTriggerSkill {
                 elseif choice == 'getOneCard' then
                     room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
                     if not damage.to:isAllNude() then
-                        rinsan.obtainOneCardAndGiveToOtherPlayer(self, room, player, damage.to)
+                        obtainOneCardAndGiveToOtherPlayer(self, player, damage.to)
                     end
                 elseif choice == 'removeMark' then
                     damage.damage = damage.damage + 1
                     room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
                     if not damage.to:isAllNude() then
-                        rinsan.obtainOneCardAndGiveToOtherPlayer(self, room, player, damage.to)
+                        obtainOneCardAndGiveToOtherPlayer(self, player, damage.to)
                     end
                     room:addPlayerMark(player, self:objectName() .. 'Delay')
                 end
@@ -3555,6 +3717,31 @@ ExZhangji:addSkill(LuaTunjun)
 
 JieZhonghui = sgs.General(extension, 'JieZhonghui', 'wei', '4', true)
 
+-- 权计摸牌放牌
+local function doQuanji(skillName, player, room, times)
+    times = times or 1
+    local index = 0
+    while index < times do
+        if player:askForSkillInvoke(skillName) then
+            room:drawCards(player, 1, skillName)
+            room:broadcastSkillInvoke(skillName)
+            if not player:isKongcheng() then
+                local card_id
+                if player:getHandcardNum() == 1 then
+                    card_id = player:handCards():first()
+                    room:getThread():delay()
+                else
+                    card_id = room:askForExchange(player, skillName, 1, 1, false, 'QuanjiPush'):getSubcards():first()
+                end
+                player:addToPile('power', card_id)
+            end
+        else
+            break
+        end
+        index = index + 1
+    end
+end
+
 LuaQuanji = sgs.CreateTriggerSkill {
     name = 'LuaQuanji',
     frequency = sgs.Skill_Frequent,
@@ -3563,11 +3750,11 @@ LuaQuanji = sgs.CreateTriggerSkill {
         if event == sgs.EventPhaseEnd then
             if player:getPhase() == sgs.Player_Play then
                 if player:getHp() < player:getHandcardNum() then
-                    rinsan.doQuanji(self:objectName(), player, room)
+                    doQuanji(self:objectName(), player, room)
                 end
             end
         else
-            rinsan.doQuanji(self:objectName(), player, room, data:toDamage().damage)
+            doQuanji(self:objectName(), player, room, data:toDamage().damage)
         end
     end,
 }
@@ -5031,6 +5218,11 @@ JieZhangjiao:addSkill('huangtian')
 
 ExYuantanYuanshang = sgs.General(extension, 'ExYuantanYuanshang', 'qun', '4', true, true)
 
+-- 获取内伐不可使用手牌数
+local function getNeifaUnavailableCardCount(player)
+    return math.min(rinsan.getUnavailableHandcardCount(player), 5)
+end
+
 LuaNeifaCard = sgs.CreateSkillCard {
     name = 'LuaNeifaCard',
     filter = function(self, selected, to_select)
@@ -5059,7 +5251,7 @@ LuaNeifaCard = sgs.CreateSkillCard {
                 end
                 room:setPlayerFlag(source, flag)
                 room:setPlayerCardLimitation(source, 'use', limit_prompt .. '|.|.|.', true)
-                local x = rinsan.getNeifaUnavailableCardCount(source)
+                local x = getNeifaUnavailableCardCount(source)
                 room:setPlayerMark(source, '@LuaNeifaCount', x)
             end
         end

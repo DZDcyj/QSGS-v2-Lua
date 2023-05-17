@@ -1,6 +1,5 @@
 -- 限定-高山仰止包
 -- Created by DZDcyj at 2023/5/2
-
 module('extensions.BeholdHighMountainPackage', package.seeall)
 extension = sgs.Package('BeholdHighMountainPackage')
 
@@ -177,6 +176,33 @@ LuaGushe = sgs.CreateTriggerSkill {
     end,
 }
 
+-- 激词收回大点数牌
+local function getBackPindianCardByJici(pindian, isFrom)
+    local player
+    if isFrom then
+        player = pindian.from
+    else
+        player = pindian.to
+    end
+    local room = player:getRoom()
+    if pindian.from_number > pindian.to_number then
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+    elseif pindian.from_number < pindian.to_number then
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    else
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    end
+end
+
 LuaJici = sgs.CreateTriggerSkill {
     name = 'LuaJici',
     events = {sgs.PindianVerifying, sgs.Death},
@@ -191,7 +217,7 @@ LuaJici = sgs.CreateTriggerSkill {
                     room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.from_number = pindian.from_number + pindian.from:getMark('@LuaGushe')
-                    rinsan.getBackPindianCardByJici(pindian, true)
+                    getBackPindianCardByJici(pindian, true)
                     obtained = true
                 end
             end
@@ -201,7 +227,7 @@ LuaJici = sgs.CreateTriggerSkill {
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.to_number = pindian.to_number + pindian.to:getMark('@LuaGushe')
                     if not obtained then
-                        rinsan.getBackPindianCardByJici(pindian, false)
+                        getBackPindianCardByJici(pindian, false)
                     end
                 end
             end
