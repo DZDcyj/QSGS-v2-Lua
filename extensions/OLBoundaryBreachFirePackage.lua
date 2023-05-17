@@ -3,9 +3,6 @@
 module('extensions.OLBoundaryBreachFirePackage', package.seeall)
 extension = sgs.Package('OLBoundaryBreachFirePackage')
 
--- 引入封装函数包
-local rinsan = require('QSanguoshaLuaFunction')
-
 OLJieXunyu = sgs.General(extension, 'OLJieXunyu', 'wei', '3', true, true)
 
 -- 封装函数【节命】OL
