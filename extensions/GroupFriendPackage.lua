@@ -31,6 +31,7 @@ Linxi = sgs.General(extension, 'Linxi', 'qun', '3', false, true)
 Ajie = sgs.General(extension, 'Ajie', 'wei', '3', true)
 Shatang = sgs.General(extension, 'Shatang', 'qun', '4', true, true)
 Dalaojiang = sgs.General(extension, 'Dalaojiang', 'qun', '3', true, true)
+Zhongliao = sgs.General(extension, 'Zhongliao', 'shu', '3', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -1927,6 +1928,211 @@ LuaManyan = sgs.CreateTriggerSkill {
     end,
 }
 
+LuaBaijia = sgs.CreateTriggerSkill {
+    name = 'LuaBaijia',
+    events = {sgs.CardUsed, sgs.CardResponded},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            card = data:toCardResponse().m_card
+        end
+        if card and (not card:isKindOf('SkillCard')) then
+            room:setPlayerCardLimitation(player, 'discard', card:toString(), false)
+            local available_cards = {}
+            for _, cd in sgs.qlist(player:getCards('he')) do
+                if not player:isCardLimited(cd, sgs.Card_MethodDiscard) then
+                    table.insert(available_cards, cd)
+                end
+            end
+            if #available_cards > 0 then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                if not room:askForDiscard(player, self:objectName(), 1, 1, false, true, '@LuaBaijia-Discard') then
+                    local c = available_cards[rinsan.random(1, #available_cards)]
+                    room:throwCard(c, player)
+                end
+            end
+            room:removePlayerCardLimitation(player, 'discard', card:toString() .. '$0')
+        end
+    end,
+}
+
+-- 锐评技能组
+local RUIPING_SKILLS = {
+    [1] = 'chouhai', -- 仇海
+    [2] = 'shiyong', -- 恃勇
+    [3] = 'LuaBaijia', -- 败家
+    [4] = 'yingzi', -- 英姿（新）
+    [5] = 'bosszuijiu', -- 醉酒（BOSS 战）
+}
+
+-- 是否可以通过锐评获取技能
+local function canAcquireSkill(player, skillName)
+    -- 已有技能则不可以选择
+    if player:hasSkill(skillName) then
+        return false
+    end
+    -- 本回合内已经获取过技能了
+    if player:getMark('LuaRuiping-Clear') > 0 then
+        return false
+    end
+    return true
+end
+
+LuaRuipingCard = sgs.CreateSkillCard {
+    name = 'LuaRuiping',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        local choices = {}
+        for _, skill in ipairs(RUIPING_SKILLS) do
+            table.insert(choices, skill)
+        end
+        table.insert(choices, 'cancel')
+        local choice = room:askForChoice(source, self:objectName(), table.concat(choices, '+'))
+        if choice ~= 'cancel' then
+            table.insert(choices, choice)
+        end
+        table.removeOne(choices, 'cancel')
+        local randomSkill = choices[rinsan.random(1, #choices)]
+        rinsan.sendLogMessage(room, '#LuaRuiping', {
+            ['from'] = source,
+            ['arg'] = randomSkill,
+        })
+        local available_targets = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if canAcquireSkill(p, randomSkill) then
+                available_targets:append(p)
+            end
+        end
+        if available_targets:isEmpty() then
+            return
+        end
+        local prompt = string.format('%s:%s', 'LuaRuiping-Choose', randomSkill)
+        local target = room:askForPlayerChosen(source, available_targets, self:objectName(), prompt)
+        if target then
+            room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), target:objectName())
+            room:addPlayerMark(target, self:objectName() .. '-Clear')
+            room:addPlayerMark(target, self:objectName() .. randomSkill)
+            room:addPlayerMark(target, source:objectName() .. self:objectName() .. randomSkill)
+            room:acquireSkill(target, randomSkill)
+        end
+    end,
+}
+
+LuaRuipingVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaRuiping',
+    view_as = function(self, cards)
+        return LuaRuipingCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:usedTimes('#LuaRuiping') < 2
+    end,
+}
+
+LuaRuiping = sgs.CreateTriggerSkill {
+    name = 'LuaRuiping',
+    events = {sgs.EventPhaseChanging},
+    view_as_skill = LuaRuipingVS,
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to == sgs.Player_NotActive then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                for _, skill in ipairs(RUIPING_SKILLS) do
+                    local flagMark = player:objectName() .. self:objectName() .. skill
+                    if p:getMark(flagMark) > 0 then
+                        room:setPlayerMark(p, flagMark, 0)
+                    else
+                        local mark = self:objectName() .. skill
+                        if p:getMark(mark) > 0 then
+                            room:setPlayerMark(p, mark, 0)
+                            room:detachSkillFromPlayer(p, skill)
+                        end
+                    end
+                end
+            end
+        end
+    end,
+}
+
+LuaJiuwenCard = sgs.CreateSkillCard {
+    name = 'LuaJiuwen',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return rinsan.canDiscard(sgs.Self, to_select, 'he')
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        for _, p in ipairs(targets) do
+            local card_id = room:askForCardChosen(source, p, 'he', self:objectName(), false, sgs.Card_MethodDiscard)
+            room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), p:objectName())
+            room:throwCard(card_id, p, source)
+            room:addPlayerMark(p, self:objectName())
+        end
+        room:addPlayerMark(source, 'LuaJiuwen-Chosen', #targets)
+    end,
+}
+
+LuaJiuwenVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaJiuwen',
+    view_as = function(self)
+        return LuaJiuwenCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, target, pattern)
+        return pattern == '@@LuaJiuwen'
+    end,
+}
+
+LuaJiuwen = sgs.CreateTriggerSkill {
+    name = 'LuaJiuwen',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaJiuwenVS,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Start then
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                if rinsan.canDiscard(player, p, 'he') then
+                    room:askForUseCard(player, '@@LuaJiuwen', '@LuaJiuwen')
+                    break
+                end
+            end
+        elseif player:getPhase() == sgs.Player_Finish then
+            local x = player:getMark('LuaJiuwen-Chosen')
+            room:setPlayerMark(player, 'LuaJiuwen-Chosen', 0)
+            player:drawCards(x, self:objectName())
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                if p:getMark(self:objectName()) > 0 then
+                    if player:isNude() then
+                        break
+                    end
+                    if p:objectName() ~= player:objectName() then
+                        local prompt = string.format('LuaJiuwen-Give:%s', p:objectName())
+                        local card = room:askForExchange(player, self:objectName(), 1, 1, true, prompt)
+                        p:obtainCard(card, false)
+                    end
+                end
+                room:setPlayerMark(p, self:objectName(), 0)
+            end
+        end
+    end,
+}
+
+LuaJiuwenDamaged = sgs.CreateTriggerSkill {
+    name = 'LuaJiuwenDamaged',
+    events = {sgs.Damaged},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getMark('LuaJiuwen') > 0 then
+            room:setPlayerMark(player, 'LuaJiuwen', 0)
+        end
+    end,
+    can_trigger = globalTrigger,
+}
+
 Cactus:addSkill(LuaBaipiao)
 SkillAnjiang:addSkill(LuaGeidian)
 SkillAnjiang:addSkill(LuaWanneng)
@@ -1973,3 +2179,10 @@ SkillAnjiang:addSkill(LuaXiandengStart)
 SkillAnjiang:addSkill(LuaXiandengTargetMod)
 Dalaojiang:addSkill(LuaYishi)
 Dalaojiang:addSkill(LuaManyan)
+Zhongliao:addSkill(LuaRuiping)
+Zhongliao:addSkill(LuaJiuwen)
+SkillAnjiang:addSkill(LuaBaijia)
+for _, relateSkill in ipairs(RUIPING_SKILLS) do
+    Zhongliao:addRelateSkill(relateSkill)
+end
+SkillAnjiang:addSkill(LuaJiuwenDamaged)
