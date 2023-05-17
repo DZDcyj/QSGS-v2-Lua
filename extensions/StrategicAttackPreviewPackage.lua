@@ -6,10 +6,6 @@ extension = sgs.Package('StrategicAttackPreviewPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -189,7 +185,7 @@ LuaMouJianxiongStart = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouQingzhengCard = sgs.CreateSkillCard {

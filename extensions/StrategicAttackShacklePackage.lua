@@ -6,14 +6,6 @@ extension = sgs.Package('StrategicAttackShacklePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -47,7 +39,7 @@ LuaMouXiayuan = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouXiayuanClear = sgs.CreateTriggerSkill {
@@ -57,7 +49,7 @@ LuaMouXiayuanClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         room:setPlayerMark(player, string.format('%s%s', 'LuaMouXiayuan', player:objectName()), 0)
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouJieyue = sgs.CreateTriggerSkill {
@@ -238,7 +230,7 @@ LuaMouDuojingClear = sgs.CreateTriggerSkill {
             rinsan.clearAllMarksContains(p, 'LuaMouDuojing')
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouDuojingTargetMod = sgs.CreateTargetModSkill {
@@ -407,7 +399,7 @@ LuaQixiTrigger = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaFenweiCard = sgs.CreateSkillCard {
@@ -492,7 +484,7 @@ LuaFenwei = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 -- 替换原版【过河拆桥】
@@ -541,7 +533,7 @@ LuaQicaiHotfix = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExMouGanning:addSkill(LuaQixi)
@@ -654,7 +646,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLiegongMark = sgs.CreateTriggerSkill {
@@ -697,7 +689,7 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLiegongAttackMod = sgs.CreateTargetModSkill {
@@ -866,7 +858,7 @@ LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMouZhaxiangTargetMod = sgs.CreateTargetModSkill {

@@ -7,6 +7,16 @@ module('QSanguoshaLuaFunction', package.seeall)
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
 
+-- 通用 targetTrigger
+function targetTrigger(self, target)
+    return target
+end
+
+-- 通用 globalTrigger
+function globalTrigger(self, target)
+    return true
+end
+
 -- 蛊惑类技能通用 enabled_at_play
 function guhuoVSSkillEnabledAtPlay(self, player)
     local current = false

@@ -6,10 +6,6 @@ extension = sgs.Package('DevineForcePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -339,7 +335,7 @@ LuaShencai = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShencaiMaxCards = sgs.CreateMaxCardsSkill {

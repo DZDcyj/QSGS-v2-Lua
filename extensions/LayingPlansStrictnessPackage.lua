@@ -7,10 +7,6 @@ extension = sgs.Package('LayingPlansStrictnessPackage')
 local rinsan = require('QSanguoshaLuaFunction')
 local rectification = require('extensions.RectificationPackage')
 
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 朱儁
 ExZhujun = sgs.General(extension, 'ExZhujun', 'qun', '4', true, true)
 
@@ -85,7 +81,7 @@ LuaZhujunJuxiang = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 local function canInvokeLuaHoufeng(zhujun, player)

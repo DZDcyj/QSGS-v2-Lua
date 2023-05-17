@@ -15,10 +15,6 @@ local START_SHIELDS = {
     ['ExMouCaoren'] = 1,
 }
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 护甲结算
 LuaShield = sgs.CreateTriggerSkill {
     name = 'LuaShield',
@@ -103,7 +99,7 @@ LuaShield = sgs.CreateTriggerSkill {
         room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         return true
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 -- 护甲初始化
@@ -118,7 +114,7 @@ LuaShieldInit = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, rinsan.SHIELD_MARK, math.min(rinsan.MAX_SHIELD_COUNT, first + second))
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 -- 修正神甘宁魄袭多弃牌问题
@@ -138,7 +134,7 @@ LuaPoxiHotFix = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 table.insert(hiddenSkills, LuaShield)

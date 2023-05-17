@@ -6,14 +6,6 @@ extension = sgs.Package('LayingPlansWisdomPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -183,7 +175,7 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaDingyiAttackRange = sgs.CreateAttackRangeSkill {
@@ -561,7 +553,7 @@ LuaShanxi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExWangcan:addSkill(LuaQiai)
@@ -617,7 +609,7 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaLingce = sgs.CreateTriggerSkill {
@@ -636,7 +628,7 @@ LuaLingce = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaDinghan = sgs.CreateTriggerSkill {
@@ -814,7 +806,7 @@ LuaHuishi = sgs.CreateTriggerSkill {
         data:setValue(judge)
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaTianyi = sgs.CreateTriggerSkill {
@@ -861,7 +853,7 @@ LuaTianyiDamaged = sgs.CreateTriggerSkill {
             room:addPlayerMark(player, string.format('LuaDamagedBy%s', damage.from:objectName()))
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLimitHuishiCard = sgs.CreateSkillCard {
@@ -1203,7 +1195,7 @@ LuaChenshi = sgs.CreateTriggerSkill {
             doChenshi(target, event == sgs.TargetSpecified)
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMoushi = sgs.CreateTriggerSkill {
@@ -1315,7 +1307,7 @@ LuaJianyuDraw = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShengxi = sgs.CreateTriggerSkill {

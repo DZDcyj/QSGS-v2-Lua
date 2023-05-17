@@ -6,10 +6,6 @@ extension = sgs.Package('RectificationPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
 
@@ -281,7 +277,7 @@ LuaRectificationCheck = sgs.CreateTriggerSkill {
             rinsan.clearAllMarksContains(player, 'RectificationPackage')
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 table.insert(hiddenSkills, LuaRectificationCheck)

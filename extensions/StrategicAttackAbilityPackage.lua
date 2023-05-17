@@ -6,10 +6,6 @@ extension = sgs.Package('StrategicAttackAbilityPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -123,7 +119,7 @@ LuaMouyangweiBuff = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 ExMouHuaxiong:addSkill(LuaMouYaowu)
@@ -231,7 +227,7 @@ LuaMouJieyinAwakeHelper = sgs.CreateTriggerSkill {
             room:acquireSkill(mousunshangxiang, 'LuaMouXiaoji')
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouJieyinStart = sgs.CreateTriggerSkill {
@@ -252,7 +248,7 @@ LuaMouJieyinStart = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouJieyin = sgs.CreateTriggerSkill {

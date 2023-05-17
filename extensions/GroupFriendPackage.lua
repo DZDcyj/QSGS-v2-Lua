@@ -6,14 +6,6 @@ extension = sgs.Package('GroupFriendPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -90,7 +82,7 @@ LuaBaipiao = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaGeidianCard = sgs.CreateSkillCard {
@@ -615,7 +607,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMouhai = sgs.CreateTriggerSkill {
@@ -874,7 +866,7 @@ LuaJiaoxie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaShulian = sgs.CreateTriggerSkill {
@@ -991,7 +983,7 @@ LuaZhazhi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaJueding = sgs.CreateTriggerSkill {
@@ -1045,7 +1037,7 @@ LuaJueding = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaShaikaCard = sgs.CreateSkillCard {
@@ -1125,7 +1117,7 @@ LuaShaika = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaChutou = sgs.CreateTriggerSkill {
@@ -1181,7 +1173,7 @@ LuaChutou = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaYingshi = sgs.CreateTriggerSkill {
@@ -1308,7 +1300,7 @@ LuaTianfa = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaZhixieCard = sgs.CreateSkillCard {
@@ -1377,7 +1369,7 @@ LuaZhixie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaJixie = sgs.CreateTriggerSkill {
@@ -1735,7 +1727,7 @@ LuaXiandengStart = sgs.CreateTriggerSkill {
             room:setTag('TurnLengthCount', sgs.QVariant(currTurn))
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaXiandengTargetMod = sgs.CreateTargetModSkill {
@@ -2136,7 +2128,7 @@ LuaJiuwenDamaged = sgs.CreateTriggerSkill {
             room:setPlayerMark(player, 'LuaJiuwen', 0)
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 Cactus:addSkill(LuaBaipiao)

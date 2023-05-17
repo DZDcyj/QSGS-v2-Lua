@@ -438,9 +438,7 @@ LuaBaozou = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = rinsan.targetTrigger,
 }
 
 table.insert(hiddenSkills, LuaBaozou)
@@ -535,9 +533,7 @@ LuaImpasseArmor = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = rinsan.targetTrigger,
 }
 
 table.insert(hiddenSkills, LuaImpasseArmor)

@@ -7,10 +7,6 @@ extension = sgs.Package('BeholdHighMountainPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 王朗
 ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true)
 
@@ -231,7 +227,7 @@ LuaJici = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExTenYearWanglang:addSkill(LuaGushe)

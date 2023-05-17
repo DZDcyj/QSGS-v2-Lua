@@ -6,10 +6,6 @@ extension = sgs.Package('GoodMatchPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 曹金玉
 ExTenYearCaojinyu = sgs.General(extension, 'ExTenYearCaojinyu', 'wei', '3', false, true)
 
@@ -108,7 +104,7 @@ LuaYuqi = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaYuqiClear = sgs.CreateTriggerSkill {
@@ -123,7 +119,7 @@ LuaYuqiClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShanshen = sgs.CreateTriggerSkill {

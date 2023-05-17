@@ -6,14 +6,6 @@ extension = sgs.Package('ExpansionPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 隐藏技能添加
 local hiddenSkills = {}
 
@@ -32,7 +24,7 @@ LuaFakeMove = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 table.insert(hiddenSkills, LuaFakeMove)
@@ -155,7 +147,7 @@ LuaQianchongClear = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, 'LuaQianchongCard', 0)
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaWeimu = sgs.CreateProhibitSkill {
@@ -255,7 +247,7 @@ LuaShangjian = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExWangyuanji:addSkill(LuaQianchong)
@@ -376,7 +368,7 @@ LuaXionghuoHelper = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShajue = sgs.CreateTriggerSkill {
@@ -400,7 +392,7 @@ LuaShajue = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExXurong:addSkill(LuaXionghuo)
@@ -497,7 +489,7 @@ LuaLingrenAIInitializer = sgs.CreateTriggerSkill {
         end
         room:setTag('LuaLingrenAIInitialized', sgs.QVariant(true))
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaLingrenHelper = sgs.CreateTriggerSkill {
@@ -747,7 +739,7 @@ LuaZishu = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaYingyuan = sgs.CreateTriggerSkill {
@@ -801,7 +793,7 @@ LuaYingyuanClear = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExMaliang:addSkill(LuaZishu)
@@ -954,7 +946,7 @@ LuaZhongzuo = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaWanlan = sgs.CreateTriggerSkill {
@@ -1249,7 +1241,7 @@ LuaQianxiClear = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 JieMadai:addSkill(LuaMashu)
@@ -1325,7 +1317,7 @@ LuaJingxieStart = sgs.CreateTriggerSkill {
             room:setTag('MajunEquipsRemoved', sgs.QVariant(true))
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaQiaosiCard = sgs.CreateSkillCard {
@@ -1591,7 +1583,7 @@ LuaTunchuHelper = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShuliangCard = sgs.CreateSkillCard {
@@ -1637,7 +1629,7 @@ LuaShuliang = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExLifeng:addSkill(LuaTunchu)
@@ -1954,7 +1946,7 @@ LuaShuangxiongCardHandler = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 JieYanliangWenchou:addSkill(LuaShuangxiong)
@@ -2218,7 +2210,7 @@ LuaShouye = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaShouyeClear = sgs.CreateTriggerSkill {
@@ -2232,7 +2224,7 @@ LuaShouyeClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShouyeRecycle = sgs.CreateTriggerSkill {
@@ -2311,7 +2303,7 @@ LuaShouyeEffected = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLiezhiCard = sgs.CreateSkillCard {
@@ -2611,7 +2603,7 @@ LuaYizheng = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExYangbiao:addSkill(LuaZhaohan)
@@ -2711,7 +2703,7 @@ LuaZhiyi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExZhangyi:addSkill(LuaZhiyi)
@@ -2758,7 +2750,7 @@ LuaJuece = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMiejiCard = sgs.CreateSkillCard {
@@ -2897,7 +2889,7 @@ LuaFencheng = sgs.CreateTriggerSkill {
         room:setTag('LuaFenchengDiscard', sgs.QVariant(#dataStr[3]:split('+')))
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 JieLiru:addSkill(LuaJuece)
@@ -3090,7 +3082,7 @@ LuaDanshou = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 JieZhuran:addSkill(LuaDanshou)
@@ -3444,7 +3436,7 @@ LuaTaomieMark = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 ExGongsunkang:addSkill(LuaJuliao)
@@ -3874,7 +3866,7 @@ LuaSheque = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExStarGanning:addSkill(LuaJinfan)
@@ -4120,7 +4112,7 @@ LuaFaen = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 JieChenqun:addSkill(LuaDingpin)
@@ -4249,7 +4241,7 @@ LuaZhengjian = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaGaoyuan = sgs.CreateTriggerSkill {
@@ -4437,7 +4429,7 @@ LuaLonghun = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExShenZhaoyun:addSkill(LuaJuejing)
@@ -4731,7 +4723,7 @@ LuaPianchong = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaZunweiCard = sgs.CreateSkillCard {
@@ -5233,7 +5225,7 @@ LuaWansha = sgs.CreateTriggerSkill {
             })
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaWanshaClear = sgs.CreateTriggerSkill {
@@ -5251,7 +5243,7 @@ LuaWanshaClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLuanwuCard = sgs.CreateSkillCard {
@@ -5338,7 +5330,7 @@ LuaJiejiaxuWeimuDamagePrevent = sgs.CreateTriggerSkill {
         end
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill('LuaJiejiaxuWeimu')
+        return rinsan.RIGHT(self, target, 'LuaJiejiaxuWeimu')
     end,
 }
 
@@ -5495,7 +5487,7 @@ LuaQingjianClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 JieXiahoudun:addSkill('ganglie')
@@ -5667,7 +5659,7 @@ LuaMiaojian = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLianhua = sgs.CreateTriggerSkill {
@@ -6005,7 +5997,7 @@ LuaYijinStart = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaYijin = sgs.CreateTriggerSkill {
@@ -6137,7 +6129,7 @@ LuaYijinEffect = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaYijinMaxCards = sgs.CreateMaxCardsSkill {
@@ -6244,7 +6236,7 @@ LuaGuanzongDamageDone = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 ExCaosong:addSkill(LuaYijin)
@@ -6353,7 +6345,7 @@ LuaTongqu = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaTongquStart = sgs.CreateTriggerSkill {
@@ -6373,7 +6365,7 @@ LuaTongquStart = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaWanlanTongqu = sgs.CreateTriggerSkill {
@@ -6403,7 +6395,7 @@ LuaWanlanTongqu = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExTongquJiakui:addSkill(LuaTongqu)
@@ -6554,7 +6546,7 @@ LuaHuoji = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaKanpoVS = sgs.CreateOneCardViewAsSkill {
@@ -6595,7 +6587,7 @@ LuaKanpo = sgs.CreateTriggerSkill {
             return true
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaCangzhuo = sgs.CreateTriggerSkill {
@@ -6714,7 +6706,7 @@ LuaJuxiang = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLieren = sgs.CreateTriggerSkill {
