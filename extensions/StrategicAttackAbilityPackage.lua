@@ -6,14 +6,16 @@ extension = sgs.Package('StrategicAttackAbilityPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 local function globalTrigger(self, target)
     return true
 end
+
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 
 -- 谋华雄
 ExMouHuaxiong = sgs.General(extension, 'ExMouHuaxiong', 'qun', '4', true, true, false, 3)
@@ -126,8 +128,8 @@ LuaMouyangweiBuff = sgs.CreateTriggerSkill {
 
 ExMouHuaxiong:addSkill(LuaMouYaowu)
 ExMouHuaxiong:addSkill(LuaMouYangwei)
-SkillAnjiang:addSkill(LuaMouYangweiTargetMod)
-SkillAnjiang:addSkill(LuaMouyangweiBuff)
+table.insert(hiddenSkills, LuaMouYangweiTargetMod)
+table.insert(hiddenSkills, LuaMouyangweiBuff)
 
 -- 谋孙尚香
 ExMouSunshangxiang = sgs.General(extension, 'ExMouSunshangxiang', 'shu', '4', false, true)
@@ -370,6 +372,8 @@ LuaMouXiaoji = sgs.CreateTriggerSkill {
 ExMouSunshangxiang:addSkill(LuaMouLiangzhu)
 ExMouSunshangxiang:addSkill(LuaMouJieyin)
 ExMouSunshangxiang:addRelateSkill('LuaMouXiaoji')
-SkillAnjiang:addSkill(LuaMouJieyinAwakeHelper)
-SkillAnjiang:addSkill(LuaMouJieyinStart)
-SkillAnjiang:addSkill(LuaMouXiaoji)
+table.insert(hiddenSkills, LuaMouJieyinAwakeHelper)
+table.insert(hiddenSkills, LuaMouJieyinStart)
+table.insert(hiddenSkills, LuaMouXiaoji)
+
+rinsan.addHiddenSkills(hiddenSkills)

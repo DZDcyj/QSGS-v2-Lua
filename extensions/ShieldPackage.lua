@@ -6,10 +6,8 @@ extension = sgs.Package('ShieldPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
+-- 隐藏技能添加
+local hiddenSkills = {}
 
 -- 初始护甲值表
 local START_SHIELDS = {
@@ -143,6 +141,8 @@ LuaPoxiHotFix = sgs.CreateTriggerSkill {
     can_trigger = globalTrigger,
 }
 
-SkillAnjiang:addSkill(LuaShield)
-SkillAnjiang:addSkill(LuaShieldInit)
-SkillAnjiang:addSkill(LuaPoxiHotFix)
+table.insert(hiddenSkills, LuaShield)
+table.insert(hiddenSkills, LuaShieldInit)
+table.insert(hiddenSkills, LuaPoxiHotFix)
+
+rinsan.addHiddenSkills(hiddenSkills)

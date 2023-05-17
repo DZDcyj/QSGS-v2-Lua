@@ -6,14 +6,16 @@ extension = sgs.Package('LayingPlansCouragePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 local function globalTrigger(self, target)
     return true
 end
+
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 
 -- 孙翊
 ExSunyi = sgs.General(extension, 'ExSunyi', 'wu', '4', true, true)
@@ -135,9 +137,9 @@ LuaZaoliStart = sgs.CreateTriggerSkill {
 }
 
 ExSunyi:addSkill(LuaZaoli)
-SkillAnjiang:addSkill(LuaZaoliCardMove)
-SkillAnjiang:addSkill(LuaZaoliUse)
-SkillAnjiang:addSkill(LuaZaoliStart)
+table.insert(hiddenSkills, LuaZaoliCardMove)
+table.insert(hiddenSkills, LuaZaoliUse)
+table.insert(hiddenSkills, LuaZaoliStart)
 
 -- 宗预
 ExZongyu = sgs.General(extension, 'ExZongyu', 'shu', '3', true, true)
@@ -255,8 +257,8 @@ LuaYuyan = sgs.CreateTriggerSkill {
 }
 
 ExZongyu:addSkill(LuaZhibian)
-SkillAnjiang:addSkill(LuaZhibianSkipDraw)
 ExZongyu:addSkill(LuaYuyan)
+table.insert(hiddenSkills, LuaZhibianSkipDraw)
 
 -- 初始随机魏国/吴国
 local wenyang_kingdoms = {'wei', 'wu'}
@@ -834,13 +836,13 @@ LuaWenyangKingdomChoose = sgs.CreateTriggerSkill {
 }
 
 ExWenyang:addSkill(LuaQuedi)
-SkillAnjiang:addSkill(LuaQuediDamageUp)
-SkillAnjiang:addSkill(LuaQuediClear)
 ExWenyang:addSkill(LuaChuifeng)
 ExWenyang:addSkill(LuaChongjian)
-SkillAnjiang:addSkill(LuaChongjianQinggang)
 ExWenyang:addSkill(LuaChoujue)
-SkillAnjiang:addSkill(LuaWenyangKingdomChoose)
+table.insert(hiddenSkills, LuaQuediDamageUp)
+table.insert(hiddenSkills, LuaQuediClear)
+table.insert(hiddenSkills, LuaChongjianQinggang)
+table.insert(hiddenSkills, LuaWenyangKingdomChoose)
 
 -- 王双
 ExWangshuang = sgs.General(extension, 'ExWangshuang', 'wei', '4', true)
@@ -1103,3 +1105,5 @@ LuaDengli = sgs.CreateTriggerSkill {
 
 ExGaolan:addSkill(LuaJungong)
 ExGaolan:addSkill(LuaDengli)
+
+rinsan.addHiddenSkills(hiddenSkills)

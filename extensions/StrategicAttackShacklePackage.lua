@@ -6,11 +6,6 @@ extension = sgs.Package('StrategicAttackShacklePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 local function globalTrigger(self, target)
     return true
 end
@@ -18,6 +13,13 @@ end
 local function targetTrigger(self, target)
     return target
 end
+
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 
 -- 谋于禁
 ExMouYujin = sgs.General(extension, 'ExMouYujin', 'wei', '4', true, true)
@@ -89,7 +91,7 @@ LuaMouJieyue = sgs.CreateTriggerSkill {
 
 ExMouYujin:addSkill(LuaMouXiayuan)
 ExMouYujin:addSkill(LuaMouJieyue)
-SkillAnjiang:addSkill(LuaMouXiayuanClear)
+table.insert(hiddenSkills, LuaMouXiayuanClear)
 
 -- 谋吕蒙
 ExMouLvmeng = sgs.General(extension, 'ExMouLvmeng', 'wu', '4', true, true)
@@ -255,11 +257,11 @@ LuaMouDuojingTargetMod = sgs.CreateTargetModSkill {
 ExMouLvmeng:addSkill(LuaMouKeji)
 ExMouLvmeng:addSkill(LuaMouDujiang)
 ExMouLvmeng:addRelateSkill('LuaMouDuojing')
-SkillAnjiang:addSkill(LuaMouKejiMaxCards)
-SkillAnjiang:addSkill(LuaMoukejiProhibit)
-SkillAnjiang:addSkill(LuaMouDuojingTargetMod)
-SkillAnjiang:addSkill(LuaMouDuojing)
-SkillAnjiang:addSkill(LuaMouDuojingClear)
+table.insert(hiddenSkills, LuaMouKejiMaxCards)
+table.insert(hiddenSkills, LuaMoukejiProhibit)
+table.insert(hiddenSkills, LuaMouDuojingTargetMod)
+table.insert(hiddenSkills, LuaMouDuojing)
+table.insert(hiddenSkills, LuaMouDuojingClear)
 
 -- 谋曹仁
 ExMouCaoren = sgs.General(extension, 'ExMouCaoren', 'wei', '4', true, true)
@@ -544,8 +546,8 @@ LuaQicaiHotfix = sgs.CreateTriggerSkill {
 
 ExMouGanning:addSkill(LuaQixi)
 ExMouGanning:addSkill(LuaFenwei)
-SkillAnjiang:addSkill(LuaQixiTrigger)
-SkillAnjiang:addSkill(LuaQicaiHotfix)
+table.insert(hiddenSkills, LuaQixiTrigger)
+table.insert(hiddenSkills, LuaQicaiHotfix)
 
 -- 谋黄忠
 ExMouHuangzhong = sgs.General(extension, 'ExMouHuangzhong', 'shu', '4', true)
@@ -709,8 +711,8 @@ LuaLiegongAttackMod = sgs.CreateTargetModSkill {
 }
 
 ExMouHuangzhong:addSkill(LuaLiegong)
-SkillAnjiang:addSkill(LuaLiegongAttackMod)
-SkillAnjiang:addSkill(LuaLiegongMark)
+table.insert(hiddenSkills, LuaLiegongAttackMod)
+table.insert(hiddenSkills, LuaLiegongMark)
 
 -- 谋黄盖
 ExMouHuanggai = sgs.General(extension, 'ExMouHuanggai', 'wu', '4', true, true)
@@ -887,5 +889,7 @@ LuaMouZhaxiangTargetMod = sgs.CreateTargetModSkill {
 
 ExMouHuanggai:addSkill(LuaMouKurou)
 ExMouHuanggai:addSkill(LuaMouZhaxiang)
-SkillAnjiang:addSkill(LuaMouZhaxiangBuff)
-SkillAnjiang:addSkill(LuaMouZhaxiangTargetMod)
+table.insert(hiddenSkills, LuaMouZhaxiangBuff)
+table.insert(hiddenSkills, LuaMouZhaxiangTargetMod)
+
+rinsan.addHiddenSkills(hiddenSkills)

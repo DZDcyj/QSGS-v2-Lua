@@ -6,11 +6,6 @@ extension = sgs.Package('LayingPlansWisdomPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 local function globalTrigger(self, target)
     return true
 end
@@ -18,6 +13,13 @@ end
 local function targetTrigger(self, target)
     return target
 end
+
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 
 -- 卞夫人
 ExBianfuren = sgs.General(extension, 'ExBianfuren', 'wei', '3', false, true)
@@ -104,7 +106,7 @@ LuaYuejianMaxCards = sgs.CreateMaxCardsSkill {
 
 ExBianfuren:addSkill(LuaWanwei)
 ExBianfuren:addSkill(LuaYuejian)
-SkillAnjiang:addSkill(LuaYuejianMaxCards)
+table.insert(hiddenSkills, LuaYuejianMaxCards)
 
 -- 孙邵
 ExSunshao = sgs.General(extension, 'ExSunshao', 'wu', '3', true, true)
@@ -301,9 +303,9 @@ LuaFubi = sgs.CreateTriggerSkill {
 ExSunshao:addSkill(LuaDingyi)
 ExSunshao:addSkill(LuaZuici)
 ExSunshao:addSkill(LuaFubi)
-SkillAnjiang:addSkill(LuaDingyiBuff)
-SkillAnjiang:addSkill(LuaDingyiMaxCards)
-SkillAnjiang:addSkill(LuaDingyiAttackRange)
+table.insert(hiddenSkills, LuaDingyiBuff)
+table.insert(hiddenSkills, LuaDingyiMaxCards)
+table.insert(hiddenSkills, LuaDingyiAttackRange)
 
 -- 杜预
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
@@ -466,10 +468,10 @@ LuaMiewu = sgs.CreateTriggerSkill {
 }
 LuaMiewu:setGuhuoDialog('lrd')
 
-SkillAnjiang:addSkill(LuaMiewu)
 ExDuyu:addSkill(LuaWuku)
 ExDuyu:addSkill(LuaSanchen)
 ExDuyu:addRelateSkill('LuaMiewu')
+table.insert(hiddenSkills, LuaMiewu)
 
 -- 王粲
 ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true)
@@ -722,10 +724,10 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
 }
 
 ExShenXunyu:addSkill(LuaTianzuo)
-SkillAnjiang:addSkill(LuaTianzuoStart)
 ExShenXunyu:addSkill(LuaLingce)
 ExShenXunyu:addSkill(LuaDinghan)
-SkillAnjiang:addSkill(LuaDinghanChange)
+table.insert(hiddenSkills, LuaTianzuoStart)
+table.insert(hiddenSkills, LuaDinghanChange)
 
 -- 神郭嘉
 ExShenGuojia = sgs.General(extension, 'ExShenGuojia', 'god', '3', true)
@@ -1032,10 +1034,10 @@ LuaZuoxing:setGuhuoDialog('r')
 
 ExShenGuojia:addSkill(LuaHuishi)
 ExShenGuojia:addSkill(LuaTianyi)
-SkillAnjiang:addSkill(LuaTianyiDamaged)
 ExShenGuojia:addSkill(LuaLimitHuishi)
-SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
+table.insert(hiddenSkills, LuaTianyiDamaged)
+table.insert(hiddenSkills, LuaZuoxing)
 
 -- 荀谌
 ExXunchen = sgs.General(extension, 'ExXunchen', 'qun', '3', true, true)
@@ -1237,9 +1239,9 @@ LuaMoushi = sgs.CreateTriggerSkill {
 }
 
 ExXunchen:addSkill(LuaWeipo)
-SkillAnjiang:addSkill(LuaWeipoVS)
 ExXunchen:addSkill(LuaChenshi)
 ExXunchen:addSkill(LuaMoushi)
+table.insert(hiddenSkills, LuaWeipoVS)
 
 -- 费祎
 ExFeiyi = sgs.General(extension, 'ExFeiyi', 'shu', '3', true, true)
@@ -1368,9 +1370,9 @@ LuaShengxiCheck = sgs.CreateTriggerSkill {
 }
 
 ExFeiyi:addSkill(LuaJianyu)
-SkillAnjiang:addSkill(LuaJianyuDraw)
 ExFeiyi:addSkill(LuaShengxi)
-SkillAnjiang:addSkill(LuaShengxiCheck)
+table.insert(hiddenSkills, LuaJianyuDraw)
+table.insert(hiddenSkills, LuaShengxiCheck)
 
 -- 陈震
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true)
@@ -1459,3 +1461,5 @@ LuaQinzheng = sgs.CreateTriggerSkill {
 }
 
 ExLuotong:addSkill(LuaQinzheng)
+
+rinsan.addHiddenSkills(hiddenSkills)

@@ -3,10 +3,11 @@
 module('extensions.LandlordsPackage', package.seeall)
 extension = sgs.Package('LandlordsPackage')
 
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
+
+-- 隐藏技能添加
+local hiddenSkills = {}
 
 LuaBahu = sgs.CreateTriggerSkill {
     name = 'LuaBahu',
@@ -303,8 +304,10 @@ LuaDoudizhuScenario = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaBahu)
-SkillAnjiang:addSkill(LuaBahuSlash)
-SkillAnjiang:addSkill(LuaFeiyang)
-SkillAnjiang:addSkill(LuaDizhu)
-SkillAnjiang:addSkill(LuaDoudizhuScenario)
+table.insert(hiddenSkills, LuaBahu)
+table.insert(hiddenSkills, LuaBahuSlash)
+table.insert(hiddenSkills, LuaFeiyang)
+table.insert(hiddenSkills, LuaDizhu)
+table.insert(hiddenSkills, LuaDoudizhuScenario)
+
+rinsan.addHiddenSkills(hiddenSkills)

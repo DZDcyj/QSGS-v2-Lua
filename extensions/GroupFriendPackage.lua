@@ -14,7 +14,13 @@ local function targetTrigger(self, target)
     return target
 end
 
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
+
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
 Rinsan = sgs.General(extension, 'Rinsan', 'shu', '3', true, true)
@@ -568,7 +574,7 @@ LuaNosJuesha = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaNosJuesha)
+table.insert(hiddenSkills, LuaNosJuesha)
 
 LuaJuesha = sgs.CreateTriggerSkill {
     name = 'LuaJuesha',
@@ -2134,15 +2140,10 @@ LuaJiuwenDamaged = sgs.CreateTriggerSkill {
 }
 
 Cactus:addSkill(LuaBaipiao)
-SkillAnjiang:addSkill(LuaGeidian)
-SkillAnjiang:addSkill(LuaWanneng)
 Fuhua:addSkill(LuaGeidian)
 Rinsan:addSkill(LuaWanneng)
-SkillAnjiang:addSkill(LuaZibao)
-SkillAnjiang:addSkill(LuaSoutuVS)
 Rinsan:addSkill(LuaSoutu)
 SPFuhua:addSkill(LuaYangjing)
-SkillAnjiang:addSkill(LuaYangjingAttackRange)
 SPFuhua:addSkill(LuaTuci)
 SPCactus:addSkill(LuaJuesha)
 SPCactus:addSkill(LuaMouhai)
@@ -2150,11 +2151,8 @@ SPCactus:addSkill(LuaChuanyi)
 Qiumu:addSkill(LuaPaozhuan)
 Qiumu:addSkill(LuaYinyu)
 SPRinsan:addSkill(LuaQingyu)
-SkillAnjiang:addSkill(LuaQingyuTargetMod)
-SkillAnjiang:addSkill(LuaQingyuMaxCards)
 SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
-SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
 Anan:addSkill(LuaJueding)
 Erenlei:addSkill(LuaShaika)
@@ -2165,24 +2163,33 @@ Shayu:addSkill(LuaTianfa)
 Shayu:addSkill(LuaZhixie)
 Shayu:addSkill(LuaJixie)
 Yeniao:addSkill(LuaFumo)
-SkillAnjiang:addSkill(LuaFumoTargetMod)
 Linxi:addSkill(LuaTaose)
 Linxi:addSkill('hongyan')
 Ajie:addSkill(LuaJiaren)
 Ajie:addSkill(LuaFabing)
 Ajie:addSkill(LuaChengsheng)
-SkillAnjiang:addSkill(LuaJiarenClear)
-SkillAnjiang:addSkill(LuaJiarenForbid)
 Shatang:addSkill(LuaXiandeng)
 Shatang:addSkill(LuaZhiyuan)
-SkillAnjiang:addSkill(LuaXiandengStart)
-SkillAnjiang:addSkill(LuaXiandengTargetMod)
 Dalaojiang:addSkill(LuaYishi)
 Dalaojiang:addSkill(LuaManyan)
 Zhongliao:addSkill(LuaRuiping)
 Zhongliao:addSkill(LuaJiuwen)
-SkillAnjiang:addSkill(LuaBaijia)
 for _, relateSkill in ipairs(RUIPING_SKILLS) do
     Zhongliao:addRelateSkill(relateSkill)
 end
-SkillAnjiang:addSkill(LuaJiuwenDamaged)
+
+table.insert(hiddenSkills, LuaZibao)
+table.insert(hiddenSkills, LuaSoutuVS)
+table.insert(hiddenSkills, LuaYangjingAttackRange)
+table.insert(hiddenSkills, LuaQingyuTargetMod)
+table.insert(hiddenSkills, LuaQingyuMaxCards)
+table.insert(hiddenSkills, LuaShulianForbidden)
+table.insert(hiddenSkills, LuaFumoTargetMod)
+table.insert(hiddenSkills, LuaJiarenClear)
+table.insert(hiddenSkills, LuaJiarenForbid)
+table.insert(hiddenSkills, LuaXiandengStart)
+table.insert(hiddenSkills, LuaXiandengTargetMod)
+table.insert(hiddenSkills, LuaBaijia)
+table.insert(hiddenSkills, LuaJiuwenDamaged)
+
+rinsan.addHiddenSkills(hiddenSkills)

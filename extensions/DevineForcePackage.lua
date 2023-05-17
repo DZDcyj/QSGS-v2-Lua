@@ -6,14 +6,16 @@ extension = sgs.Package('DevineForcePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 local function globalTrigger(self, target)
     return true
 end
+
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 
 -- 神姜维
 ExTenYearShenJiangwei = sgs.General(extension, 'ExTenYearShenJiangwei', 'god', '4', true, true)
@@ -234,7 +236,7 @@ LuaPingxiangMaxCards = sgs.CreateMaxCardsSkill {
 ExTenYearShenJiangwei:addSkill(LuaTianren)
 ExTenYearShenJiangwei:addSkill(LuaJiufa)
 ExTenYearShenJiangwei:addSkill(LuaPingxiang)
-SkillAnjiang:addSkill(LuaPingxiangMaxCards)
+table.insert(hiddenSkills, LuaPingxiangMaxCards)
 
 -- 神张飞
 ExTenYearShenZhangfei = sgs.General(extension, 'ExTenYearShenZhangfei', 'god', '4', true, true)
@@ -413,7 +415,9 @@ LuaXunshiUsed = sgs.CreateTriggerSkill {
 }
 
 ExTenYearShenZhangfei:addSkill(LuaShencai)
-SkillAnjiang:addSkill(LuaShencaiMaxCards)
 ExTenYearShenZhangfei:addSkill(LuaXunshi)
-SkillAnjiang:addSkill(LuaXunshiTargetMod)
-SkillAnjiang:addSkill(LuaXunshiUsed)
+table.insert(hiddenSkills, LuaShencaiMaxCards)
+table.insert(hiddenSkills, LuaXunshiTargetMod)
+table.insert(hiddenSkills, LuaXunshiUsed)
+
+rinsan.addHiddenSkills(hiddenSkills)

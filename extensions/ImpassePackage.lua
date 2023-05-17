@@ -3,10 +3,11 @@
 module('extensions.ImpassePackage', package.seeall)
 extension = sgs.Package('ImpassePackage')
 
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
+
+-- 隐藏技能添加
+local hiddenSkills = {}
 
 -- 暴走标记
 BaozouMark = '@baozou'
@@ -47,7 +48,7 @@ LuaSilve = sgs.CreateTriggerSkill {
     can_trigger = boss_can_trigger,
 }
 
-SkillAnjiang:addSkill(LuaSilve)
+table.insert(hiddenSkills, LuaSilve)
 
 -- 克敌
 -- 你受到伤害后可以摸X张牌，X为你当前体力值；进入暴走状态后，X为场上存活的角色数
@@ -68,7 +69,7 @@ LuaKedi = sgs.CreateTriggerSkill {
     can_trigger = boss_can_trigger,
 }
 
-SkillAnjiang:addSkill(LuaKedi)
+table.insert(hiddenSkills, LuaKedi)
 
 -- 济世
 -- 锁定技，回合开始阶段，若你的手牌不大于X，你可以从除你以外每名角色那获得一张手牌，若目标角色无手牌，则失去一点体力。X为你当前体力值；
@@ -112,8 +113,8 @@ LuaJishiMaxCards = sgs.CreateMaxCardsSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaJishi)
-SkillAnjiang:addSkill(LuaJishiMaxCards)
+table.insert(hiddenSkills, LuaJishi)
+table.insert(hiddenSkills, LuaJishiMaxCards)
 
 -- 大吉
 -- 锁定技，回合结束阶段，你摸X张牌（若你已进入暴走状态，则X为存活角色数，否则X为你的体力值）
@@ -160,7 +161,7 @@ LuaDaji = sgs.CreateTriggerSkill {
     can_trigger = boss_can_trigger,
 }
 
-SkillAnjiang:addSkill(LuaDaji)
+table.insert(hiddenSkills, LuaDaji)
 
 -- 孤战
 -- 锁定技，当你没装备武器时，使用【杀】无次数限制
@@ -176,7 +177,7 @@ LuaGuzhan = sgs.CreateTargetModSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaGuzhan)
+table.insert(hiddenSkills, LuaGuzhan)
 
 -- 激战
 -- 锁定技，出牌阶段，你每对其他角色造成一点伤害回复一点体力；当手牌小于存活的角色数时，你将手牌摸至存活角色数
@@ -220,7 +221,7 @@ LuaJizhan = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaJizhan)
+table.insert(hiddenSkills, LuaJizhan)
 
 -- 独断
 -- 锁定技，你不能成为延时类锦囊的目标
@@ -233,7 +234,7 @@ LuaDuduan = sgs.CreateProhibitSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaDuduan)
+table.insert(hiddenSkills, LuaDuduan)
 
 -- BOSS 武将禁表
 LuaBannedGenerals = {'yuanshao', 'yanliangwenchou', 'zhaoyun', 'guanyu', 'shencaocao'}
@@ -351,7 +352,7 @@ LuaBoss = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaBoss)
+table.insert(hiddenSkills, LuaBoss)
 
 -- 暴走状态技能
 -- 进入暴走状态、判定相关
@@ -442,7 +443,7 @@ LuaBaozou = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaBaozou)
+table.insert(hiddenSkills, LuaBaozou)
 
 LuaImpasseDeath = sgs.CreateTriggerSkill {
     name = 'LuaImpasseDeath',
@@ -510,7 +511,7 @@ LuaImpasseDeath = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaImpasseDeath)
+table.insert(hiddenSkills, LuaImpasseDeath)
 
 LuaImpasseArmor = sgs.CreateTriggerSkill {
     name = 'LuaImpasseArmor',
@@ -539,4 +540,6 @@ LuaImpasseArmor = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaImpasseArmor)
+table.insert(hiddenSkills, LuaImpasseArmor)
+
+rinsan.addHiddenSkills(hiddenSkills)
