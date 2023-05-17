@@ -312,13 +312,14 @@ function getFuhanShuGenerals(general_num)
 end
 
 -- 激词收回大点数牌
-function getBackPindianCardByJici(room, pindian, isFrom)
+function getBackPindianCardByJici(pindian, isFrom)
     local player
     if isFrom then
         player = pindian.from
     else
         player = pindian.to
     end
+    local room = player:getRoom()
     if pindian.from_number > pindian.to_number then
         if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
             player:obtainCard(pindian.from_card)
@@ -449,7 +450,8 @@ function getCardFromDiscardPile(room, type)
 end
 
 -- 巧思封装函数
-function LuaDoQiaosiShow(room, player, dummyCard)
+function LuaDoQiaosiShow(player, dummyCard)
+    local room = player:getRoom()
     local choices = {
         'king',
         'merchant',
@@ -851,7 +853,8 @@ function cardGoBack(event, player, data, skill)
 end
 
 -- sgs.AskforPindianCard 时机卡牌获取
-function obtainIdFromAskForPindianCardEvent(room, target)
+function obtainIdFromAskForPindianCardEvent(target)
+    local room = target:getRoom()
     local from_id = -1
     local random_from_id = random(1, 10000)
     local from_data = sgs.QVariant()
@@ -1338,12 +1341,14 @@ function checkFilter(selected, to_select, compareType, compareValue)
 end
 
 -- 封装方法，用于添加 to 到 from 的攻击范围
-function addToAttackRange(room, from, to)
+function addToAttackRange(from, to)
+    local room = from:getRoom()
     room:insertAttackRangePair(from, to)
 end
 
--- 封装方法，用于将 to 从 from 的攻击范围中移除（用于解除上一方法的问题）
-function removeFromAttackRange(room, from, to)
+-- 封装方法，用于将 to 从 from 的攻击范围中移除（用于解除上一方法）
+function removeFromAttackRange(from, to)
+    local room = from:getRoom()
     room:removeAttackRangePair(from, to)
 end
 
@@ -1397,7 +1402,8 @@ function calculateProbably(unknownCardNum, typeCardRemain, totalRemain, cardType
 end
 
 -- 初始化三种牌数量
-function cardNumInitialize(room, source)
+function cardNumInitialize(source)
+    local room = source:getRoom()
     local totalBasic, totalTrick, totalEquip = 0, 0, 0
     for _, cid in sgs.qlist(room:getDrawPile()) do
         local cd = sgs.Sanguosha:getCard(cid)
@@ -1477,7 +1483,7 @@ function unknownAnalyze(resultList, source, target, room)
     local totalTrick = room:getTag('LuaLingrenAITrick')
     local totalEquip = room:getTag('LuaLingrenAIEquip')
     while (not totalBasic) or (not totalTrick) or (not totalEquip) do
-        cardNumInitialize(room, source)
+        cardNumInitialize(source)
         totalBasic = room:getTag('LuaLingrenAIBasic')
         totalTrick = room:getTag('LuaLingrenAITrick')
         totalEquip = room:getTag('LuaLingrenAIEquip')
@@ -1580,7 +1586,8 @@ function Set(list)
 end
 
 -- 封装方法用于轮回标记
-function moveLuaPoweiMark(room, currentPlayer)
+function moveLuaPoweiMark(currentPlayer)
+    local room = currentPlayer:getRoom()
     room:sendCompulsoryTriggerLog(currentPlayer, 'LuaPowei')
     local froms = sgs.SPlayerList()
     local maxIndex = room:alivePlayerCount() - 1

@@ -30,7 +30,7 @@ LuaGusheCard = sgs.CreateSkillCard {
             source:pindian(targets[1], 'LuaGushe', sgs.Sanguosha:getCard(from_id))
             return
         end
-        local get_id = rinsan.obtainIdFromAskForPindianCardEvent(room, source)
+        local get_id = rinsan.obtainIdFromAskForPindianCardEvent(source)
         if get_id ~= -1 then
             from_id = get_id
         end
@@ -43,7 +43,7 @@ LuaGusheCard = sgs.CreateSkillCard {
         moves:append(move)
         for _, p in ipairs(targets) do
             -- 此处同理，响应天辩等
-            local ask_id = rinsan.obtainIdFromAskForPindianCardEvent(room, p)
+            local ask_id = rinsan.obtainIdFromAskForPindianCardEvent(p)
             local card, to_move, to_slash
             if ask_id == -1 then
                 card = room:askForExchange(p, 'LuaGushe', 1, 1, false, '@LuaGushePindian')
@@ -195,7 +195,7 @@ LuaJici = sgs.CreateTriggerSkill {
                     room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.from_number = pindian.from_number + pindian.from:getMark('@LuaGushe')
-                    rinsan.getBackPindianCardByJici(room, pindian, true)
+                    rinsan.getBackPindianCardByJici(pindian, true)
                     obtained = true
                 end
             end
@@ -205,7 +205,7 @@ LuaJici = sgs.CreateTriggerSkill {
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.to_number = pindian.to_number + pindian.to:getMark('@LuaGushe')
                     if not obtained then
-                        rinsan.getBackPindianCardByJici(room, pindian, false)
+                        rinsan.getBackPindianCardByJici(pindian, false)
                     end
                 end
             end

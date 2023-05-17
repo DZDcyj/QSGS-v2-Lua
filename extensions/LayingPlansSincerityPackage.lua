@@ -648,7 +648,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
         if len > 0 then
             rinsan.doDamage(source, target, 1)
         end
-        rinsan.addToAttackRange(room, target, source)
+        rinsan.addToAttackRange(target, source)
     end,
 }
 
@@ -715,7 +715,7 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
                     rinsan.removeFromAttackRange(room, player, stsc)
                 end
                 if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
-                    rinsan.moveLuaPoweiMark(room, player)
+                    rinsan.moveLuaPoweiMark(player)
                 end
             end
         end

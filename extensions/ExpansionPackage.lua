@@ -493,7 +493,7 @@ LuaLingrenAIInitializer = sgs.CreateTriggerSkill {
             return false
         end
         for _, caoying in sgs.qlist(room:findPlayersBySkillName('LuaLingren')) do
-            rinsan.cardNumInitialize(room, caoying)
+            rinsan.cardNumInitialize(caoying)
         end
         room:setTag('LuaLingrenAIInitialized', sgs.QVariant(true))
     end,
@@ -1363,7 +1363,7 @@ LuaQiaosiStartCard = sgs.CreateSkillCard {
         room:broadcastSkillInvoke('LuaQiaosi')
         room:notifySkillInvoked(source, 'LuaQiaosi')
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        local marks = rinsan.LuaDoQiaosiShow(room, source, dummy)
+        local marks = rinsan.LuaDoQiaosiShow(source, dummy)
         if marks > 0 then
             room:addPlayerMark(source, 'LuaQiaosiCardsNum', marks)
             room:addPlayerMark(source, 'LuaQiaosiGiven')
@@ -3438,8 +3438,8 @@ LuaTaomieMark = sgs.CreateTriggerSkill {
             local gongsunkangs = room:findPlayersBySkillName('LuaTaomie')
             for _, gongsunkang in sgs.qlist(gongsunkangs) do
                 if gongsunkang:objectName() ~= mark.who:objectName() then
-                    markFunction(room, gongsunkang, mark.who)
-                    markFunction(room, mark.who, gongsunkang)
+                    markFunction(gongsunkang, mark.who)
+                    markFunction(mark.who, gongsunkang)
                 end
             end
         end
