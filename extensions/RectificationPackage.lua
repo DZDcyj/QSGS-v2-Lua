@@ -41,19 +41,31 @@ local function setRectificationStringTable(player, tagName, strTable)
 end
 
 -- 询问整肃选项
-local function askForRectificationChoice(player, skillName)
+local function askForRectificationChoice(player, skillName, to, ignoreChosen)
     local room = player:getRoom()
     skillName = skillName or ''
-    return room:askForChoice(player, skillName, table.concat(RECTIFICATION_CHOICES, '+'))
+    local choices = {}
+    if ignoreChosen then
+        choices = RECTIFICATION_CHOICES
+    else
+        for _, choice in ipairs(RECTIFICATION_CHOICES) do
+            if to:getMark(choice) == 0 then
+                table.insert(choices, choice)
+            end
+        end
+    end
+    return room:askForChoice(player, skillName, table.concat(choices, '+'))
 end
 
 -- 询问整肃，暴露的外部接口
-function askForRetification(from, to, skillName, isFromChoose)
+function askForRetification(from, to, skillName, isFromChoose, ignoreChosen)
     local room = from:getRoom()
     local chooser = isFromChoose and from or to
-    local choice = askForRectificationChoice(chooser, skillName)
-    rinsan.sendLogMessage(room, '#Rectification-Choose', {
-        ['from'] = to,
+    local choice = askForRectificationChoice(chooser, skillName, to, ignoreChosen)
+    local msgType = isFromChoose and '#Rectification-Choose' or '#Rectification-Self-Choose'
+    rinsan.sendLogMessage(room, msgType, {
+        ['from'] = from,
+        ['to'] = to,
         ['arg'] = choice,
         ['arg2'] = ':' .. choice,
     })
@@ -74,7 +86,7 @@ local RECTIFICATION_CHECK_FUNCTIONS = {
         end
         -- 点数需要严格递增
         for i = 1, #leijinTable - 1, 1 do
-            if leijinTable[i] >= leijinTable[i + 1] then
+            if tonumber(leijinTable[i]) >= tonumber(leijinTable[i + 1]) then
                 return false
             end
         end
@@ -178,14 +190,15 @@ LuaRectificationDiscardPhaseRecord = sgs.CreateTriggerSkill {
     end,
 }
 
-local function askForBonus(player)
+local function askForBonus(player, chooser)
     local room = player:getRoom()
+    chooser = chooser or player
     local choices = {}
     if player:isWounded() then
         table.insert(choices, 'rectification:recover')
     end
     table.insert(choices, 'rectification:draw')
-    local choice = room:askForChoice(player, 'RectificationBonus', table.concat(choices, '+'))
+    local choice = room:askForChoice(chooser, 'RectificationBonus', table.concat(choices, '+'))
     if choice == 'rectification:draw' then
         player:drawCards(2, 'RectificationBonus')
     else
@@ -224,9 +237,9 @@ local function doRetification(player)
         end
         local skillName = items[4] -- 整肃技能名称
         local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
+        room:notifySkillInvoked(from, skillName)
         if success then
             room:broadcastSkillInvoke(skillName, 2)
-            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Success', {
                 ['from'] = player,
                 ['to'] = from,
@@ -240,11 +253,11 @@ local function doRetification(player)
                     'RectificationBonus-choose', true)
                 askForBonus(player)
                 if other then
-                    askForBonus(other)
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), other:objectName())
+                    askForBonus(other, player)
                 end
             end
         else
-            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Failure', {
                 ['from'] = player,
                 ['to'] = from,
