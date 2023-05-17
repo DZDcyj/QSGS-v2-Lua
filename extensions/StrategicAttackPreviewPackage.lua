@@ -188,6 +188,61 @@ LuaMouJianxiongStart = sgs.CreateTriggerSkill {
     can_trigger = rinsan.globalTrigger,
 }
 
+-- 清正选牌
+local function filterMouQingzhengCards(source, selected, to_select)
+    -- 需要的花色数
+    local requiredSuitCount = 3 - source:getMark('@LuaZhishi')
+    -- 判断已选择卡牌是否满足花色数
+    local suits = {}
+    for _, cd in ipairs(selected) do
+        local suit = cd:getSuitString()
+        if not table.contains(suits, suit) then
+            table.insert(suits, suit)
+        end
+    end
+
+    -- 是否是装备牌、能否弃置
+    if to_select:isEquipped() or source:isJilei(to_select) then
+        return false
+    end
+
+    -- 要么是已选中花色，要么是不够花色
+    return table.contains(suits, to_select:getSuitString()) or #suits < requiredSuitCount
+end
+
+-- 判断清正合法性
+local function checkMouQingzhengCards(source, cards)
+    -- 需要的花色数
+    local requiredSuitCount = 3 - source:getMark('@LuaZhishi')
+
+    -- 判断已选择卡牌是否满足花色数
+    local suits = {}
+    for _, cd in ipairs(cards) do
+        local suit = cd:getSuitString()
+        if not table.contains(suits, suit) then
+            table.insert(suits, suit)
+        end
+    end
+    if #suits < requiredSuitCount then
+        return false
+    end
+
+    local ids = {}
+    for _, cd in ipairs(cards) do
+        table.insert(ids, cd:getEffectiveId())
+    end
+
+    -- 判断所有手牌是否已被选中
+    for _, cd in sgs.qlist(source:getHandcards()) do
+        local suit = cd:getSuitString()
+        if table.contains(suits, suit) and not table.contains(ids, cd:getEffectiveId()) then
+            return false
+        end
+    end
+
+    return true
+end
+
 LuaMouQingzhengCard = sgs.CreateSkillCard {
     name = 'LuaMouQingzheng',
     will_throw = true,
@@ -200,7 +255,7 @@ LuaMouQingzhengCard = sgs.CreateSkillCard {
         for _, id in sgs.qlist(self:getSubcards()) do
             table.insert(cards, sgs.Sanguosha:getCard(id))
         end
-        if rinsan.checkMouQingzhengCards(sgs.Self, cards) then
+        if checkMouQingzhengCards(sgs.Self, cards) then
             return #targets == 1
         end
         return false
@@ -242,10 +297,10 @@ LuaMouQingzhengVS = sgs.CreateViewAsSkill {
     name = 'LuaMouQingzheng',
     n = 99999,
     view_filter = function(self, selected, to_select)
-        return rinsan.filterMouQingzhengCards(sgs.Self, selected, to_select)
+        return filterMouQingzhengCards(sgs.Self, selected, to_select)
     end,
     view_as = function(self, cards)
-        if not rinsan.checkMouQingzhengCards(sgs.Self, cards) then
+        if not checkMouQingzhengCards(sgs.Self, cards) then
             return nil
         end
         local vs_card = LuaMouQingzhengCard:clone()

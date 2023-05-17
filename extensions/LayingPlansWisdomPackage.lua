@@ -582,6 +582,33 @@ LuaTianzuo = sgs.CreateTriggerSkill {
     end,
 }
 
+-- 将【奇正相生】加入到初始卡牌
+local function initIndirectCombination(room)
+    local drawPile = room:getDrawPile()
+    local ids = {}
+    for i = 0, 10000 do
+        local card = sgs.Sanguosha:getEngineCard(i)
+        if card == nil then
+            break
+        end
+        if (rinsan.Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('IndirectCombination')) then
+            if card:getPackage() ~= 'jiaozhao' then
+                -- 排除【矫诏】包的无色卡牌
+                table.insert(ids, card:getId())
+            end
+        end
+    end
+    for _, id in ipairs(ids) do
+        drawPile:append(id)
+        room:setCardMapping(id, nil, sgs.Player_DrawPile)
+    end
+    rinsan.shuffleDrawPile(room)
+    rinsan.sendLogMessage(room, '$LuaTianzuo', {
+        ['card_str'] = table.concat(ids, '+'),
+    })
+    room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+end
+
 -- 天佐辅助，如果启用了扩展卡牌包，就放一句语音
 LuaTianzuoStart = sgs.CreateTriggerSkill {
     name = 'LuaTianzuoStart',
@@ -600,7 +627,7 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
                     room:sendCompulsoryTriggerLog(p, 'LuaTianzuo')
                     room:broadcastSkillInvoke('LuaTianzuo')
                     if rinsan.isPackageBanned('ExpansionCardPackage') then
-                        rinsan.initIndirectCombination(room)
+                        initIndirectCombination(room)
                     end
                     room:setTag('LuaTianzuoStartInvoked', sgs.QVariant(true))
                     break

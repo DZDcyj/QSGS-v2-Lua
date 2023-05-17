@@ -5688,6 +5688,32 @@ table.insert(hiddenSkills, LuaQingjianClear)
 
 ExSunhanhua = sgs.General(extension, 'ExSunhanhua', 'wu', '3', false, true)
 
+-- 孙寒华系列判断
+
+-- 妙剑等级
+local function getMiaojianLevel(sunhanhua)
+    return 1 + sunhanhua:getMark('LuaMiaojianLevelUp')
+end
+
+-- 莲华等级
+local function getLianhuaLevel(sunhanhua)
+    return 1 + sunhanhua:getMark('LuaLianhuaLevelUp')
+end
+
+-- 更新技能描述
+local function sunhanhuaUpdateSkillDesc(sunhanhua)
+    local miaojianLevel = getMiaojianLevel(sunhanhua)
+    if miaojianLevel > 1 then
+        rinsan.modifySkillDescription(':LuaMiaojian', string.format(':LuaMiaojian%d', miaojianLevel))
+    end
+    local lianhuaLevel = getLianhuaLevel(sunhanhua)
+    if lianhuaLevel > 1 then
+        rinsan.modifySkillDescription(':LuaLianhua', string.format(':LuaLianhua%d', lianhuaLevel))
+    end
+    -- 刷新一下，免得技能修正后显示不出来
+    ChangeCheck(sunhanhua, sunhanhua:getGeneralName())
+end
+
 LuaChongxuCard = sgs.CreateSkillCard {
     name = 'LuaChongxuCard',
     target_fixed = true,
@@ -5699,10 +5725,10 @@ LuaChongxuCard = sgs.CreateSkillCard {
         local score = 5
         while score > 1 do
             local choices = {}
-            if rinsan.getMiaojianLevel(source) < 3 and score >= 3 then
+            if getMiaojianLevel(source) < 3 and score >= 3 then
                 table.insert(choices, 'LuaMiaojianLevelUp')
             end
-            if rinsan.getLianhuaLevel(source) < 3 and score >= 3 then
+            if getLianhuaLevel(source) < 3 and score >= 3 then
                 table.insert(choices, 'LuaLianhuaLevelUp')
             end
             if score >= 2 then
@@ -5718,7 +5744,7 @@ LuaChongxuCard = sgs.CreateSkillCard {
             else
                 score = score - 3
                 room:addPlayerMark(source, choice)
-                rinsan.sunhanhuaUpdateSkillDesc(source)
+                sunhanhuaUpdateSkillDesc(source)
             end
         end
     end,
@@ -5779,7 +5805,7 @@ LuaMiaojianVS = sgs.CreateViewAsSkill {
     name = 'LuaMiaojian',
     n = 1,
     view_filter = function(self, selected, to_select)
-        local level = rinsan.getMiaojianLevel(sgs.Self)
+        local level = getMiaojianLevel(sgs.Self)
         if level >= 3 then
             return false
         end
@@ -5789,7 +5815,7 @@ LuaMiaojianVS = sgs.CreateViewAsSkill {
         return #selected == 0
     end,
     view_as = function(self, cards)
-        local level = rinsan.getMiaojianLevel(sgs.Self)
+        local level = getMiaojianLevel(sgs.Self)
         if level == 3 then
             return LuaMiaojianUseCard:clone()
         elseif #cards == 0 then
@@ -5863,7 +5889,7 @@ LuaLianhua = sgs.CreateTriggerSkill {
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
             player:drawCards(1, self:objectName())
-            local level = rinsan.getLianhuaLevel(player)
+            local level = getLianhuaLevel(player)
             if level <= 1 then
                 return false
             elseif level == 2 then
@@ -5912,6 +5938,24 @@ ExSunhanhua:addSkill(LuaLianhua)
 -- 毛玠
 ExMaojie = sgs.General(extension, 'ExMaojie', 'wei', '3', true, true)
 
+-- 获取秉清标记数
+local function getBingQingMarkCount(player)
+    local suits = {
+        sgs.Card_Diamond,
+        sgs.Card_Spade,
+        sgs.Card_Heart,
+        sgs.Card_Club,
+    }
+    local count = 0
+    for _, suit in ipairs(suits) do
+        local mark = string.format('@%s%s_biu', 'LuaBingqing', Suit2String(suit))
+        if player:getMark(mark) > 0 then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 LuaBingqing = sgs.CreateTriggerSkill {
     name = 'LuaBingqing',
     events = {sgs.CardFinished},
@@ -5926,7 +5970,7 @@ LuaBingqing = sgs.CreateTriggerSkill {
             return false
         end
         room:addPlayerMark(player, mark)
-        local count = rinsan.getBingQingMarkCount(player)
+        local count = getBingQingMarkCount(player)
         if count <= 1 then
             return false
         end

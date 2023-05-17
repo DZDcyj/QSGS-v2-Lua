@@ -237,6 +237,48 @@ table.insert(hiddenSkills, LuaPingxiangMaxCards)
 -- 神张飞
 ExTenYearShenZhangfei = sgs.General(extension, 'ExTenYearShenZhangfei', 'god', '4', true, true)
 
+-- 清除神张飞标记
+local function clearShencaiMark(player)
+    local room = player:getRoom()
+    room:setPlayerMark(player, '@LuaShencai-Chi', 0)
+    room:setPlayerMark(player, '@LuaShencai-Zhang', 0)
+    room:setPlayerMark(player, '@LuaShencai-Tu', 0)
+    room:setPlayerMark(player, '@LuaShencai-Liu', 0)
+end
+
+local SHENCAI_KEYWORDS = {
+    '体力',
+    '武器',
+    '打出',
+    '距离',
+}
+local SHENCAI_MARKS = {
+    '@LuaShencai-Chi',
+    '@LuaShencai-Zhang',
+    '@LuaShencai-Tu',
+    '@LuaShencai-Liu',
+}
+
+-- 根据牌面给玩家上 debuff
+local function shencaiEffect(source, victim, desc)
+    local room = victim:getRoom()
+    local markCount = 0
+    for i = 1, 4, 1 do
+        if rinsan.chineseStrFind(desc, SHENCAI_KEYWORDS[i]) then
+            victim:gainMark(SHENCAI_MARKS[i])
+            markCount = markCount + 1
+        end
+    end
+    if markCount == 0 then
+        victim:gainMark('@LuaShencai-Death')
+        if not victim:isAllNude() then
+            local card_id = room:askForCardChosen(source, victim, 'hej', 'LuaShencai', false, sgs.Card_MethodNone)
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
+            room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
+        end
+    end
+end
+
 LuaShencaiCard = sgs.CreateSkillCard {
     name = 'LuaShencai',
     target_fixed = false,
@@ -255,8 +297,8 @@ LuaShencaiCard = sgs.CreateSkillCard {
         room:judge(judge)
         local desc = judge.card:getDescription()
         source:obtainCard(judge.card)
-        rinsan.clearShencaiMark(victim)
-        rinsan.shencaiEffect(source, victim, desc)
+        clearShencaiMark(victim)
+        shencaiEffect(source, victim, desc)
     end,
 }
 
