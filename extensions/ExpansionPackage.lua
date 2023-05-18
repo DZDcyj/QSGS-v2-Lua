@@ -1454,12 +1454,12 @@ local function LuaDoQiaosiShow(player, dummyCard)
         if #cardTypes == 2 then
             -- 确定的，王、将
             params['type'] = cardTypes[1]
-            local card1 = obtainTargetedTypeCard(room, params)
+            local card1 = rinsan.obtainTargetedTypeCard(room, params)
             expected_length = expected_length + 2
             if card1 then
                 table.insert(about_to_obtain, card1:getId())
                 dummyCard:addSubcard(card1)
-                local card2 = obtainTargetedTypeCard(room, params)
+                local card2 = rinsan.obtainTargetedTypeCard(room, params)
                 if card2 then
                     table.insert(about_to_obtain, card2:getId())
                     dummyCard:addSubcard(card2)
@@ -1467,7 +1467,7 @@ local function LuaDoQiaosiShow(player, dummyCard)
             end
         else
             -- 不确定的，要抽奖
-            local currType = random(1, 5)
+            local currType = rinsan.random(1, 5)
             expected_length = expected_length + 1
             local type = cardTypes[currType]
             if string.find(type, 'JinkOrPeach') then
@@ -1476,7 +1476,7 @@ local function LuaDoQiaosiShow(player, dummyCard)
                 type = LuaGetRoleCardType('merchantGeneral', true, true)
             end
             params['type'] = type
-            local card = obtainTargetedTypeCard(room, params)
+            local card = rinsan.obtainTargetedTypeCard(room, params)
             if card then
                 table.insert(about_to_obtain, card:getId())
                 dummyCard:addSubcard(card)
