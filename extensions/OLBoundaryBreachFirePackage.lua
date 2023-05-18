@@ -3,10 +3,28 @@
 module('extensions.OLBoundaryBreachFirePackage', package.seeall)
 extension = sgs.Package('OLBoundaryBreachFirePackage')
 
--- 引入封装函数包
-local rinsan = require('QSanguoshaLuaFunction')
-
 OLJieXunyu = sgs.General(extension, 'OLJieXunyu', 'wei', '3', true, true)
+
+-- 封装函数【节命】OL
+-- 返回值代表是否成功发动【节命】
+local function doJiemingDrawDiscard(player)
+    local room = player:getRoom()
+    local alives = room:getAlivePlayers()
+    if alives:isEmpty() then
+        return false
+    end
+    local target = room:askForPlayerChosen(player, alives, 'LuaOLJieming', 'jieming-invoke', true, true)
+    if target then
+        room:broadcastSkillInvoke('LuaOLJieming')
+        local x = math.min(5, target:getMaxHp())
+        target:drawCards(x, 'LuaOLJieming')
+        local diff = target:getHandcardNum() - x
+        if diff > 0 then
+            room:askForDiscard(target, 'LuaOLJieming', diff, diff)
+        end
+    end
+    return target ~= nil
+end
 
 LuaOLJieming = sgs.CreateTriggerSkill {
     name = 'LuaOLJieming',
@@ -15,7 +33,7 @@ LuaOLJieming = sgs.CreateTriggerSkill {
         if event == sgs.Death then
             local death = data:toDeath()
             if death.who:objectName() == player:objectName() then
-                rinsan.doJiemingDrawDiscard(self:objectName(), player, room)
+                doJiemingDrawDiscard(player)
             end
         else
             if not player:isAlive() then
@@ -25,7 +43,7 @@ LuaOLJieming = sgs.CreateTriggerSkill {
             local i = 0
             while i < damage.damage do
                 i = i + 1
-                if not rinsan.doJiemingDrawDiscard(self:objectName(), player, room) then
+                if not doJiemingDrawDiscard(player) then
                     break
                 end
             end

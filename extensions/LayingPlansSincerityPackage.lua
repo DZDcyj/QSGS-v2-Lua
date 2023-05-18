@@ -6,18 +6,12 @@ extension = sgs.Package('LayingPlansSincerityPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
 -- General 定义如下
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
 
 -- 吴景
 ExWujing = sgs.General(extension, 'ExWujing', 'wu', '4', true, true)
@@ -108,7 +102,7 @@ LuaHeji = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaHejiProhibit = sgs.CreateProhibitSkill {
@@ -204,14 +198,14 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 ExWujing:addSkill(LuaHeji)
 ExWujing:addSkill(LuaLiubing)
-SkillAnjiang:addSkill(LuaLiubingObtain)
-SkillAnjiang:addSkill(LuaHejiTargetMod)
-SkillAnjiang:addSkill(LuaHejiProhibit)
+table.insert(hiddenSkills, LuaLiubingObtain)
+table.insert(hiddenSkills, LuaHejiTargetMod)
+table.insert(hiddenSkills, LuaHejiProhibit)
 
 -- 周处
 ExZhouchu = sgs.General(extension, 'ExZhouchu', 'wu', '4', true, true)
@@ -350,7 +344,7 @@ LuaChuhaiClear = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, 'LuaChuhai', 0)
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaChuhaiWake = sgs.CreateTriggerSkill {
@@ -415,7 +409,7 @@ LuaChuhaiWake = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaZhangming = sgs.CreateTriggerSkill {
@@ -503,7 +497,7 @@ LuaZhangming = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaZhangmingDiscardLimit = sgs.CreateTriggerSkill {
@@ -562,12 +556,12 @@ LuaZhangmingMaxCards = sgs.CreateMaxCardsSkill {
 ExZhouchu:addSkill(LuaXianghai)
 ExZhouchu:addSkill(LuaChuhai)
 ExZhouchu:addRelateSkill('LuaZhangming')
-SkillAnjiang:addSkill(LuaXianghaiMaxCards)
-SkillAnjiang:addSkill(LuaChuhaiClear)
-SkillAnjiang:addSkill(LuaChuhaiWake)
-SkillAnjiang:addSkill(LuaZhangming)
-SkillAnjiang:addSkill(LuaZhangmingDiscardLimit)
-SkillAnjiang:addSkill(LuaZhangmingMaxCards)
+table.insert(hiddenSkills, LuaXianghaiMaxCards)
+table.insert(hiddenSkills, LuaChuhaiClear)
+table.insert(hiddenSkills, LuaChuhaiWake)
+table.insert(hiddenSkills, LuaZhangming)
+table.insert(hiddenSkills, LuaZhangmingDiscardLimit)
+table.insert(hiddenSkills, LuaZhangmingMaxCards)
 
 -- 神太史慈
 ExShenTaishici = sgs.General(extension, 'ExShenTaishici', 'god', '4', true, true)
@@ -648,7 +642,7 @@ LuaPoweiCard = sgs.CreateSkillCard {
         if len > 0 then
             rinsan.doDamage(source, target, 1)
         end
-        rinsan.addToAttackRange(room, target, source)
+        rinsan.addToAttackRange(target, source)
     end,
 }
 
@@ -672,6 +666,42 @@ LuaPoweiVS = sgs.CreateViewAsSkill {
         return pattern == '@@LuaPoweiHelper'
     end,
 }
+
+-- 封装方法用于轮回标记
+local function moveLuaPoweiMark(currentPlayer)
+    local room = currentPlayer:getRoom()
+    room:sendCompulsoryTriggerLog(currentPlayer, 'LuaPowei')
+    local froms = sgs.SPlayerList()
+    local maxIndex = room:alivePlayerCount() - 1
+    local targetMap = {}
+    -- 首先确定要动的来源
+    for i = 1, maxIndex do
+        local curr = currentPlayer:getNextAlive(i)
+        if curr:getMark('@LuaPowei') > 0 then
+            froms:append(curr)
+        end
+    end
+    -- 确认移动到的目标
+    for _, from in sgs.qlist(froms) do
+        for i = 1, maxIndex do
+            local curr = from:getNextAlive(i)
+            if not curr:hasSkill('LuaPowei') then
+                targetMap[from:objectName()] = i
+                goto label
+            end
+        end
+        ::label::
+    end
+    for _, from in sgs.qlist(froms) do
+        local toIndex = targetMap[from:objectName()]
+        if not toIndex then
+            return
+        end
+        local to = from:getNextAlive(toIndex)
+        room:removePlayerMark(from, '@LuaPowei')
+        room:addPlayerMark(to, '@LuaPowei')
+    end
+end
 
 LuaPoweiHelper = sgs.CreateTriggerSkill {
     name = 'LuaPoweiHelper',
@@ -715,13 +745,13 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
                     rinsan.removeFromAttackRange(room, player, stsc)
                 end
                 if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
-                    rinsan.moveLuaPoweiMark(room, player)
+                    moveLuaPoweiMark(player)
                 end
             end
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaPowei = sgs.CreateTriggerSkill {
@@ -811,9 +841,6 @@ LuaShenzhu = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return rinsan.RIGHT(self, target)
-    end,
 }
 
 LuaShenzhuClear = sgs.CreateTriggerSkill {
@@ -830,7 +857,7 @@ LuaShenzhuClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShenzhuTargetMod = sgs.CreateTargetModSkill {
@@ -849,11 +876,11 @@ LuaShenzhuTargetMod = sgs.CreateTargetModSkill {
 ExShenTaishici:addSkill(LuaDulie)
 ExShenTaishici:addSkill(LuaPowei)
 ExShenTaishici:addRelateSkill('LuaShenzhu')
-SkillAnjiang:addSkill(LuaShenzhu)
-SkillAnjiang:addSkill(LuaPoweiHelper)
-SkillAnjiang:addSkill(LuaPoweiFailed)
-SkillAnjiang:addSkill(LuaShenzhuClear)
-SkillAnjiang:addSkill(LuaShenzhuTargetMod)
+table.insert(hiddenSkills, LuaShenzhu)
+table.insert(hiddenSkills, LuaPoweiHelper)
+table.insert(hiddenSkills, LuaPoweiFailed)
+table.insert(hiddenSkills, LuaShenzhuClear)
+table.insert(hiddenSkills, LuaShenzhuTargetMod)
 
 -- 神孙策
 ExShenSunce = sgs.General(extension, 'ExShenSunce', 'god', 6, true, true, false, 1)
@@ -956,7 +983,7 @@ LuaFuhai = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaFuhaiDraw = sgs.CreateTriggerSkill {
@@ -969,7 +996,7 @@ LuaFuhaiDraw = sgs.CreateTriggerSkill {
             room:addPlayerMark(player, 'LuaFuhaiDraw', move.card_ids:length())
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaFuhaiClear = sgs.CreateTriggerSkill {
@@ -998,7 +1025,7 @@ LuaFuhaiClear = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaFuhaiDeath = sgs.CreateTriggerSkill {
@@ -1020,7 +1047,7 @@ LuaFuhaiDeath = sgs.CreateTriggerSkill {
             rinsan.addPlayerMaxHp(sp, x)
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaPingheCard = sgs.CreateSkillCard {
@@ -1092,13 +1119,13 @@ LuaPingheMaxCards = sgs.CreateMaxCardsSkill {
 }
 
 ExShenSunce:addSkill(LuaYingba)
-SkillAnjiang:addSkill(LuaYingbaTargetMod)
 ExShenSunce:addSkill(LuaFuhai)
-SkillAnjiang:addSkill(LuaFuhaiDraw)
-SkillAnjiang:addSkill(LuaFuhaiClear)
-SkillAnjiang:addSkill(LuaFuhaiDeath)
 ExShenSunce:addSkill(LuaPinghe)
-SkillAnjiang:addSkill(LuaPingheMaxCards)
+table.insert(hiddenSkills, LuaYingbaTargetMod)
+table.insert(hiddenSkills, LuaFuhaiDraw)
+table.insert(hiddenSkills, LuaFuhaiClear)
+table.insert(hiddenSkills, LuaFuhaiDeath)
+table.insert(hiddenSkills, LuaPingheMaxCards)
 
 -- 羊祜
 ExYanghu = sgs.General(extension, 'ExYanghu', 'qun', '3', true, true)
@@ -1208,7 +1235,7 @@ LuaMingfaPindian = sgs.CreateTriggerSkill {
         end
         data:setValue(pindian)
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaRongbeiCard = sgs.CreateSkillCard {
@@ -1255,6 +1282,8 @@ LuaRongbei = sgs.CreateTriggerSkill {
 }
 
 ExYanghu:addSkill(LuaMingfa)
-SkillAnjiang:addSkill(LuaMingfaMod)
-SkillAnjiang:addSkill(LuaMingfaPindian)
 ExYanghu:addSkill(LuaRongbei)
+table.insert(hiddenSkills, LuaMingfaMod)
+table.insert(hiddenSkills, LuaMingfaPindian)
+
+rinsan.addHiddenSkills(hiddenSkills)

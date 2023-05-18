@@ -6,15 +6,13 @@ extension = sgs.Package('GroupFriendPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
+-- 隐藏技能添加
+local hiddenSkills = {}
 
-local function targetTrigger(self, target)
-    return target
-end
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
 
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 Cactus = sgs.General(extension, 'Cactus', 'wu', '4', true)
 Fuhua = sgs.General(extension, 'Fuhua', 'qun', '4', true, true)
 Rinsan = sgs.General(extension, 'Rinsan', 'shu', '3', true, true)
@@ -84,7 +82,7 @@ LuaBaipiao = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaGeidianCard = sgs.CreateSkillCard {
@@ -568,7 +566,7 @@ LuaNosJuesha = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaNosJuesha)
+table.insert(hiddenSkills, LuaNosJuesha)
 
 LuaJuesha = sgs.CreateTriggerSkill {
     name = 'LuaJuesha',
@@ -609,7 +607,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMouhai = sgs.CreateTriggerSkill {
@@ -868,7 +866,7 @@ LuaJiaoxie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaShulian = sgs.CreateTriggerSkill {
@@ -985,7 +983,7 @@ LuaZhazhi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaJueding = sgs.CreateTriggerSkill {
@@ -1039,7 +1037,7 @@ LuaJueding = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaShaikaCard = sgs.CreateSkillCard {
@@ -1119,7 +1117,7 @@ LuaShaika = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaChutou = sgs.CreateTriggerSkill {
@@ -1175,7 +1173,7 @@ LuaChutou = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaYingshi = sgs.CreateTriggerSkill {
@@ -1302,7 +1300,7 @@ LuaTianfa = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaZhixieCard = sgs.CreateSkillCard {
@@ -1371,7 +1369,7 @@ LuaZhixie = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaJixie = sgs.CreateTriggerSkill {
@@ -1546,6 +1544,14 @@ LuaFumoTargetMod = sgs.CreateTargetModSkill {
     end,
 }
 
+-- 桃色获取卡牌
+local function doTaoseGetCard(skill_name, room, source, flags, target)
+    if target:getCards(flags):length() > 0 then
+        local card_id = room:askForCardChosen(source, target, flags, skill_name, false, sgs.Card_MethodNone)
+        room:obtainCard(source, card_id, false)
+    end
+end
+
 LuaTaoseCard = sgs.CreateSkillCard {
     name = 'LuaTaoseCard',
     will_throw = false,
@@ -1556,9 +1562,9 @@ LuaTaoseCard = sgs.CreateSkillCard {
         room:notifySkillInvoked(source, 'LuaTaose')
         local target = targets[1]
         room:obtainCard(target, self:getSubcards():first())
-        rinsan.doTaoseGetCard('LuaTaose', room, source, 'h', target)
-        rinsan.doTaoseGetCard('LuaTaose', room, source, 'e', target)
-        rinsan.doTaoseGetCard('LuaTaose', room, source, 'j', target)
+        doTaoseGetCard('LuaTaose', room, source, 'h', target)
+        doTaoseGetCard('LuaTaose', room, source, 'e', target)
+        doTaoseGetCard('LuaTaose', room, source, 'j', target)
         if target:getGender() ~= source:getGender() then
             local slash = sgs.Sanguosha:cloneCard('Slash', sgs.Card_NoSuit, 0)
             slash:setSkillName('LuaTaose')
@@ -1729,7 +1735,7 @@ LuaXiandengStart = sgs.CreateTriggerSkill {
             room:setTag('TurnLengthCount', sgs.QVariant(currTurn))
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaXiandengTargetMod = sgs.CreateTargetModSkill {
@@ -2130,19 +2136,14 @@ LuaJiuwenDamaged = sgs.CreateTriggerSkill {
             room:setPlayerMark(player, 'LuaJiuwen', 0)
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 Cactus:addSkill(LuaBaipiao)
-SkillAnjiang:addSkill(LuaGeidian)
-SkillAnjiang:addSkill(LuaWanneng)
 Fuhua:addSkill(LuaGeidian)
 Rinsan:addSkill(LuaWanneng)
-SkillAnjiang:addSkill(LuaZibao)
-SkillAnjiang:addSkill(LuaSoutuVS)
 Rinsan:addSkill(LuaSoutu)
 SPFuhua:addSkill(LuaYangjing)
-SkillAnjiang:addSkill(LuaYangjingAttackRange)
 SPFuhua:addSkill(LuaTuci)
 SPCactus:addSkill(LuaJuesha)
 SPCactus:addSkill(LuaMouhai)
@@ -2150,11 +2151,8 @@ SPCactus:addSkill(LuaChuanyi)
 Qiumu:addSkill(LuaPaozhuan)
 Qiumu:addSkill(LuaYinyu)
 SPRinsan:addSkill(LuaQingyu)
-SkillAnjiang:addSkill(LuaQingyuTargetMod)
-SkillAnjiang:addSkill(LuaQingyuMaxCards)
 SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
-SkillAnjiang:addSkill(LuaShulianForbidden)
 Anan:addSkill(LuaZhazhi)
 Anan:addSkill(LuaJueding)
 Erenlei:addSkill(LuaShaika)
@@ -2165,24 +2163,33 @@ Shayu:addSkill(LuaTianfa)
 Shayu:addSkill(LuaZhixie)
 Shayu:addSkill(LuaJixie)
 Yeniao:addSkill(LuaFumo)
-SkillAnjiang:addSkill(LuaFumoTargetMod)
 Linxi:addSkill(LuaTaose)
 Linxi:addSkill('hongyan')
 Ajie:addSkill(LuaJiaren)
 Ajie:addSkill(LuaFabing)
 Ajie:addSkill(LuaChengsheng)
-SkillAnjiang:addSkill(LuaJiarenClear)
-SkillAnjiang:addSkill(LuaJiarenForbid)
 Shatang:addSkill(LuaXiandeng)
 Shatang:addSkill(LuaZhiyuan)
-SkillAnjiang:addSkill(LuaXiandengStart)
-SkillAnjiang:addSkill(LuaXiandengTargetMod)
 Dalaojiang:addSkill(LuaYishi)
 Dalaojiang:addSkill(LuaManyan)
 Zhongliao:addSkill(LuaRuiping)
 Zhongliao:addSkill(LuaJiuwen)
-SkillAnjiang:addSkill(LuaBaijia)
 for _, relateSkill in ipairs(RUIPING_SKILLS) do
     Zhongliao:addRelateSkill(relateSkill)
 end
-SkillAnjiang:addSkill(LuaJiuwenDamaged)
+
+table.insert(hiddenSkills, LuaZibao)
+table.insert(hiddenSkills, LuaSoutuVS)
+table.insert(hiddenSkills, LuaYangjingAttackRange)
+table.insert(hiddenSkills, LuaQingyuTargetMod)
+table.insert(hiddenSkills, LuaQingyuMaxCards)
+table.insert(hiddenSkills, LuaShulianForbidden)
+table.insert(hiddenSkills, LuaFumoTargetMod)
+table.insert(hiddenSkills, LuaJiarenClear)
+table.insert(hiddenSkills, LuaJiarenForbid)
+table.insert(hiddenSkills, LuaXiandengStart)
+table.insert(hiddenSkills, LuaXiandengTargetMod)
+table.insert(hiddenSkills, LuaBaijia)
+table.insert(hiddenSkills, LuaJiuwenDamaged)
+
+rinsan.addHiddenSkills(hiddenSkills)

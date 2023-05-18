@@ -6,18 +6,12 @@ extension = sgs.Package('LayingPlansWisdomPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
 -- General 定义如下
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
 
 -- 卞夫人
 ExBianfuren = sgs.General(extension, 'ExBianfuren', 'wei', '3', false, true)
@@ -104,7 +98,7 @@ LuaYuejianMaxCards = sgs.CreateMaxCardsSkill {
 
 ExBianfuren:addSkill(LuaWanwei)
 ExBianfuren:addSkill(LuaYuejian)
-SkillAnjiang:addSkill(LuaYuejianMaxCards)
+table.insert(hiddenSkills, LuaYuejianMaxCards)
 
 -- 孙邵
 ExSunshao = sgs.General(extension, 'ExSunshao', 'wu', '3', true, true)
@@ -181,7 +175,7 @@ LuaDingyiBuff = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaDingyiAttackRange = sgs.CreateAttackRangeSkill {
@@ -301,9 +295,9 @@ LuaFubi = sgs.CreateTriggerSkill {
 ExSunshao:addSkill(LuaDingyi)
 ExSunshao:addSkill(LuaZuici)
 ExSunshao:addSkill(LuaFubi)
-SkillAnjiang:addSkill(LuaDingyiBuff)
-SkillAnjiang:addSkill(LuaDingyiMaxCards)
-SkillAnjiang:addSkill(LuaDingyiAttackRange)
+table.insert(hiddenSkills, LuaDingyiBuff)
+table.insert(hiddenSkills, LuaDingyiMaxCards)
+table.insert(hiddenSkills, LuaDingyiAttackRange)
 
 -- 杜预
 ExDuyu = sgs.General(extension, 'ExDuyu', 'qun', '4', true, true)
@@ -466,10 +460,10 @@ LuaMiewu = sgs.CreateTriggerSkill {
 }
 LuaMiewu:setGuhuoDialog('lrd')
 
-SkillAnjiang:addSkill(LuaMiewu)
 ExDuyu:addSkill(LuaWuku)
 ExDuyu:addSkill(LuaSanchen)
 ExDuyu:addRelateSkill('LuaMiewu')
+table.insert(hiddenSkills, LuaMiewu)
 
 -- 王粲
 ExWangcan = sgs.General(extension, 'ExWangcan', 'wei', '3', true)
@@ -559,7 +553,7 @@ LuaShanxi = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExWangcan:addSkill(LuaQiai)
@@ -588,6 +582,33 @@ LuaTianzuo = sgs.CreateTriggerSkill {
     end,
 }
 
+-- 将【奇正相生】加入到初始卡牌
+local function initIndirectCombination(room)
+    local drawPile = room:getDrawPile()
+    local ids = {}
+    for i = 0, 10000 do
+        local card = sgs.Sanguosha:getEngineCard(i)
+        if card == nil then
+            break
+        end
+        if (rinsan.Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('IndirectCombination')) then
+            if card:getPackage() ~= 'jiaozhao' then
+                -- 排除【矫诏】包的无色卡牌
+                table.insert(ids, card:getId())
+            end
+        end
+    end
+    for _, id in ipairs(ids) do
+        drawPile:append(id)
+        room:setCardMapping(id, nil, sgs.Player_DrawPile)
+    end
+    rinsan.shuffleDrawPile(room)
+    rinsan.sendLogMessage(room, '$LuaTianzuo', {
+        ['card_str'] = table.concat(ids, '+'),
+    })
+    room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+end
+
 -- 天佐辅助，如果启用了扩展卡牌包，就放一句语音
 LuaTianzuoStart = sgs.CreateTriggerSkill {
     name = 'LuaTianzuoStart',
@@ -606,7 +627,7 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
                     room:sendCompulsoryTriggerLog(p, 'LuaTianzuo')
                     room:broadcastSkillInvoke('LuaTianzuo')
                     if rinsan.isPackageBanned('ExpansionCardPackage') then
-                        rinsan.initIndirectCombination(room)
+                        initIndirectCombination(room)
                     end
                     room:setTag('LuaTianzuoStartInvoked', sgs.QVariant(true))
                     break
@@ -615,8 +636,31 @@ LuaTianzuoStart = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
+
+-- 是否可以发动灵策
+local function playerCanInvokeLingce(player, card)
+    -- 判断是否为固定可以发动的【无中生有】【过河拆桥】【无懈可击】【奇正相生】
+    local fixed_types = {
+        'ExNihilo',
+        'Dismantlement',
+        'Nullification',
+        'IndirectCombination',
+    }
+    for _, type in ipairs(fixed_types) do
+        if card:isKindOf(type) then
+            return true
+        end
+    end
+    local dinghan_cards = player:getTag('LuaDinghanCards'):toString():split('|')
+    for _, type in ipairs(dinghan_cards) do
+        if card:objectName() == type then
+            return true
+        end
+    end
+    return false
+end
 
 LuaLingce = sgs.CreateTriggerSkill {
     name = 'LuaLingce',
@@ -626,7 +670,7 @@ LuaLingce = sgs.CreateTriggerSkill {
         local card = data:toCardUse().card
         if card:isKindOf('TrickCard') and not card:isVirtualCard() then
             for _, p in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-                if rinsan.playerCanInvokeLingce(p, card) then
+                if playerCanInvokeLingce(p, card) then
                     room:sendCompulsoryTriggerLog(p, self:objectName())
                     p:drawCards(1, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
@@ -634,15 +678,26 @@ LuaLingce = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
+
+-- 封装方法用于获取定汉记录牌名 table
+local function getDinghanCardsTable(player)
+    local dinghan_str = player:getTag('LuaDinghanCards') and player:getTag('LuaDinghanCards'):toString() or ''
+    return dinghan_str:split('|')
+end
+
+-- 封装方法用于设置定汉记录牌名
+local function setDinghanCardsTable(player, dinghan_cards)
+    player:setTag('LuaDinghanCards', sgs.QVariant(table.concat(dinghan_cards, '|')))
+end
 
 LuaDinghan = sgs.CreateTriggerSkill {
     name = 'LuaDinghan',
     events = {sgs.TargetConfirming},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        local dinghan_cards = rinsan.getDinghanCardsTable(player)
+        local dinghan_cards = getDinghanCardsTable(player)
         if not use.card:isKindOf('TrickCard') or table.contains(dinghan_cards, use.card:objectName()) then
             return false
         end
@@ -669,7 +724,7 @@ LuaDinghan = sgs.CreateTriggerSkill {
                 ['arg'] = self:objectName(),
                 ['arg2'] = use.card:objectName(),
             })
-            rinsan.setDinghanCardsTable(player, dinghan_cards)
+            setDinghanCardsTable(player, dinghan_cards)
         end
     end,
 }
@@ -679,7 +734,7 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local dinghan_cards = rinsan.getDinghanCardsTable(player)
+        local dinghan_cards = getDinghanCardsTable(player)
         local add_available = {}
         for _, cd in ipairs(rinsan.ALL_TRICKS) do
             if not table.contains(dinghan_cards, cd) then
@@ -713,7 +768,7 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
                 ['arg'] = 'LuaDinghan',
                 ['arg2'] = card_choice,
             })
-            rinsan.setDinghanCardsTable(player, dinghan_cards)
+            setDinghanCardsTable(player, dinghan_cards)
         end
     end,
     can_trigger = function(self, target)
@@ -722,10 +777,10 @@ LuaDinghanChange = sgs.CreateTriggerSkill {
 }
 
 ExShenXunyu:addSkill(LuaTianzuo)
-SkillAnjiang:addSkill(LuaTianzuoStart)
 ExShenXunyu:addSkill(LuaLingce)
 ExShenXunyu:addSkill(LuaDinghan)
-SkillAnjiang:addSkill(LuaDinghanChange)
+table.insert(hiddenSkills, LuaTianzuoStart)
+table.insert(hiddenSkills, LuaDinghanChange)
 
 -- 神郭嘉
 ExShenGuojia = sgs.General(extension, 'ExShenGuojia', 'god', '3', true)
@@ -812,7 +867,7 @@ LuaHuishi = sgs.CreateTriggerSkill {
         data:setValue(judge)
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaTianyi = sgs.CreateTriggerSkill {
@@ -859,7 +914,7 @@ LuaTianyiDamaged = sgs.CreateTriggerSkill {
             room:addPlayerMark(player, string.format('LuaDamagedBy%s', damage.from:objectName()))
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLimitHuishiCard = sgs.CreateSkillCard {
@@ -1032,10 +1087,10 @@ LuaZuoxing:setGuhuoDialog('r')
 
 ExShenGuojia:addSkill(LuaHuishi)
 ExShenGuojia:addSkill(LuaTianyi)
-SkillAnjiang:addSkill(LuaTianyiDamaged)
 ExShenGuojia:addSkill(LuaLimitHuishi)
-SkillAnjiang:addSkill(LuaZuoxing)
 ExShenGuojia:addRelateSkill('LuaZuoxing')
+table.insert(hiddenSkills, LuaTianyiDamaged)
+table.insert(hiddenSkills, LuaZuoxing)
 
 -- 荀谌
 ExXunchen = sgs.General(extension, 'ExXunchen', 'qun', '3', true, true)
@@ -1201,7 +1256,7 @@ LuaChenshi = sgs.CreateTriggerSkill {
             doChenshi(target, event == sgs.TargetSpecified)
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMoushi = sgs.CreateTriggerSkill {
@@ -1237,9 +1292,9 @@ LuaMoushi = sgs.CreateTriggerSkill {
 }
 
 ExXunchen:addSkill(LuaWeipo)
-SkillAnjiang:addSkill(LuaWeipoVS)
 ExXunchen:addSkill(LuaChenshi)
 ExXunchen:addSkill(LuaMoushi)
+table.insert(hiddenSkills, LuaWeipoVS)
 
 -- 费祎
 ExFeiyi = sgs.General(extension, 'ExFeiyi', 'shu', '3', true, true)
@@ -1313,7 +1368,7 @@ LuaJianyuDraw = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShengxi = sgs.CreateTriggerSkill {
@@ -1368,9 +1423,9 @@ LuaShengxiCheck = sgs.CreateTriggerSkill {
 }
 
 ExFeiyi:addSkill(LuaJianyu)
-SkillAnjiang:addSkill(LuaJianyuDraw)
 ExFeiyi:addSkill(LuaShengxi)
-SkillAnjiang:addSkill(LuaShengxiCheck)
+table.insert(hiddenSkills, LuaJianyuDraw)
+table.insert(hiddenSkills, LuaShengxiCheck)
 
 -- 陈震
 ExChenzhen = sgs.General(extension, 'ExChenzhen', 'shu', '3', true)
@@ -1424,6 +1479,27 @@ ExChenzhen:addSkill(LuaShameng)
 -- 骆统
 ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true)
 
+-- 勤政技能获得牌
+local function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
+    local mod = math.fmod(markNum, modNum)
+    if mod == 0 then
+        local type = random(1, 2)
+        local card
+        local params = {
+            ['existed'] = {},
+        }
+        if type == 1 then
+            params['type'] = cardType1
+            card = obtainTargetedTypeCard(room, params)
+        else
+            params['type'] = cardType2
+            card = obtainTargetedTypeCard(room, params)
+        end
+        return card
+    end
+    return nil
+end
+
 LuaQinzheng = sgs.CreateTriggerSkill {
     name = 'LuaQinzheng',
     frequency = sgs.Skill_Compulsory,
@@ -1442,15 +1518,15 @@ LuaQinzheng = sgs.CreateTriggerSkill {
         room:sendCompulsoryTriggerLog(player, self:objectName())
         room:broadcastSkillInvoke(self:objectName())
         local markNum = player:getMark('@' .. self:objectName())
-        local card1 = rinsan.LuaQinzhengGetCard(room, markNum, 3, 'Slash', 'Jink')
+        local card1 = LuaQinzhengGetCard(room, markNum, 3, 'Slash', 'Jink')
         if card1 then
             player:obtainCard(card1, false)
         end
-        local card2 = rinsan.LuaQinzhengGetCard(room, markNum, 5, 'Peach', 'Analeptic')
+        local card2 = LuaQinzhengGetCard(room, markNum, 5, 'Peach', 'Analeptic')
         if card2 then
             player:obtainCard(card2, false)
         end
-        local card3 = rinsan.LuaQinzhengGetCard(room, markNum, 8, 'Duel', 'ExNihilo')
+        local card3 = LuaQinzhengGetCard(room, markNum, 8, 'Duel', 'ExNihilo')
         if card3 then
             player:obtainCard(card3, false)
         end
@@ -1459,3 +1535,5 @@ LuaQinzheng = sgs.CreateTriggerSkill {
 }
 
 ExLuotong:addSkill(LuaQinzheng)
+
+rinsan.addHiddenSkills(hiddenSkills)

@@ -6,10 +6,6 @@ extension = sgs.Package('ExtraordinaryPeoplePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 蒲元
 ExPuyuan = sgs.General(extension, 'ExPuyuan', 'shu', '4', true, true)
 
@@ -87,7 +83,7 @@ LuaTianjiang = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 local function doZhurenSuccessCheck(card)

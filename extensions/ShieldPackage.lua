@@ -6,20 +6,14 @@ extension = sgs.Package('ShieldPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
--- General 定义如下
--- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
--- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
+-- 隐藏技能添加
+local hiddenSkills = {}
 
 -- 初始护甲值表
 local START_SHIELDS = {
     ['ExMouHuaxiong'] = 1,
     ['ExMouCaoren'] = 1,
 }
-
-local function globalTrigger(self, target)
-    return true
-end
 
 -- 护甲结算
 LuaShield = sgs.CreateTriggerSkill {
@@ -105,7 +99,7 @@ LuaShield = sgs.CreateTriggerSkill {
         room:setPlayerProperty(damage.to, 'hp', sgs.QVariant(newHp))
         return true
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 -- 护甲初始化
@@ -120,7 +114,7 @@ LuaShieldInit = sgs.CreateTriggerSkill {
             room:setPlayerMark(p, rinsan.SHIELD_MARK, math.min(rinsan.MAX_SHIELD_COUNT, first + second))
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 -- 修正神甘宁魄袭多弃牌问题
@@ -140,9 +134,11 @@ LuaPoxiHotFix = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
-SkillAnjiang:addSkill(LuaShield)
-SkillAnjiang:addSkill(LuaShieldInit)
-SkillAnjiang:addSkill(LuaPoxiHotFix)
+table.insert(hiddenSkills, LuaShield)
+table.insert(hiddenSkills, LuaShieldInit)
+table.insert(hiddenSkills, LuaPoxiHotFix)
+
+rinsan.addHiddenSkills(hiddenSkills)

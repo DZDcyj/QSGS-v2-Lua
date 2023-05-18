@@ -9,7 +9,6 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- General 定义如下
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
 
 -- 谋夏侯氏
 ExMouXiahoushi = sgs.General(extension, 'ExMouXiahoushi', 'shu', '3', false, true)

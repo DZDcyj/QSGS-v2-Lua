@@ -7,6 +7,16 @@ module('QSanguoshaLuaFunction', package.seeall)
 -- 忽略本文件中未引用 global variable 的警告
 -- luacheck: push ignore 131
 
+-- 通用 targetTrigger
+function targetTrigger(self, target)
+    return target
+end
+
+-- 通用 globalTrigger
+function globalTrigger(self, target)
+    return true
+end
+
 -- 蛊惑类技能通用 enabled_at_play
 function guhuoVSSkillEnabledAtPlay(self, player)
     local current = false
@@ -167,6 +177,7 @@ function guhuoCardOnValidateInResponse(self, source, skill_name, choice_name, ta
     return use_card
 end
 
+-- 蛊惑类型技能卡 feasible 自实现
 function selfFeasible(self, targets, skill_name)
     local players = sgs.PlayerList()
     for i = 1, #targets do
@@ -200,14 +211,6 @@ function selfTargetFixed(self)
     end
     card:addSubcard(self:getSubcards():first())
     return card and card:targetFixed()
-end
-
--- 桃色获取卡牌
-function doTaoseGetCard(skill_name, room, source, flags, target)
-    if target:getCards(flags):length() > 0 then
-        local card_id = room:askForCardChosen(source, target, flags, skill_name, false, sgs.Card_MethodNone)
-        room:obtainCard(source, card_id, false)
-    end
 end
 
 -- 检查 card 的 subcards 中是否存在符合条件的卡牌
@@ -261,82 +264,6 @@ function skill(self, room, player, open, n)
     end
 end
 
--- 权计摸牌放牌
-function doQuanji(skillName, player, room, times)
-    times = times or 1
-    local index = 0
-    while index < times do
-        if player:askForSkillInvoke(skillName) then
-            room:drawCards(player, 1, skillName)
-            room:broadcastSkillInvoke(skillName)
-            if not player:isKongcheng() then
-                local card_id
-                if player:getHandcardNum() == 1 then
-                    card_id = player:handCards():first()
-                    room:getThread():delay()
-                else
-                    card_id = room:askForExchange(player, skillName, 1, 1, false, 'QuanjiPush'):getSubcards():first()
-                end
-                player:addToPile('power', card_id)
-            end
-        else
-            break
-        end
-        index = index + 1
-    end
-end
-
--- 获取可扶汉的武将 Table
--- 暂时没有排除已获得所有技能的武将
-function getFuhanShuGenerals(general_num)
-    local general_names = sgs.Sanguosha:getLimitedGeneralNames()
-    local shu_generals = {}
-    for _, name in ipairs(general_names) do
-        local general = sgs.Sanguosha:getGeneral(name)
-        if general:getKingdom() == 'shu' then
-            if not table.contains(shu_generals, name) then
-                table.insert(shu_generals, name)
-            end
-        end
-    end
-    local available_generals = {}
-    local i = 0
-    while i < general_num do
-        i = i + 1
-        local index = random(1, #shu_generals)
-        local selected = shu_generals[index]
-        table.insert(available_generals, selected)
-        table.removeOne(shu_generals, shu_generals[index])
-    end
-    return available_generals
-end
-
--- 激词收回大点数牌
-function getBackPindianCardByJici(room, pindian, isFrom)
-    local player
-    if isFrom then
-        player = pindian.from
-    else
-        player = pindian.to
-    end
-    if pindian.from_number > pindian.to_number then
-        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
-            player:obtainCard(pindian.from_card)
-        end
-    elseif pindian.from_number < pindian.to_number then
-        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
-            player:obtainCard(pindian.to_card)
-        end
-    else
-        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
-            player:obtainCard(pindian.from_card)
-        end
-        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
-            player:obtainCard(pindian.to_card)
-        end
-    end
-end
-
 -- 封装好的 RIGHT 函数，判断技能能否发动的默认条件
 function RIGHT(self, player, skillName)
     if not skillName then
@@ -353,23 +280,6 @@ end
 -- 封装好的 RIGHTNOTATPHASE 函数，在 RIGHT 函数基础上判断是否不处于对应阶段
 function RIGHTNOTATPHASE(self, player, phase, skillName)
     return RIGHT(self, player, skillName) and player:getPhase() ~= phase
-end
-
--- 讨灭用，from 从 card_source 区域中获得一张牌，然后选择一名除 card_source 之外的角色获得
-function obtainOneCardAndGiveToOtherPlayer(self, room, from, card_source)
-    local card_id = room:askForCardChosen(from, card_source, 'hej', self:objectName())
-    from:obtainCard(sgs.Sanguosha:getCard(card_id), false)
-    local targets = room:getOtherPlayers(card_source)
-    if targets:contains(from) then
-        targets:removeOne(from)
-    end
-    local togive = room:askForPlayerChosen(from, targets, self:objectName(),
-        '@LuaTaomie-give:' .. card_source:objectName(), true, true)
-    if togive then
-        local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, from:objectName(), togive:objectName(),
-            self:objectName(), nil)
-        room:moveCardTo(sgs.Sanguosha:getCard(card_id), from, togive, sgs.Player_PlaceHand, reason, false)
-    end
 end
 
 -- 造成伤害
@@ -444,178 +354,6 @@ function getCardFromDiscardPile(room, type)
         if card:isKindOf(type) then
             return card
         end
-    end
-    return nil
-end
-
--- 巧思封装函数
-function LuaDoQiaosiShow(room, player, dummyCard)
-    local choices = {
-        'king',
-        'merchant',
-        'artisan',
-        'farmer',
-        'scholar',
-        'general',
-        'cancel',
-    }
-    local chosenRoles = {}
-    local index = 0
-    local continuePlaying = true
-    while index < 3 and continuePlaying do
-        local choice = room:askForChoice(player, 'LuaQiaosi', table.concat(choices, '+'))
-        if choice == 'cancel' then
-            continuePlaying = false
-        end
-        table.removeOne(choices, choice)
-        table.insert(chosenRoles, choice)
-        index = index + 1
-    end
-    local toGiveCardTypes = LuaQiaosiGetCards(room, chosenRoles)
-    local about_to_obtain = {}
-    -- 预期的总牌数
-    local expected_length = 0
-    for _, cardTypes in ipairs(toGiveCardTypes) do
-        local params = {
-            ['existed'] = about_to_obtain,
-            ['findDiscardPile'] = true,
-        }
-        if #cardTypes == 2 then
-            -- 确定的，王、将
-            params['type'] = cardTypes[1]
-            local card1 = obtainTargetedTypeCard(room, params)
-            expected_length = expected_length + 2
-            if card1 then
-                table.insert(about_to_obtain, card1:getId())
-                dummyCard:addSubcard(card1)
-                local card2 = obtainTargetedTypeCard(room, params)
-                if card2 then
-                    table.insert(about_to_obtain, card2:getId())
-                    dummyCard:addSubcard(card2)
-                end
-            end
-        else
-            -- 不确定的，要抽奖
-            local currType = random(1, 5)
-            expected_length = expected_length + 1
-            local type = cardTypes[currType]
-            if string.find(type, 'JinkOrPeach') then
-                type = LuaGetRoleCardType('scholarKing', true, true)
-            elseif string.find(type, 'SlashOrAnaleptic') then
-                type = LuaGetRoleCardType('merchantGeneral', true, true)
-            end
-            params['type'] = type
-            local card = obtainTargetedTypeCard(room, params)
-            if card then
-                table.insert(about_to_obtain, card:getId())
-                dummyCard:addSubcard(card)
-            end
-        end
-    end
-    player:obtainCard(dummyCard)
-    -- 直接从牌堆顶获取差额牌
-    if dummyCard:subcardsLength() < expected_length then
-        dummyCard:addSubcards(room:getNCards(expected_length - dummyCard:subCardsLength()))
-    end
-    return dummyCard:subcardsLength()
-end
-
--- 巧思获得牌
-function LuaQiaosiGetCards(room, roleType)
-    -- 王、商、工、农、士、将
-    -- King、Merchant、Artisan、Farmer、Scholar、General
-    -- roleType 代表转的人类型，为 Table 类型
-    -- 例如{'king', 'artisan', 'general'}
-    local results = {}
-    local kingActivated = table.contains(roleType, 'king')
-    local generalActivated = table.contains(roleType, 'general')
-    for _, type in ipairs(roleType) do
-        local cardTypes = LuaGetRoleCardType(type, kingActivated, generalActivated)
-        table.insert(results, cardTypes)
-    end
-    return results
-end
-
--- 巧思获得牌的类型判断
-function LuaGetRoleCardType(roleType, kingActivated, generalActivated)
-    local map = {
-        ['king'] = {
-            'TrickCard',
-            'TrickCard',
-        },
-        ['general'] = {
-            'EquipCard',
-            'EquipCard',
-        },
-        ['artisan'] = {
-            'Slash',
-            'Slash',
-            'Slash',
-            'Slash',
-            'Analeptic',
-        },
-        ['farmer'] = {
-            'Jink',
-            'Jink',
-            'Jink',
-            'Jink',
-            'Peach',
-        },
-        ['scholar'] = {
-            'TrickCard',
-            'TrickCard',
-            'TrickCard',
-            'TrickCard',
-            'JinkOrPeach',
-        },
-        ['scholarKing'] = {
-            'Peach',
-            'Peach',
-            'Peach',
-            'Peach',
-            'Jink',
-        },
-        ['merchant'] = {
-            'EquipCard',
-            'EquipCard',
-            'EquipCard',
-            'EquipCard',
-            'SlashOrAnaleptic',
-        },
-        ['merchantGeneral'] = {
-            'Analeptic',
-            'Analeptic',
-            'Analeptic',
-            'Analeptic',
-            'Slash',
-        },
-    }
-    if roleType == 'scholar' and kingActivated then
-        roleType = roleType .. 'King'
-    end
-    if roleType == 'merchant' and generalActivated then
-        roleType = roleType .. 'General'
-    end
-    return map[roleType]
-end
-
--- 勤政技能获得牌
-function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
-    local mod = math.fmod(markNum, modNum)
-    if mod == 0 then
-        local type = random(1, 2)
-        local card
-        local params = {
-            ['existed'] = {},
-        }
-        if type == 1 then
-            params['type'] = cardType1
-            card = obtainTargetedTypeCard(room, params)
-        else
-            params['type'] = cardType2
-            card = obtainTargetedTypeCard(room, params)
-        end
-        return card
     end
     return nil
 end
@@ -851,7 +589,8 @@ function cardGoBack(event, player, data, skill)
 end
 
 -- sgs.AskforPindianCard 时机卡牌获取
-function obtainIdFromAskForPindianCardEvent(room, target)
+function obtainIdFromAskForPindianCardEvent(target)
+    local room = target:getRoom()
     local from_id = -1
     local random_from_id = random(1, 10000)
     local from_data = sgs.QVariant()
@@ -1153,21 +892,6 @@ function getRandomGeneral(banned_generals)
     return random_general
 end
 
--- 判断是否处于暴走状态
-function isBaozou(player)
-    return player:getMark('LuaBaozou') > 0
-end
-
--- 判断是否可以使用 BOSS 技能
-function bossSkillEnabled(player, skill_name, mark_name)
-    return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
-end
-
--- 获取内伐不可使用手牌数
-function getNeifaUnavailableCardCount(player)
-    return math.min(getUnavailableHandcardCount(player), 5)
-end
-
 -- 获取烈弓花色数
 function getLiegongSuitNum(player)
     local count = 0
@@ -1253,26 +977,6 @@ function canDiscardCard(from, to, card_id)
     return true
 end
 
--- 封装函数【节命】OL
--- 返回值代表是否成功发动【节命】
-function doJiemingDrawDiscard(skillName, player, room)
-    local alives = room:getAlivePlayers()
-    if alives:isEmpty() then
-        return false
-    end
-    local target = room:askForPlayerChosen(player, alives, skillName, 'jieming-invoke', true, true)
-    if target then
-        room:broadcastSkillInvoke(skillName)
-        local x = math.min(5, target:getMaxHp())
-        target:drawCards(x, skillName)
-        local diff = target:getHandcardNum() - x
-        if diff > 0 then
-            room:askForDiscard(target, skillName, diff, diff)
-        end
-    end
-    return target ~= nil
-end
-
 -- 增加角色体力上限
 -- player 要增加的角色
 -- value 增加值
@@ -1338,12 +1042,14 @@ function checkFilter(selected, to_select, compareType, compareValue)
 end
 
 -- 封装方法，用于添加 to 到 from 的攻击范围
-function addToAttackRange(room, from, to)
+function addToAttackRange(from, to)
+    local room = from:getRoom()
     room:insertAttackRangePair(from, to)
 end
 
--- 封装方法，用于将 to 从 from 的攻击范围中移除（用于解除上一方法的问题）
-function removeFromAttackRange(room, from, to)
+-- 封装方法，用于将 to 从 from 的攻击范围中移除（用于解除上一方法）
+function removeFromAttackRange(from, to)
+    local room = from:getRoom()
     room:removeAttackRangePair(from, to)
 end
 
@@ -1397,7 +1103,8 @@ function calculateProbably(unknownCardNum, typeCardRemain, totalRemain, cardType
 end
 
 -- 初始化三种牌数量
-function cardNumInitialize(room, source)
+function cardNumInitialize(source)
+    local room = source:getRoom()
     local totalBasic, totalTrick, totalEquip = 0, 0, 0
     for _, cid in sgs.qlist(room:getDrawPile()) do
         local cd = sgs.Sanguosha:getCard(cid)
@@ -1477,7 +1184,7 @@ function unknownAnalyze(resultList, source, target, room)
     local totalTrick = room:getTag('LuaLingrenAITrick')
     local totalEquip = room:getTag('LuaLingrenAIEquip')
     while (not totalBasic) or (not totalTrick) or (not totalEquip) do
-        cardNumInitialize(room, source)
+        cardNumInitialize(source)
         totalBasic = room:getTag('LuaLingrenAIBasic')
         totalTrick = room:getTag('LuaLingrenAITrick')
         totalEquip = room:getTag('LuaLingrenAIEquip')
@@ -1525,39 +1232,6 @@ function unknownAnalyze(resultList, source, target, room)
     resultList:append(equipRemain)
 end
 
-function playerCanInvokeLingce(player, card)
-    -- 判断是否为固定可以发动的【无中生有】【过河拆桥】【无懈可击】【奇正相生】
-    local fixed_types = {
-        'ExNihilo',
-        'Dismantlement',
-        'Nullification',
-        'IndirectCombination',
-    }
-    for _, type in ipairs(fixed_types) do
-        if card:isKindOf(type) then
-            return true
-        end
-    end
-    local dinghan_cards = player:getTag('LuaDinghanCards'):toString():split('|')
-    for _, type in ipairs(dinghan_cards) do
-        if card:objectName() == type then
-            return true
-        end
-    end
-    return false
-end
-
--- 封装方法用于获取定汉记录牌名 table
-function getDinghanCardsTable(player)
-    local dinghan_str = player:getTag('LuaDinghanCards') and player:getTag('LuaDinghanCards'):toString() or ''
-    return dinghan_str:split('|')
-end
-
--- 封装方法用于设置定汉记录牌名
-function setDinghanCardsTable(player, dinghan_cards)
-    player:setTag('LuaDinghanCards', sgs.QVariant(table.concat(dinghan_cards, '|')))
-end
-
 -- 封装方法用于添加青钢标记
 function addQinggangTag(victim, card)
     -- 日神杀使用迫真 QStringList 来存储青钢标记牌名
@@ -1577,41 +1251,6 @@ function Set(list)
         set[l] = true
     end
     return set
-end
-
--- 封装方法用于轮回标记
-function moveLuaPoweiMark(room, currentPlayer)
-    room:sendCompulsoryTriggerLog(currentPlayer, 'LuaPowei')
-    local froms = sgs.SPlayerList()
-    local maxIndex = room:alivePlayerCount() - 1
-    local targetMap = {}
-    -- 首先确定要动的来源
-    for i = 1, maxIndex do
-        local curr = currentPlayer:getNextAlive(i)
-        if curr:getMark('@LuaPowei') > 0 then
-            froms:append(curr)
-        end
-    end
-    -- 确认移动到的目标
-    for _, from in sgs.qlist(froms) do
-        for i = 1, maxIndex do
-            local curr = from:getNextAlive(i)
-            if not curr:hasSkill('LuaPowei') then
-                targetMap[from:objectName()] = i
-                goto label
-            end
-        end
-        ::label::
-    end
-    for _, from in sgs.qlist(froms) do
-        local toIndex = targetMap[from:objectName()]
-        if not toIndex then
-            return
-        end
-        local to = from:getNextAlive(toIndex)
-        room:removePlayerMark(from, '@LuaPowei')
-        room:addPlayerMark(to, '@LuaPowei')
-    end
 end
 
 -- 死亡负面技能风险
@@ -1685,29 +1324,6 @@ function decreaseShield(player, count)
     })
 end
 
--- 是否可以发动克己
--- player 角色
--- option 选项，填卡牌名
-function canInvokeKeji(player, option)
-    -- 不能超过最大
-    if getShieldCount(player) >= MAX_SHIELD_COUNT then
-        return false
-    end
-    -- 觉醒了只能选一个
-    if player:getMark('LuaMouDujiang') > 0 then
-        return (not player:hasUsed('#LuaMouKejiDiscardCard')) and (not player:hasUsed('#LuaMouKejiLoseHpCard'))
-    end
-    if (not option) then
-        return (not player:hasUsed('#LuaMouKejiDiscardCard')) or (not player:hasUsed('#LuaMouKejiLoseHpCard'))
-    end
-    return not player:hasUsed(string.format('#%s', option))
-end
-
--- 是否可以发动狭援
-function canInvokeXiayuan(player)
-    return player:hasFlag('ShieldAllLost')
-end
-
 -- 护甲标记
 SHIELD_MARK = '@shield'
 
@@ -1722,185 +1338,6 @@ function getPos(table, value)
         end
     end
     return 0
-end
-
--- 曹金玉系列判断
--- 是否可以发动“隅泣”
-function canInvokeYuqi(caojinyu, player)
-    if caojinyu:distanceTo(player) > getYuqiAvailableDistance(caojinyu) then
-        return false
-    end
-    return caojinyu:getMark('LuaYuqiInvokeTime') < 2
-end
-
--- 判断距离
-function getYuqiAvailableDistance(caojinyu)
-    return caojinyu:getMark('LuaYuqiDistance')
-end
-
--- 可以观看的牌数
-function getYuqiPreviewCardCount(caojinyu)
-    return 3 + caojinyu:getMark('LuaYuqiPreviewCardCount')
-end
-
--- 至多给出的牌
-function getYuqiGiveCardCount(caojinyu)
-    return 1 + caojinyu:getMark('LuaYuqiGiveCardCount')
-end
-
--- 至多获得的牌
-function getYuqiKeepCardCount(caojinyu)
-    return 1 + caojinyu:getMark('LuaYuqiKeepCardCount')
-end
-
--- 是否可以增加数字
-function canIncreaseNumber(caojinyu)
-    if getYuqiAvailableDistance(caojinyu) < 5 then
-        return true
-    end
-    if getYuqiPreviewCardCount(caojinyu) < 5 then
-        return true
-    end
-    if getYuqiGiveCardCount(caojinyu) < 5 then
-        return true
-    end
-    if getYuqiKeepCardCount(caojinyu) < 5 then
-        return true
-    end
-    return false
-end
-
--- 选择增加选项
-function askForYuqiIncreaseChoice(caojinyu, value, skill_name)
-    local choices = {}
-    for index, func in ipairs(YUQI_FUNCS) do
-        if func(caojinyu) < 5 then
-            table.insert(choices, YUQI_MAP[index])
-        end
-    end
-    if #choices == 0 then
-        return
-    end
-    local room = caojinyu:getRoom()
-    local choice = room:askForChoice(caojinyu, skill_name, table.concat(choices, '+'))
-    local pos = getPos(YUQI_MAP, choice)
-    increaseYuqiNumber(caojinyu, pos, value)
-end
-
--- 增加“隅泣”数字
-function increaseYuqiNumber(caojinyu, position, value)
-    if position <= 0 or position > 4 then
-        return
-    end
-    local room = caojinyu:getRoom()
-    local diff = math.max(0, 5 - YUQI_FUNCS[position](caojinyu))
-    if diff <= 0 then
-        return
-    end
-    room:addPlayerMark(caojinyu, YUQI_MAP[position], math.min(diff, value))
-end
-
--- Position 参数，用于隅泣
-YUQI_PREVIEW_COUNT = 1
-YUQI_GIVE_COUNT = 2
-YUQI_KEEP_COUNT = 3
-YUQI_DISTANCE = 4
-
--- 函数映射
-YUQI_FUNCS = {
-    getYuqiPreviewCardCount,
-    getYuqiGiveCardCount,
-    getYuqiKeepCardCount,
-    getYuqiAvailableDistance,
-}
-
--- 映射位置
-YUQI_MAP = {
-    'LuaYuqiPreviewCardCount',
-    'LuaYuqiGiveCardCount',
-    'LuaYuqiKeepCardCount',
-    'LuaYuqiDistance',
-}
-
--- 孙寒华系列判断
-
--- 妙剑等级
-function getMiaojianLevel(sunhanhua)
-    return 1 + sunhanhua:getMark('LuaMiaojianLevelUp')
-end
-
--- 莲华等级
-function getLianhuaLevel(sunhanhua)
-    return 1 + sunhanhua:getMark('LuaLianhuaLevelUp')
-end
-
--- 更新技能描述
-function sunhanhuaUpdateSkillDesc(sunhanhua)
-    local miaojianLevel = getMiaojianLevel(sunhanhua)
-    if miaojianLevel > 1 then
-        modifySkillDescription(':LuaMiaojian', string.format(':LuaMiaojian%d', miaojianLevel))
-    end
-    local lianhuaLevel = getLianhuaLevel(sunhanhua)
-    if lianhuaLevel > 1 then
-        modifySkillDescription(':LuaLianhua', string.format(':LuaLianhua%d', lianhuaLevel))
-    end
-    -- 刷新一下，免得技能修正后显示不出来
-    ChangeCheck(sunhanhua, sunhanhua:getGeneralName())
-end
-
--- 清正选牌
-function filterMouQingzhengCards(source, selected, to_select)
-    -- 需要的花色数
-    local requiredSuitCount = 3 - source:getMark('@LuaZhishi')
-    -- 判断已选择卡牌是否满足花色数
-    local suits = {}
-    for _, cd in ipairs(selected) do
-        local suit = cd:getSuitString()
-        if not table.contains(suits, suit) then
-            table.insert(suits, suit)
-        end
-    end
-
-    -- 是否是装备牌、能否弃置
-    if to_select:isEquipped() or source:isJilei(to_select) then
-        return false
-    end
-
-    -- 要么是已选中花色，要么是不够花色
-    return table.contains(suits, to_select:getSuitString()) or #suits < requiredSuitCount
-end
-
--- 判断清正合法性
-function checkMouQingzhengCards(source, cards)
-    -- 需要的花色数
-    local requiredSuitCount = 3 - source:getMark('@LuaZhishi')
-
-    -- 判断已选择卡牌是否满足花色数
-    local suits = {}
-    for _, cd in ipairs(cards) do
-        local suit = cd:getSuitString()
-        if not table.contains(suits, suit) then
-            table.insert(suits, suit)
-        end
-    end
-    if #suits < requiredSuitCount then
-        return false
-    end
-
-    local ids = {}
-    for _, cd in ipairs(cards) do
-        table.insert(ids, cd:getEffectiveId())
-    end
-
-    -- 判断所有手牌是否已被选中
-    for _, cd in sgs.qlist(source:getHandcards()) do
-        local suit = cd:getSuitString()
-        if table.contains(suits, suit) and not table.contains(ids, cd:getEffectiveId()) then
-            return false
-        end
-    end
-
-    return true
 end
 
 -- 避免一堆 if-else
@@ -1949,97 +1386,10 @@ function startsWith(str, prefix)
     return string.sub(str, 1, string.len(prefix)) == prefix
 end
 
--- 获取秉清标记数
-function getBingQingMarkCount(player)
-    local suits = {
-        sgs.Card_Diamond,
-        sgs.Card_Spade,
-        sgs.Card_Heart,
-        sgs.Card_Club,
-    }
-    local count = 0
-    for _, suit in ipairs(suits) do
-        local mark = string.format('@%s%s_biu', 'LuaBingqing', Suit2String(suit))
-        if player:getMark(mark) > 0 then
-            count = count + 1
-        end
-    end
-    return count
-end
-
-local SHENCAI_KEYWORDS = {
-    '体力',
-    '武器',
-    '打出',
-    '距离',
-}
-local SHENCAI_MARKS = {
-    '@LuaShencai-Chi',
-    '@LuaShencai-Zhang',
-    '@LuaShencai-Tu',
-    '@LuaShencai-Liu',
-}
-
--- 清除神张飞标记
-function clearShencaiMark(player)
-    local room = player:getRoom()
-    room:setPlayerMark(player, '@LuaShencai-Chi', 0)
-    room:setPlayerMark(player, '@LuaShencai-Zhang', 0)
-    room:setPlayerMark(player, '@LuaShencai-Tu', 0)
-    room:setPlayerMark(player, '@LuaShencai-Liu', 0)
-end
-
 -- 中文字符匹配
 function chineseStrFind(str, pattern)
     local startIndex, endIndex = string.find(str, pattern, 1, true)
     return startIndex and endIndex
-end
-
--- 根据牌面给玩家上 debuff
-function shencaiEffect(source, victim, desc)
-    local room = victim:getRoom()
-    local markCount = 0
-    for i = 1, 4, 1 do
-        if chineseStrFind(desc, SHENCAI_KEYWORDS[i]) then
-            victim:gainMark(SHENCAI_MARKS[i])
-            markCount = markCount + 1
-        end
-    end
-    if markCount == 0 then
-        victim:gainMark('@LuaShencai-Death')
-        if not victim:isAllNude() then
-            local card_id = room:askForCardChosen(source, victim, 'hej', 'LuaShencai', false, sgs.Card_MethodNone)
-            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
-            room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
-        end
-    end
-end
-
--- 将【奇正相生】加入到初始卡牌
-function initIndirectCombination(room)
-    local drawPile = room:getDrawPile()
-    local ids = {}
-    for i = 0, 10000 do
-        local card = sgs.Sanguosha:getEngineCard(i)
-        if card == nil then
-            break
-        end
-        if (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and (card:isKindOf('IndirectCombination')) then
-            if card:getPackage() ~= 'jiaozhao' then
-                -- 排除【矫诏】包的无色卡牌
-                table.insert(ids, card:getId())
-            end
-        end
-    end
-    for _, id in ipairs(ids) do
-        drawPile:append(id)
-        room:setCardMapping(id, nil, sgs.Player_DrawPile)
-    end
-    shuffleDrawPile(room)
-    sendLogMessage(room, '$LuaTianzuo', {
-        ['card_str'] = table.concat(ids, '+'),
-    })
-    room:doBroadcastNotify(FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
 end
 
 -- 将马钧装备包移出游戏

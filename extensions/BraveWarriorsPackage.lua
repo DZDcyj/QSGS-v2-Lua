@@ -6,10 +6,6 @@ extension = sgs.Package('BraveWarriorsPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function targetTrigger(self, target)
-    return target
-end
-
 -- 留赞
 ExTenYearLiuzan = sgs.General(extension, 'ExTenYearLiuzan', 'wu', '4', true)
 
@@ -41,7 +37,7 @@ LuaFenyin = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLijiCard = sgs.CreateSkillCard {
@@ -114,7 +110,7 @@ LuaLiji = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExTenYearLiuzan:addSkill(LuaFenyin)

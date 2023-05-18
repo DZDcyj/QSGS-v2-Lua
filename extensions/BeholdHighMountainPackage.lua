@@ -1,15 +1,10 @@
 -- 限定-高山仰止包
 -- Created by DZDcyj at 2023/5/2
-
 module('extensions.BeholdHighMountainPackage', package.seeall)
 extension = sgs.Package('BeholdHighMountainPackage')
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
-
-local function targetTrigger(self, target)
-    return target
-end
 
 -- 王朗
 ExTenYearWanglang = sgs.General(extension, 'ExTenYearWanglang', 'wei', '3', true)
@@ -30,7 +25,7 @@ LuaGusheCard = sgs.CreateSkillCard {
             source:pindian(targets[1], 'LuaGushe', sgs.Sanguosha:getCard(from_id))
             return
         end
-        local get_id = rinsan.obtainIdFromAskForPindianCardEvent(room, source)
+        local get_id = rinsan.obtainIdFromAskForPindianCardEvent(source)
         if get_id ~= -1 then
             from_id = get_id
         end
@@ -43,7 +38,7 @@ LuaGusheCard = sgs.CreateSkillCard {
         moves:append(move)
         for _, p in ipairs(targets) do
             -- 此处同理，响应天辩等
-            local ask_id = rinsan.obtainIdFromAskForPindianCardEvent(room, p)
+            local ask_id = rinsan.obtainIdFromAskForPindianCardEvent(p)
             local card, to_move, to_slash
             if ask_id == -1 then
                 card = room:askForExchange(p, 'LuaGushe', 1, 1, false, '@LuaGushePindian')
@@ -181,6 +176,33 @@ LuaGushe = sgs.CreateTriggerSkill {
     end,
 }
 
+-- 激词收回大点数牌
+local function getBackPindianCardByJici(pindian, isFrom)
+    local player
+    if isFrom then
+        player = pindian.from
+    else
+        player = pindian.to
+    end
+    local room = player:getRoom()
+    if pindian.from_number > pindian.to_number then
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+    elseif pindian.from_number < pindian.to_number then
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    else
+        if room:getCardPlace(pindian.from_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.from_card)
+        end
+        if room:getCardPlace(pindian.to_card:getEffectiveId()) ~= sgs.Player_PlaceHand then
+            player:obtainCard(pindian.to_card)
+        end
+    end
+end
+
 LuaJici = sgs.CreateTriggerSkill {
     name = 'LuaJici',
     events = {sgs.PindianVerifying, sgs.Death},
@@ -195,7 +217,7 @@ LuaJici = sgs.CreateTriggerSkill {
                     room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.from_number = pindian.from_number + pindian.from:getMark('@LuaGushe')
-                    rinsan.getBackPindianCardByJici(room, pindian, true)
+                    getBackPindianCardByJici(pindian, true)
                     obtained = true
                 end
             end
@@ -205,7 +227,7 @@ LuaJici = sgs.CreateTriggerSkill {
                     room:broadcastSkillInvoke(self:objectName())
                     pindian.to_number = pindian.to_number + pindian.to:getMark('@LuaGushe')
                     if not obtained then
-                        rinsan.getBackPindianCardByJici(room, pindian, false)
+                        getBackPindianCardByJici(pindian, false)
                     end
                 end
             end
@@ -231,7 +253,7 @@ LuaJici = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExTenYearWanglang:addSkill(LuaGushe)

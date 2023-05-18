@@ -6,14 +6,12 @@ extension = sgs.Package('LayingPlansCouragePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
 -- General 定义如下
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
-local function globalTrigger(self, target)
-    return true
-end
 
 -- 孙翊
 ExSunyi = sgs.General(extension, 'ExSunyi', 'wu', '4', true, true)
@@ -135,9 +133,9 @@ LuaZaoliStart = sgs.CreateTriggerSkill {
 }
 
 ExSunyi:addSkill(LuaZaoli)
-SkillAnjiang:addSkill(LuaZaoliCardMove)
-SkillAnjiang:addSkill(LuaZaoliUse)
-SkillAnjiang:addSkill(LuaZaoliStart)
+table.insert(hiddenSkills, LuaZaoliCardMove)
+table.insert(hiddenSkills, LuaZaoliUse)
+table.insert(hiddenSkills, LuaZaoliStart)
 
 -- 宗预
 ExZongyu = sgs.General(extension, 'ExZongyu', 'shu', '3', true, true)
@@ -209,7 +207,7 @@ LuaZhibianSkipDraw = sgs.CreateTriggerSkill {
             player:skip(change.to)
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaYuyan = sgs.CreateTriggerSkill {
@@ -255,8 +253,8 @@ LuaYuyan = sgs.CreateTriggerSkill {
 }
 
 ExZongyu:addSkill(LuaZhibian)
-SkillAnjiang:addSkill(LuaZhibianSkipDraw)
 ExZongyu:addSkill(LuaYuyan)
+table.insert(hiddenSkills, LuaZhibianSkipDraw)
 
 -- 初始随机魏国/吴国
 local wenyang_kingdoms = {'wei', 'wu'}
@@ -361,7 +359,7 @@ LuaQuediDamageUp = sgs.CreateTriggerSkill {
             room:setPlayerFlag(player, '-LuaQuediDamageUp')
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaQuediClear = sgs.CreateTriggerSkill {
@@ -384,7 +382,7 @@ LuaQuediClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaChuifengCard = sgs.CreateSkillCard {
@@ -790,7 +788,7 @@ LuaChongjianQinggang = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaChoujue = sgs.CreateTriggerSkill {
@@ -830,17 +828,17 @@ LuaWenyangKingdomChoose = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 ExWenyang:addSkill(LuaQuedi)
-SkillAnjiang:addSkill(LuaQuediDamageUp)
-SkillAnjiang:addSkill(LuaQuediClear)
 ExWenyang:addSkill(LuaChuifeng)
 ExWenyang:addSkill(LuaChongjian)
-SkillAnjiang:addSkill(LuaChongjianQinggang)
 ExWenyang:addSkill(LuaChoujue)
-SkillAnjiang:addSkill(LuaWenyangKingdomChoose)
+table.insert(hiddenSkills, LuaQuediDamageUp)
+table.insert(hiddenSkills, LuaQuediClear)
+table.insert(hiddenSkills, LuaChongjianQinggang)
+table.insert(hiddenSkills, LuaWenyangKingdomChoose)
 
 -- 王双
 ExWangshuang = sgs.General(extension, 'ExWangshuang', 'wei', '4', true)
@@ -995,7 +993,7 @@ LuaShanxie = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 ExWangshuang:addSkill(LuaYiyong)
@@ -1103,3 +1101,5 @@ LuaDengli = sgs.CreateTriggerSkill {
 
 ExGaolan:addSkill(LuaJungong)
 ExGaolan:addSkill(LuaDengli)
+
+rinsan.addHiddenSkills(hiddenSkills)

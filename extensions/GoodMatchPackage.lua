@@ -6,12 +6,91 @@ extension = sgs.Package('GoodMatchPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local function globalTrigger(self, target)
-    return true
-end
-
 -- 曹金玉
 ExTenYearCaojinyu = sgs.General(extension, 'ExTenYearCaojinyu', 'wei', '3', false, true)
+
+-- 曹金玉系列判断
+
+-- 可以观看的牌数
+local function getYuqiPreviewCardCount(caojinyu)
+    return 3 + caojinyu:getMark('LuaYuqiPreviewCardCount')
+end
+
+-- 判断距离
+local function getYuqiAvailableDistance(caojinyu)
+    return caojinyu:getMark('LuaYuqiDistance')
+end
+
+-- 是否可以发动“隅泣”
+local function canInvokeYuqi(caojinyu, player)
+    if caojinyu:distanceTo(player) > getYuqiAvailableDistance(caojinyu) then
+        return false
+    end
+    return caojinyu:getMark('LuaYuqiInvokeTime') < 2
+end
+
+-- 至多给出的牌
+local function getYuqiGiveCardCount(caojinyu)
+    return 1 + caojinyu:getMark('LuaYuqiGiveCardCount')
+end
+
+-- 至多获得的牌
+local function getYuqiKeepCardCount(caojinyu)
+    return 1 + caojinyu:getMark('LuaYuqiKeepCardCount')
+end
+
+-- 函数映射
+local YUQI_FUNCS = {getYuqiPreviewCardCount, getYuqiGiveCardCount, getYuqiKeepCardCount, getYuqiAvailableDistance}
+
+-- 映射位置
+local YUQI_MAP = {'LuaYuqiPreviewCardCount', 'LuaYuqiGiveCardCount', 'LuaYuqiKeepCardCount', 'LuaYuqiDistance'}
+
+-- 是否可以增加数字
+local function canIncreaseNumber(caojinyu)
+    if getYuqiAvailableDistance(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiPreviewCardCount(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiGiveCardCount(caojinyu) < 5 then
+        return true
+    end
+    if getYuqiKeepCardCount(caojinyu) < 5 then
+        return true
+    end
+    return false
+end
+
+-- 增加“隅泣”数字
+local function increaseYuqiNumber(caojinyu, position, value)
+    if position <= 0 or position > 4 then
+        return
+    end
+    local room = caojinyu:getRoom()
+    local diff = math.max(0, 5 - YUQI_FUNCS[position](caojinyu))
+    if diff <= 0 then
+        return
+    end
+    room:addPlayerMark(caojinyu, YUQI_MAP[position], math.min(diff, value))
+end
+
+-- 选择增加选项
+local function askForYuqiIncreaseChoice(caojinyu, value, skill_name)
+    local choices = {}
+    for index, func in ipairs(YUQI_FUNCS) do
+        if func(caojinyu) < 5 then
+            table.insert(choices, YUQI_MAP[index])
+        end
+    end
+    if #choices == 0 then
+        return
+    end
+    local room = caojinyu:getRoom()
+    local choice = room:askForChoice(caojinyu, skill_name, table.concat(choices, '+'))
+    local pos = rinsan.getPos(YUQI_MAP, choice)
+    increaseYuqiNumber(caojinyu, pos, value)
+end
 
 LuaYuqi = sgs.CreateTriggerSkill {
     name = 'LuaYuqi',
@@ -21,13 +100,13 @@ LuaYuqi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local victim = data:toDamage().to
         for _, caojinyu in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-            if rinsan.canInvokeYuqi(caojinyu, player) and room:askForSkillInvoke(caojinyu, self:objectName(), data) then
+            if canInvokeYuqi(caojinyu, player) and room:askForSkillInvoke(caojinyu, self:objectName(), data) then
                 room:addPlayerMark(caojinyu, 'LuaYuqiInvokeTime')
                 room:broadcastSkillInvoke(self:objectName())
 
-                local totalCount = rinsan.getYuqiPreviewCardCount(caojinyu)
-                local giveCount = rinsan.getYuqiGiveCardCount(caojinyu)
-                local keepCount = rinsan.getYuqiKeepCardCount(caojinyu)
+                local totalCount = getYuqiPreviewCardCount(caojinyu)
+                local giveCount = getYuqiGiveCardCount(caojinyu)
+                local keepCount = getYuqiKeepCardCount(caojinyu)
 
                 local _cjy = sgs.SPlayerList()
                 _cjy:append(caojinyu)
@@ -108,7 +187,7 @@ LuaYuqi = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaYuqiClear = sgs.CreateTriggerSkill {
@@ -123,7 +202,7 @@ LuaYuqiClear = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaShanshen = sgs.CreateTriggerSkill {
@@ -133,9 +212,9 @@ LuaShanshen = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local death = data:toDeath()
         for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-            if rinsan.canIncreaseNumber(sp) and room:askForSkillInvoke(sp, self:objectName(), data) then
+            if canIncreaseNumber(sp) and room:askForSkillInvoke(sp, self:objectName(), data) then
                 room:broadcastSkillInvoke(self:objectName())
-                rinsan.askForYuqiIncreaseChoice(sp, 2, self:objectName())
+                askForYuqiIncreaseChoice(sp, 2, self:objectName())
                 if death.who:getMark(string.format('LuaDamagedBy%s', sp:objectName())) == 0 then
                     rinsan.recover(sp)
                 end
@@ -152,11 +231,11 @@ LuaXianjing = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Frequent,
     on_trigger = function(self, event, player, data, room)
-        if rinsan.canIncreaseNumber(player) and room:askForSkillInvoke(player, self:objectName(), data) then
+        if canIncreaseNumber(player) and room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
-            rinsan.askForYuqiIncreaseChoice(player, 1, self:objectName())
+            askForYuqiIncreaseChoice(player, 1, self:objectName())
             if not player:isWounded() then
-                rinsan.askForYuqiIncreaseChoice(player, 1, self:objectName())
+                askForYuqiIncreaseChoice(player, 1, self:objectName())
             end
         end
     end,

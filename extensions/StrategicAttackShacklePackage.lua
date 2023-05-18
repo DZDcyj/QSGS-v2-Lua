@@ -6,29 +6,27 @@ extension = sgs.Package('StrategicAttackShacklePackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
 -- General 定义如下
 -- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
 -- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
-local function globalTrigger(self, target)
-    return true
-end
-
-local function targetTrigger(self, target)
-    return target
-end
 
 -- 谋于禁
 ExMouYujin = sgs.General(extension, 'ExMouYujin', 'wei', '4', true, true)
+
+-- 是否可以发动狭援
+local function canInvokeXiayuan(player)
+    return player:hasFlag('ShieldAllLost')
+end
 
 LuaMouXiayuan = sgs.CreateTriggerSkill {
     name = 'LuaMouXiayuan',
     events = {sgs.Damaged},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local invoke = rinsan.canInvokeXiayuan(player)
-        if invoke then
+        if canInvokeXiayuan(player) then
             room:setPlayerFlag(player, '-ShieldAllLost')
             local lostCount = player:getTag('ShieldLostCount'):toInt()
             for _, sp in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
@@ -45,7 +43,7 @@ LuaMouXiayuan = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouXiayuanClear = sgs.CreateTriggerSkill {
@@ -55,7 +53,7 @@ LuaMouXiayuanClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         room:setPlayerMark(player, string.format('%s%s', 'LuaMouXiayuan', player:objectName()), 0)
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouJieyue = sgs.CreateTriggerSkill {
@@ -89,7 +87,7 @@ LuaMouJieyue = sgs.CreateTriggerSkill {
 
 ExMouYujin:addSkill(LuaMouXiayuan)
 ExMouYujin:addSkill(LuaMouJieyue)
-SkillAnjiang:addSkill(LuaMouXiayuanClear)
+table.insert(hiddenSkills, LuaMouXiayuanClear)
 
 -- 谋吕蒙
 ExMouLvmeng = sgs.General(extension, 'ExMouLvmeng', 'wu', '4', true, true)
@@ -123,6 +121,24 @@ LuaMouKejiDiscardCard = sgs.CreateSkillCard {
     end,
 }
 
+-- 是否可以发动克己
+-- player 角色
+-- option 选项，填卡牌名
+local function canInvokeKeji(player, option)
+    -- 不能超过最大
+    if rinsan.getShieldCount(player) >= rinsan.MAX_SHIELD_COUNT then
+        return false
+    end
+    -- 觉醒了只能选一个
+    if player:getMark('LuaMouDujiang') > 0 then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) and (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    if (not option) then
+        return (not player:hasUsed('#LuaMouKejiDiscardCard')) or (not player:hasUsed('#LuaMouKejiLoseHpCard'))
+    end
+    return not player:hasUsed(string.format('#%s', option))
+end
+
 LuaMouKeji = sgs.CreateViewAsSkill {
     name = 'LuaMouKeji',
     n = 1,
@@ -133,18 +149,18 @@ LuaMouKeji = sgs.CreateViewAsSkill {
         return not to_select:isEquipped()
     end,
     view_as = function(self, cards)
-        if #cards == 1 and rinsan.canInvokeKeji(sgs.Self, 'LuaMouKejiDiscardCard') then
+        if #cards == 1 and canInvokeKeji(sgs.Self, 'LuaMouKejiDiscardCard') then
             local vs_card = LuaMouKejiDiscardCard:clone()
             vs_card:addSubcard(cards[1])
             return vs_card
         end
-        if rinsan.canInvokeKeji(sgs.Self, 'LuaMouKejiLoseHpCard') then
+        if canInvokeKeji(sgs.Self, 'LuaMouKejiLoseHpCard') then
             return LuaMouKejiLoseHpCard:clone()
         end
         return nil
     end,
     enabled_at_play = function(self, player)
-        return rinsan.canInvokeKeji(player)
+        return canInvokeKeji(player)
     end,
 }
 
@@ -236,7 +252,7 @@ LuaMouDuojingClear = sgs.CreateTriggerSkill {
             rinsan.clearAllMarksContains(p, 'LuaMouDuojing')
         end
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaMouDuojingTargetMod = sgs.CreateTargetModSkill {
@@ -255,11 +271,11 @@ LuaMouDuojingTargetMod = sgs.CreateTargetModSkill {
 ExMouLvmeng:addSkill(LuaMouKeji)
 ExMouLvmeng:addSkill(LuaMouDujiang)
 ExMouLvmeng:addRelateSkill('LuaMouDuojing')
-SkillAnjiang:addSkill(LuaMouKejiMaxCards)
-SkillAnjiang:addSkill(LuaMoukejiProhibit)
-SkillAnjiang:addSkill(LuaMouDuojingTargetMod)
-SkillAnjiang:addSkill(LuaMouDuojing)
-SkillAnjiang:addSkill(LuaMouDuojingClear)
+table.insert(hiddenSkills, LuaMouKejiMaxCards)
+table.insert(hiddenSkills, LuaMoukejiProhibit)
+table.insert(hiddenSkills, LuaMouDuojingTargetMod)
+table.insert(hiddenSkills, LuaMouDuojing)
+table.insert(hiddenSkills, LuaMouDuojingClear)
 
 -- 谋曹仁
 ExMouCaoren = sgs.General(extension, 'ExMouCaoren', 'wei', '4', true, true)
@@ -405,7 +421,7 @@ LuaQixiTrigger = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaFenweiCard = sgs.CreateSkillCard {
@@ -490,7 +506,7 @@ LuaFenwei = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 -- 替换原版【过河拆桥】
@@ -539,13 +555,13 @@ LuaQicaiHotfix = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 ExMouGanning:addSkill(LuaQixi)
 ExMouGanning:addSkill(LuaFenwei)
-SkillAnjiang:addSkill(LuaQixiTrigger)
-SkillAnjiang:addSkill(LuaQicaiHotfix)
+table.insert(hiddenSkills, LuaQixiTrigger)
+table.insert(hiddenSkills, LuaQicaiHotfix)
 
 -- 谋黄忠
 ExMouHuangzhong = sgs.General(extension, 'ExMouHuangzhong', 'shu', '4', true)
@@ -652,7 +668,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLiegongMark = sgs.CreateTriggerSkill {
@@ -695,7 +711,7 @@ LuaLiegongMark = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaLiegongAttackMod = sgs.CreateTargetModSkill {
@@ -709,8 +725,8 @@ LuaLiegongAttackMod = sgs.CreateTargetModSkill {
 }
 
 ExMouHuangzhong:addSkill(LuaLiegong)
-SkillAnjiang:addSkill(LuaLiegongAttackMod)
-SkillAnjiang:addSkill(LuaLiegongMark)
+table.insert(hiddenSkills, LuaLiegongAttackMod)
+table.insert(hiddenSkills, LuaLiegongMark)
 
 -- 谋黄盖
 ExMouHuanggai = sgs.General(extension, 'ExMouHuanggai', 'wu', '4', true, true)
@@ -864,7 +880,7 @@ LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = targetTrigger,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaMouZhaxiangTargetMod = sgs.CreateTargetModSkill {
@@ -887,5 +903,7 @@ LuaMouZhaxiangTargetMod = sgs.CreateTargetModSkill {
 
 ExMouHuanggai:addSkill(LuaMouKurou)
 ExMouHuanggai:addSkill(LuaMouZhaxiang)
-SkillAnjiang:addSkill(LuaMouZhaxiangBuff)
-SkillAnjiang:addSkill(LuaMouZhaxiangTargetMod)
+table.insert(hiddenSkills, LuaMouZhaxiangBuff)
+table.insert(hiddenSkills, LuaMouZhaxiangTargetMod)
+
+rinsan.addHiddenSkills(hiddenSkills)

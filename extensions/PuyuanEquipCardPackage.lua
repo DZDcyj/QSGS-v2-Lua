@@ -11,10 +11,6 @@ local function weaponTrigger(self, target)
     return target and weapon and weapon:objectName() == self:objectName()
 end
 
-local globalTrigger = function(self, target)
-    return true
-end
-
 local skillList = sgs.SkillList()
 
 -- 混毒弯匕
@@ -416,7 +412,7 @@ LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = globalTrigger,
+    can_trigger = rinsan.globalTrigger,
 }
 
 if not sgs.Sanguosha:getSkill('LuaMoveOutPuyuanEquips') then

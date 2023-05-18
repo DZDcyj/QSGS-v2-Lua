@@ -3,10 +3,11 @@
 module('extensions.ImpassePackage', package.seeall)
 extension = sgs.Package('ImpassePackage')
 
-SkillAnjiang = sgs.General(extension, 'SkillAnjiang', 'god', '6', true, true, true)
-
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
+
+-- 隐藏技能添加
+local hiddenSkills = {}
 
 -- 暴走标记
 BaozouMark = '@baozou'
@@ -17,9 +18,21 @@ BossMark = 'LuaBoss'
 -- 已经进入暴走状态标记
 BaozouStatusMark = 'LuaBaozou'
 
-local boss_can_trigger = function(self, target)
-    return target and target:isAlive() and rinsan.bossSkillEnabled(target, self:objectName(), BossMark)
+-- 判断是否可以使用 BOSS 技能
+local function bossSkillEnabled(player, skill_name, mark_name)
+    return player:getMark(mark_name) > 0 or player:hasSkill(skill_name)
 end
+
+-- 判断是否可以发动 BOSS 技能
+local boss_can_trigger = function(self, target)
+    return target and target:isAlive() and bossSkillEnabled(target, self:objectName(), BossMark)
+end
+
+-- 判断是否处于暴走状态
+local function isBaozou(player)
+    return player:getMark('LuaBaozou') > 0
+end
+
 
 -- BOSS 技能
 
@@ -31,7 +44,7 @@ LuaSilve = sgs.CreateTriggerSkill {
     events = {sgs.DrawNCards},
     on_trigger = function(self, event, player, data, room)
         room:sendCompulsoryTriggerLog(player, self:objectName())
-        if rinsan.isBaozou(player) then
+        if isBaozou(player) then
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if not p:isNude() then
                     local id = room:askForCardChosen(player, p, 'he', self:objectName())
@@ -47,7 +60,7 @@ LuaSilve = sgs.CreateTriggerSkill {
     can_trigger = boss_can_trigger,
 }
 
-SkillAnjiang:addSkill(LuaSilve)
+table.insert(hiddenSkills, LuaSilve)
 
 -- 克敌
 -- 你受到伤害后可以摸X张牌，X为你当前体力值；进入暴走状态后，X为场上存活的角色数
@@ -57,7 +70,7 @@ LuaKedi = sgs.CreateTriggerSkill {
     events = {sgs.Damaged},
     on_trigger = function(self, event, player, data, room)
         local x = player:getHp()
-        if rinsan.isBaozou(player) then
+        if isBaozou(player) then
             x = room:alivePlayerCount()
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
@@ -68,7 +81,7 @@ LuaKedi = sgs.CreateTriggerSkill {
     can_trigger = boss_can_trigger,
 }
 
-SkillAnjiang:addSkill(LuaKedi)
+table.insert(hiddenSkills, LuaKedi)
 
 -- 济世
 -- 锁定技，回合开始阶段，若你的手牌不大于X，你可以从除你以外每名角色那获得一张手牌，若目标角色无手牌，则失去一点体力。X为你当前体力值；
@@ -81,7 +94,7 @@ LuaJishi = sgs.CreateTriggerSkill {
         if player:getPhase() == sgs.Player_Start then
             local x = player:getHp()
             local loseHpNum = 1
-            if rinsan.isBaozou(player) then
+            if isBaozou(player) then
                 x = player:getMaxHp() + room:alivePlayerCount()
                 loseHpNum = 2
             end
@@ -105,15 +118,15 @@ LuaJishi = sgs.CreateTriggerSkill {
 LuaJishiMaxCards = sgs.CreateMaxCardsSkill {
     name = '#LuaJishiMaxCards',
     fixed_func = function(self, target)
-        if rinsan.bossSkillEnabled(target, 'LuaJishi', BossMark) and rinsan.isBaozou(target) then
+        if bossSkillEnabled(target, 'LuaJishi', BossMark) and isBaozou(target) then
             return target:getAliveSiblings():length() + 1
         end
         return -1
     end,
 }
 
-SkillAnjiang:addSkill(LuaJishi)
-SkillAnjiang:addSkill(LuaJishiMaxCards)
+table.insert(hiddenSkills, LuaJishi)
+table.insert(hiddenSkills, LuaJishiMaxCards)
 
 -- 大吉
 -- 锁定技，回合结束阶段，你摸X张牌（若你已进入暴走状态，则X为存活角色数，否则X为你的体力值）
@@ -128,7 +141,7 @@ LuaDaji = sgs.CreateTriggerSkill {
             if player:getPhase() == sgs.Player_Finish then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 local x = player:getHp()
-                if rinsan.isBaozou(player) then
+                if isBaozou(player) then
                     x = room:alivePlayerCount()
                 end
                 player:drawCards(x, self:objectName())
@@ -141,7 +154,7 @@ LuaDaji = sgs.CreateTriggerSkill {
                 data:setValue(damage)
             end
         elseif event == sgs.TargetConfirmed then
-            if (not rinsan.isBaozou(player)) or (not player:isWounded()) then
+            if (not isBaozou(player)) or (not player:isWounded()) then
                 return false
             end
             local use = data:toCardUse()
@@ -160,14 +173,14 @@ LuaDaji = sgs.CreateTriggerSkill {
     can_trigger = boss_can_trigger,
 }
 
-SkillAnjiang:addSkill(LuaDaji)
+table.insert(hiddenSkills, LuaDaji)
 
 -- 孤战
 -- 锁定技，当你没装备武器时，使用【杀】无次数限制
 LuaGuzhan = sgs.CreateTargetModSkill {
     name = 'LuaGuzhan',
     residue_func = function(self, player)
-        if rinsan.bossSkillEnabled(player, self:objectName(), BossMark) and rinsan.isBaozou(player) and
+        if bossSkillEnabled(player, self:objectName(), BossMark) and isBaozou(player) and
             not player:getWeapon() then
             return 1000
         else
@@ -176,7 +189,7 @@ LuaGuzhan = sgs.CreateTargetModSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaGuzhan)
+table.insert(hiddenSkills, LuaGuzhan)
 
 -- 激战
 -- 锁定技，出牌阶段，你每对其他角色造成一点伤害回复一点体力；当手牌小于存活的角色数时，你将手牌摸至存活角色数
@@ -216,24 +229,24 @@ LuaJizhan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return boss_can_trigger(self, target) and rinsan.isBaozou(target)
+        return boss_can_trigger(self, target) and isBaozou(target)
     end,
 }
 
-SkillAnjiang:addSkill(LuaJizhan)
+table.insert(hiddenSkills, LuaJizhan)
 
 -- 独断
 -- 锁定技，你不能成为延时类锦囊的目标
 LuaDuduan = sgs.CreateProhibitSkill {
     name = 'LuaDuduan',
     is_prohibited = function(self, from, to, card)
-        if rinsan.bossSkillEnabled(to, self:objectName(), BossMark) and rinsan.isBaozou(to) then
+        if bossSkillEnabled(to, self:objectName(), BossMark) and isBaozou(to) then
             return card:isKindOf('DelayedTrick')
         end
     end,
 }
 
-SkillAnjiang:addSkill(LuaDuduan)
+table.insert(hiddenSkills, LuaDuduan)
 
 -- BOSS 武将禁表
 LuaBannedGenerals = {'yuanshao', 'yanliangwenchou', 'zhaoyun', 'guanyu', 'shencaocao'}
@@ -351,7 +364,7 @@ LuaBoss = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaBoss)
+table.insert(hiddenSkills, LuaBoss)
 
 -- 暴走状态技能
 -- 进入暴走状态、判定相关
@@ -437,12 +450,10 @@ LuaBaozou = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = rinsan.targetTrigger,
 }
 
-SkillAnjiang:addSkill(LuaBaozou)
+table.insert(hiddenSkills, LuaBaozou)
 
 LuaImpasseDeath = sgs.CreateTriggerSkill {
     name = 'LuaImpasseDeath',
@@ -510,7 +521,7 @@ LuaImpasseDeath = sgs.CreateTriggerSkill {
     end,
 }
 
-SkillAnjiang:addSkill(LuaImpasseDeath)
+table.insert(hiddenSkills, LuaImpasseDeath)
 
 LuaImpasseArmor = sgs.CreateTriggerSkill {
     name = 'LuaImpasseArmor',
@@ -534,9 +545,9 @@ LuaImpasseArmor = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target
-    end,
+    can_trigger = rinsan.targetTrigger,
 }
 
-SkillAnjiang:addSkill(LuaImpasseArmor)
+table.insert(hiddenSkills, LuaImpasseArmor)
+
+rinsan.addHiddenSkills(hiddenSkills)
