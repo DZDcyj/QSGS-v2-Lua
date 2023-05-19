@@ -369,29 +369,30 @@ function canMoveCard(room)
 end
 
 -- 判断是否可以从 from 移动装备区/判定区卡牌到 to
-function canMoveCardFromPlayer(from, to)
-    -- 如果 from 没有可以移动的卡牌，则不行
-    if from:getCards('ej'):isEmpty() then
-        return false
-    end
-    -- 判定区
-    if to:hasJudgeArea() then
-        local judgeCards = {}
-        for _, jcd in sgs.qlist(to:getJudgingArea()) do
-            table.insert(judgeCards, jcd:objectName())
-        end
-        for _, jcd in sgs.qlist(from:getJudgingArea()) do
-            if not table.contains(judgeCards, jcd:objectName()) then
-                return true
+function canMoveCardFromPlayer(from, to, flags)
+    flags = flags or 'ej'
+    if string.find(flags, 'j') then
+        -- 判定区
+        if to:hasJudgeArea() then
+            local judgeCards = {}
+            for _, jcd in sgs.qlist(to:getJudgingArea()) do
+                table.insert(judgeCards, jcd:objectName())
+            end
+            for _, jcd in sgs.qlist(from:getJudgingArea()) do
+                if not table.contains(judgeCards, jcd:objectName()) then
+                    return true
+                end
             end
         end
     end
-    -- 装备区
-    for i = 0, 4, 1 do
-        if from:getEquip(i) and not to:getEquip(i) then
-            -- 判断要移动到的角色是否有对应的装备栏
-            if to:hasEquipArea(i) then
-                return true
+    if string.find(flags, 'e') then
+        -- 装备区
+        for i = 0, 4, 1 do
+            if from:getEquip(i) and not to:getEquip(i) then
+                -- 判断要移动到的角色是否有对应的装备栏
+                if to:hasEquipArea(i) then
+                    return true
+                end
             end
         end
     end

@@ -1,6 +1,15 @@
 -- lines for LayingPlans Strictness Package
 
 return {
+    -- 吕范
+    ['$LuaDiaodu1'] = '兵甲统一分配，不可私自易之！',
+    ['$LuaDiaodu2'] = '兵器调度已定，忤者军法从事！',
+    ['$LuaDiancai1'] = '国无九年之蓄，为政安敢奢靡！',
+    ['$LuaDiancai2'] = '上下尚俭戒奢，以足天下之用！',
+    ['$LuaYanji1'] = '料覆之日已到，帐簿速速呈来！', -- 发动整肃
+    ['$LuaYanji2'] = '所记无有纰漏，余财尚可维持！', -- 整肃成功
+    ['$LuaYanji3'] = '帐簿收支不符，何人敢做假帐！', -- 整肃失败
+    ['~ExLvfan'] = '今日朝事，可有……',
     -- 朱儁
     ['$LuaYangjie1'] = '全军撤围，待其出城迎战，再攻敌自散矣！',
     ['$LuaYangjie2'] = '佯解敌围，而后城外击之，此为易破之道！',

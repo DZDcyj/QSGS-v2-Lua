@@ -233,6 +233,9 @@ local RECTIFICATION_BONUS_FUNCS = {
             askForBonus(other, from)
         end
     end,
+    ['LuaYanji'] = function(from, _)
+        askForBonus(from)
+    end,
 }
 
 -- 默认 2 为整肃成功语音，3 为失败语音
