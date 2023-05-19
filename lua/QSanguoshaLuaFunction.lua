@@ -1704,6 +1704,7 @@ local ARMOR_SKILLS = {
     },
 }
 
+-- 基础的 hasArmorEffect
 function privateHasArmorEffect(player, armorName)
     local qinggangTags = player:getTag('Qinggang'):toStringList()
     if #qinggangTags > 0 or player:getMark('Armor_Nullified') > 0 or player:getMark('Equips_Nullified_to_Yourself') > 0 then
@@ -1750,6 +1751,7 @@ function privateHasArmorEffect(player, armorName)
     return realArmor:objectName() == armorName or realArmor:isKindOf(armorName)
 end
 
+-- 封装对外的 hasArmorEffect
 function hasArmorEffect(player, armorName)
     return player:hasArmorEffect(armorName) or privateHasArmorEffect(player, armorName)
 end

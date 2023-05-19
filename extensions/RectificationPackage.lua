@@ -217,6 +217,24 @@ local function getRectificationMarks(player)
     return marks
 end
 
+-- 整肃成功的不同对应
+local RECTIFICATION_BONUS_FUNCS = {
+    ['LuaHoufeng'] = function(from, to)
+        askForBonus(from)
+        askForBonus(to)
+    end,
+    ['LuaZhengjun'] = function(from, _)
+        local room = from:getRoom()
+        local other = room:askForPlayerChosen(from, room:getOtherPlayers(from), 'RectificationBonus',
+            'RectificationBonus-choose', true)
+        askForBonus(from)
+        if other then
+            room:doAnimate(rinsan.ANIMATE_INDICATE, from:objectName(), other:objectName())
+            askForBonus(other, from)
+        end
+    end,
+}
+
 -- 默认 2 为整肃成功语音，3 为失败语音
 local function doRetification(player)
     local room = player:getRoom()
@@ -225,7 +243,7 @@ local function doRetification(player)
     for _, mark in ipairs(marks) do
         local items = mark:split('-')
         local choice = items[1] -- 整肃类型
-        local toName = items[2] -- 整肃执行者
+        -- 整肃执行者即为 player，无需从 mark 中获取
         local fromName = items[3] -- 整肃发起者
         local from = findPlayerByName(room, fromName)
         if not from then
@@ -241,17 +259,9 @@ local function doRetification(player)
                 ['to'] = from,
                 ['arg'] = skillName .. 'Rectification',
             })
-            if fromName ~= toName then
-                askForBonus(from)
-                askForBonus(player)
-            else
-                local other = room:askForPlayerChosen(player, room:getOtherPlayers(player), 'RectificationBonus',
-                    'RectificationBonus-choose', true)
-                askForBonus(player)
-                if other then
-                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), other:objectName())
-                    askForBonus(other, player)
-                end
+            local bonusFunc = RECTIFICATION_BONUS_FUNCS[skillName]
+            if bonusFunc then
+                bonusFunc(from, player)
             end
         else
             rinsan.sendLogMessage(room, '#Rectification-Failure', {
