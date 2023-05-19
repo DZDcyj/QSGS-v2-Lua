@@ -742,7 +742,7 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
             if data:toPhaseChange().to == sgs.Player_NotActive then
                 local stscs = room:findPlayersBySkillName('LuaPowei')
                 for _, stsc in sgs.qlist(stscs) do
-                    rinsan.removeFromAttackRange(room, player, stsc)
+                    rinsan.removeFromAttackRange(player, stsc)
                 end
                 if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
                     moveLuaPoweiMark(player)
