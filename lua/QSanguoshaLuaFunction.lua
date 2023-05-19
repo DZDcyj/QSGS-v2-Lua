@@ -400,7 +400,8 @@ function canMoveCardFromPlayer(from, to, flags)
 end
 
 -- 询问 controller 从 from 移动牌到 to 的区域里
-function askForMoveCards(controller, from, to, skillName)
+function askForMoveCards(controller, from, to, skillName, flags)
+    flags = flags or 'ej'
     local room = from:getRoom()
     local disabled_ids = sgs.IntList()
     for _, equip in sgs.qlist(from:getEquips()) do
@@ -420,7 +421,7 @@ function askForMoveCards(controller, from, to, skillName)
             disabled_ids:append(jcd:getId())
         end
     end
-    local card_id = room:askForCardChosen(controller, from, 'ej', skillName, false, sgs.Card_MethodNone, disabled_ids)
+    local card_id = room:askForCardChosen(controller, from, flags, skillName, false, sgs.Card_MethodNone, disabled_ids)
     local card = sgs.Sanguosha:getCard(card_id)
     local place = room:getCardPlace(card_id)
     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), skillName, '')

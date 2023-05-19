@@ -47,7 +47,7 @@ LuaDiaoduCard = sgs.CreateSkillCard {
         room:notifySkillInvoked(source, self:objectName())
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), from:objectName())
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), to:objectName())
-        rinsan.askForMoveCards(source, from, to, self:objectName())
+        rinsan.askForMoveCards(source, from, to, self:objectName(), 'e')
         from:drawCards(1, self:objectName())
     end,
 }
