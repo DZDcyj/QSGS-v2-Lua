@@ -94,7 +94,7 @@ local function getFuhanShuGenerals(general_num)
     local i = 0
     while i < general_num do
         i = i + 1
-        local index = random(1, #shu_generals)
+        local index = rinsan.random(1, #shu_generals)
         local selected = shu_generals[index]
         table.insert(available_generals, selected)
         table.removeOne(shu_generals, shu_generals[index])

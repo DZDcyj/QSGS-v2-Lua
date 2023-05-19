@@ -1483,17 +1483,17 @@ ExLuotong = sgs.General(extension, 'ExLuotong', 'wu', '4', true)
 local function LuaQinzhengGetCard(room, markNum, modNum, cardType1, cardType2)
     local mod = math.fmod(markNum, modNum)
     if mod == 0 then
-        local type = random(1, 2)
+        local type = rinsan.random(1, 2)
         local card
         local params = {
             ['existed'] = {},
         }
         if type == 1 then
             params['type'] = cardType1
-            card = obtainTargetedTypeCard(room, params)
+            card = rinsan.obtainTargetedTypeCard(room, params)
         else
             params['type'] = cardType2
-            card = obtainTargetedTypeCard(room, params)
+            card = rinsan.obtainTargetedTypeCard(room, params)
         end
         return card
     end
