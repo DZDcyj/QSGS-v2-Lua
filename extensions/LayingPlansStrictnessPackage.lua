@@ -118,7 +118,7 @@ LuaYanji = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
-    end
+    end,
 }
 
 ExLvfan:addSkill(LuaDiaodu)
