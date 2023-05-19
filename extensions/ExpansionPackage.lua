@@ -5948,7 +5948,7 @@ local function getBingQingMarkCount(player)
     }
     local count = 0
     for _, suit in ipairs(suits) do
-        local mark = string.format('@%s%s_biu', 'LuaBingqing', Suit2String(suit))
+        local mark = string.format('@%s%s_biu', 'LuaBingqing', rinsan.Suit2String(suit))
         if player:getMark(mark) > 0 then
             count = count + 1
         end
