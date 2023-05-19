@@ -243,7 +243,7 @@ local function doRetification(player)
     for _, mark in ipairs(marks) do
         local items = mark:split('-')
         local choice = items[1] -- 整肃类型
-        local toName = items[2] -- 整肃执行者
+        -- 整肃执行者即为 player，无需从 mark 中获取
         local fromName = items[3] -- 整肃发起者
         local from = findPlayerByName(room, fromName)
         if not from then
