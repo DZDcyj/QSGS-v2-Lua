@@ -273,7 +273,7 @@ LuaZundiMoveCard = sgs.CreateSkillCard {
         rinsan.sendLogMessage(room, '#ChoosePlayerWithSkill', {
             ['from'] = use.from,
             ['tos'] = use.to,
-            ['arg'] = self:objectName(),
+            ['arg'] = 'LuaZundi',
         })
         thread:trigger(sgs.CardUsed, room, use.from, data)
         thread:trigger(sgs.CardFinished, room, use.from, data)
@@ -281,10 +281,10 @@ LuaZundiMoveCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local from = targets[1]
         local to = targets[2]
-        room:notifySkillInvoked(source, self:objectName())
+        room:notifySkillInvoked(source, 'LuaZundi')
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), from:objectName())
         room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), to:objectName())
-        rinsan.askForMoveCards(source, from, to, self:objectName())
+        rinsan.askForMoveCards(source, from, to, 'LuaZundi')
     end,
 }
 
@@ -296,6 +296,7 @@ LuaZundiCard = sgs.CreateSkillCard {
         return #selected == 0
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local target = targets[1]
         local judge = rinsan.createJudgeStruct({
             ['play_animation'] = true,
