@@ -16,5 +16,5 @@ return {
     -- 界李典
     ['$LuaOLWangxi1'] = '大丈夫，何拘小节？',
     ['$LuaOLWangxi2'] = '前尘往事，莫再提起',
-    ['~OLJieLidiann'] = '报国杀敌，虽死犹荣',
+    ['~OLJieLidian'] = '报国杀敌，虽死犹荣',
 }
