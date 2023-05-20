@@ -24,7 +24,7 @@ LuaDiaoduCard = sgs.CreateSkillCard {
     filter = function(self, selected, to_select)
         if #selected == 0 then
             -- 选择起始，要求必须有装备
-            return to_select:hasEquip()
+            return rinsan.canMoveCardOut(to_select, 'e')
         elseif #selected == 1 then
             -- 选择目标，要求可以移动到
             local from = selected[1]
@@ -253,8 +253,8 @@ LuaZundiMoveCard = sgs.CreateSkillCard {
     will_throw = false,
     filter = function(self, selected, to_select)
         if #selected == 0 then
-            -- 选择起始，要求必须有装备
-            return to_select:hasEquip()
+            -- 选择起始，要求必须有装备/判定牌
+            return rinsan.canMoveCardOut(to_select)
         elseif #selected == 1 then
             -- 选择目标，要求可以移动到
             local from = selected[1]
