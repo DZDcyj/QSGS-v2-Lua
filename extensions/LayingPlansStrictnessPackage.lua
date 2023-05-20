@@ -7,6 +7,13 @@ extension = sgs.Package('LayingPlansStrictnessPackage')
 local rinsan = require('QSanguoshaLuaFunction')
 local rectification = require('extensions.RectificationPackage')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
+
 -- 吕范
 ExLvfan = sgs.General(extension, 'ExLvfan', 'wu', '3', true, true)
 
@@ -17,7 +24,7 @@ LuaDiaoduCard = sgs.CreateSkillCard {
     filter = function(self, selected, to_select)
         if #selected == 0 then
             -- 选择起始，要求必须有装备
-            return to_select:hasEquip()
+            return rinsan.canMoveCardOut(to_select, 'e')
         elseif #selected == 1 then
             -- 选择目标，要求可以移动到
             local from = selected[1]
@@ -124,6 +131,224 @@ LuaYanji = sgs.CreateTriggerSkill {
 ExLvfan:addSkill(LuaDiaodu)
 ExLvfan:addSkill(LuaDiancai)
 ExLvfan:addSkill(LuaYanji)
+
+-- 崔琰
+ExCuiyan = sgs.General(extension, 'ExCuiyan', 'wei', '3', true, true)
+
+LuaYajunCard = sgs.CreateSkillCard {
+    name = 'LuaYajun',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, targets, to_select)
+        if rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) then
+            return sgs.Self:canPindian(to_select, 'LuaYajun')
+        end
+        return false
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local target = targets[1]
+        local pindianCard = sgs.Sanguosha:getCard(self:getSubcards():first())
+        source:pindian(target, self:objectName(), pindianCard)
+    end,
+}
+
+LuaYajunVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaYajun',
+    view_filter = function(self, to_select)
+        if to_select:isEquipped() then
+            return false
+        end
+        local id = to_select:getEffectiveId()
+        return sgs.Self:getMark('LuaYajun' .. id .. '-Clear') > 0
+    end,
+    view_as = function(self, card)
+        local yajunCard = LuaYajunCard:clone()
+        yajunCard:addSubcard(card)
+        return yajunCard
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaYajun'
+    end,
+}
+
+LuaYajun = sgs.CreateTriggerSkill {
+    name = 'LuaYajun',
+    events = {sgs.DrawNCards, sgs.EventPhaseStart, sgs.Pindian},
+    view_as_skill = LuaYajunVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DrawNCards then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            data:setValue(data:toInt() + 1)
+        elseif event == sgs.Pindian then
+            local pindian = data:toPindian()
+            if pindian.reason ~= self:objectName() then
+                return false
+            end
+            if pindian.success then
+                local choices = {'LuaYajunPutFrom', 'LuaYajunPutTo', 'cancel'}
+                local choice = room:askForChoice(pindian.from, self:objectName(), table.concat(choices, '+'))
+                local toMove, from
+                if choice == choices[1] then
+                    toMove = pindian.from_card
+                    from = pindian.from
+                elseif choice == choices[2] then
+                    toMove = pindian.to_card
+                    from = pindian.to
+                end
+                if toMove then
+                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, from:objectName(), '',
+                        'LuaYajun', '')
+                    room:moveCardTo(toMove, from, nil, sgs.Player_DrawPile, reason, true)
+                end
+            else
+                room:addPlayerMark(pindian.from, self:objectName() .. '-Failed-Clear')
+            end
+        else
+            if player:getPhase() == sgs.Player_Play then
+                room:askForUseCard(player, '@@LuaYajun', '@LuaYajun')
+            end
+        end
+    end,
+}
+
+LuaYajunMaxCards = sgs.CreateMaxCardsSkill {
+    name = '#LuaYajunMaxCards',
+    extra_func = function(self, target)
+        local x = target:getMark('LuaYajun-Failed-Clear')
+        if x > 0 then
+            return -x
+        end
+        return 0
+    end,
+}
+
+LuaYajunCardMove = sgs.CreateTriggerSkill {
+    name = 'LuaYajunCardMove',
+    events = {sgs.CardsMoveOneTime},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() and
+            player:getPhase() ~= sgs.Player_NotActive and move.to_place == sgs.Player_PlaceHand and
+            not move.card_ids:isEmpty() then
+            for _, id in sgs.qlist(move.card_ids) do
+                room:addPlayerMark(player, 'LuaYajun' .. id .. '-Clear')
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaYajun')
+    end,
+}
+
+LuaZundiMoveCard = sgs.CreateSkillCard {
+    name = 'LuaZundiMove',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        if #selected == 0 then
+            -- 选择起始，要求必须有装备/判定牌
+            return rinsan.canMoveCardOut(to_select)
+        elseif #selected == 1 then
+            -- 选择目标，要求可以移动到
+            local from = selected[1]
+            return rinsan.canMoveCardFromPlayer(from, to_select)
+        end
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets == 2
+    end,
+    about_to_use = function(self, room, use)
+        local thread = room:getThread()
+        local data = sgs.QVariant()
+        data:setValue(use)
+        thread:trigger(sgs.PreCardUsed, room, use.from, data)
+        rinsan.sendLogMessage(room, '#ChoosePlayerWithSkill', {
+            ['from'] = use.from,
+            ['tos'] = use.to,
+            ['arg'] = 'LuaZundi',
+        })
+        thread:trigger(sgs.CardUsed, room, use.from, data)
+        thread:trigger(sgs.CardFinished, room, use.from, data)
+    end,
+    on_use = function(self, room, source, targets)
+        local from = targets[1]
+        local to = targets[2]
+        room:notifySkillInvoked(source, 'LuaZundi')
+        room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), from:objectName())
+        room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), to:objectName())
+        rinsan.askForMoveCards(source, from, to, 'LuaZundi')
+    end,
+}
+
+LuaZundiCard = sgs.CreateSkillCard {
+    name = 'LuaZundi',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return #selected == 0
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local target = targets[1]
+        local judge = rinsan.createJudgeStruct({
+            ['play_animation'] = true,
+            ['who'] = source,
+            ['reason'] = self:objectName(),
+        })
+        room:judge(judge)
+        if judge.card:isBlack() then
+            target:drawCards(3, self:objectName())
+        else
+            room:setPlayerFlag(target, 'LuaZundi-Moving')
+            room:askForUseCard(target, '@@LuaZundi', '@LuaZundi')
+            room:setPlayerFlag(target, '-LuaZundi-Moving')
+        end
+    end,
+}
+
+LuaZundi = sgs.CreateViewAsSkill {
+    name = 'LuaZundi',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        if sgs.Self:hasFlag('LuaZundi-Moving') then
+            return false
+        end
+        return #selected == 0 and not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        if sgs.Self:hasFlag('LuaZundi-Moving') then
+            return LuaZundiMoveCard:clone()
+        end
+        if #cards == 0 then
+            return nil
+        end
+        local zundiCard = LuaZundiCard:clone()
+        for _, cd in ipairs(cards) do
+            zundiCard:addSubcard(cd)
+        end
+        return zundiCard
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaZundi')
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaZundi'
+    end,
+}
+
+ExCuiyan:addSkill(LuaYajun)
+ExCuiyan:addSkill(LuaZundi)
+table.insert(hiddenSkills, LuaYajunMaxCards)
+table.insert(hiddenSkills, LuaYajunCardMove)
+table.insert(hiddenSkills, LuaZundiMoveVS)
 
 -- 朱儁
 ExZhujun = sgs.General(extension, 'ExZhujun', 'qun', '4', true, true)
@@ -371,4 +596,6 @@ LuaTaoluanFix = sgs.CreateTriggerSkill {
 ExHuangfusong:addSkill(LuaTaoluan)
 ExHuangfusong:addSkill(LuaShiji)
 ExHuangfusong:addSkill(LuaZhengjun)
-rinsan.addSingleHiddenSkill(LuaTaoluanFix)
+table.insert(hiddenSkills, LuaTaoluanFix)
+
+rinsan.addHiddenSkills(hiddenSkills)

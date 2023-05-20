@@ -368,6 +368,22 @@ function canMoveCard(room)
     return false
 end
 
+-- 是否可以移动 from 的装备/判定区牌
+function canMoveCardOut(from, flags)
+    flags = flags or 'ej'
+    if string.find(flags, 'e') then
+        if from:hasEquip() then
+            return true
+        end
+    end
+    if string.find(flags, 'j') then
+        if from:getJudgingArea():length() > 0 then
+            return true
+        end
+    end
+    return false
+end
+
 -- 判断是否可以从 from 移动装备区/判定区卡牌到 to
 function canMoveCardFromPlayer(from, to, flags)
     flags = flags or 'ej'
