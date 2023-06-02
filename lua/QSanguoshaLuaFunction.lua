@@ -442,7 +442,6 @@ function askForMoveCards(controller, from, to, skillName, flags)
     local place = room:getCardPlace(card_id)
     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TRANSFER, from:objectName(), skillName, '')
     room:moveCardTo(card, from, to, place, reason)
-
 end
 
 -- 获得牌堆中指定类型的牌
