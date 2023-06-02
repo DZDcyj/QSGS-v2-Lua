@@ -118,6 +118,9 @@ LuaYanji = sgs.CreateTriggerSkill {
     name = 'LuaYanji',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
+        if not rectification.canBeAskedForRetification(player) then
+            return false
+        end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName(), 1)
             rectification.askForRetification(player, player, self:objectName())
@@ -428,6 +431,9 @@ LuaZhujunJuxiang = sgs.CreateTriggerSkill {
 }
 
 local function canInvokeLuaHoufeng(zhujun, player)
+    if not rectification.canBeAskedForRetification(player) then
+        return false
+    end
     return zhujun:getMark('LuaHoufeng_lun') == 0 and zhujun:inMyAttackRange(player)
 end
 
@@ -557,6 +563,9 @@ LuaZhengjun = sgs.CreateTriggerSkill {
     name = 'LuaZhengjun',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
+        if not rectification.canBeAskedForRetification(player) then
+            return false
+        end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName(), 1)
             rectification.askForRetification(player, player, self:objectName())
