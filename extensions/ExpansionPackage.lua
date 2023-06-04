@@ -6642,28 +6642,20 @@ JieWolong = sgs.General(extension, 'JieWolong', 'shu', '3', true, true)
 
 LuaBazhen = sgs.CreateTriggerSkill {
     name = 'LuaBazhen',
-    events = {sgs.CardAsked, sgs.FinishJudge},
+    events = {sgs.CardAsked},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.FinishJudge then
-            local judge = data:toJudge()
-            if judge.reason == self:objectName() and (not judge:isGood()) then
-                SendComLog(self, player)
-                player:drawCards(1, self:objectName())
-            end
-            return false
-        end
         local pattern = data:toStringList()[1]
         if pattern ~= 'jink' then
             return false
         end
-        if room:askForSkillInvoke(player, self:objectName(), data) then
+        if room:askForSkillInvoke(player, 'eight_diagram', data) then
             room:setEmotion(player, 'armor/eight_diagram')
             local judge = rinsan.createJudgeStruct({
                 ['pattern'] = '.|red',
                 ['who'] = player,
                 ['play_animation'] = true,
-                ['reason'] = self:objectName(),
+                ['reason'] = 'eight_diagram',
             })
             room:judge(judge)
             if judge:isGood() then
@@ -6678,6 +6670,23 @@ LuaBazhen = sgs.CreateTriggerSkill {
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHT(self, target) and (not target:getArmor()) and rinsan.hasArmorEffect(target, 'eight_diagram')
+    end,
+}
+
+LuaBazhenDraw = sgs.CreateTriggerSkill {
+    name = 'LuaBazhenDraw',
+    events = {sgs.FinishJudge},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local judge = data:toJudge()
+        if judge.reason == 'eight_diagram' and judge:isBad() then
+            room:sendCompulsoryTriggerLog(player, 'LuaBazhen')
+            player:drawCards(1, 'LuaBazhen')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaBazhen')
     end,
 }
 
@@ -6890,6 +6899,7 @@ JieWolong:addSkill(LuaHuoji)
 JieWolong:addSkill(LuaKanpo)
 JieWolong:addSkill(LuaCangzhuo)
 table.insert(hiddenSkills, LuaCangzhuoMaxCards)
+table.insert(hiddenSkills, LuaBazhenDraw)
 
 -- 界祝融
 JieZhurong = sgs.General(extension, 'JieZhurong', 'shu', '4', false, true)
