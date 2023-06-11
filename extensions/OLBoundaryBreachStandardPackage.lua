@@ -195,6 +195,7 @@ LuaOLYajiao = sgs.CreateTriggerSkill {
                     end
                 end
                 if available_targets:isEmpty() then
+                    room:clearAG(player)
                     return false
                 end
                 local prompt = string.format('%s-discard', self:objectName())
@@ -207,9 +208,9 @@ LuaOLYajiao = sgs.CreateTriggerSkill {
                 end
             end
             if not dealt then
-                room:clearAG(player)
                 room:returnToTopDrawPile(ids)
             end
+            room:clearAG(player)
         end
         return false
     end,
