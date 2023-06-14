@@ -1350,14 +1350,56 @@ LuaQiaosiCard = sgs.CreateSkillCard {
 -- 巧思获得牌的类型判断
 local function LuaGetRoleCardType(roleType, kingActivated, generalActivated)
     local map = {
-        ['king'] = {'TrickCard', 'TrickCard'},
-        ['general'] = {'EquipCard', 'EquipCard'},
-        ['artisan'] = {'Slash', 'Slash', 'Slash', 'Slash', 'Analeptic'},
-        ['farmer'] = {'Jink', 'Jink', 'Jink', 'Jink', 'Peach'},
-        ['scholar'] = {'TrickCard', 'TrickCard', 'TrickCard', 'TrickCard', 'JinkOrPeach'},
-        ['scholarKing'] = {'Peach', 'Peach', 'Peach', 'Peach', 'Jink'},
-        ['merchant'] = {'EquipCard', 'EquipCard', 'EquipCard', 'EquipCard', 'SlashOrAnaleptic'},
-        ['merchantGeneral'] = {'Analeptic', 'Analeptic', 'Analeptic', 'Analeptic', 'Slash'},
+        ['king'] = {
+            'TrickCard',
+            'TrickCard',
+        },
+        ['general'] = {
+            'EquipCard',
+            'EquipCard',
+        },
+        ['artisan'] = {
+            'Slash',
+            'Slash',
+            'Slash',
+            'Slash',
+            'Analeptic',
+        },
+        ['farmer'] = {
+            'Jink',
+            'Jink',
+            'Jink',
+            'Jink',
+            'Peach',
+        },
+        ['scholar'] = {
+            'TrickCard',
+            'TrickCard',
+            'TrickCard',
+            'TrickCard',
+            'JinkOrPeach',
+        },
+        ['scholarKing'] = {
+            'Peach',
+            'Peach',
+            'Peach',
+            'Peach',
+            'Jink',
+        },
+        ['merchant'] = {
+            'EquipCard',
+            'EquipCard',
+            'EquipCard',
+            'EquipCard',
+            'SlashOrAnaleptic',
+        },
+        ['merchantGeneral'] = {
+            'Analeptic',
+            'Analeptic',
+            'Analeptic',
+            'Analeptic',
+            'Slash',
+        },
     }
     if roleType == 'scholar' and kingActivated then
         roleType = roleType .. 'King'
@@ -5898,7 +5940,12 @@ ExMaojie = sgs.General(extension, 'ExMaojie', 'wei', '3', true, true)
 
 -- 获取秉清标记数
 local function getBingQingMarkCount(player)
-    local suits = {sgs.Card_Diamond, sgs.Card_Spade, sgs.Card_Heart, sgs.Card_Club}
+    local suits = {
+        sgs.Card_Diamond,
+        sgs.Card_Spade,
+        sgs.Card_Heart,
+        sgs.Card_Club,
+    }
     local count = 0
     for _, suit in ipairs(suits) do
         local mark = string.format('@%s%s_biu', 'LuaBingqing', rinsan.Suit2String(suit))
