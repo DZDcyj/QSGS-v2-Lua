@@ -6996,7 +6996,7 @@ LuaLieren = sgs.CreateTriggerSkill {
 JieZhurong:addSkill(LuaJuxiang)
 JieZhurong:addSkill(LuaLieren)
 
-ExStarHuangzhong = sgs.General(extension, 'ExStarHuangzhong', 'qun', '4', true)
+ExStarHuangzhong = sgs.General(extension, 'ExStarHuangzhong', 'qun', '4', true, true)
 
 local function isYang(huangzhong)
     return huangzhong:getMark('LuaShidi') ~= 1
