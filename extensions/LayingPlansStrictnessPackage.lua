@@ -118,6 +118,9 @@ LuaYanji = sgs.CreateTriggerSkill {
     name = 'LuaYanji',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
+        if not rectification.canBeAskedForRetification(player) then
+            return false
+        end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName(), 1)
             rectification.askForRetification(player, player, self:objectName())
@@ -428,6 +431,9 @@ LuaZhujunJuxiang = sgs.CreateTriggerSkill {
 }
 
 local function canInvokeLuaHoufeng(zhujun, player)
+    if not rectification.canBeAskedForRetification(player) then
+        return false
+    end
     return zhujun:getMark('LuaHoufeng_lun') == 0 and zhujun:inMyAttackRange(player)
 end
 
@@ -484,13 +490,14 @@ LuaTaoluan = sgs.CreateTriggerSkill {
         if judge.card:getSuit() == sgs.Card_Spade and player:getMark(self:objectName() .. '-Clear') == 0 then
             if room:askForSkillInvoke(player, self:objectName(), data) then
                 room:broadcastSkillInvoke(self:objectName())
+                room:throwCard(judge.card, player)
                 local taoluan_choices = {'LuaTaoluanObtain'}
                 if judge.who:objectName() ~= player:objectName() then
                     table.insert(taoluan_choices, 'LuaTaoluanFireSlash')
                 end
                 local choice = room:askForChoice(player, self:objectName(), table.concat(taoluan_choices, '+'))
                 if choice == 'LuaTaoluanObtain' then
-                    player:obtainCard(judge.card)
+                    player:drawCards(1, self:objectName())
                 else
                     room:addPlayerMark(player, self:objectName() .. '-Clear')
                     local fire_slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
@@ -557,6 +564,9 @@ LuaZhengjun = sgs.CreateTriggerSkill {
     name = 'LuaZhengjun',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
+        if not rectification.canBeAskedForRetification(player) then
+            return false
+        end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName(), 1)
             rectification.askForRetification(player, player, self:objectName())
@@ -567,35 +577,8 @@ LuaZhengjun = sgs.CreateTriggerSkill {
     end,
 }
 
-LuaTaoluanFix = sgs.CreateTriggerSkill {
-    name = 'LuaTaoluanFix',
-    events = {sgs.PreCardUsed, sgs.PreCardResponded},
-    global = true,
-    on_trigger = function(self, event, player, data, room)
-        local card
-        if event == sgs.PreCardUsed then
-            card = data:toCardUse().card
-        else
-            card = data:toCardResponse().m_card
-        end
-        if card:getSkillName() == 'LuaTaoluan' and not card:isVirtualCard() then
-            room:filterCards(player, player:getCards('he'), true)
-            if event == sgs.PreCardUsed then
-                local use = data:toCardUse()
-                use.card = sgs.Sanguosha:getCard(use.card:getEffectiveId())
-                data:setValue(use)
-            else
-                local resp = data:toCardResponse()
-                resp.m_card = sgs.Sanguosha:getCard(resp.m_card:getEffectiveId())
-                data:setValue(resp)
-            end
-        end
-    end,
-}
-
 ExHuangfusong:addSkill(LuaTaoluan)
 ExHuangfusong:addSkill(LuaShiji)
 ExHuangfusong:addSkill(LuaZhengjun)
-table.insert(hiddenSkills, LuaTaoluanFix)
 
 rinsan.addHiddenSkills(hiddenSkills)

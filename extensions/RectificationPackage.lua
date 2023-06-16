@@ -53,6 +53,16 @@ local function askForRectificationChoice(player, skillName, to, ignoreChosen)
     return room:askForChoice(player, skillName, table.concat(choices, '+'))
 end
 
+-- 是否可以发动整肃
+function canBeAskedForRetification(player)
+    for _, choice in ipairs(RECTIFICATION_CHOICES) do
+        if player:getMark(choice) == 0 then
+            return true
+        end
+    end
+    return false
+end
+
 -- 询问整肃，暴露的外部接口
 function askForRetification(from, to, skillName, isFromChoose, ignoreChosen)
     local room = from:getRoom()
