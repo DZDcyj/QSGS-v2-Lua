@@ -6996,4 +6996,175 @@ LuaLieren = sgs.CreateTriggerSkill {
 JieZhurong:addSkill(LuaJuxiang)
 JieZhurong:addSkill(LuaLieren)
 
+ExStarHuangzhong = sgs.General(extension, 'ExStarHuangzhong', 'qun', '4', true, true)
+
+local function isYang(huangzhong)
+    return huangzhong:getMark('LuaShidi') ~= 1
+end
+
+local function setToYang(huangzhong)
+    local room = huangzhong:getRoom()
+    room:setPlayerMark(huangzhong, 'LuaShidi', 2)
+    rinsan.modifySkillDescription(':LuaShidi', ':LuaShidi1')
+    ChangeCheck(huangzhong, 'ExStarHuangzhong')
+    room:removePlayerMark(huangzhong, '@ChangeSkill2')
+    room:addPlayerMark(huangzhong, '@ChangeSkill1')
+end
+
+local function isYin(huangzhong)
+    return huangzhong:getMark('LuaShidi') == 1
+end
+
+local function setToYin(huangzhong)
+    local room = huangzhong:getRoom()
+    room:setPlayerMark(huangzhong, 'LuaShidi', 1)
+    rinsan.modifySkillDescription(':LuaShidi', ':LuaShidi2')
+    ChangeCheck(huangzhong, 'ExStarHuangzhong')
+    room:removePlayerMark(huangzhong, '@ChangeSkill1')
+    room:addPlayerMark(huangzhong, '@ChangeSkill2')
+end
+
+LuaShidi = sgs.CreateDistanceSkill {
+    name = 'LuaShidi',
+    correct_func = function(self, from, to)
+        local distance = 0
+        if from:hasSkill(self:objectName()) and isYang(from) then
+            distance = distance - 1
+        end
+        if to:hasSkill(self:objectName()) and isYin(to) then
+            distance = distance + 1
+        end
+        return distance
+    end,
+}
+
+LuaShidiChange = sgs.CreateTriggerSkill {
+    name = 'LuaShidiChange',
+    events = {sgs.EventPhaseStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Start then
+            if isYin(player) then
+                room:sendCompulsoryTriggerLog(player, 'LuaShidi')
+                room:broadcastSkillInvoke('LuaShidi', 1)
+                setToYang(player)
+            end
+        elseif player:getPhase() == sgs.Player_Finish then
+            if isYang(player) then
+                room:sendCompulsoryTriggerLog(player, 'LuaShidi')
+                room:broadcastSkillInvoke('LuaShidi', 2)
+                setToYin(player)
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaShidi')
+    end,
+}
+
+LuaShidiSlash = sgs.CreateTriggerSkill {
+    name = 'LuaShidiSlash',
+    events = {sgs.TargetSpecified, sgs.SlashProceed},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.TargetSpecified then
+            local use = data:toCardUse()
+            if isYang(player) and rinsan.RIGHT(self, player, 'LuaShidi') then
+                if use.card and use.card:isBlack() and use.card:isKindOf('Slash') then
+                    room:sendCompulsoryTriggerLog(player, 'LuaShidi')
+                    local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
+                    local index = 1
+                    for _, p in sgs.qlist(use.to) do
+                        if p:isAlive() then
+                            rinsan.sendLogMessage(room, '#NoJink', {
+                                ['from'] = p,
+                            })
+                        end
+                        jink_table[index] = 0
+                        index = index + 1
+                    end
+                    local jink_data = sgs.QVariant()
+                    jink_data:setValue(Table2IntList(jink_table))
+                    player:setTag('Jink_' .. use.card:toString(), jink_data)
+                end
+            end
+        else
+            local effect = data:toSlashEffect()
+            if isYin(effect.to) then
+                if rinsan.RIGHT(self, effect.to, 'LuaShidi') and effect.slash:isRed() then
+                    room:sendCompulsoryTriggerLog(effect.to, 'LuaShidi')
+                    rinsan.sendLogMessage(room, '#NoJink', {
+                        ['from'] = effect.to,
+                    })
+                    room:slashResult(effect, nil)
+                    return true
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+LuaStarYishi = sgs.CreateTriggerSkill {
+    name = 'LuaStarYishi',
+    events = {sgs.DamageCaused},
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.to:objectName() == player:objectName() then
+            return false
+        end
+        if damage.to:hasEquip() and room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), damage.to:objectName())
+            if damage.to:hasEquip() then
+                local id = room:askForCardChosen(player, damage.to, 'e', self:objectName())
+                player:obtainCard(sgs.Sanguosha:getCard(id), false)
+            end
+            damage.damage = damage.damage - 1
+            data:setValue(damage)
+            if damage.damage == 0 then
+                return true
+            end
+        end
+        return false
+    end,
+}
+
+LuaQishe = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaQishe',
+    view_filter = function(self, to_select)
+        return to_select:isKindOf('EquipCard')
+    end,
+    view_as = function(self, card)
+        local analeptic = sgs.Sanguosha:cloneCard('analeptic', card:getSuit(), card:getNumber())
+        analeptic:addSubcard(card)
+        analeptic:setSkillName(self:objectName())
+        return analeptic
+    end,
+    enabled_at_play = function(self, player)
+        return sgs.Analeptic_IsAvailable(player)
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return string.find(pattern, 'analeptic')
+    end
+}
+
+LuaQisheMaxCards = sgs.CreateMaxCardsSkill {
+    name = '#LuaQisheMaxCards',
+    extra_func = function(self, target)
+        if target:hasSkill('LuaQishe') then
+            return target:getEquips():length()
+        end
+        return 0
+    end,
+}
+
+ExStarHuangzhong:addSkill(LuaShidi)
+table.insert(hiddenSkills, LuaShidiChange)
+table.insert(hiddenSkills, LuaShidiSlash)
+ExStarHuangzhong:addSkill(LuaStarYishi)
+ExStarHuangzhong:addSkill(LuaQishe)
+table.insert(hiddenSkills, LuaQisheMaxCards)
+
 rinsan.addHiddenSkills(hiddenSkills)
