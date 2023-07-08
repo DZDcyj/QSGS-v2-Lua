@@ -569,8 +569,8 @@ LuaNosJuesha = sgs.CreateTriggerSkill {
 table.insert(hiddenSkills, LuaNosJuesha)
 
 local function canInvokeLuaJuesha(player)
-    if player:hasSkill(self:objectName()) then
-        return player:getMark(self:objectName() .. '-Clear') == 0 or player:getPhase() ~= sgs.Player_NotActive
+    if player:hasSkill('LuaJuesha') then
+        return player:getMark('LuaInvokedJuesha-Clear') == 0 or player:getPhase() ~= sgs.Player_NotActive
     end
     return false
 end
@@ -586,7 +586,7 @@ LuaJuesha = sgs.CreateTriggerSkill {
             if canInvokeLuaJuesha(player) and room:askForSkillInvoke(player, self:objectName(), data2) then
                 room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), dying.who:objectName())
                 room:addPlayerMark(dying.who, self:objectName() .. player:objectName())
-                room:addPlayerMark(player, self:objectName() .. '-Clear')
+                room:addPlayerMark(player, 'LuaInvokedJuesha-Clear')
             end
         elseif event == sgs.CardUsed then
             local use = data:toCardUse()
