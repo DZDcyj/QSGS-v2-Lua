@@ -86,3 +86,154 @@ LuaMouYanyu = sgs.CreateTriggerSkill {
 
 ExMouXiahoushi:addSkill(LuaMouQiaoshi)
 ExMouXiahoushi:addSkill(LuaMouYanyu)
+
+-- 谋孙策
+ExMouSunce = sgs.General(extension, 'ExMouSunce$', 'wu', '4', true, true)
+
+LuaMouJiangVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaMouJiang',
+    view_as = function(self, cards)
+        local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_SuitToBeDecided, -1)
+        duel:addSubcards(sgs.Self:getHandcards())
+        duel:setSkillName(self:objectName())
+        return duel
+    end,
+    enabled_at_play = function(self, player)
+        if player:isKongcheng() then
+            return false
+        end
+        local count = 1
+        if player:getMark('LuaMouZhiba') > 0 then
+            count = player:getKingdom() == 'wu' and 2 or 1
+            for _, sib in sgs.qlist(player:getAliveSiblings()) do
+                if sib:getKingdom() == 'wu' then
+                    count = count + 1
+                end
+            end
+        end
+        return player:getMark('LuaMouJiangDuelTimes_biu') < count
+    end,
+}
+
+LuaMouJiang = sgs.CreateTriggerSkill {
+    name = 'LuaMouJiang',
+    events = {sgs.PreCardUsed, sgs.TargetConfirmed, sgs.TargetSpecified},
+    view_as_skill = LuaMouJiangVS,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if event == sgs.PreCardUsed then
+            if use.card:getSkillName() == self:objectName() then
+                room:addPlayerMark(player, 'LuaMouJiangDuelTimes_biu')
+            end
+            if use.card:isKindOf('Duel') then
+                local available_targets = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if use.to:contains(p) or room:isProhibited(player, p, use.card) then
+                        goto nextPlayer
+                    end
+                    if use.card:targetFixed() then
+                        available_targets:append(p)
+                    else
+                        if use.card:targetFilter(sgs.PlayerList(), p, player) then
+                            available_targets:append(p)
+                        end
+                    end
+                    ::nextPlayer::
+                end
+                if available_targets:isEmpty() then
+                    return false
+                end
+                local prompt = '@LuaMouJiang-add:' .. use.card:objectName()
+                local extra = room:askForPlayerChosen(player, available_targets, self:objectName(), prompt, true)
+                if not extra then
+                    return false
+                end
+                rinsan.skill(self, room, player, true)
+                use.to:append(extra)
+                room:loseHp(player)
+                rinsan.sendLogMessage(room, '#QiaoshuiAdd', {
+                    ['from'] = player,
+                    ['arg'] = self:objectName(),
+                    ['to'] = extra,
+                    ['card_str'] = use.card:toString(),
+                })
+                room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), extra:objectName())
+                room:sortByActionOrder(use.to)
+                data:setValue(use)
+            end
+            return false
+        end
+        if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(player)) then
+            if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
+                if player:askForSkillInvoke(self:objectName(), data) then
+                    player:drawCards(1, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                end
+            end
+        end
+        return false
+    end,
+}
+
+LuaMouHunzi = sgs.CreateTriggerSkill {
+    name = 'LuaMouHunzi',
+    frequency = sgs.Skill_Wake,
+    events = {sgs.QuitDying},
+    on_trigger = function(self, event, player, data, room)
+        if data:toDying().who:objectName() == player:objectName() then
+            rinsan.sendLogMessage(room, '#LuaMouHunziWake', {
+                ['from'] = player,
+                ['arg'] = self:objectName(),
+            })
+            if room:changeMaxHpForAwakenSkill(player) then
+                room:broadcastSkillInvoke(self:objectName())
+                rinsan.increaseShield(player, 1)
+                player:drawCards(2, self:objectName())
+                room:addPlayerMark(player, self:objectName())
+                room:acquireSkill(player, 'LuaMouYingzi')
+                room:acquireSkill(player, 'LuaYinghun')
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getMark(self:objectName()) == 0
+    end,
+}
+
+LuaMouZhiba = sgs.CreateTriggerSkill {
+    name = 'LuaMouZhiba$',
+    events = {sgs.Dying},
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@LuaMouZhiba',
+    on_trigger = function(self, event, player, data, room)
+        if data:toDying().who:objectName() == player:objectName() then
+            if room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                player:loseMark('@LuaMouZhiba')
+                local x = 0
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if p:getKingdom() == 'wu' then
+                        x = x + 1
+                    end
+                end
+                if x > 0 then
+                    rinsan.recover(player, x)
+                end
+                for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                    if p:getKingdom() == 'wu' then
+                        rinsan.doDamage(nil, p, 1)
+                        if not p:isAlive() then
+                            player:drawCards(3, self:objectName())
+                        end
+                    end
+                end
+            end
+        end
+    end,
+}
+
+ExMouSunce:addSkill(LuaMouJiang)
+ExMouSunce:addSkill(LuaMouHunzi)
+ExMouSunce:addSkill(LuaMouZhiba)
+ExMouSunce:addRelateSkill('LuaMouYingzi')
+ExMouSunce:addRelateSkill('LuaYinghun')

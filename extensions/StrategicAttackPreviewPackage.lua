@@ -42,7 +42,8 @@ LuaMouYingzi = sgs.CreateTriggerSkill {
                 ['arg2'] = x,
             })
             room:notifySkillInvoked(player, self:objectName())
-            room:broadcastSkillInvoke(self:objectName())
+            local index = player:hasSkill('LuaMouHunzi') and rinsan.random(3, 4) or rinsan.random(1, 2)
+            room:broadcastSkillInvoke(self:objectName(), index)
             data:setValue(data:toInt() + x)
         end
         return false
