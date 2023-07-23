@@ -104,7 +104,7 @@ LuaMouJiangVS = sgs.CreateZeroCardViewAsSkill {
         end
         local count = 1
         if player:getMark('LuaMouZhiba') > 0 then
-            count = player:getKingdom() == 'wu' and 2 or 1
+            count = player:getKingdom() == 'wu' and 1 or 0
             for _, sib in sgs.qlist(player:getAliveSiblings()) do
                 if sib:getKingdom() == 'wu' then
                     count = count + 1
@@ -209,6 +209,7 @@ LuaMouZhiba = sgs.CreateTriggerSkill {
         if data:toDying().who:objectName() == player:objectName() then
             if room:askForSkillInvoke(player, self:objectName(), data) then
                 room:broadcastSkillInvoke(self:objectName())
+                room:addPlayerMark(player, self:objectName())
                 player:loseMark('@LuaMouZhiba')
                 local x = 0
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -229,6 +230,9 @@ LuaMouZhiba = sgs.CreateTriggerSkill {
                 end
             end
         end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getMark('@LuaMouZhiba') > 0
     end,
 }
 
