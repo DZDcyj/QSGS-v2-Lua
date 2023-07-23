@@ -341,6 +341,7 @@ LuaPaoxiao = sgs.CreateTriggerSkill {
             if player:getMark(self:objectName() .. 'Invoked-Clear') > 0 then
                 for _, p in sgs.qlist(use.to) do
                     if p:isAlive() then
+                        room:sendCompulsoryTriggerLog(player, self:objectName())
                         room:loseHp(player)
                         local len = player:getHandcardNum()
                         local card = player:getHandcards():at(rinsan.random(0, len - 1))
