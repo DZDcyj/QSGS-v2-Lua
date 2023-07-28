@@ -3366,18 +3366,19 @@ LuaYinghunCard = sgs.CreateSkillCard {
         local x = source:getLostHp()
         local room = source:getRoom()
         local good = false
+        local index = source:hasSkill('LuaMouHunzi') and rinsan.random(3, 4) or rinsan.random(1, 2)
         if x > 1 then
             local data = sgs.QVariant()
             data:setValue(dest)
             local choice = room:askForChoice(source, 'LuaYinghun', 'd1tx+dxt1', data)
             if choice == 'd1tx' then
-                room:broadcastSkillInvoke('LuaYinghun')
+                room:broadcastSkillInvoke('LuaYinghun', index)
                 dest:drawCards(1, 'LuaYinghun')
                 x = math.min(x, dest:getCardCount(true))
                 room:askForDiscard(dest, self:objectName(), x, x, false, true)
                 good = false
             elseif choice == 'dxt1' then
-                room:broadcastSkillInvoke('LuaYinghun')
+                room:broadcastSkillInvoke('LuaYinghun', index)
                 dest:drawCards(x, 'LuaYinghun')
                 room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
                 good = true
@@ -3388,7 +3389,7 @@ LuaYinghunCard = sgs.CreateSkillCard {
                 room:setEmotion(dest, 'bad')
             end
         else
-            room:broadcastSkillInvoke('LuaYinghun')
+            room:broadcastSkillInvoke('LuaYinghun', index)
             dest:drawCards(1, 'LuaYinghun')
             room:askForDiscard(dest, self:objectName(), 1, 1, false, true)
             room:setEmotion(dest, 'good')
