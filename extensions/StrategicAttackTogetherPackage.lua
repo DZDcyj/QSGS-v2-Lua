@@ -187,6 +187,8 @@ LuaMouHunzi = sgs.CreateTriggerSkill {
             })
             if room:changeMaxHpForAwakenSkill(player) then
                 room:broadcastSkillInvoke(self:objectName())
+                room:getThread():delay(3500)
+                room:setEmotion(player, 'skill/hunzi')
                 rinsan.increaseShield(player, 1)
                 player:drawCards(2, self:objectName())
                 room:addPlayerMark(player, self:objectName())
