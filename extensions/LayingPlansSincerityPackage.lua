@@ -188,6 +188,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
                     return false
                 end
                 room:sendCompulsoryTriggerLog(wujing, 'LuaLiubing')
+                room:broadcastSkillInvoke('LuaLiubing')
                 room:obtainCard(wujing, use.card)
             end
         else
