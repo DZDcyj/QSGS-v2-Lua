@@ -8,7 +8,7 @@
 *.dll
 
 # 忽略资源文件目录
-audio/card
+audio/card/**/*.ogg
 audio/equip
 audio/system
 audio/**/[a-z]*.ogg
@@ -37,7 +37,8 @@ image/system
 image/**/[^A-Z]*.[jJ][pP][gG]
 image/**/[^A-Z]*.[pP][nN][gG]
 !adjust_salt_plum*
-!indirect_combination
+!indirect_combination*
+!city_under_siege*
 !@baoli.png
 !@baozou.png
 !@luashanjia.png

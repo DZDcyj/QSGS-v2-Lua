@@ -155,6 +155,7 @@ LuaZhibian = sgs.CreateTriggerSkill {
         end
         local target = room:askForPlayerChosen(player, available_players, self:objectName(), '@LuaZhibian', true, true)
         if target then
+            room:broadcastSkillInvoke(self:objectName())
             if player:pindian(target, self:objectName()) then
                 local choices = {}
                 if rinsan.canMoveCardFromPlayer(target, player) then
