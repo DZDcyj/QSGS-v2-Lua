@@ -54,7 +54,7 @@ local function askForRectificationChoice(player, skillName, to, ignoreChosen)
 end
 
 -- 是否可以发动整肃
-function canBeAskedForRetification(player)
+function canBeAskedForRectification(player)
     for _, choice in ipairs(RECTIFICATION_CHOICES) do
         if player:getMark(choice) == 0 then
             return true
@@ -64,7 +64,7 @@ function canBeAskedForRetification(player)
 end
 
 -- 询问整肃，暴露的外部接口
-function askForRetification(from, to, skillName, isFromChoose, ignoreChosen)
+function askForRectification(from, to, skillName, isFromChoose, ignoreChosen)
     local room = from:getRoom()
     local chooser = isFromChoose and from or to
     local choice = askForRectificationChoice(chooser, skillName, to, ignoreChosen)
@@ -249,7 +249,7 @@ local RECTIFICATION_BONUS_FUNCS = {
 }
 
 -- 默认 2 为整肃成功语音，3 为失败语音
-local function doRetification(player)
+local function doRectification(player)
     local room = player:getRoom()
     -- 获取所有涉及到整肃的标记
     local marks = getRectificationMarks(player)
@@ -293,7 +293,7 @@ LuaRectificationCheck = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().from == sgs.Player_Discard then
-            doRetification(player)
+            doRectification(player)
             player:removeTag(DISCARD_TAG)
             player:removeTag(SUIT_TAG)
             player:removeTag(NUMBER_TAG)
