@@ -377,48 +377,12 @@ LuaPaoxiaoClear = sgs.CreateTriggerSkill {
     can_trigger = rinsan.globalTrigger,
 }
 
-LuaXiejiCard = sgs.CreateSkillCard {
-    name = 'LuaXiejiCard',
-    target_fixed = false,
-    will_throw = false,
-    filter = function(self, selected, to_select)
-        if rinsan.checkFilter(selected, to_select, rinsan.LESS, 3) then
-            local targets_list = sgs.PlayerList()
-            for _, target in ipairs(selected) do
-                targets_list:append(target)
-            end
-            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-            slash:setSkillName('LuaXiejiSlash')
-            slash:deleteLater()
-            if sgs.Self:isCardLimited(slash, sgs.Card_MethodUse) then
-                return false
-            end
-            if slash:targetFilter(targets_list, to_select, sgs.Self) then
-                return not sgs.Self:isProhibited(to_select, slash)
-            end
-        end
-        return false
-    end,
-    feasible = function(self, targets)
-        return #targets > 0 and #targets <= 3
-    end,
-    on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, 'LuaXieji')
-        local victims = sgs.SPlayerList()
-        for _, p in ipairs(targets) do
-            victims:append(p)
-        end
-        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        slash:setSkillName('LuaXiejiSlash')
-        room:broadcastSkillInvoke('LuaXieji', rinsan.random(2, 3))
-        room:useCard(sgs.CardUseStruct(slash, source, victims))
-    end,
-}
-
 LuaXiejiVS = sgs.CreateZeroCardViewAsSkill {
     name = 'LuaXieji',
     view_as = function(self, cards)
-        return LuaXiejiCard:clone()
+        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        slash:setSkillName(self:objectName())
+        return slash
     end,
     enabled_at_play = function(self, player)
         return false
@@ -461,20 +425,35 @@ LuaXiejiDamaged = sgs.CreateTriggerSkill {
     global = true,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
-        if damage.card and damage.card:getSkillName() == 'LuaXiejiSlash' then
+        if damage.card and damage.card:getSkillName() == 'LuaXieji' then
             if damage.damage > 0 then
                 player:drawCards(damage.damage, 'LuaXieji')
             end
         end
     end,
-    can_trigger = rinsan.globalTrigger
+    can_trigger = rinsan.globalTrigger,
+}
+
+LuaXiejiMute = sgs.CreateTriggerSkill {
+    name = 'LuaXiejiMute',
+    events = {sgs.PreCardUsed},
+    global = true,
+    priority = 1,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.card and use.card:getSkillName() == 'LuaXieji' then
+            room:broadcastSkillInvoke('LuaXieji', rinsan.random(1, 2))
+            return true
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaXiejiTargetMod = sgs.CreateTargetModSkill {
     name = 'LuaXiejiTargetMod',
     pattern = 'Slash',
     extra_target_func = function(self, from, card)
-        if card and card:getSkillName() == 'LuaXiejiSlash' then
+        if card and card:getSkillName() == 'LuaXieji' then
             return 2
         end
         return 0
@@ -485,6 +464,7 @@ table.insert(hiddenSkills, LuaPaoxiaoTargetMod)
 table.insert(hiddenSkills, LuaPaoxiaoClear)
 table.insert(hiddenSkills, LuaXiejiDamaged)
 table.insert(hiddenSkills, LuaXiejiTargetMod)
+table.insert(hiddenSkills, LuaXiejiMute)
 ExMouZhangfei:addSkill(LuaPaoxiao)
 ExMouZhangfei:addSkill(LuaXieji)
 
