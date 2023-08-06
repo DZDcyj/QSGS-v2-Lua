@@ -5,6 +5,7 @@ extension = sgs.Package('StrategicAttackTogetherPackage')
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
+local uniteEfforts = require('extensions.UniteEffortsPackage')
 
 -- 隐藏技能添加
 local hiddenSkills = {}
@@ -376,8 +377,115 @@ LuaPaoxiaoClear = sgs.CreateTriggerSkill {
     can_trigger = rinsan.globalTrigger,
 }
 
+LuaXiejiCard = sgs.CreateSkillCard {
+    name = 'LuaXiejiCard',
+    target_fixed = false,
+    will_throw = false,
+    filter = function(self, selected, to_select)
+        if rinsan.checkFilter(selected, to_select, rinsan.LESS, 3) then
+            local targets_list = sgs.PlayerList()
+            for _, target in ipairs(selected) do
+                targets_list:append(target)
+            end
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName('LuaXiejiSlash')
+            slash:deleteLater()
+            if sgs.Self:isCardLimited(slash, sgs.Card_MethodUse) then
+                return false
+            end
+            if slash:targetFilter(targets_list, to_select, sgs.Self) then
+                return not sgs.Self:isProhibited(to_select, slash)
+            end
+        end
+        return false
+    end,
+    feasible = function(self, targets)
+        return #targets > 0 and #targets <= 3
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaXieji')
+        local victims = sgs.SPlayerList()
+        for _, p in ipairs(targets) do
+            victims:append(p)
+        end
+        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        slash:setSkillName('LuaXiejiSlash')
+        room:broadcastSkillInvoke('LuaXieji', rinsan.random(2, 3))
+        room:useCard(sgs.CardUseStruct(slash, source, victims))
+    end,
+}
+
+LuaXiejiVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaXieji',
+    view_as = function(self, cards)
+        return LuaXiejiCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaXieji'
+    end,
+}
+
+LuaXieji = sgs.CreateTriggerSkill {
+    name = 'LuaXieji',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaXiejiVS,
+    on_trigger = function(self, event, player, data, room)
+        local available_targets = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+            if uniteEfforts.canBeAskedForUniteEfforts(p) then
+                available_targets:append(p)
+            end
+        end
+        if available_targets:isEmpty() then
+            return false
+        end
+        local to = room:askForPlayerChosen(player, available_targets, self:objectName(), 'LuaXieji-choose', true, true)
+        if to then
+            room:broadcastSkillInvoke(self:objectName(), 1)
+            uniteEfforts.clearAllUniteEffortsTags(player)
+            room:addPlayerMark(player, uniteEfforts.INVOKING_MARK)
+            uniteEfforts.askForUniteEfforts(player, to, self:objectName(), true)
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start)
+    end,
+}
+
+LuaXiejiDamaged = sgs.CreateTriggerSkill {
+    name = 'LuaXiejiDamaged',
+    events = {sgs.Damage},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if damage.card and damage.card:getSkillName() == 'LuaXiejiSlash' then
+            if damage.damage > 0 then
+                player:drawCards(damage.damage, 'LuaXieji')
+            end
+        end
+    end,
+    can_trigger = rinsan.globalTrigger
+}
+
+LuaXiejiTargetMod = sgs.CreateTargetModSkill {
+    name = 'LuaXiejiTargetMod',
+    pattern = 'Slash',
+    extra_target_func = function(self, from, card)
+        if card and card:getSkillName() == 'LuaXiejiSlash' then
+            return 2
+        end
+        return 0
+    end,
+}
+
 table.insert(hiddenSkills, LuaPaoxiaoTargetMod)
 table.insert(hiddenSkills, LuaPaoxiaoClear)
+table.insert(hiddenSkills, LuaXiejiDamaged)
+table.insert(hiddenSkills, LuaXiejiTargetMod)
 ExMouZhangfei:addSkill(LuaPaoxiao)
+ExMouZhangfei:addSkill(LuaXieji)
 
 rinsan.addHiddenSkills(hiddenSkills)

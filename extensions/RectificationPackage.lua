@@ -215,7 +215,7 @@ end
 -- 首先获取对应的 Marks
 local function getRectificationMarks(player)
     local marks = {}
-    for i = 1, 3, 1 do
+    for i = 1, #RECTIFICATION_CHOICES, 1 do
         local markPrefix = string.format('%s-%s', RECTIFICATION_CHOICES[i], player:objectName())
         for _, mark in sgs.list(player:getMarkNames()) do
             -- 必须显式 plain
@@ -260,7 +260,7 @@ local function doRectification(player)
         local fromName = items[3] -- 整肃发起者
         local from = findPlayerByName(room, fromName)
         if not from then
-            return
+            goto next_mark
         end
         local skillName = items[4] -- 整肃技能名称
         local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
@@ -284,6 +284,7 @@ local function doRectification(player)
             })
             room:broadcastSkillInvoke(skillName, 3)
         end
+        ::next_mark::
     end
 end
 
