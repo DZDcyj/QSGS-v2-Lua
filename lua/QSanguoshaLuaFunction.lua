@@ -12,6 +12,11 @@ function targetTrigger(self, target)
     return target
 end
 
+-- 通用 targetAliveTrigger
+function targetAliveTrigger(self, target)
+    return target and target:isAlive()
+end
+
 -- 通用 globalTrigger
 function globalTrigger(self, target)
     return true

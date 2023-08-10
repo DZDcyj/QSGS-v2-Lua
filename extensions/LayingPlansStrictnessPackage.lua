@@ -118,12 +118,12 @@ LuaYanji = sgs.CreateTriggerSkill {
     name = 'LuaYanji',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
-        if not rectification.canBeAskedForRetification(player) then
+        if not rectification.canBeAskedForRectification(player) then
             return false
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName(), 1)
-            rectification.askForRetification(player, player, self:objectName())
+            rectification.askForRectification(player, player, self:objectName())
         end
     end,
     can_trigger = function(self, target)
@@ -431,7 +431,7 @@ LuaZhujunJuxiang = sgs.CreateTriggerSkill {
 }
 
 local function canInvokeLuaHoufeng(zhujun, player)
-    if not rectification.canBeAskedForRetification(player) then
+    if not rectification.canBeAskedForRectification(player) then
         return false
     end
     return zhujun:getMark('LuaHoufeng_lun') == 0 and zhujun:inMyAttackRange(player)
@@ -449,7 +449,7 @@ LuaHoufeng = sgs.CreateTriggerSkill {
                     room:broadcastSkillInvoke(self:objectName(), 1)
                     room:doAnimate(rinsan.ANIMATE_INDICATE, zhujun:objectName(), player:objectName())
                     room:addPlayerMark(zhujun, 'LuaHoufeng_lun')
-                    rectification.askForRetification(zhujun, player, self:objectName(), true)
+                    rectification.askForRectification(zhujun, player, self:objectName(), true)
                 end
             end
         end
@@ -564,12 +564,12 @@ LuaZhengjun = sgs.CreateTriggerSkill {
     name = 'LuaZhengjun',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
-        if not rectification.canBeAskedForRetification(player) then
+        if not rectification.canBeAskedForRectification(player) then
             return false
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName(), 1)
-            rectification.askForRetification(player, player, self:objectName())
+            rectification.askForRectification(player, player, self:objectName())
         end
     end,
     can_trigger = function(self, target)
