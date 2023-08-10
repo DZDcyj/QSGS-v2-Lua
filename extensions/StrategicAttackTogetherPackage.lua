@@ -409,7 +409,7 @@ LuaXieji = sgs.CreateTriggerSkill {
         local to = room:askForPlayerChosen(player, available_targets, self:objectName(), 'LuaXieji-choose', true, true)
         if to then
             room:broadcastSkillInvoke(self:objectName(), 1)
-            uniteEfforts.clearAllUniteEffortsTags(player)
+            uniteEfforts.setUpBackupTag(player)
             room:addPlayerMark(player, uniteEfforts.INVOKING_MARK)
             uniteEfforts.askForUniteEfforts(player, to, self:objectName(), true)
         end

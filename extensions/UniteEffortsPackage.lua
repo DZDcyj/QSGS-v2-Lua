@@ -111,6 +111,56 @@ function clearAllUniteEffortsTags(player)
     player:removeTag(DAMAGE_TAG)
 end
 
+-- 获取备份 Tag 名称
+local function getBackupTagName(name)
+    return name .. '_Backup'
+end
+
+-- 启动备份
+function setUpBackupTag(player)
+    local discardData = getUniteEffortsStringTable(player, DISCARD_TAG)
+    local useData = getUniteEffortsStringTable(player, USE_TAG)
+    setUniteEffortsStringTable(player, getBackupTagName(DISCARD_TAG), discardData)
+    setUniteEffortsStringTable(player, getBackupTagName(USE_TAG), useData)
+
+    local drawCount = player:getTag(DRAW_TAG):toInt()
+    local damageCount = player:getTag(DAMAGE_TAG):toInt()
+    player:setTag(getBackupTagName(DRAW_TAG), sgs.QVariant(drawCount))
+    player:setTag(getBackupTagName(DAMAGE_TAG), sgs.QVariant(damageCount))
+end
+
+-- 更新 Table
+local function updateTableTag(player, tagName)
+    local tagData = player:getTag(getBackupTagName(tagName))
+    if tagData then
+        local tagTable = getUniteEffortsStringTable(player, tagName)
+        local backupTable = getUniteEffortsStringTable(player, getBackupTagName(tagName))
+        for _, suit in ipairs(backupTable) do
+            table.removeOne(tagTable, suit)
+        end
+        setUniteEffortsStringTable(player, tagName, tagTable)
+        player:removeTag(getBackupTagName(tagName))
+    end
+end
+
+-- 更新记录数
+local function updateIntTag(player, tagName)
+    local tagData = player:getTag(getBackupTagName(tagName))
+    if tagData then
+        local backupCount = tagData:toInt()
+        local currCount = player:getTag(tagName):toInt()
+        player:setTag(tagName, sgs.QVariant(math.max(0, currCount - backupCount)))
+    end
+end
+
+-- 更新现有记录
+function removeBackupTagRecord(player)
+    updateTableTag(player, DISCARD_TAG)
+    updateTableTag(player, USE_TAG)
+    updateIntTag(player, DRAW_TAG)
+    updateIntTag(player, DAMAGE_TAG)
+end
+
 -- 协力检查函数
 local UNITE_EFFORTS_CHECK_FUNCTIONS = {
     ['UniteEffortsPackage_Tongchou'] = function(invoker, collaborator)
@@ -345,6 +395,7 @@ LuaUniteEffortsCheck = sgs.CreateTriggerSkill {
             doUniteEfforts(player)
             if player:getMark(INVOKING_MARK) > 0 then
                 room:setPlayerMark(player, INVOKING_MARK, 0)
+                removeBackupTagRecord(player)
             else
                 clearAllUniteEffortsTags(player)
             end
