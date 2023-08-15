@@ -663,6 +663,7 @@ LuaLiegong = sgs.CreateTriggerSkill {
                 else
                     room:slashResult(effect, nil)
                 end
+                room:setPlayerFlag(effect.to, '-LuaLiegongTarget')
                 return true
             end
         end
