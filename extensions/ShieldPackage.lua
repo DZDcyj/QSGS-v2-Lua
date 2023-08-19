@@ -137,8 +137,37 @@ LuaPoxiHotFix = sgs.CreateTriggerSkill {
     can_trigger = rinsan.globalTrigger,
 }
 
+-- 巨象、祸首非锁定技修正
+LuaSavageAssaultAvoidFix = sgs.CreateTriggerSkill {
+    name = 'LuaSavageAssaultAvoidFix',
+    events = {sgs.CardEffected},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local effect = data:toCardEffect()
+        local skillName
+        -- 双技能都有的情况下优先祸首
+        if player:hasSkill('huoshou') then
+            skillName = 'huoshou'
+        elseif player:hasSkill('juxiang') then
+            skillName = 'juxiang'
+        end
+        if skillName and effect.card:isKindOf('SavageAssault') then
+            rinsan.sendLogMessage(room, '#SkillNullify',{
+                ['from'] = player,
+                ['arg'] = skillName,
+                ['arg2'] = 'savage_assault'
+            })
+            return true
+        end
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
 table.insert(hiddenSkills, LuaShield)
 table.insert(hiddenSkills, LuaShieldInit)
 table.insert(hiddenSkills, LuaPoxiHotFix)
+table.insert(hiddenSkills, LuaSavageAssaultAvoidFix)
 
 rinsan.addHiddenSkills(hiddenSkills)
