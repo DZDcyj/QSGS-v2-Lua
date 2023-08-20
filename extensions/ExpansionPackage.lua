@@ -7221,6 +7221,7 @@ LuaGuli = sgs.CreateTriggerSkill {
         if player:getMark(self:objectName() .. 'Damaged-Clear') > 0 then
             local x = player:getMaxHp() - player:getHandcardNum()
             if x > 0 and room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
                 room:loseHp(player)
                 player:drawCards(x, self:objectName())
             end
