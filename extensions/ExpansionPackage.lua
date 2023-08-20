@@ -7235,10 +7235,12 @@ LuaAosi = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
-        room:broadcastSkillInvoke(self:objectName())
-        room:sendCompulsoryTriggerLog(player, self:objectName())
-        room:addPlayerMark(damage.to, '@LuaAosi_biu')
-        room:addPlayerMark(player, 'LuaAosiInvoked_biu')
+        if player:inMyAttackRange(damage.to) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:addPlayerMark(damage.to, '@LuaAosi_biu')
+            room:addPlayerMark(player, 'LuaAosiInvoked_biu')
+        end
     end,
     can_trigger = function(self, target)
         return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
@@ -7251,8 +7253,8 @@ LuaAosiTargetMod = sgs.CreateTargetModSkill {
     residue_func = function(self, from, card, to)
         local n = 0
         if from:getMark('LuaAosiInvoked_biu') > 0 and to and to:getMark('@LuaAosi_biu') > 0 then
-			n = n + 1000
-		end
+            n = n + 1000
+        end
         return n
     end,
 }
