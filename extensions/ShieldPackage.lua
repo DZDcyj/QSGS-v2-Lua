@@ -13,6 +13,7 @@ local hiddenSkills = {}
 local START_SHIELDS = {
     ['ExMouHuaxiong'] = 1,
     ['ExMouCaoren'] = 1,
+    ['ExStarWeiyan'] = 1,
 }
 
 -- 护甲结算
