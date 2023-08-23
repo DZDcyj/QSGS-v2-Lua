@@ -7236,6 +7236,9 @@ LuaAosi = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
+        if not damage.to:isAlive() then
+            return false
+        end
         if player:inMyAttackRange(damage.to) then
             -- 如果没有被雄乱影响
             if damage.to:getMark('@be_fucked-Clear') == 0 then
