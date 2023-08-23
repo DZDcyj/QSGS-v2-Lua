@@ -7237,10 +7237,16 @@ LuaAosi = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local damage = data:toDamage()
         if player:inMyAttackRange(damage.to) then
-            room:broadcastSkillInvoke(self:objectName())
-            room:sendCompulsoryTriggerLog(player, self:objectName())
-            room:addPlayerMark(damage.to, '@LuaAosi_biu')
-            room:addPlayerMark(player, 'LuaAosiInvoked_biu')
+            -- 如果没有被雄乱影响
+            if damage.to:getMark('@be_fucked-Clear') == 0 then
+                room:broadcastSkillInvoke(self:objectName())
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:addPlayerMark(damage.to, 'LuaAosi_biu')
+                room:addPlayerMark(player, 'LuaAosiInvoked_biu')
+                -- 临时使用雄乱标记
+                room:addPlayerMark(player, 'fuck_caocao-Clear')
+                room:addPlayerMark(damage.to, '@be_fucked-Clear')
+            end
         end
     end,
     can_trigger = function(self, target)
@@ -7260,8 +7266,29 @@ LuaAosiTargetMod = sgs.CreateTargetModSkill {
     end,
 }
 
+LuaAosiClear = sgs.CreateTriggerSkill {
+    name = 'LuaAosiClear',
+    events = {sgs.EventPhaseChanging},
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().from == sgs.Player_Play then
+            rinsan.clearAllMarksContains(player, 'LuaAosi')
+            room:setPlayerMark(player, 'fuck_caocao-Clear', 0)
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                if p:getMark('LuaAosi_biu') > 0 then
+                    room:setPlayerMark(p, 'LuaAosi_biu', 0)
+                    room:setPlayerMark(p, '@be_fucked-Clear', 0)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaAosi')
+    end,
+}
+
 ExStarWeiyan:addSkill(LuaGuli)
 ExStarWeiyan:addSkill(LuaAosi)
 table.insert(hiddenSkills, LuaAosiTargetMod)
+table.insert(hiddenSkills, LuaAosiClear)
 
 rinsan.addHiddenSkills(hiddenSkills)
