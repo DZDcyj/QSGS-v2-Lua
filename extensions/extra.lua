@@ -950,12 +950,12 @@ extra_target = sgs.CreateTriggerSkill {
                 local targets = sgs.SPlayerList()
                 for _, p in sgs.qlist(room:getAlivePlayers()) do
                     if (use.to:contains(p) or room:isProhibited(player, p, use.card)) then
-						goto next_target
+                        goto next_target
                     end
                     if use.card:targetFilter(sgs.PlayerList(), p, player) then
                         targets:append(p)
                     end
-					::next_target::
+                    ::next_target::
                 end
                 if targets:isEmpty() then
                     return false
@@ -3474,14 +3474,15 @@ luanzhan = sgs.CreateTriggerSkill {
             elseif use.from:objectName() == player:objectName() and use.card:isKindOf("Collateral") and
                 use.card:isBlack() then
                 for i = 1, player:getMark("@luanz") do
+                    local targets = sgs.SPlayerList()
                     for _, p in sgs.qlist(room:getAlivePlayers()) do
                         if use.to:contains(p) or room:isProhibited(player, p, use.card) then
-							goto next_target
+                            goto next_target
                         end
                         if use.card:targetFilter(sgs.PlayerList(), p, player) then
                             targets:append(p)
                         end
-						::next_target::
+                        ::next_target::
                     end
                     if targets:isEmpty() then
                         return false
@@ -9149,6 +9150,7 @@ canshib = sgs.CreateTriggerSkill {
                     end
                 elseif use.from:objectName() == p:objectName() and use.card:isKindOf("Collateral") then
                     for i = 1, p:getMark("@luanz") do
+                        local targets = sgs.SPlayerList()
                         for _, pe in sgs.qlist(room:getAlivePlayers()) do
                             if (use.to:contains(pe) or room:isProhibited(p, pe, use.card)) then
                                 goto next_pe
@@ -9170,6 +9172,7 @@ canshib = sgs.CreateTriggerSkill {
                             room:setPlayerProperty(p, "extra_collateral", sgs.QVariant(""))
                             room:setPlayerProperty(p, "extra_collateral_current_targets", sgs.QVariant("+"))
                             if used then
+                                local extra
                                 for _, pe in sgs.qlist(room:getOtherPlayers(p)) do
                                     if pe:hasFlag("ExtraCollateralTarget") then
                                         pe:setFlags("-ExtraColllateralTarget")
