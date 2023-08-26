@@ -6997,6 +6997,7 @@ LuaLieren = sgs.CreateTriggerSkill {
 JieZhurong:addSkill(LuaJuxiang)
 JieZhurong:addSkill(LuaLieren)
 
+-- 星黄忠
 ExStarHuangzhong = sgs.General(extension, 'ExStarHuangzhong', 'qun', '4', true, true)
 
 local function isYang(huangzhong)
@@ -7148,7 +7149,7 @@ LuaQishe = sgs.CreateOneCardViewAsSkill {
     end,
     enabled_at_response = function(self, player, pattern)
         return string.find(pattern, 'analeptic')
-    end
+    end,
 }
 
 LuaQisheMaxCards = sgs.CreateMaxCardsSkill {
@@ -7167,5 +7168,130 @@ table.insert(hiddenSkills, LuaShidiSlash)
 ExStarHuangzhong:addSkill(LuaStarYishi)
 ExStarHuangzhong:addSkill(LuaQishe)
 table.insert(hiddenSkills, LuaQisheMaxCards)
+
+-- 星魏延
+ExStarWeiyan = sgs.General(extension, 'ExStarWeiyan', 'qun', '4', true, true)
+
+LuaGuliVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaGuli',
+    view_as = function(self, cards)
+        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_SuitToBeDecided, -1)
+        slash:addSubcards(sgs.Self:getHandcards())
+        slash:setSkillName(self:objectName())
+        return slash
+    end,
+    enabled_at_play = function(self, player)
+        if player:isKongcheng() then
+            return false
+        end
+        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_SuitToBeDecided, -1)
+        slash:addSubcards(sgs.Self:getHandcards())
+        slash:setSkillName(self:objectName())
+        if not slash:isAvailable(player) then
+            return false
+        end
+        return player:getMark('LuaGuliSlashTimes_biu') < 1
+    end,
+}
+
+LuaGuli = sgs.CreateTriggerSkill {
+    name = 'LuaGuli',
+    events = {sgs.TargetSpecified, sgs.Damage, sgs.CardFinished, sgs.PreCardUsed},
+    view_as_skill = LuaGuliVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Damage then
+            local damage = data:toDamage()
+            if damage.card and damage.card:getSkillName() == self:objectName() then
+                room:addPlayerMark(player, self:objectName() .. 'Damaged-Clear')
+            end
+            return false
+        end
+        local use = data:toCardUse()
+        if not (use.card) or (use.card:getSkillName()) ~= self:objectName() then
+            return false
+        end
+        if event == sgs.PreCardUsed then
+            room:addPlayerMark(player, 'LuaGuliSlashTimes_biu')
+        elseif event == sgs.TargetSpecified then
+            for _, p in sgs.qlist(use.to) do
+                rinsan.addQinggangTag(p, use.card)
+            end
+            return false
+        end
+        if player:getMark(self:objectName() .. 'Damaged-Clear') > 0 then
+            local x = player:getMaxHp() - player:getHandcardNum()
+            if x > 0 and room:askForSkillInvoke(player, self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                room:loseHp(player)
+                player:drawCards(x, self:objectName())
+            end
+        end
+        return false
+    end,
+}
+
+LuaAosi = sgs.CreateTriggerSkill {
+    name = 'LuaAosi',
+    events = {sgs.Damage},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if not damage.to:isAlive() then
+            return false
+        end
+        if player:inMyAttackRange(damage.to) then
+            -- 如果没有被雄乱影响
+            if damage.to:getMark('@be_fucked-Clear') == 0 then
+                room:broadcastSkillInvoke(self:objectName())
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:addPlayerMark(damage.to, 'LuaAosi_biu')
+                room:addPlayerMark(player, 'LuaAosiInvoked_biu')
+                -- 临时使用雄乱标记
+                room:addPlayerMark(player, 'fuck_caocao-Clear')
+                room:addPlayerMark(damage.to, '@be_fucked-Clear')
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+LuaAosiTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaAosiTargetMod',
+    pattern = '.',
+    residue_func = function(self, from, card, to)
+        local n = 0
+        if from:getMark('LuaAosiInvoked_biu') > 0 and to and to:getMark('@LuaAosi_biu') > 0 then
+            n = n + 1000
+        end
+        return n
+    end,
+}
+
+LuaAosiClear = sgs.CreateTriggerSkill {
+    name = 'LuaAosiClear',
+    events = {sgs.EventPhaseChanging},
+    on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().from == sgs.Player_Play then
+            rinsan.clearAllMarksContains(player, 'LuaAosi')
+            room:setPlayerMark(player, 'fuck_caocao-Clear', 0)
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                if p:getMark('LuaAosi_biu') > 0 then
+                    room:setPlayerMark(p, 'LuaAosi_biu', 0)
+                    room:setPlayerMark(p, '@be_fucked-Clear', 0)
+                end
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target, 'LuaAosi')
+    end,
+}
+
+ExStarWeiyan:addSkill(LuaGuli)
+ExStarWeiyan:addSkill(LuaAosi)
+table.insert(hiddenSkills, LuaAosiTargetMod)
+table.insert(hiddenSkills, LuaAosiClear)
 
 rinsan.addHiddenSkills(hiddenSkills)

@@ -426,6 +426,12 @@ slashmore = sgs.CreateTargetModSkill {
             n = n + 1000
         end
         if from:getMark('fuck_caocao-Clear') > 0 and to and to:getMark('@be_fucked-Clear') > 0 then
+            -- 骜肆处理距离
+            if from:getMark('LuaAosiInvoked_biu') > 0 and to and to:getMark('LuaAosi_biu') then
+                if to and to:getMark('@be_fucked-Clear') == 1 then
+                    n = n - 1000
+                end
+            end
             n = n + 1000
         end
         return n
