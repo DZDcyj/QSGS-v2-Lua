@@ -121,5 +121,4 @@ ui-script/
 # 忽略 extensions 下我们编写之外的文件
 extensions/hidden/*.lua
 extensions/hulaoguan.lua
-extensions/extra.lua
 extensions/extra-222.lua
