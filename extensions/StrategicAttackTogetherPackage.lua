@@ -169,7 +169,7 @@ LuaMouJiang = sgs.CreateTriggerSkill {
         end
         if event == sgs.TargetSpecified then
             if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
-                for _, p in sgs.qlist(use.to) do
+                for _, _ in sgs.qlist(use.to) do
                     if player:askForSkillInvoke(self:objectName(), data) then
                         player:drawCards(1, self:objectName())
                         room:broadcastSkillInvoke(self:objectName())
