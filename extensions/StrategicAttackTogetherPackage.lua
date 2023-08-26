@@ -167,7 +167,18 @@ LuaMouJiang = sgs.CreateTriggerSkill {
             end
             return false
         end
-        if event == sgs.TargetSpecified or (event == sgs.TargetConfirmed and use.to:contains(player)) then
+        if event == sgs.TargetSpecified then
+            if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
+                for _, _ in sgs.qlist(use.to) do
+                    if player:askForSkillInvoke(self:objectName(), data) then
+                        player:drawCards(1, self:objectName())
+                        room:broadcastSkillInvoke(self:objectName())
+                    else
+                        break
+                    end
+                end
+            end
+        elseif(event == sgs.TargetConfirmed and use.to:contains(player)) then
             if use.card:isKindOf('Duel') or (use.card:isKindOf('Slash') and use.card:isRed()) then
                 if player:askForSkillInvoke(self:objectName(), data) then
                     player:drawCards(1, self:objectName())

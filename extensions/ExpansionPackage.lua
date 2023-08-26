@@ -7239,7 +7239,7 @@ LuaAosi = sgs.CreateTriggerSkill {
         if not damage.to:isAlive() then
             return false
         end
-        if player:inMyAttackRange(damage.to) then
+        if player:objectName() ~= damage.to:objectName() and player:inMyAttackRange(damage.to) then
             -- 如果没有被雄乱影响
             if damage.to:getMark('@be_fucked-Clear') == 0 then
                 room:broadcastSkillInvoke(self:objectName())
@@ -7275,11 +7275,11 @@ LuaAosiClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().from == sgs.Player_Play then
             rinsan.clearAllMarksContains(player, 'LuaAosi')
-            room:setPlayerMark(player, 'fuck_caocao-Clear', 0)
+            room:removePlayerMark(player, 'fuck_caocao-Clear')
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if p:getMark('LuaAosi_biu') > 0 then
                     room:setPlayerMark(p, 'LuaAosi_biu', 0)
-                    room:setPlayerMark(p, '@be_fucked-Clear', 0)
+                    room:removePlayerMark(p, '@be_fucked-Clear')
                 end
             end
         end
