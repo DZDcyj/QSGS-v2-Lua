@@ -17,6 +17,10 @@ extension_star = sgs.Package('firexiongxiongxiong', sgs.Package_GeneralPack)
 extension_yin = sgs.Package('yin', sgs.Package_GeneralPack)
 extension_lei = sgs.Package('lei', sgs.Package_GeneralPack)
 math.random()
+
+-- 引入封装函数包
+local rinsan = require('QSanguoshaLuaFunction')
+
 -- sgs.Sanguosha:playAudioEffect('audio/system/bgm'..math.random(10)..'.ogg', false)
 -- 感谢myetyet大神和Ho-spair大神的帮忙使得阴雷星火燎原的进度加速
 axe_bug = sgs.CreateTriggerSkill {
@@ -6454,16 +6458,22 @@ wenji = sgs.CreatePhaseChangeSkill {
         local room = player:getRoom()
         local players = sgs.SPlayerList()
         for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-            if not p:isKongcheng() then
+            if not p:isNude() then
                 players:append(p)
             end
         end
         if player:getPhase() == sgs.Player_Play and not players:isEmpty() then
             local to = room:askForPlayerChosen(player, players, self:objectName(), 'wenji-invoke', true, true)
             if to then
+                room:broadcastSkillInvoke(self:objectName())
                 room:addPlayerMark(player, self:objectName() .. 'engine')
                 if player:getMark(self:objectName() .. 'engine') > 0 then
                     local card = room:askForCard(to, '..!', '@wenji', sgs.QVariant(), sgs.Card_MethodNone)
+                    if not card then
+                        -- 规避 AI 不给牌的情况，随机获取
+                        local _cards = to:getCards('he')
+                        card = _cards:at(rinsan.random(0, _cards:length() - 1))
+                    end
                     if card then
                         room:moveCardTo(card, player, sgs.Player_PlaceHand, sgs.CardMoveReason(
                             sgs.CardMoveReason_S_REASON_GIVE, to:objectName(), player:objectName(), self:objectName(),
