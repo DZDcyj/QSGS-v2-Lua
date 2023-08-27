@@ -985,7 +985,7 @@ wenji_buff = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if event == sgs.TargetSpecified then
             local use = data:toCardUse()
-            if player:getMark('wenji' .. use.card:getClassName() .. '-Clear') > 0 then
+            if player:getMark('wenji' .. rinsan.getTrueClassName(use.card:getClassName()) .. '-Clear') > 0 then
                 if string.find(use.card:getClassName(), 'Slash') then
                     local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
                     local index = 1
@@ -6478,7 +6478,7 @@ wenji = sgs.CreatePhaseChangeSkill {
                         room:moveCardTo(card, player, sgs.Player_PlaceHand, sgs.CardMoveReason(
                             sgs.CardMoveReason_S_REASON_GIVE, to:objectName(), player:objectName(), self:objectName(),
                             ''))
-                        room:addPlayerMark(player, 'wenji' .. card:getClassName() .. '-Clear')
+                        room:addPlayerMark(player, 'wenji' .. rinsan.getTrueClassName(card:getClassName()) .. '-Clear')
                     end
                     room:removePlayerMark(player, self:objectName() .. 'engine')
                 end
@@ -6511,8 +6511,8 @@ tunjiang = sgs.CreatePhaseChangeSkill {
     frequency = sgs.Skill_Frequent,
     on_phasechange = function(self, player)
         local room = player:getRoom()
-        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaTunjiang-Skipped-Play-Clear') == 0 and player:getMark('qieting') == 0 and
-            room:askForSkillInvoke(player, self:objectName()) then
+        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaTunjiang-Skipped-Play-Clear') == 0 and
+            player:getMark('qieting') == 0 and room:askForSkillInvoke(player, self:objectName()) then
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName() .. 'engine')
             if player:getMark(self:objectName() .. 'engine') > 0 then
