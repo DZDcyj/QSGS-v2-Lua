@@ -6478,12 +6478,30 @@ wenji = sgs.CreatePhaseChangeSkill {
     end,
 }
 liuqi:addSkill(wenji)
+tunjiang_skip = sgs.CreateTriggerSkill {
+    name = 'tunjiang_skip',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.EventPhaseSkipping},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Play then
+            room:addPlayerMark(player, 'LuaTunjiang-Skipped-Play-Clear')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end,
+}
+if not sgs.Sanguosha:getSkill('tunjiang_skip') then
+    skills:append(tunjiang_skip)
+end
 tunjiang = sgs.CreatePhaseChangeSkill {
     name = 'tunjiang',
     frequency = sgs.Skill_Frequent,
     on_phasechange = function(self, player)
         local room = player:getRoom()
-        if player:getPhase() == sgs.Player_Finish and player:getMark('qieting') == 0 and
+        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaTunjiang-Skipped-Play-Clear') == 0 and player:getMark('qieting') == 0 and
             room:askForSkillInvoke(player, self:objectName()) then
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName() .. 'engine')
