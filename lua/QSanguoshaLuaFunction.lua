@@ -1799,6 +1799,14 @@ function addHiddenSkills(skillTable)
     sgs.Sanguosha:addSkills(skillList)
 end
 
+-- 杀类型归一
+function getTrueClassName(name)
+    if name == 'ThunderSlash' or name == 'FireSlash' then
+        return 'Slash'
+    end
+    return name
+end
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_CHANGE_HP'] = 32,

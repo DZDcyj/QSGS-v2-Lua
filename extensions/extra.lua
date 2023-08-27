@@ -17,6 +17,10 @@ extension_star = sgs.Package('firexiongxiongxiong', sgs.Package_GeneralPack)
 extension_yin = sgs.Package('yin', sgs.Package_GeneralPack)
 extension_lei = sgs.Package('lei', sgs.Package_GeneralPack)
 math.random()
+
+-- 引入封装函数包
+local rinsan = require('QSanguoshaLuaFunction')
+
 -- sgs.Sanguosha:playAudioEffect('audio/system/bgm'..math.random(10)..'.ogg', false)
 -- 感谢myetyet大神和Ho-spair大神的帮忙使得阴雷星火燎原的进度加速
 axe_bug = sgs.CreateTriggerSkill {
@@ -981,7 +985,7 @@ wenji_buff = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if event == sgs.TargetSpecified then
             local use = data:toCardUse()
-            if player:getMark('wenji' .. use.card:getClassName() .. '-Clear') > 0 then
+            if player:getMark('wenji' .. rinsan.getTrueClassName(use.card:getClassName()) .. '-Clear') > 0 then
                 if string.find(use.card:getClassName(), 'Slash') then
                     local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
                     local index = 1
@@ -6454,21 +6458,27 @@ wenji = sgs.CreatePhaseChangeSkill {
         local room = player:getRoom()
         local players = sgs.SPlayerList()
         for _, p in sgs.qlist(room:getOtherPlayers(player)) do
-            if not p:isKongcheng() then
+            if not p:isNude() then
                 players:append(p)
             end
         end
         if player:getPhase() == sgs.Player_Play and not players:isEmpty() then
             local to = room:askForPlayerChosen(player, players, self:objectName(), 'wenji-invoke', true, true)
             if to then
+                room:broadcastSkillInvoke(self:objectName())
                 room:addPlayerMark(player, self:objectName() .. 'engine')
                 if player:getMark(self:objectName() .. 'engine') > 0 then
                     local card = room:askForCard(to, '..!', '@wenji', sgs.QVariant(), sgs.Card_MethodNone)
+                    if not card then
+                        -- 规避 AI 不给牌的情况，随机获取
+                        local _cards = to:getCards('he')
+                        card = _cards:at(rinsan.random(0, _cards:length() - 1))
+                    end
                     if card then
                         room:moveCardTo(card, player, sgs.Player_PlaceHand, sgs.CardMoveReason(
                             sgs.CardMoveReason_S_REASON_GIVE, to:objectName(), player:objectName(), self:objectName(),
                             ''))
-                        room:addPlayerMark(player, 'wenji' .. card:getClassName() .. '-Clear')
+                        room:addPlayerMark(player, 'wenji' .. rinsan.getTrueClassName(card:getClassName()) .. '-Clear')
                     end
                     room:removePlayerMark(player, self:objectName() .. 'engine')
                 end
@@ -6478,13 +6488,31 @@ wenji = sgs.CreatePhaseChangeSkill {
     end,
 }
 liuqi:addSkill(wenji)
+tunjiang_skip = sgs.CreateTriggerSkill {
+    name = 'tunjiang_skip',
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.EventPhaseSkipping},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Play then
+            room:addPlayerMark(player, 'LuaTunjiang-Skipped-Play-Clear')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target
+    end,
+}
+if not sgs.Sanguosha:getSkill('tunjiang_skip') then
+    skills:append(tunjiang_skip)
+end
 tunjiang = sgs.CreatePhaseChangeSkill {
     name = 'tunjiang',
     frequency = sgs.Skill_Frequent,
     on_phasechange = function(self, player)
         local room = player:getRoom()
-        if player:getPhase() == sgs.Player_Finish and player:getMark('qieting') == 0 and
-            room:askForSkillInvoke(player, self:objectName()) then
+        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaTunjiang-Skipped-Play-Clear') == 0 and
+            player:getMark('qieting') == 0 and room:askForSkillInvoke(player, self:objectName()) then
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName() .. 'engine')
             if player:getMark(self:objectName() .. 'engine') > 0 then
@@ -14315,14 +14343,11 @@ sgs.LoadTranslationTable {
     ['#liuqi'] = '居外而安',
     ['illustrator:liuqi'] = 'NOVART',
     ['wenji'] = '问计',
-    -- [':wenji'] = '每轮限一次，其他角色的出牌阶段开始时，你可以令其选择是否交给你一张手牌，若其选择是且之为锦囊牌，令其以外的其他角色于你的下回合开始前与你的距离+1。',
     ['wenji-invoke'] = '你可以发动“问计”<br/> <b>操作提示</b>: 选择一名有手牌的角色→点击确定<br/>',
     [':wenji'] = '出牌阶段开始时，你可以令一名其他角色交给你一张牌，若如此做，你于此回合内使用与之相同名称的牌不能被其他角色响应。',
     ['$wenji1'] = '还望先生救我！',
     ['$wenji2'] = '言出子口，入于吾耳，可以言未？',
     ['tunjiang'] = '屯江',
-    -- ['tunjiang-invoke'] = '你可以发动“屯江”<br/> <b>操作提示</b>: 选择一名角色→点击确定<br/>',
-    -- [':tunjiang'] = '结束阶段开始时，若你于此回合内的出牌阶段使用过至少两张牌且未造成过伤害，你可以选择一名角色，令其摸两张牌。',
     [':tunjiang'] = '结束阶段开始时，若你未于此回合内跳过出牌阶段且于此回合的出牌阶段内未使用牌指定过其他角色为目标，你可以摸X张牌。（X为势力数）',
     ['$tunjiang1'] = '江夏冲要之地，孩儿愿往守之。',
     ['$tunjiang2'] = '皇叔勿惊，吾与关将军已到。',
