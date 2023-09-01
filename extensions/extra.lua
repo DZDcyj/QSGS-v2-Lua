@@ -9371,6 +9371,15 @@ jianjieCard = sgs.CreateSkillCard {
                     use.to:last():gainMark('@phoenix')
                 end
             end
+            local together
+            for _, p in sgs.qlist(use.to) do
+                if p:getMark('@dragon') > 0 and p:getMark('@phoenix') > 0 then
+                    together = true
+                end
+            end
+            -- 判断是否同时拥有龙凤印
+            local index = together and 3 or rinsan.random(1, 2)
+            room:broadcastSkillInvoke('jianjie', index)
             room:removePlayerMark(use.from, self:objectName() .. 'engine')
         end
     end,
@@ -9440,6 +9449,7 @@ chenghao = sgs.CreateTriggerSkill {
             end
         end
         if mark.name == self:objectName() and mark.gain > 0 and room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName() .. 'engine')
             if player:getMark(self:objectName() .. 'engine') > 0 then
                 local _guojia = sgs.SPlayerList()
@@ -10879,7 +10889,7 @@ bukuishishen = sgs.CreateTriggerSkill {
                 end
                 if p:getMark('@dragon') + p:getMark('@phoenix') == 0 and not p:getArmor() and
                     (damage.nature ~= sgs.DamageStruct_Normal or (damage.card and damage.card:isKindOf('TrickCard'))) and
-                    p:hasSkill('yinshi') then
+                    p:hasSkill('yinshi') and p:objectName() == player:objectName() then
                     table.insert(choices, 'yinshi')
                 end
                 if #choices > 0 then
@@ -10900,6 +10910,7 @@ bukuishishen = sgs.CreateTriggerSkill {
                         end
                         room:sendLog(msg)
                         room:notifySkillInvoked(p, 'yinshi')
+                        room:broadcastSkillInvoke('yinshi')
                         room:addPlayerMark(p, 'yinshiengine')
                         if p:getMark('yinshiengine') > 0 then
                             room:removePlayerMark(p, 'yinshiengine')
@@ -10918,7 +10929,7 @@ bukuishishen = sgs.CreateTriggerSkill {
                     end
                     if p:getMark('@dragon') + p:getMark('@phoenix') == 0 and not p:getArmor() and
                         (damage.nature ~= sgs.DamageStruct_Normal or (damage.card and damage.card:isKindOf('TrickCard'))) and
-                        p:hasSkill('yinshi') then
+                        p:hasSkill('yinshi') and p:objectName() == player:objectName() then
                         table.insert(choicess, 'yinshi')
                     end
                     table.removeOne(choicess, choice)
@@ -10940,6 +10951,7 @@ bukuishishen = sgs.CreateTriggerSkill {
                             end
                             room:sendLog(msg)
                             room:notifySkillInvoked(p, 'yinshi')
+                            room:broadcastSkillInvoke('yinshi')
                             room:addPlayerMark(p, 'yinshiengine')
                             if p:getMark('yinshiengine') > 0 then
                                 room:removePlayerMark(p, 'yinshiengine')
@@ -14937,18 +14949,19 @@ sgs.LoadTranslationTable {
     [':jianjie'] = '第一个准备阶段开始时，你选择两名角色，其中一名角色获得1枚“龙印”标记，令一名角色获得1枚“凤印”标记；\
     出牌阶段限一次（若此回合不是你的第一个回合，你选择一名拥有1“龙印”/“凤印”标记的角色）或当拥有“龙印”/“凤印”标记的角色死亡时，你可以令其将其拥有的“龙印”/“凤印”标记的角色弃所有“龙印”/“凤印”标记，然后令另一名角色获得1枚“龙印”/“凤印”标记；\
     拥有“龙印”/“凤印”的角色拥有“火计”/“连环”，以此法获得的技能每名角色的回合限发动三次；拥有“龙印”和“凤印”的角色拥有“业炎”，以此法获得的技能发动后，其弃所有“龙印”标记和“凤印”标记。',
-    ['$jianjie1'] = '',
-    ['$jianjie2'] = '',
+    ['$jianjie1'] = '卧龙凤雏，二者得一，可安天下',
+    ['$jianjie2'] = '公怀王佐之才，宜择人而仕',
+    ['$jianjie3'] = '二人齐聚，汉室可兴矣',
     ['chenghao'] = '称好',
     ['#YinshiProtect'] = '%from 的“<font color="yellow"><b>隐士</b></font>”效果被触发，防止了 %arg 点伤害[%arg2]',
     [':chenghao'] = '当一名角色受到伤害时，若之不为传导伤害且其处于连环状态，你可以观看牌堆顶的X张牌，然后将这些牌交给至少一名角色。（X为处于连环状态的角色数）',
-    ['$chenghao1'] = '',
-    ['$chenghao2'] = '',
+    ['$chenghao1'] = '好，很好，非常好',
+    ['$chenghao2'] = '您的话也很好',
     ['yinshi'] = '隐士',
     [':yinshi'] = '锁定技，当你受到属性伤害或由锦囊牌造成的伤害时，若你没有“龙印”标记且没有“凤印”标记且装备区里没有防具牌，你防止此伤害。',
-    ['$yinshi1'] = '',
-    ['$yinshi2'] = '',
-    ['~simahui'] = '',
+    ['$yinshi1'] = '山野闲散之人，不堪世用',
+    ['$yinshi2'] = '我老啦，会有胜我十倍的人来帮助你',
+    ['~simahui'] = '这似乎……没那么好了……',
 
     ['pangdegong'] = '庞德公',
     ['#pangdegong'] = '德懿举世',
