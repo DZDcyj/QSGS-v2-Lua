@@ -267,16 +267,19 @@ LuaQuediCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = true,
     filter = function(self, selected, to_select)
+        if self:subcardsLength() > 0 then
+            return false
+        end
         return to_select:hasFlag('LuaQuediTarget') and (not to_select:isKongcheng())
     end,
     feasible = function(self, targets)
-        -- 如果没有基本牌，就要求为一
+        -- 如果没有基本牌，就要求为一（弃牌加伤害）
         local len = self:subcardsLength()
         if len == 0 then
             return #targets == 1
         end
-        -- 否则至多为一
-        return #targets <= 1
+        -- 否则必须为零（拿牌，确认背水选项）
+        return #targets == 0
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, 'LuaQuedi')
@@ -284,19 +287,20 @@ LuaQuediCard = sgs.CreateSkillCard {
         if #targets > 0 then
             target = targets[1]
         end
+        room:broadcastSkillInvoke('LuaQuedi')
+        room:addPlayerMark(source, 'LuaQuediUsed')
         local card
+        if target then
+            local card_id = room:askForCardChosen(source, target, 'h', 'LuaQuedi', false, sgs.Card_MethodNone)
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
+            room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
+            card = room:askForCard(source,'BasicCard|.|.|.','LuaQuediBeishui', sgs.QVariant())
+        end
         if self:subcardsLength() > 0 then
             card = sgs.Sanguosha:getCard(self:getSubcards():first())
         end
         if card then
             room:setPlayerFlag(source, 'LuaQuediDamageUp')
-        end
-        room:broadcastSkillInvoke('LuaQuedi')
-        room:addPlayerMark(source, 'LuaQuediUsed')
-        if target then
-            local card_id = room:askForCardChosen(source, target, 'h', 'LuaQuedi', false, sgs.Card_MethodNone)
-            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
-            room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
         end
         if target and card then
             room:loseMaxHp(source)
