@@ -10879,7 +10879,7 @@ bukuishishen = sgs.CreateTriggerSkill {
                 end
                 if p:getMark('@dragon') + p:getMark('@phoenix') == 0 and not p:getArmor() and
                     (damage.nature ~= sgs.DamageStruct_Normal or (damage.card and damage.card:isKindOf('TrickCard'))) and
-                    p:hasSkill('yinshi') then
+                    p:hasSkill('yinshi') and p:objectName() == player:objectName() then
                     table.insert(choices, 'yinshi')
                 end
                 if #choices > 0 then
@@ -10918,7 +10918,7 @@ bukuishishen = sgs.CreateTriggerSkill {
                     end
                     if p:getMark('@dragon') + p:getMark('@phoenix') == 0 and not p:getArmor() and
                         (damage.nature ~= sgs.DamageStruct_Normal or (damage.card and damage.card:isKindOf('TrickCard'))) and
-                        p:hasSkill('yinshi') then
+                        p:hasSkill('yinshi') and p:objectName() == player:objectName() then
                         table.insert(choicess, 'yinshi')
                     end
                     table.removeOne(choicess, choice)
