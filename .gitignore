@@ -118,6 +118,12 @@ sqldrivers/
 translations/
 ui-script/
 
+# 司马徽语音
+!jianjie*.ogg
+!chenghao*.ogg
+!yinshi*.ogg
+!simahui*.ogg
+
 # 忽略 extensions 下我们编写之外的文件
 extensions/hidden/*.lua
 extensions/hulaoguan.lua
