@@ -14943,7 +14943,7 @@ sgs.LoadTranslationTable {
     ['jianjie'] = '荐杰',
     ['jianjievs'] = '荐杰',
     ['@dragon'] = '龙印',
-    ['phoenix'] = '凤印',
+    ['@phoenix'] = '凤印',
     ['@jianjie'] = '你可以发动“荐杰”',
     ['~jianjie'] = '选择角色→点击确定',
     [':jianjie'] = '第一个准备阶段开始时，你选择两名角色，其中一名角色获得1枚“龙印”标记，令一名角色获得1枚“凤印”标记；\
@@ -14952,6 +14952,8 @@ sgs.LoadTranslationTable {
     ['$jianjie1'] = '卧龙凤雏，二者得一，可安天下',
     ['$jianjie2'] = '公怀王佐之才，宜择人而仕',
     ['$jianjie3'] = '二人齐聚，汉室可兴矣',
+    ['dragon_move'] = '移动龙印',
+    ['phoenix_move'] = '移动凤印',
     ['chenghao'] = '称好',
     ['#YinshiProtect'] = '%from 的“<font color="yellow"><b>隐士</b></font>”效果被触发，防止了 %arg 点伤害[%arg2]',
     [':chenghao'] = '当一名角色受到伤害时，若之不为传导伤害且其处于连环状态，你可以观看牌堆顶的X张牌，然后将这些牌交给至少一名角色。（X为处于连环状态的角色数）',
