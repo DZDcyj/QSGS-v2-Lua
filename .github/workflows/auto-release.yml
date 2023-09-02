@@ -78,7 +78,7 @@ jobs:
           lfs: true
 
       # 更新 LFS 文件
-      - name: Checkout LFS objects
+      - name: Checkout LFS Objects
         run: git lfs checkout
 
       # 复制当前分支文件到临时文件夹
@@ -89,7 +89,7 @@ jobs:
       - name: Remove Unnecessary Files
         run: |
           rm ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/README.md
-          rm -rf ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.*
+          rm -fr ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.*
 
       # 打包成 zip
       - name: Archive Files
