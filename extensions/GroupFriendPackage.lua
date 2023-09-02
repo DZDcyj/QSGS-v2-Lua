@@ -1048,8 +1048,8 @@ LuaJueding = sgs.CreateTriggerSkill {
     can_trigger = rinsan.targetTrigger,
 }
 
-LuaNongxianCard = sgs.CreateSkillCard {
-    name = 'LuaNongxian',
+LuaXunxinCard = sgs.CreateSkillCard {
+    name = 'LuaXunxin',
     will_throw = true,
     target_fixed = false,
     filter = function(self, selected, to_select)
@@ -1062,21 +1062,21 @@ LuaNongxianCard = sgs.CreateSkillCard {
     end,
 }
 
-LuaNongxianVS = sgs.CreateViewAsSkill {
-    name = 'LuaNongxian',
+LuaXunxinVS = sgs.CreateViewAsSkill {
+    name = 'LuaXunxin',
     n = 0,
     view_as = function(self, cards)
-        return LuaNongxianCard:clone()
+        return LuaXunxinCard:clone()
     end,
     enabled_at_play = function(self, player)
         return not player:isKongcheng()
     end,
 }
 
-LuaNongxian = sgs.CreateTriggerSkill {
-    name = 'LuaNongxian',
+LuaXunxin = sgs.CreateTriggerSkill {
+    name = 'LuaXunxin',
     events = {sgs.Pindian, sgs.PindianVerifying},
-    view_as_skill = LuaNongxianVS,
+    view_as_skill = LuaXunxinVS,
     on_trigger = function(self, event, player, data, room)
         local pindian = data:toPindian()
         if pindian.reason ~= self:objectName() then
@@ -1094,16 +1094,17 @@ LuaNongxian = sgs.CreateTriggerSkill {
                 winner = pindian.to
                 loser = pindian.from
             end
-            local slash = sgs.Sanguosha:cloneCard("slash", sgs.Card_NoSuit, 0)
-            slash:setSkillName('_LuaNongxian')
-            if winner:canSlash(loser, slash, false) then
-                room:useCard(sgs.CardUseStruct(slash, winner, loser))
+            local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
+            duel:setSkillName('_LuaXunxin')
+            if not room:isProhibited(winner, loser, duel) then
+                room:useCard(sgs.CardUseStruct(duel, winner, loser))
             end
-            room:addPlayerMark(winner, 'LuaNongxianWon-Clear')
+            room:addPlayerMark(winner, 'LuaXunxinWon-Clear')
             return false
         end
         if pindian.from:hasSkill(self:objectName()) then
-            local x = player:getMark('LuaNongxianWon-Clear') - pindian.to:getHp()
+            local x = player:getMark('LuaXunxinWon-Clear')
+            -- 涉及到消息提示和语音播放（如果有），所以还是保留判断
             if x > 0 then
                 room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
@@ -1111,7 +1112,7 @@ LuaNongxian = sgs.CreateTriggerSkill {
             end
         end
         if pindian.to:hasSkill(self:objectName()) then
-            local x = player:getMark('LuaNongxianWon-Clear') - pindian.from:getHp()
+            local x = player:getMark('LuaXunxinWon-Clear')
             if x > 0 then
                 room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
@@ -1136,6 +1137,14 @@ local function canInvokeChutou(player, move)
         if player:getMark('LuaChutou') > 0 then
             return false
         end
+    end
+    if move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP then
+        -- 更换装备时不摸牌
+        return false
+    end
+    if rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RECAST) then
+        -- 重铸不摸牌
+        return false
     end
     if rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_USE) or
         rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RESPONSE) then
@@ -2176,7 +2185,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 Anan:addSkill(LuaZhazhi)
 Anan:addSkill(LuaJueding)
-Erenlei:addSkill(LuaNongxian)
+Erenlei:addSkill(LuaXunxin)
 Erenlei:addSkill(LuaChutou)
 Yaoyu:addSkill(LuaYingshi)
 Yaoyu:addSkill(LuaWangming)
