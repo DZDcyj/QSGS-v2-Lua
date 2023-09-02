@@ -5,6 +5,7 @@ extension = sgs.Package('GroupFriendPackage')
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
+local rectification = require('extensions.RectificationPackage')
 
 -- 隐藏技能添加
 local hiddenSkills = {}
@@ -30,6 +31,7 @@ Ajie = sgs.General(extension, 'Ajie', 'wei', '3', true)
 Shatang = sgs.General(extension, 'Shatang', 'qun', '4', true, true)
 Dalaojiang = sgs.General(extension, 'Dalaojiang', 'qun', '3', true, true)
 Zhongliao = sgs.General(extension, 'Zhongliao', 'shu', '3', true, true)
+Mikang = sgs.General(extension, 'Mikang', 'wu', '4', true, true)
 
 -- 额外设置其他信息，例如性别
 -- 性别有以下枚举值，分别代表无性、男性、女性、中性（似乎与无性别一致）
@@ -2196,6 +2198,129 @@ LuaJiuwenDamaged = sgs.CreateTriggerSkill {
     can_trigger = rinsan.globalTrigger,
 }
 
+LuaDuzhanCard = sgs.CreateSkillCard {
+    name = 'LuaDuzhan',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        target:obtainCard(sgs.Sanguosha:getCard(self:getSubcards():first()))
+        local prompt = string.format('LuaDuzhanChooseSlashTarget:%s', target:objectName())
+        local victims = room:getOtherPlayers(target)
+        local victim = room:askForPlayerChosen(source, victims, self:objectName(), prompt, false, true)
+        local slashPrompt = string.format('@LuaDuzhanSlashTo:%s:%s', source:objectName(),victim:objectName())
+        if not room:askForUseSlashTo(target, victim, slashPrompt) then
+            if not target:isNude() then
+                local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false,
+                    sgs.Card_MethodNone)
+                local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
+                room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
+            end
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName(self:objectName())
+            room:useCard(sgs.CardUseStruct(slash, source, target))
+        end
+    end,
+}
+
+LuaDuzhan = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaDuzhan',
+    filter_pattern = '.',
+    view_as = function(self, card)
+        local vs_card = LuaDuzhanCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaDuzhan')
+    end,
+}
+
+local function askForMianli(mikang, currentPlayer)
+    local room = mikang:getRoom()
+    local card = room:askForCard(mikang, '.|.|.|.|.', '@LuaMianli-Give:' .. currentPlayer:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
+    if card then
+        room:showCard(mikang, card:getEffectiveId())
+        room:addPlayerMark(mikang, 'LuaMianli-Clear')
+        currentPlayer:obtainCard(card, false)
+        rectification.askForRectification(mikang, currentPlayer, 'LuaMianli', false)
+    end
+end
+
+LuaMianli = sgs.CreateTriggerSkill {
+    name = 'LuaMianli',
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() ~= sgs.Player_Play then
+            return false
+        end
+        for _, mikang in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if mikang:getMark(self:objectName() .. '-Clear') == 0 then
+                askForMianli(mikang, player)
+            end
+        end
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+LuaMianliExtraPhase = sgs.CreateTriggerSkill {
+    name = 'LuaMianliExtraPhase',
+    events = {sgs.EventPhaseEnd},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaMianliExtraPlayPhase') > 0 then
+            room:setPlayerMark(player, 'LuaMianliExtraPlayPhase', 0)
+            rinsan.sendLogMessage(room, '#LuaDangxianExtraPhase', {
+                ['from'] = player,
+            })
+            player:setPhase(sgs.Player_Play)
+            room:broadcastProperty(player, 'phase')
+            local thread = room:getThread()
+            if not thread:trigger(sgs.EventPhaseStart, room, player) then
+                thread:trigger(sgs.EventPhaseProceeding, room, player)
+            end
+            thread:trigger(sgs.EventPhaseEnd, room, player)
+        end
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+LuaQinggong = sgs.CreateTriggerSkill {
+    name = 'LuaQinggong',
+    events = {sgs.CardsMoveOneTime, sgs.HpRecover},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        local invokable
+        if room:getTag('FirstRound'):toBool() then
+            return false
+        end
+        if event == sgs.HpRecover then
+            invokable = player:getPhase() ~= sgs.Player_Play
+        else
+            local move = data:toMoveOneTime()
+            if player:getPhase() == sgs.Player_Draw then
+                return false
+            end
+            invokable = move.to and (move.to:objectName() == player:objectName()) and (move.card_ids:length() >= 2)
+            if(not invokable) or (move.from and move.to and move.from:objectName() == move.to:objectName()) then
+                return false
+            end
+        end
+        if invokable then
+            for _, mikang in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+                if room:askForSkillInvoke(mikang, self:objectName(), data) then
+                    mikang:drawCards(1, self:objectName())
+                end
+            end
+        end
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
 Cactus:addSkill(LuaBaipiao)
 Fuhua:addSkill(LuaGeidian)
 Rinsan:addSkill(LuaWanneng)
@@ -2234,6 +2359,9 @@ Zhongliao:addSkill(LuaJiuwen)
 for _, relateSkill in ipairs(RUIPING_SKILLS) do
     Zhongliao:addRelateSkill(relateSkill)
 end
+Mikang:addSkill(LuaDuzhan)
+Mikang:addSkill(LuaMianli)
+Mikang:addSkill(LuaQinggong)
 
 table.insert(hiddenSkills, LuaZibao)
 table.insert(hiddenSkills, LuaSoutuVS)
@@ -2248,5 +2376,6 @@ table.insert(hiddenSkills, LuaXiandengStart)
 table.insert(hiddenSkills, LuaXiandengTargetMod)
 table.insert(hiddenSkills, LuaBaijia)
 table.insert(hiddenSkills, LuaJiuwenDamaged)
+table.insert(hiddenSkills, LuaMianliExtraPhase)
 
 rinsan.addHiddenSkills(hiddenSkills)

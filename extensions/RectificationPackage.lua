@@ -22,6 +22,13 @@ local NUMBER_TAG = 'RectificationPackage_Play_Number'
 local SUIT_TAG = 'RectificationPackage_Play_Suit'
 local DISCARD_TAG = 'RectificationPackage_Discard_Suit'
 
+local function clearRectificationRecord(player)
+    player:removeTag(DISCARD_TAG)
+    player:removeTag(SUIT_TAG)
+    player:removeTag(NUMBER_TAG)
+    rinsan.clearAllMarksContains(player, 'RectificationPackage')
+end
+
 -- 获取角色对应整肃 tagName 的 table
 local function getRectificationStringTable(player, tagName)
     local tag = player:getTag(tagName)
@@ -246,6 +253,10 @@ local RECTIFICATION_BONUS_FUNCS = {
     ['LuaYanji'] = function(from, _)
         askForBonus(from)
     end,
+    ['LuaMianli'] = function(_, player)
+        askForBonus(player)
+        player:getRoom():addPlayerMark(player, 'LuaMianliExtraPlayPhase')
+    end,
 }
 
 -- 默认 2 为整肃成功语音，3 为失败语音
@@ -295,10 +306,8 @@ LuaRectificationCheck = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().from == sgs.Player_Discard then
             doRectification(player)
-            player:removeTag(DISCARD_TAG)
-            player:removeTag(SUIT_TAG)
-            player:removeTag(NUMBER_TAG)
-            rinsan.clearAllMarksContains(player, 'RectificationPackage')
+        elseif data:toPhaseChange().to == sgs.Player_NotActive then
+            clearRectificationRecord(player)
         end
     end,
     can_trigger = rinsan.targetTrigger,
