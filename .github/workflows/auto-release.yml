@@ -6,27 +6,8 @@ on:
       - "v*"
 
 jobs:
-  # 单独发布 Release 通告
   publish-release:
     name: "Publish Release"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get Tag Name
-        run : |
-          echo "Ref Name: $GITHUB_REF"
-          echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
-
-      - name: Publish Release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          title: "日神杀武将包 ${{ env.TAG_NAME }}"
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          draft: false
-
-  
-  build-artifact:
-    name: "Build Artifact"
     runs-on: ubuntu-latest
     steps:
       # ${{ github.workspace }}为action运行时的工作目录
@@ -44,6 +25,15 @@ jobs:
         run : |
           echo "Ref Name: $GITHUB_REF"
           echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      # 发布 Release
+      - name: Publish Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          title: "日神杀武将包 ${{ env.TAG_NAME }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: false
 
       # 安装 Zip 扩展
       - name: Install zip
@@ -88,12 +78,12 @@ jobs:
       # 移除不需要的文件
       - name: Remove Unnecessary Files
         run: |
-          rm ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/README.md
+          rm ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/*.md
           rm -rf ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.[A-Za-z0-9]*
 
       # 打包成 zip
       - name: Archive Files
-        run: zip -qq -r ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+        run: zip -qq -r ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/*
 
       # 上传压缩包
       - name: Upload Archive
