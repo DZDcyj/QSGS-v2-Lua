@@ -53,11 +53,13 @@ jobs:
           obs_file_path: 'qsgs-pure.zip'
           operation_type: 'download'
 
+      # 安装 Zip 扩展
+      - name: Install zip
+        uses: montudor/action-zip@v1
+
       # 解压基础文件
       - name: Unzip the Basic Files
-        uses: montudor/action-zip@v0.1.1
-        with:
-          args: unzip -qq ${{ runner.temp }}/qsgs-pure.zip -d ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+        run: unzip -qq ${{ runner.temp }}/qsgs-pure.zip -d ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
 
       # 检出分支
       - name: Checkout Branch
