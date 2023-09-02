@@ -273,12 +273,12 @@ LuaQuediCard = sgs.CreateSkillCard {
         return to_select:hasFlag('LuaQuediTarget') and (not to_select:isKongcheng())
     end,
     feasible = function(self, targets)
-        -- 如果没有基本牌，就要求为一（弃牌加伤害）
+        -- 如果没有弃牌，就要求为一（拿牌，确认背水选项）
         local len = self:subcardsLength()
         if len == 0 then
             return #targets == 1
         end
-        -- 否则必须为零（拿牌，确认背水选项）
+        -- 否则必须为零（弃牌加伤害）
         return #targets == 0
     end,
     on_use = function(self, room, source, targets)
