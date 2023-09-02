@@ -87,7 +87,7 @@ jobs:
         with:
           directory: ${{ runner.temp }}
           type: 'zip'
-          filename: '${{ env.TAG_NAME }}.zip'
+          filename: 'QSGS-v2-Lua-${{ env.TAG_NAME }}.zip'
           path: ./QSGS-v2-Lua-${{ env.TAG_NAME }}
 
       # 上传压缩包
