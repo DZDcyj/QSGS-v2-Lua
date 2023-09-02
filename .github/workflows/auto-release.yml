@@ -35,10 +35,6 @@ jobs:
           prerelease: false
           draft: false
 
-      # 安装 Zip 扩展
-      - name: Install zip
-        uses: montudor/action-zip@v1
-
       # 华为云认证
       - name: Authenticate to Huawei Cloud
         uses: huaweicloud/auth-action@v1.0.0
@@ -59,7 +55,9 @@ jobs:
 
       # 解压基础文件
       - name: Unzip the Basic Files
-        run: unzip -qq ${{ runner.temp }}/qsgs-pure.zip -d ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+        uses: montudor/action-zip@v0.1.1
+        with:
+          args: unzip -qq ${{ runner.temp }}/qsgs-pure.zip -d ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
 
       # 检出分支
       - name: Checkout Branch
@@ -83,7 +81,10 @@ jobs:
 
       # 打包成 zip
       - name: Archive Files
-        run: zip -qq -r ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/*
+        uses: vimtor/action-zip@v1
+        with:
+          files: ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/
+          dest: ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip
 
       # 上传压缩包
       - name: Upload Archive
