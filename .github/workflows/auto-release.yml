@@ -83,10 +83,12 @@ jobs:
 
       # 打包成 zip
       - name: Archive Files
-        uses: vimtor/action-zip@v1
+        uses: thedoctor0/zip-release@0.7.1
         with:
-          files: ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/
-          dest: ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip
+          directory: ${{ runner.temp }}
+          type: 'zip'
+          filename: '${{ env.TAG_NAME }}.zip'
+          path: ./QSGS-v2-Lua-${{ env.TAG_NAME }}
 
       # 上传压缩包
       - name: Upload Archive
