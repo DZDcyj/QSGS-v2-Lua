@@ -6,16 +6,27 @@ on:
       - "v*"
 
 jobs:
-  # Just Publish the Release Information
   publish-release:
     name: "Publish Release"
     runs-on: ubuntu-latest
     steps:
+      # ${{ github.workspace }}为action运行时的工作目录
+      # 例如：/home/runner/work/QSGS-v2-Lua/QSGS-v2-Lua
+      - name: Echo Workspace of Action
+        run: echo ${{ github.workspace }}
+
+      # ${{ runner.temp }}为运行器临时目录的路径
+      # 例如：/home/runner/work/_temp
+      - name: Echo Temporary Directory on the Runner
+        run: echo ${{ runner.temp }}
+
+      # 获取 Tag 名称
       - name: Get Tag Name
         run : |
           echo "Ref Name: $GITHUB_REF"
           echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
+      # 发布 Release
       - name: Publish Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -24,47 +35,65 @@ jobs:
           prerelease: false
           draft: false
 
-  branch-checkout:
-    name: "Branch Checkout"
-    runs-on: self-hosted
-    steps:
+      # 华为云认证
+      - name: Authenticate to Huawei Cloud
+        uses: huaweicloud/auth-action@v1.0.0
+        with: 
+            access_key_id: ${{ secrets.ACCESSKEY }} 
+            secret_access_key: ${{ secrets.SECRETACCESSKEY }}
+            # 华南-广州
+            region: 'cn-south-1'
+
+      # 从华为云 OBS 下载基础文件
+      - name: Download File from Huawei Cloud OBS
+        uses: huaweicloud/obs-helper@v1.0.0
+        with:
+          bucket_name: 'obs-github'
+          local_file_path: '${{ runner.temp }}/'
+          obs_file_path: 'qsgs-pure.zip'
+          operation_type: 'download'
+
+      # 安装 Zip 扩展
+      - name: Install zip
+        uses: montudor/action-zip@v1
+
+      # 解压基础文件
+      - name: Unzip the Basic Files
+        run: unzip -qq ${{ runner.temp }}/qsgs-pure.zip -d ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+
+      # 检出分支
       - name: Checkout Branch
         uses: actions/checkout@v3
         with:
           lfs: true
-      - name: Checkout LFS objects
+
+      # 更新 LFS 文件
+      - name: Checkout LFS Objects
         run: git lfs checkout
 
-  prepare-package:
-    name: "Prepare Package"
-    runs-on: self-hosted
-    needs: branch-checkout
-    steps:
-      - name: Get Tag Name
-        run : |
-          echo "Ref Name: $env:GITHUB_REF"
-          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
+      # 复制当前分支文件到临时文件夹
+      - name: Copy Branch Files
+        run: cp -r ${{ github.workspace }}/* ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
 
-      - name: Copy Basic Files
+      # 移除不需要的文件
+      - name: Remove Unnecessary Files
         run: |
-          Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
+          rm ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/*.md
+          rm -rf ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.[A-Za-z0-9]*
 
-      - name: Archive Package
-        run: |
-          Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
+      # 打包成 zip
+      - name: Archive Files
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          directory: ${{ runner.temp }}
+          type: 'zip'
+          filename: 'QSGS-v2-Lua-${{ env.TAG_NAME }}.zip'
+          path: ./QSGS-v2-Lua-${{ env.TAG_NAME }}
 
-  upload-artifacts:
-    name: "Upload Artifacts"
-    runs-on: self-hosted
-    needs: [branch-checkout, prepare-package]
-    steps:
-      - name: Get Tag Name
-        run : |
-          echo "Ref Name: $env:GITHUB_REF"
-          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
-      - name: "Upload Package"
+      # 上传压缩包
+      - name: Upload Archive
         uses: svenstaro/upload-release-action@2.5.0
         with:
-          file: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
+          file: "${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           asset_name: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
