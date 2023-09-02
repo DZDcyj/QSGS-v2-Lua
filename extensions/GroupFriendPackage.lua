@@ -1048,85 +1048,124 @@ LuaJueding = sgs.CreateTriggerSkill {
     can_trigger = rinsan.targetTrigger,
 }
 
-LuaShaikaCard = sgs.CreateSkillCard {
-    name = 'LuaShaikaCard',
-    filter = function(self, targets, to_select)
-        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0) and to_select:getMark('LuaShaikaTarget') == 0
+LuaXunxinCard = sgs.CreateSkillCard {
+    name = 'LuaXunxin',
+    will_throw = true,
+    target_fixed = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and
+                   sgs.Self:canPindian(to_select, self:objectName())
     end,
     on_use = function(self, room, source, targets)
-        room:notifySkillInvoked(source, 'LuaShaika')
-        local target = targets[1]
-        local len = self:subcardsLength() + 1
-        if not room:askForDiscard(target, 'LuaShaika', len, len, true, false,
-            '@LuaShaika:' .. source:objectName() .. '::' .. len) then
-            local damage = sgs.DamageStruct()
-            damage.from = source
-            damage.to = target
-            damage.damage = 1
-            room:damage(damage)
-        end
-        room:addPlayerMark(target, 'LuaShaikaTarget')
+        room:notifySkillInvoked(source, self:objectName())
+        source:pindian(targets[1], self:objectName())
     end,
 }
 
-LuaShaikaVS = sgs.CreateViewAsSkill {
-    name = 'LuaShaika',
-    n = 999,
-    view_filter = function(self, selected, to_select)
-        return sgs.Self:getMark('LuaShaika' .. to_select:objectName()) == 0
-    end,
+LuaXunxinVS = sgs.CreateViewAsSkill {
+    name = 'LuaXunxin',
+    n = 0,
     view_as = function(self, cards)
-        if #cards == 0 then
-            return nil
-        end
-        local vs_card = LuaShaikaCard:clone()
-        local containsTrick
-        for _, cd in ipairs(cards) do
-            vs_card:addSubcard(cd)
-            if cd:isKindOf('TrickCard') then
-                containsTrick = true
-            end
-        end
-        if containsTrick then
-            return vs_card
-        end
-        return nil
+        return LuaXunxinCard:clone()
     end,
     enabled_at_play = function(self, player)
-        for _, sib in sgs.qlist(player:getAliveSiblings()) do
-            if sib:getMark('LuaShaikaTarget') == 0 then
-                return not player:isNude()
-            end
-        end
-        return false
+        return not player:isKongcheng()
     end,
 }
 
-LuaShaika = sgs.CreateTriggerSkill {
-    name = 'LuaShaika',
-    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
-    view_as_skill = LuaShaikaVS,
+LuaXunxin = sgs.CreateTriggerSkill {
+    name = 'LuaXunxin',
+    events = {sgs.Pindian, sgs.PindianVerifying, sgs.CardUsed},
+    view_as_skill = LuaXunxinVS,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.CardsMoveOneTime then
-            local move = data:toMoveOneTime()
-            if room:getCurrent():objectName() == player:objectName() and player:hasSkill(self:objectName()) then
-                if move.to_place == sgs.Player_DiscardPile then
-                    for _, id in sgs.qlist(move.card_ids) do
-                        local card = sgs.Sanguosha:getCard(id)
-                        room:addPlayerMark(player, self:objectName() .. card:objectName())
-                    end
+        if event == sgs.CardUsed then
+            local use = data:toCardUse()
+            if use.from and use.card:getSkillName() == self:objectName() and use.card:isKindOf('Slash') then
+                room:broadcastSkillInvoke(self:objectName())
+                room:notifySkillInvoked(player, self:objectName())
+                for _, p in sgs.qlist(use.to) do
+                    rinsan.addQinggangTag(p, use.card)
                 end
             end
-        elseif event == sgs.EventPhaseChanging then
-            if data:toPhaseChange().to == sgs.Player_NotActive then
-                for _, p in sgs.qlist(room:getAlivePlayers()) do
-                    rinsan.clearAllMarksContains(p, self:objectName())
-                end
+            return false
+        end
+        local pindian = data:toPindian()
+        if pindian.reason ~= self:objectName() then
+            return false
+        end
+        if event == sgs.Pindian then
+            if pindian.from_number == pindian.to_number then
+                return false
+            end
+            local winner, loser
+            if pindian.from_number > pindian.to_number then
+                winner = pindian.from
+                loser = pindian.to
+            else
+                winner = pindian.to
+                loser = pindian.from
+            end
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName('_LuaXunxin')
+            if winner:canSlash(loser, slash, false) then
+                room:useCard(sgs.CardUseStruct(slash, winner, loser))
+            end
+            room:addPlayerMark(winner, 'LuaXunxinWon-Clear')
+            return false
+        end
+        if pindian.from:hasSkill(self:objectName()) then
+            local x = player:getMark('LuaXunxinWon-Clear') * 2
+            -- 涉及到消息提示和语音播放（如果有），所以还是保留判断
+            if x > 0 then
+                room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                pindian.from_number = pindian.from_number - x
             end
         end
+        if pindian.to:hasSkill(self:objectName()) then
+            local x = player:getMark('LuaXunxinWon-Clear') * 2
+            if x > 0 then
+                room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                pindian.to_number = pindian.to_number - x
+            end
+        end
+        data:setValue(pindian)
     end,
     can_trigger = rinsan.targetTrigger,
 }
+
+local function canInvokeChutou(player, move)
+    if not player:hasSkill('LuaChutou') then
+        return false
+    end
+    if not rinsan.lostCard(move, player) then
+        -- 不是失去牌不能发动
+        return false
+    end
+    if move.reason and rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) then
+        -- 弃牌且为此技能影响
+        if player:getMark('LuaChutou') > 0 then
+            return false
+        end
+    end
+    if move.reason.m_reason == sgs.CardMoveReason_S_REASON_CHANGE_EQUIP then
+        -- 更换装备时不摸牌
+        return false
+    end
+    if rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RECAST) then
+        -- 重铸不摸牌
+        return false
+    end
+    if rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_USE) or
+        rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_RESPONSE) then
+        -- 使用或打出失去时，回合内不能发动
+        if player:getPhase() ~= sgs.Player_NotActive then
+            return false
+        end
+    end
+    return true
+end
 
 LuaChutou = sgs.CreateTriggerSkill {
     name = 'LuaChutou',
@@ -1169,15 +1208,9 @@ LuaChutou = sgs.CreateTriggerSkill {
             end
         end
         -- 弃牌时结算
-        if (move.from and (move.from:objectName() == player:objectName()) and
-            (move.from_places:contains(sgs.Player_PlaceHand) or move.from_places:contains(sgs.Player_PlaceEquip))) and
-            not (move.to and (move.to:objectName() == player:objectName() and
-                (move.to_place == sgs.Player_PlaceHand or move.to_place == sgs.Player_PlaceEquip))) then
-            if move.reason and rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) and
-                player:getMark(self:objectName()) == 0 and player:hasSkill(self:objectName()) then
-                room:sendCompulsoryTriggerLog(player, self:objectName())
-                player:drawCards(1, self:objectName())
-            end
+        if canInvokeChutou(player, move) then
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            player:drawCards(1, self:objectName())
         end
         return false
     end,
@@ -2163,7 +2196,7 @@ SPRinsan:addSkill(LuaJiaoxie)
 SPRinsan:addSkill(LuaShulian)
 Anan:addSkill(LuaZhazhi)
 Anan:addSkill(LuaJueding)
-Erenlei:addSkill(LuaShaika)
+Erenlei:addSkill(LuaXunxin)
 Erenlei:addSkill(LuaChutou)
 Yaoyu:addSkill(LuaYingshi)
 Yaoyu:addSkill(LuaWangming)
