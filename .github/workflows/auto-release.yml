@@ -4,36 +4,101 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - "ci/*"
 
 jobs:
-  # Just Publish the Release Information
-  # publish-release:
-  #   name: "Publish Release"
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get Tag Name
-  #       run : |
-  #         echo "Ref Name: $GITHUB_REF"
-  #         echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+  # 单独发布 Release 通告
+  publish-release:
+    name: "Publish Release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Tag Name
+        run : |
+          echo "Ref Name: $GITHUB_REF"
+          echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
-  #     - name: Publish Release
-  #       uses: "marvinpinto/action-automatic-releases@latest"
-  #       with:
-  #         title: "日神杀武将包 ${{ env.TAG_NAME }}"
-  #         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-  #         prerelease: false
-  #         draft: false
+      - name: Publish Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          title: "日神杀武将包 ${{ env.TAG_NAME }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: false
 
-  directory-echo:
-    name: "Directory Echo Test"
+  
+  build-artifact:
+    name: "Build Artifact"
     runs-on: ubuntu-latest
     steps:
       # ${{ github.workspace }}为action运行时的工作目录
+      # 例如：/home/runner/work/QSGS-v2-Lua/QSGS-v2-Lua
       - name: Echo Workspace of Action
         run: echo ${{ github.workspace }}
 
       # ${{ runner.temp }}为运行器临时目录的路径
+      # 例如：/home/runner/work/_temp
       - name: Echo Temporary Directory on the Runner
         run: echo ${{ runner.temp }}
+
+      # 获取 Tag 名称
+      - name: Get Tag Name
+        run : |
+          echo "Ref Name: $GITHUB_REF"
+          echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      # 安装 Zip 扩展
+      - name: Install zip
+        uses: montudor/action-zip@v1
+
+      # 华为云认证
+      - name: Authenticate to Huawei Cloud
+        uses: huaweicloud/auth-action@v1.0.0
+        with: 
+            access_key_id: ${{ secrets.ACCESSKEY }} 
+            secret_access_key: ${{ secrets.SECRETACCESSKEY }}
+            # 华南-广州
+            region: 'cn-south-1'
+
+      # 从华为云 OBS 下载基础文件
+      - name: Download File from Huawei Cloud OBS
+        uses: huaweicloud/obs-helper@v1.0.0
+        with:
+          bucket_name: 'obs-github'
+          local_file_path: '${{ runner.temp }}/'
+          obs_file_path: 'qsgs-pure.zip'
+          operation_type: 'download'
+
+      # 解压基础文件
+      - name: Unzip the Basic Files
+        run: unzip -qq ${{ runner.temp }}/qsgs-pure.zip -d ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+
+      # 检出分支
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      # 更新 LFS 文件
+      - name: Checkout LFS objects
+        run: git lfs checkout
+
+      # 复制当前分支文件到临时文件夹
+      - name: Copy Branch Files
+        run: cp -r ${{ github.workspace }}/* ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+
+      # 移除不需要的文件
+      - name: Remove Unnecessary Files
+        run: |
+          rm ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/README.md
+          rm -rf ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.*
+
+      # 打包成 zip
+      - name: Archive Files
+        run: zip -qq -r ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}
+
+      # 上传压缩包
+      - name: Upload Archive
+        uses: svenstaro/upload-release-action@2.5.0
+        with:
+          file: "${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          asset_name: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
