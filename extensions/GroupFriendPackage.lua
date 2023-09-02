@@ -1075,9 +1075,20 @@ LuaXunxinVS = sgs.CreateViewAsSkill {
 
 LuaXunxin = sgs.CreateTriggerSkill {
     name = 'LuaXunxin',
-    events = {sgs.Pindian, sgs.PindianVerifying},
+    events = {sgs.Pindian, sgs.PindianVerifying, sgs.CardUsed},
     view_as_skill = LuaXunxinVS,
     on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardUsed then
+            local use = data:toCardUse()
+            if use.from and use.card:getSkillName() == self:objectName() and use.card:isKindOf('Slash') then
+                room:broadcastSkillInvoke(self:objectName())
+                room:notifySkillInvoked(player, self:objectName())
+                for _, p in sgs.qlist(use.to) do
+                    rinsan.addQinggangTag(p, use.card)
+                end
+            end
+            return false
+        end
         local pindian = data:toPindian()
         if pindian.reason ~= self:objectName() then
             return false
@@ -1094,16 +1105,16 @@ LuaXunxin = sgs.CreateTriggerSkill {
                 winner = pindian.to
                 loser = pindian.from
             end
-            local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
-            duel:setSkillName('_LuaXunxin')
-            if not room:isProhibited(winner, loser, duel) then
-                room:useCard(sgs.CardUseStruct(duel, winner, loser))
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName('_LuaXunxin')
+            if winner:canSlash(loser, slash, false) then
+                room:useCard(sgs.CardUseStruct(slash, winner, loser))
             end
             room:addPlayerMark(winner, 'LuaXunxinWon-Clear')
             return false
         end
         if pindian.from:hasSkill(self:objectName()) then
-            local x = player:getMark('LuaXunxinWon-Clear')
+            local x = player:getMark('LuaXunxinWon-Clear') * 2
             -- 涉及到消息提示和语音播放（如果有），所以还是保留判断
             if x > 0 then
                 room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
@@ -1112,7 +1123,7 @@ LuaXunxin = sgs.CreateTriggerSkill {
             end
         end
         if pindian.to:hasSkill(self:objectName()) then
-            local x = player:getMark('LuaXunxinWon-Clear')
+            local x = player:getMark('LuaXunxinWon-Clear') * 2
             if x > 0 then
                 room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
