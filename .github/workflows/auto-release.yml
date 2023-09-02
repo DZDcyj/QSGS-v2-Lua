@@ -89,7 +89,7 @@ jobs:
       - name: Remove Unnecessary Files
         run: |
           rm ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/README.md
-          rm -fr ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.*
+          rm -rf ${{ runner.temp }}/QSGS-v2-Lua-${{ env.TAG_NAME }}/.[A-Za-z0-9]*
 
       # 打包成 zip
       - name: Archive Files
