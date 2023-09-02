@@ -4,67 +4,36 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - "ci/*"
 
 jobs:
   # Just Publish the Release Information
-  publish-release:
-    name: "Publish Release"
+  # publish-release:
+  #   name: "Publish Release"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Get Tag Name
+  #       run : |
+  #         echo "Ref Name: $GITHUB_REF"
+  #         echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+  #     - name: Publish Release
+  #       uses: "marvinpinto/action-automatic-releases@latest"
+  #       with:
+  #         title: "日神杀武将包 ${{ env.TAG_NAME }}"
+  #         repo_token: "${{ secrets.GITHUB_TOKEN }}"
+  #         prerelease: false
+  #         draft: false
+
+  directory-echo:
+    name: "Directory Echo Test"
     runs-on: ubuntu-latest
     steps:
-      - name: Get Tag Name
-        run : |
-          echo "Ref Name: $GITHUB_REF"
-          echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+      # ${{ github.workspace }}为action运行时的工作目录
+      - name: Echo Workspace of Action
+        run: echo ${{ github.workspace }}
 
-      - name: Publish Release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          title: "日神杀武将包 ${{ env.TAG_NAME }}"
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          draft: false
-
-  branch-checkout:
-    name: "Branch Checkout"
-    runs-on: self-hosted
-    steps:
-      - name: Checkout Branch
-        uses: actions/checkout@v3
-        with:
-          lfs: true
-      - name: Checkout LFS objects
-        run: git lfs checkout
-
-  prepare-package:
-    name: "Prepare Package"
-    runs-on: self-hosted
-    needs: branch-checkout
-    steps:
-      - name: Get Tag Name
-        run : |
-          echo "Ref Name: $env:GITHUB_REF"
-          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
-
-      - name: Copy Basic Files
-        run: |
-          Copy-Item -Path ".\*" -Destination "..\Deployment" -Recurse -Force -Exclude "*.md",".*"
-
-      - name: Archive Package
-        run: |
-          Compress-Archive -Path "..\Deployment\*" -DestinationPath ".\QSGS-v2-Lua-$env:TAG_NAME.zip" -Force
-
-  upload-artifacts:
-    name: "Upload Artifacts"
-    runs-on: self-hosted
-    needs: [branch-checkout, prepare-package]
-    steps:
-      - name: Get Tag Name
-        run : |
-          echo "Ref Name: $env:GITHUB_REF"
-          echo "TAG_NAME=$($env:GITHUB_REF.Split("/")[2])" >> $env:GITHUB_ENV
-      - name: "Upload Package"
-        uses: svenstaro/upload-release-action@2.5.0
-        with:
-          file: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_name: "QSGS-v2-Lua-${{ env.TAG_NAME }}.zip"
+      # ${{ runner.temp }}为运行器临时目录的路径
+      - name: Echo Temporary Directory on the Runner
+        run: echo ${{ runner.temp }}
