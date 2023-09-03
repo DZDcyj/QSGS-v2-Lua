@@ -151,15 +151,24 @@ end
 -- 出牌阶段用牌记录
 LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
     name = 'LuaRectificationPlayPhaseRecord',
-    events = {sgs.CardUsed},
+    events = {sgs.CardUsed, sgs.CardResponded},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local use = data:toCardUse()
-        if use.card and (not use.card:isKindOf('SkillCard')) then
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            local resp = data:toCardResponse()
+            if not resp.m_isUse then
+                return false
+            end
+            card = resp.m_card
+        end
+        if card and (not card:isKindOf('SkillCard')) then
             local numberTable = getRectificationStringTable(player, NUMBER_TAG)
             local suitTable = getRectificationStringTable(player, SUIT_TAG)
-            local number = use.card:getNumber()
-            local suit = use.card:getSuitString()
+            local number = card:getNumber()
+            local suit = card:getSuitString()
             table.insert(numberTable, number)
             table.insert(suitTable, suit)
             setRectificationStringTable(player, NUMBER_TAG, numberTable)
