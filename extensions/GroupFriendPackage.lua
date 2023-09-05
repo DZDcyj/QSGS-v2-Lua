@@ -1075,10 +1075,16 @@ LuaXunxinVS = sgs.CreateViewAsSkill {
 
 LuaXunxin = sgs.CreateTriggerSkill {
     name = 'LuaXunxin',
-    events = {sgs.Pindian, sgs.PindianVerifying, sgs.CardUsed},
+    events = {sgs.Pindian, sgs.PindianVerifying, sgs.CardUsed, sgs.Damage},
     view_as_skill = LuaXunxinVS,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.CardUsed then
+        if event == sgs.Damage then
+            local damage = data:toDamage()
+            if damage.card and damage.card:getSkillName() == self:objectName() then
+                room:addPlayerMark(damage.from, 'LuaXunxinWon-Clear', damage.damage)
+            end
+            return false
+        elseif event == sgs.CardUsed then
             local use = data:toCardUse()
             if use.from and use.card:getSkillName() == self:objectName() and use.card:isKindOf('Slash') then
                 room:broadcastSkillInvoke(self:objectName())
@@ -1114,20 +1120,30 @@ LuaXunxin = sgs.CreateTriggerSkill {
             return false
         end
         if pindian.from:hasSkill(self:objectName()) then
-            local x = player:getMark('LuaXunxinWon-Clear') * 2
+            local x = player:getMark('LuaXunxinWon-Clear')
             -- 涉及到消息提示和语音播放（如果有），所以还是保留判断
             if x > 0 then
                 room:sendCompulsoryTriggerLog(pindian.from, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
                 pindian.from_number = pindian.from_number - x
+                rinsan.sendLogMessage(room, '#LuaXunxin', {
+                    ['from'] = pindian.from,
+                    ['arg'] = self:objectName(),
+                    ['arg2'] = pindian.from_number,
+                })
             end
         end
         if pindian.to:hasSkill(self:objectName()) then
-            local x = player:getMark('LuaXunxinWon-Clear') * 2
+            local x = player:getMark('LuaXunxinWon-Clear')
             if x > 0 then
                 room:sendCompulsoryTriggerLog(pindian.to, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
                 pindian.to_number = pindian.to_number - x
+                rinsan.sendLogMessage(room, '#LuaXunxin', {
+                    ['from'] = pindian.to,
+                    ['arg'] = self:objectName(),
+                    ['arg2'] = pindian.to_number,
+                })
             end
         end
         data:setValue(pindian)
