@@ -3140,12 +3140,7 @@ LuaDangxian = sgs.CreateTriggerSkill {
             if card then
                 player:obtainCard(card, false)
             end
-            room:broadcastProperty(player, 'phase')
-            local thread = room:getThread()
-            if not thread:trigger(sgs.EventPhaseStart, room, player) then
-                thread:trigger(sgs.EventPhaseProceeding, room, player)
-            end
-            thread:trigger(sgs.EventPhaseEnd, room, player)
+            rinsan.executeExtraPhase(player, sgs.Player_Play)
             player:setPhase(sgs.Player_RoundStart)
             room:broadcastProperty(player, 'phase')
         end

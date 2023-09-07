@@ -2276,13 +2276,7 @@ LuaMianliExtraPhase = sgs.CreateTriggerSkill {
             rinsan.sendLogMessage(room, '#LuaDangxianExtraPhase', {
                 ['from'] = player,
             })
-            player:setPhase(sgs.Player_Play)
-            room:broadcastProperty(player, 'phase')
-            local thread = room:getThread()
-            if not thread:trigger(sgs.EventPhaseStart, room, player) then
-                thread:trigger(sgs.EventPhaseProceeding, room, player)
-            end
-            thread:trigger(sgs.EventPhaseEnd, room, player)
+            rinsan.executeExtraPhase(player, sgs.Player_Play)
         end
         return false
     end,
