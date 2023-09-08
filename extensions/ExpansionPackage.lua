@@ -1837,6 +1837,9 @@ LuaYizanVS = sgs.CreateViewAsSkill {
         return false
     end,
     enabled_at_response = function(self, player, pattern)
+        if pattern == 'nullification' then
+            return false
+        end
         return rinsan.guhuoVSSkillEnabledAtResponse(self, player, pattern)
     end,
     enabled_at_play = function(self, player)
