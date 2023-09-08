@@ -4686,6 +4686,9 @@ LuaZhanyiVS = sgs.CreateOneCardViewAsSkill {
         if not player:hasFlag('LuaZhanyiBasicCard') then
             return false
         end
+        if pattern == 'nullification' then
+            return false
+        end
         if string.startsWith(pattern, '.') or string.startsWith(pattern, '@') then
             return false
         end
