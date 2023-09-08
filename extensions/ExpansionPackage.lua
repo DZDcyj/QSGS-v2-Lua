@@ -7496,4 +7496,133 @@ ExChengGuanyu:addSkill(LuaNianen)
 table.insert(hiddenSkills, LuaGuanjueClear)
 table.insert(hiddenSkills, LuaNianenDistance)
 
+-- 诸葛瞻
+ExZhugezhan = sgs.General(extension, 'ExZhugezhan', 'shu', '3', true, true)
+
+local function getZuilunDrawCount(player)
+    local result = 0
+    -- 造成过伤害
+    if player:getMark('LuaZuilunDamaged-Clear') > 0 then
+        result = result + 1
+    end
+    -- 弃牌阶段未弃置牌
+    if player:getMark('LuaZuilunDiscard-Clear') == 0 then
+        result = result + 1
+    end
+    -- 手牌数全场最小
+    local toAdd = 1
+    local room = player:getRoom()
+    local playerHandcardNum = player:getHandcardNum()
+    for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+        if p:getHandcardNum() < playerHandcardNum then
+            toAdd = 0
+            break
+        end
+    end
+    result = result + toAdd
+    return result
+end
+
+LuaZuilun = sgs.CreateTriggerSkill {
+    name = 'LuaZuilun',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            local x = getZuilunDrawCount(player)
+            if x == 3 then
+                player:drawCards(3, self:objectName())
+                return false
+            end
+            local ids = room:getNCards(3)
+            local togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            for _ = 1, x, 1 do
+                room:fillAG(ids, player)
+                local id = room:askForAG(player, ids, false, self:objectName())
+                ids:removeOne(id)
+                togain:addSubcard(id)
+                room:clearAG()
+            end
+            room:askForGuanxing(player, ids, sgs.Room_GuanxingUpOnly)
+            if x > 0 then
+                player:obtainCard(togain, false)
+            else
+                local victim = room:askForPlayerChosen(player, room:getOtherPlayers(player), self:objectName(),
+                    'LuaZuilun-Choose', false)
+                room:loseHp(player)
+                if victim then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), victim:objectName())
+                    room:loseHp(victim)
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+    end,
+}
+
+LuaZuilunRecord = sgs.CreateTriggerSkill {
+    name = 'LuaZuilunRecord',
+    events = {sgs.CardsMoveOneTime, sgs.Damage},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.Damage then
+            room:addPlayerMark(player, 'LuaZuilunDamaged-Clear')
+            return false
+        end
+        local move = data:toMoveOneTime()
+        local source = move.from
+        if not source then
+            return false
+        end
+        if player:objectName() ~= source:objectName() then
+            return false
+        end
+        local reason = move.reason
+        if not rinsan.moveBasicReasonCompare(reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) then
+            return false
+        end
+        if not move.card_ids:isEmpty() then
+            room:addPlayerMark(player, 'LuaZuilunDiscard-Clear')
+        end
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+LuaFuyin = sgs.CreateTriggerSkill {
+    name = 'LuaFuyin',
+    events = {sgs.TargetConfirmed},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if player:getMark('LuaFuyin-Clear') > 0 then
+            return false
+        end
+        if not rinsan.RIGHT(self, player) then
+            return false
+        end
+        local use = data:toCardUse()
+        if use.card and (use.card:isKindOf('Slash') or use.card:isKindOf('Duel')) and use.to:contains(player) then
+            room:addPlayerMark(player, 'LuaFuyin-Clear')
+            if player:getHandcardNum() <= use.from:getHandcardNum() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                local nullified_list = use.nullified_list
+                table.insert(nullified_list, player:objectName())
+                use.nullified_list = nullified_list
+                data:setValue(use)
+            end
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+ExZhugezhan:addSkill(LuaZuilun)
+ExZhugezhan:addSkill(LuaFuyin)
+table.insert(hiddenSkills, LuaZuilunRecord)
+
 rinsan.addHiddenSkills(hiddenSkills)
