@@ -6859,6 +6859,7 @@ LuaCangzhuo = sgs.CreateTriggerSkill {
             return false
         end
         if event == sgs.AskForGameruleDiscard then
+            room:broadcastSkillInvoke(self:objectName())
             room:sendCompulsoryTriggerLog(player, self:objectName())
         end
         local n = room:getTag('DiscardNum'):toInt()
