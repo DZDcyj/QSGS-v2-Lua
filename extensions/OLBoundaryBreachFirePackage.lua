@@ -372,7 +372,6 @@ LuaFengchuMute = sgs.CreateTriggerSkill {
         if event == sgs.PreCardUsed then
             card = data:toCardUse().card
         else
-            local resp = data:toCardResponse()
             card = data:toCardResponse().m_card
         end
         if not card then
