@@ -272,16 +272,6 @@ return {
     ['$LuaWanlanTongqu1'] = '挽狂澜于既倒，扶大厦于将倾！',
     ['$LuaWanlanTongqu2'] = '深受国恩，今日便是报偿之时！',
     ['~ExTongquJiakui'] = '不斩孙权，九泉之下愧见先帝啊！',
-    -- 界卧龙诸葛
-    ['$LuaBazhen1'] = '八阵连星，日月同辉',
-    ['$LuaBazhen2'] = '此阵变化，岂是汝等可解？',
-    ['$LuaHuoji1'] = '赤壁借东风，燃火灭魏军',
-    ['$LuaHuoji2'] = '东风，让这火烧得再猛烈些吧！',
-    ['$LuaKanpo1'] = '此计奥妙，我已看破',
-    ['$LuaKanpo2'] = '还有什么是我看不破的呢？',
-    ['$LuaCangzhuo1'] = '藏巧于拙，用晦而明',
-    ['$LuaCangzhuo2'] = '寓清于浊，以屈为伸',
-    ['~JieWolong'] = '星途半废，夙愿未完……',
     -- 界祝融
     ['$LuaJuxiang1'] = '今日就让这群汉人长长见识',
     ['$LuaJuxiang2'] = '我的大象终于有了用武之地',
