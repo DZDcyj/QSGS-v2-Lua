@@ -7626,4 +7626,101 @@ ExZhugezhan:addSkill(LuaZuilun)
 ExZhugezhan:addSkill(LuaFuyin)
 table.insert(hiddenSkills, LuaZuilunRecord)
 
+-- OL 张翼
+OLZhangyi = sgs.General(extension, 'OLZhangyi', 'shu', '4', true, true)
+
+LuaDianjun = sgs.CreateTriggerSkill {
+    name = 'LuaDianjun',
+    events = {sgs.EventPhaseEnd},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
+        rinsan.doDamage(nil, player, 1)
+        rinsan.sendLogMessage(room, '#LuaDangxianExtraPhase', {
+            ['from'] = player,
+        })
+        player:setPhase(sgs.Player_Play)
+        room:broadcastProperty(player, 'phase')
+        local thread = room:getThread()
+        if not thread:trigger(sgs.EventPhaseStart, room, player) then
+            thread:trigger(sgs.EventPhaseProceeding, room, player)
+        end
+        thread:trigger(sgs.EventPhaseEnd, room, player)
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish)
+    end,
+}
+
+LuaKangrui = sgs.CreateTriggerSkill {
+    name = 'LuaKangrui',
+    events = {sgs.Damaged},
+    on_trigger = function(self, event, player, data, room)
+        if player:getMark(self:objectName() .. '-Clear') > 0 or player:getPhase() == sgs.Player_NotActive then
+            return false
+        end
+        room:addPlayerMark(player, self:objectName() .. '-Clear')
+        local data2 = sgs.QVariant()
+        data2:setValue(player)
+        for _, zhangyi in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if room:askForSkillInvoke(zhangyi, self:objectName(), data2) then
+                room:broadcastSkillInvoke(self:objectName())
+                room:doAnimate(rinsan.ANIMATE_INDICATE, zhangyi:objectName(), player:objectName())
+                zhangyi:drawCards(1, self:objectName())
+                local choices = {}
+                if player:getLostHp() > 0 then
+                    table.insert(choices, 'LuaKangruiChoice1')
+                end
+                table.insert(choices, 'LuaKangruiChoice2')
+                local choice = room:askForChoice(zhangyi, self:objectName(), table.concat(choices, '+'))
+                if choice == 'LuaKangruiChoice1' then
+                    rinsan.recover(player)
+                else
+                    room:addPlayerMark(player, 'LuaKangruiChoice2-Clear')
+                end
+            end
+
+        end
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+LuaKangruiDamage = sgs.CreateTriggerSkill {
+    name = 'LuaKangruiDamage',
+    events = {sgs.DamageCaused},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local x = player:getMark('LuaKangruiChoice2-Clear')
+        if x > 0 then
+            local damage = data:toDamage()
+            rinsan.sendLogMessage(room, '#LuaKangruiDamageUp', {
+                ['from'] = player,
+                ['arg'] = 'LuaKangrui',
+                ['arg2'] = x,
+            })
+            damage.damage = damage.damage + x
+            room:setPlayerMark(player, 'LuaKangruiChoice2-Clear', 0)
+            room:addPlayerMark(player, 'LuaKangruiDamageIncreased-Clear')
+            data:setValue(damage)
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+LuaKangruiMaxCards = sgs.CreateMaxCardsSkill {
+    name = 'LuaKangruiMaxCards',
+    extra_func = function(self, target)
+        if target:getMark('LuaKangruiDamageIncreased-Clear') > 0 then
+            return -9999
+        end
+        return 0
+    end,
+}
+
+OLZhangyi:addSkill(LuaDianjun)
+OLZhangyi:addSkill(LuaKangrui)
+table.insert(hiddenSkills, LuaKangruiDamage)
+table.insert(hiddenSkills, LuaKangruiMaxCards)
+
 rinsan.addHiddenSkills(hiddenSkills)
