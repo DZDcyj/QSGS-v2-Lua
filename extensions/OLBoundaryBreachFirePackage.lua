@@ -379,6 +379,7 @@ LuaFengchuMute = sgs.CreateTriggerSkill {
         end
         local skill = card:getSkillName()
         if skill == 'LuaHuoji' then
+            room:notifySkillInvoked(player, skill)
             if player:getMark('LuaOLNiepanAcquiredLuaHuoji') > 0 then
                 room:broadcastSkillInvoke(skill, rinsan.random(3, 4))
             else
@@ -387,6 +388,7 @@ LuaFengchuMute = sgs.CreateTriggerSkill {
             return true
         end
         if skill == 'LuaKanpo' then
+            room:notifySkillInvoked(player, skill)
             if player:getMark('LuaOLNiepanAcquiredLuaKanpo') > 0 then
                 room:broadcastSkillInvoke(skill, rinsan.random(3, 4))
             else
@@ -395,6 +397,7 @@ LuaFengchuMute = sgs.CreateTriggerSkill {
             return true
         end
         if skill == 'LuaBazhenJink' then
+            room:notifySkillInvoked(player, 'LuaBazhen')
             if player:getMark('LuaOLNiepanAcquiredLuaBazhen') > 0 then
                 room:broadcastSkillInvoke('LuaBazhen', rinsan.random(3, 4))
             else
