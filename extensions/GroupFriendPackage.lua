@@ -2239,19 +2239,19 @@ LuaDuzhan = sgs.CreateOneCardViewAsSkill {
     end,
 }
 
-local function askForMianli(mikang, currentPlayer)
+local function askForLixing(mikang, currentPlayer)
     local room = mikang:getRoom()
-    local card = room:askForCard(mikang, '.|.|.|.|.', '@LuaMianli-Give:' .. currentPlayer:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
+    local card = room:askForCard(mikang, '.|.|.|.|.', '@LuaLixing-Give:' .. currentPlayer:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
     if card then
         room:showCard(mikang, card:getEffectiveId())
-        room:addPlayerMark(mikang, 'LuaMianli-Clear')
+        room:addPlayerMark(mikang, 'LuaLixing-Clear')
         currentPlayer:obtainCard(card, false)
-        rectification.askForRectification(mikang, currentPlayer, 'LuaMianli', false)
+        rectification.askForRectification(mikang, currentPlayer, 'LuaLixing', false)
     end
 end
 
-LuaMianli = sgs.CreateTriggerSkill {
-    name = 'LuaMianli',
+LuaLixing = sgs.CreateTriggerSkill {
+    name = 'LuaLixing',
     events = {sgs.EventPhaseStart},
     on_trigger = function(self, event, player, data, room)
         if player:getPhase() ~= sgs.Player_Play then
@@ -2259,20 +2259,20 @@ LuaMianli = sgs.CreateTriggerSkill {
         end
         for _, mikang in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
             if mikang:getMark(self:objectName() .. '-Clear') == 0 then
-                askForMianli(mikang, player)
+                askForLixing(mikang, player)
             end
         end
     end,
     can_trigger = rinsan.targetTrigger,
 }
 
-LuaMianliExtraPhase = sgs.CreateTriggerSkill {
-    name = 'LuaMianliExtraPhase',
+LuaLixingExtraPhase = sgs.CreateTriggerSkill {
+    name = 'LuaLixingExtraPhase',
     events = {sgs.EventPhaseEnd},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaMianliExtraPlayPhase') > 0 then
-            room:setPlayerMark(player, 'LuaMianliExtraPlayPhase', 0)
+        if player:getPhase() == sgs.Player_Finish and player:getMark('LuaLixingExtraPlayPhase') > 0 then
+            room:setPlayerMark(player, 'LuaLixingExtraPlayPhase', 0)
             rinsan.sendLogMessage(room, '#LuaDangxianExtraPhase', {
                 ['from'] = player,
             })
@@ -2354,7 +2354,7 @@ for _, relateSkill in ipairs(RUIPING_SKILLS) do
     Zhongliao:addRelateSkill(relateSkill)
 end
 Mikang:addSkill(LuaDuzhan)
-Mikang:addSkill(LuaMianli)
+Mikang:addSkill(LuaLixing)
 Mikang:addSkill(LuaQinggong)
 
 table.insert(hiddenSkills, LuaZibao)
@@ -2370,6 +2370,6 @@ table.insert(hiddenSkills, LuaXiandengStart)
 table.insert(hiddenSkills, LuaXiandengTargetMod)
 table.insert(hiddenSkills, LuaBaijia)
 table.insert(hiddenSkills, LuaJiuwenDamaged)
-table.insert(hiddenSkills, LuaMianliExtraPhase)
+table.insert(hiddenSkills, LuaLixingExtraPhase)
 
 rinsan.addHiddenSkills(hiddenSkills)

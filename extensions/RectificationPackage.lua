@@ -262,9 +262,9 @@ local RECTIFICATION_BONUS_FUNCS = {
     ['LuaYanji'] = function(from, _)
         askForBonus(from)
     end,
-    ['LuaMianli'] = function(_, player)
+    ['LuaLixing'] = function(_, player)
         askForBonus(player)
-        player:getRoom():addPlayerMark(player, 'LuaMianliExtraPlayPhase')
+        player:getRoom():addPlayerMark(player, 'LuaLixingExtraPlayPhase')
     end,
 }
 
