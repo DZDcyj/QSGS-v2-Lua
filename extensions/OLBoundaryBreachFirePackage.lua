@@ -32,7 +32,8 @@ LuaBazhen = sgs.CreateTriggerSkill {
             room:judge(judge)
             if judge:isGood() then
                 local jink = sgs.Sanguosha:cloneCard('jink', sgs.Card_NoSuit, 0)
-                jink:setSkillName(self:objectName())
+                -- PreCardResponded 无法中止技能音效，手动换成另外技能名称，重新播放对应语音
+                jink:setSkillName('LuaBazhenJink')
                 room:provide(jink)
                 return true
             end
@@ -200,7 +201,11 @@ LuaKanpo = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         local effect = data:toCardEffect()
         if rinsan.RIGHT(self, effect.from) and effect.card:isKindOf('Nullification') then
-            SendComLog(self, effect.from)
+            local index = rinsan.random(1, 2)
+            if effect.from:getMark('LuaOLNiepanAcquiredLuaKanpo') > 0 then
+                index = rinsan.random(3, 4)
+            end
+            SendComLog(self, effect.from, index)
             return true
         end
     end,
@@ -273,6 +278,143 @@ JieWolong:addSkill(LuaKanpo)
 JieWolong:addSkill(LuaCangzhuo)
 table.insert(hiddenSkills, LuaCangzhuoMaxCards)
 table.insert(hiddenSkills, LuaBazhenDraw)
+
+-- 界庞统
+OLJiePangtong = sgs.General(extension, 'OLJiePangtong', 'shu', '3', true, true)
+
+LuaOLLianhuan = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaOLLianhuan',
+    filter_pattern = '.|club|.|hand',
+    view_as = function(self, card)
+        local chain = sgs.Sanguosha:cloneCard('iron_chain', sgs.Card_NoSuit, 0)
+        chain:addSubcard(card)
+        chain:setSkillName(self:objectName())
+        return chain
+    end,
+}
+
+LuaOLLianhuanTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaOLLianhuan',
+    pattern = 'IronChain',
+    extra_target_func = function(self, from)
+        if from:hasSkill('LuaOLLianhuan') then
+            return 1
+        end
+        return 0
+    end,
+}
+
+NIEPAN_SKILLS = {'LuaBazhen', 'LuaHuoji', 'LuaKanpo'}
+
+LuaOLNiepan = sgs.CreateTriggerSkill {
+    name = 'LuaOLNiepan',
+    frequency = sgs.Skill_Limited,
+    events = {sgs.AskForPeaches},
+    limit_mark = '@nirvana',
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        local dying_data = data:toDying()
+        local source = dying_data.who
+        if source:objectName() == player:objectName() then
+            if player:askForSkillInvoke(self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                player:loseMark('@nirvana')
+                -- 弃置所有牌
+                player:throwAllCards()
+
+                -- 复原武将牌
+                if player:isChained() then
+                    local damage = dying_data.damage
+                    if (damage == nil) or (damage.nature == sgs.DamageStruct_Normal) then
+                        room:setPlayerProperty(player, 'chained', sgs.QVariant(false))
+                    end
+                end
+                if not player:faceUp() then
+                    player:turnOver()
+                end
+                -- 摸三张牌
+                player:drawCards(3)
+
+                -- 回复至三点体力
+                local maxhp = player:getMaxHp()
+                local hp = math.min(3, maxhp)
+                rinsan.recover(player, hp - player:getHp())
+
+                -- 选择技能获得
+                local skills = {}
+                for _, skill in ipairs(NIEPAN_SKILLS) do
+                    if not player:hasSkill(skill) then
+                        table.insert(skills, skill)
+                    end
+                end
+                if #skills == 0 then
+                    return false
+                end
+                local choice = room:askForChoice(player, self:objectName(), table.concat(skills, '+'))
+                room:acquireSkill(player, choice)
+                room:addPlayerMark(player, 'LuaOLNiepanAcquired' .. choice)
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getMark('@nirvana') > 0
+    end,
+}
+
+LuaFengchuMute = sgs.CreateTriggerSkill {
+    name = 'LuaFengchuMute',
+    events = {sgs.PreCardUsed, sgs.PreCardResponded},
+    global = true,
+    priority = 1,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        if event == sgs.PreCardUsed then
+            card = data:toCardUse().card
+        else
+            card = data:toCardResponse().m_card
+        end
+        if not card then
+            return false
+        end
+        local skill = card:getSkillName()
+        if skill == 'LuaHuoji' then
+            room:notifySkillInvoked(player, skill)
+            if player:getMark('LuaOLNiepanAcquiredLuaHuoji') > 0 then
+                room:broadcastSkillInvoke(skill, rinsan.random(3, 4))
+            else
+                room:broadcastSkillInvoke(skill, rinsan.random(1, 2))
+            end
+            return true
+        end
+        if skill == 'LuaKanpo' then
+            room:notifySkillInvoked(player, skill)
+            if player:getMark('LuaOLNiepanAcquiredLuaKanpo') > 0 then
+                room:broadcastSkillInvoke(skill, rinsan.random(3, 4))
+            else
+                room:broadcastSkillInvoke(skill, rinsan.random(1, 2))
+            end
+            return true
+        end
+        if skill == 'LuaBazhenJink' then
+            room:notifySkillInvoked(player, 'LuaBazhen')
+            if player:getMark('LuaOLNiepanAcquiredLuaBazhen') > 0 then
+                room:broadcastSkillInvoke('LuaBazhen', rinsan.random(3, 4))
+            else
+                room:broadcastSkillInvoke('LuaBazhen', rinsan.random(1, 2))
+            end
+            return true
+        end
+    end,
+}
+
+OLJiePangtong:addSkill(LuaOLLianhuan)
+OLJiePangtong:addSkill(LuaOLNiepan)
+OLJiePangtong:addRelateSkill('LuaBazhen')
+OLJiePangtong:addRelateSkill('LuaHuoji')
+OLJiePangtong:addRelateSkill('LuaKanpo')
+table.insert(hiddenSkills, LuaOLLianhuanTargetMod)
+table.insert(hiddenSkills, LuaFengchuMute)
 
 -- 界荀彧
 OLJieXunyu = sgs.General(extension, 'OLJieXunyu', 'wei', '3', true, true)
