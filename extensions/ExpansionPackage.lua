@@ -7582,6 +7582,12 @@ local function addCardToJueyongPile(player, use)
     local card = use.card
     local from = use.from
     local id = card:getEffectiveId()
+    -- 由于转化的杀不会进入流程，简化使用技能名判断是否为 FilterSkill 影响
+    if card:getSkillName() ~= '' then
+        local cardStr = string.format('%s:%s:%s:%s', card:objectName(), card:getSkillName(), card:getSuit(),
+            card:getNumber())
+        player:setTag(string.format('%d_%s', id, JUE_PILE_NAME .. 'Modified'), sgs.QVariant(cardStr))
+    end
     player:addToPile(JUE_PILE_NAME, card:getEffectiveId())
     if card:isKindOf('Collateral') then
         -- 特殊处理借刀杀人
@@ -7648,6 +7654,17 @@ LuaJueyongUse = sgs.CreateTriggerSkill {
         room:sendCompulsoryTriggerLog(player, 'LuaJueyong')
         for _, id in sgs.qlist(player:getPile(JUE_PILE_NAME)) do
             local cd = sgs.Sanguosha:getCard(id)
+            local wrappedTagName = string.format('%d_%s', id, JUE_PILE_NAME .. 'Modified')
+            local wrappedTag = player:getTag(wrappedTagName)
+            if wrappedTag and wrappedTag:toString() ~= '' then
+                cd = sgs.Sanguosha:getWrappedCard(id)
+                local cardStr = wrappedTag:toString()
+                local items = cardStr:split(':')
+                local newCard = sgs.Sanguosha:cloneCard(items[1], items[3], items[4])
+                newCard:setSkillName(items[2])
+                cd:takeOver(newCard)
+            end
+            
             room:setCardFlag(cd, 'LuaJueyongUse')
             local tag = string.format('%s_%d', JUE_PILE_NAME, id)
             if cd:isKindOf('Collateral') then
@@ -7673,6 +7690,7 @@ LuaJueyongUse = sgs.CreateTriggerSkill {
             end
 
             player:removeTag(tag)
+            player:removeTag(wrappedTagName)
             room:setCardFlag(cd, '-LuaJueyongUse')
         end
     end,
