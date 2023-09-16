@@ -7481,7 +7481,6 @@ LuaPoxiangCard = sgs.CreateSkillCard {
             local to_throw = sgs.IntList()
             for _, id in sgs.qlist(source:getPile(JUE_PILE_NAME)) do
                 to_throw:append(id)
-                local cd = sgs.Sanguosha:getCard(id)
                 local tag = string.format('%s_%d', JUE_PILE_NAME, id)
                 source:removeTag(tag)
             end
