@@ -85,7 +85,7 @@ LuaHeji = sgs.CreateTriggerSkill {
             end
             return false
         end
-        if use.to:length() > 1 then
+        if use.to:length() ~= 1 then
             return false
         end
         if use.card and ((use.card:isKindOf('Slash') and use.card:isRed()) or use.card:isKindOf('Duel')) then
