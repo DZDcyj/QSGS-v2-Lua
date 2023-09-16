@@ -7626,6 +7626,18 @@ LuaJueyong = sgs.CreateTriggerSkill {
     end,
 }
 
+local function JueyongUsable(from, cd, player)
+    local room = player:getRoom()
+    if from and from:isAlive() then
+        if from:objectName() == player:objectName() then
+            return cd:isAvailable(player)
+        else
+            return (not room:isProhibited(from, player, cd)) and cd:targetFilter(sgs.PlayerList(), player, from)
+        end
+    end
+    return false
+end
+
 LuaJueyongUse = sgs.CreateTriggerSkill {
     name = 'LuaJueyongUse',
     events = {sgs.EventPhaseStart},
@@ -7654,8 +7666,7 @@ LuaJueyongUse = sgs.CreateTriggerSkill {
             else
                 local fromName = player:getTag(tag):toString()
                 local from = rinsan.findPlayerByName(room, fromName)
-                if from and from:isAlive() and (not room:isProhibited(from, player, cd)) and
-                    cd:targetFilter(sgs.PlayerList(), player, from) then
+                if JueyongUsable(from, cd, player) then
                     room:useCard(sgs.CardUseStruct(cd, from, player))
                 else
                     room:throwCard(cd, player)
