@@ -7459,4 +7459,257 @@ OLZhangyi:addSkill(LuaKangrui)
 table.insert(hiddenSkills, LuaKangruiDamage)
 table.insert(hiddenSkills, LuaKangruiMaxCards)
 
+-- 傅佥
+ExFuqian = sgs.General(extension, 'ExFuqian', 'shu', '4', true, true)
+
+local JUE_PILE_NAME = 'LuaJueyongPile'
+
+LuaPoxiangCard = sgs.CreateSkillCard {
+    name = 'LuaPoxiang',
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
+    end,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local target = targets[1]
+        local card = sgs.Sanguosha:getCard(self:getSubcards():first())
+        target:obtainCard(card, false)
+        source:drawCards(3, self:objectName())
+        if not source:getPile(JUE_PILE_NAME):isEmpty() then
+            local to_throw = sgs.IntList()
+            for _, id in sgs.qlist(source:getPile(JUE_PILE_NAME)) do
+                to_throw:append(id)
+                local cd = sgs.Sanguosha:getCard(id)
+                local tag = string.format('%s_%d', JUE_PILE_NAME, id)
+                source:removeTag(tag)
+            end
+            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            dummy:addSubcards(to_throw)
+            room:throwCard(dummy, source)
+        end
+        room:loseHp(source)
+    end,
+}
+
+LuaPoxiangVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaPoxiang',
+    filter_pattern = '.',
+    view_as = function(self, card)
+        local vs_card = LuaPoxiangCard:clone()
+        vs_card:addSubcard(card)
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaPoxiang')
+    end,
+}
+
+LuaPoxiang = sgs.CreateTriggerSkill {
+    name = 'LuaPoxiang',
+    events = {sgs.AskForGameruleDiscard, sgs.AfterGameruleDiscard, sgs.CardsMoveOneTime},
+    view_as_skill = LuaPoxiangVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if move.reason and move.reason.m_skillName == 'LuaPoxiang' then
+                if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() and
+                    move.to_place == sgs.Player_PlaceHand and not move.card_ids:isEmpty() then
+                    for _, id in sgs.qlist(move.card_ids) do
+                        room:addPlayerMark(player, 'LuaPoxiang' .. id .. '-Clear')
+                    end
+                end
+            end
+            return false
+        end
+        if event == sgs.AskForGameruleDiscard then
+            room:sendCompulsoryTriggerLog(player, 'LuaPoxiang')
+        end
+        local n = room:getTag('DiscardNum'):toInt()
+        for _, id in sgs.qlist(player:handCards()) do
+            if player:getMark('LuaPoxiang' .. id .. '-Clear') > 0 then
+                if event == sgs.AskForGameruleDiscard then
+                    n = n - 1
+                    room:setPlayerCardLimitation(player, 'discard', sgs.Sanguosha:getCard(id):toString(), false)
+                else
+                    room:removePlayerCardLimitation(player, 'discard', sgs.Sanguosha:getCard(id):toString() .. '$0')
+                end
+            end
+        end
+        room:setTag('DiscardNum', sgs.QVariant(n))
+        return false
+    end,
+}
+
+LuaPoxiangMaxCards = sgs.CreateMaxCardsSkill {
+    name = 'LuaPoxiangMaxCards',
+    extra_func = function(self, target)
+        local x = 0
+        for _, cd in sgs.qlist(target:getHandcards()) do
+            if target:getMark('LuaPoxiang' .. cd:getId() .. '-Clear') > 0 then
+                x = x + 1
+            end
+        end
+        -- 迫真多余牌修正
+        return target:getHandcardNum() > target:getHp() and 0 or x
+    end,
+}
+
+local function LuaJueyongCardInvokable(card)
+    if card:isVirtualCard() or card:hasFlag('LuaJueyongUse') then
+        return false
+    end
+    if card:isKindOf('Peach') or card:isKindOf('Analeptic') then
+        return false
+    end
+    return true
+end
+
+local function LuaJueyongInvokable(use, player)
+    if not player:hasSkill('LuaJueyong') then
+        return false
+    end
+    local card = use.card
+    if card and LuaJueyongCardInvokable(card) then
+        if use.to:contains(player) and use.to:length() == 1 then
+            return player:getPile(JUE_PILE_NAME):length() < player:getHp()
+        end
+    end
+    return false
+end
+
+local function addCardToJueyongPile(player, use)
+    local card = use.card
+    local from = use.from
+    local id = card:getEffectiveId()
+    player:addToPile(JUE_PILE_NAME, card:getEffectiveId())
+    if card:isKindOf('Collateral') then
+        -- 特殊处理借刀杀人
+        local collateralStr = string.format('%s->%s', from:objectName(),
+            player:getTag('collateralVictim'):toPlayer():objectName())
+        player:setTag(string.format('%s_%d', JUE_PILE_NAME, id), sgs.QVariant(collateralStr))
+    else
+        player:setTag(string.format('%s_%d', JUE_PILE_NAME, id), sgs.QVariant(from:objectName()))
+    end
+end
+
+LuaJueyong = sgs.CreateTriggerSkill {
+    name = 'LuaJueyong',
+    events = {sgs.TargetConfirming, sgs.CardUsed},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if LuaJueyongInvokable(use, player) then
+            if use.card:isKindOf('EquipCard') or use.card:isKindOf('DelayedTrick') then
+                return false
+            end
+            room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
+            local to_list = use.to
+            to_list:removeOne(player)
+            use.to = to_list
+            data:setValue(use)
+            local msgType = '$CancelTargetNoUser'
+            local params = {
+                ['to'] = player,
+                ['arg'] = use.card:objectName(),
+            }
+            if use.from then
+                params['from'] = use.from
+                msgType = '$CancelTarget'
+            end
+            rinsan.sendLogMessage(room, msgType, params)
+            addCardToJueyongPile(player, use)
+        end
+        return false
+    end,
+}
+
+LuaJueyongUse = sgs.CreateTriggerSkill {
+    name = 'LuaJueyongUse',
+    events = {sgs.EventPhaseStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getPile(JUE_PILE_NAME):isEmpty() then
+            return false
+        end
+        room:sendCompulsoryTriggerLog(player, 'LuaJueyong')
+        for _, id in sgs.qlist(player:getPile(JUE_PILE_NAME)) do
+            local cd = sgs.Sanguosha:getCard(id)
+            room:setCardFlag(cd, 'LuaJueyongUse')
+            local tag = string.format('%s_%d', JUE_PILE_NAME, id)
+            if cd:isKindOf('Collateral') then
+                local tagTable = player:getTag(tag):toString():split('->')
+                local from = rinsan.findPlayerByName(room, tagTable[1])
+                local victim = rinsan.findPlayerByName(room, tagTable[2])
+                local targets = sgs.SPlayerList()
+                targets:append(player)
+                targets:append(victim)
+                if from and from:isAlive() and victim and victim:isAlive() then
+                    room:useCard(sgs.CardUseStruct(cd, from, targets))
+                else
+                    room:throwCard(cd, player)
+                end
+            else
+                local fromName = player:getTag(tag):toString()
+                local from = rinsan.findPlayerByName(room, fromName)
+                if from and from:isAlive() and (not room:isProhibited(from, player, cd)) and
+                    cd:targetFilter(sgs.PlayerList(), player, from) then
+                    room:useCard(sgs.CardUseStruct(cd, from, player))
+                else
+                    room:throwCard(cd, player)
+                end
+            end
+
+            player:removeTag(tag)
+            room:setCardFlag(cd, '-LuaJueyongUse')
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Finish, 'LuaJueyong')
+    end,
+}
+
+LuaJueyongSpecialHandler = sgs.CreateTriggerSkill {
+    name = 'LuaJueyongSpecialHandler',
+    events = {sgs.CardUsed},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if use.to:length() ~= 1 then
+            return false
+        end
+        local fuqian = use.to:first()
+        if not LuaJueyongInvokable(use, fuqian) then
+            return false
+        end
+        -- 特殊处理装备和延时
+        if use.card:isKindOf('EquipCard') or use.card:isKindOf('DelayedTrick') then
+            room:sendCompulsoryTriggerLog(fuqian, 'LuaJueyong')
+            room:broadcastSkillInvoke('LuaJueyong')
+            local msgType = '$CancelTargetNoUser'
+            local params = {
+                ['to'] = fuqian,
+                ['arg'] = use.card:objectName(),
+            }
+            if use.from then
+                params['from'] = use.from
+                msgType = '$CancelTarget'
+            end
+            rinsan.sendLogMessage(room, msgType, params)
+            addCardToJueyongPile(fuqian, use)
+            return true
+        end
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+ExFuqian:addSkill(LuaPoxiang)
+ExFuqian:addSkill(LuaJueyong)
+table.insert(hiddenSkills, LuaPoxiangMaxCards)
+table.insert(hiddenSkills, LuaJueyongUse)
+table.insert(hiddenSkills, LuaJueyongSpecialHandler)
+
 rinsan.addHiddenSkills(hiddenSkills)

@@ -1814,6 +1814,15 @@ function getTrueClassName(name)
     return name
 end
 
+function findPlayerByName(room, name)
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        if p:objectName() == name then
+            return p
+        end
+    end
+    return nil
+end
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_CHANGE_HP'] = 32,
