@@ -1814,6 +1814,7 @@ function getTrueClassName(name)
     return name
 end
 
+-- 找到对应名字的角色
 function findPlayerByName(room, name)
     for _, p in sgs.qlist(room:getAlivePlayers()) do
         if p:objectName() == name then
@@ -1821,6 +1822,18 @@ function findPlayerByName(room, name)
         end
     end
     return nil
+end
+
+-- 执行一个额外的阶段
+function executeExtraPhase(player, phase)
+    player:setPhase(phase)
+    local room = player:getRoom()
+    room:broadcastProperty(player, 'phase')
+    local thread = room:getThread()
+    if not thread:trigger(sgs.EventPhaseStart, room, player) then
+        thread:trigger(sgs.EventPhaseProceeding, room, player)
+    end
+    thread:trigger(sgs.EventPhaseEnd, room, player)
 end
 
 -- 手动修正

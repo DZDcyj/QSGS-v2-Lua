@@ -22,6 +22,13 @@ local NUMBER_TAG = 'RectificationPackage_Play_Number'
 local SUIT_TAG = 'RectificationPackage_Play_Suit'
 local DISCARD_TAG = 'RectificationPackage_Discard_Suit'
 
+local function clearRectificationRecord(player)
+    player:removeTag(DISCARD_TAG)
+    player:removeTag(SUIT_TAG)
+    player:removeTag(NUMBER_TAG)
+    rinsan.clearAllMarksContains(player, 'RectificationPackage')
+end
+
 -- 获取角色对应整肃 tagName 的 table
 local function getRectificationStringTable(player, tagName)
     local tag = player:getTag(tagName)
@@ -144,15 +151,24 @@ end
 -- 出牌阶段用牌记录
 LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
     name = 'LuaRectificationPlayPhaseRecord',
-    events = {sgs.CardUsed},
+    events = {sgs.CardUsed, sgs.CardResponded},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local use = data:toCardUse()
-        if use.card and (not use.card:isKindOf('SkillCard')) then
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            local resp = data:toCardResponse()
+            if not resp.m_isUse then
+                return false
+            end
+            card = resp.m_card
+        end
+        if card and (not card:isKindOf('SkillCard')) then
             local numberTable = getRectificationStringTable(player, NUMBER_TAG)
             local suitTable = getRectificationStringTable(player, SUIT_TAG)
-            local number = use.card:getNumber()
-            local suit = use.card:getSuitString()
+            local number = card:getNumber()
+            local suit = card:getSuitString()
             table.insert(numberTable, number)
             table.insert(suitTable, suit)
             setRectificationStringTable(player, NUMBER_TAG, numberTable)
@@ -246,6 +262,10 @@ local RECTIFICATION_BONUS_FUNCS = {
     ['LuaYanji'] = function(from, _)
         askForBonus(from)
     end,
+    ['LuaLixing'] = function(_, player)
+        askForBonus(player)
+        player:getRoom():addPlayerMark(player, 'LuaLixingExtraPlayPhase')
+    end,
 }
 
 -- 默认 2 为整肃成功语音，3 为失败语音
@@ -295,10 +315,8 @@ LuaRectificationCheck = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().from == sgs.Player_Discard then
             doRectification(player)
-            player:removeTag(DISCARD_TAG)
-            player:removeTag(SUIT_TAG)
-            player:removeTag(NUMBER_TAG)
-            rinsan.clearAllMarksContains(player, 'RectificationPackage')
+        elseif data:toPhaseChange().to == sgs.Player_NotActive then
+            clearRectificationRecord(player)
         end
     end,
     can_trigger = rinsan.targetTrigger,

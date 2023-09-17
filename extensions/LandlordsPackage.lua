@@ -192,9 +192,12 @@ LuaDizhu = sgs.CreateTriggerSkill {
             room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
         end
 
+        -- 避免“请功”触发
+        room:setTag('FirstRound', sgs.QVariant(true))
         -- 为自己增加一点体力上限
         rinsan.addPlayerMaxHp(player, 1)
         rinsan.recover(player, 1, player)
+        room:setTag('FirstRound', sgs.QVariant(false))
 
         -- 初始技能触发
         for _, p in sgs.qlist(room:getAlivePlayers()) do
