@@ -9507,9 +9507,6 @@ chenghao = sgs.CreateTriggerSkill {
         end
         return false
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive()
-    end,
 }
 simahui:addSkill(chenghao)
 yinshi = sgs.CreateTriggerSkill {
