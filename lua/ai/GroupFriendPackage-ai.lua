@@ -342,7 +342,6 @@ end
 
 table.insert(sgs.ai_damage_effect, LuaJixieDamageEffect)
 
-sgs.ai_skill_invoke.LuaJiaren = true
 sgs.ai_skill_invoke.LuaChengsheng = true
 
 -- 砂糖

@@ -1662,43 +1662,40 @@ LuaTaose = sgs.CreateTriggerSkill {
 
 LuaJiaren = sgs.CreateTriggerSkill {
     name = 'LuaJiaren',
-    events = {sgs.EventPhaseStart},
+    events = {sgs.TargetConfirming},
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.EventPhaseStart then
-            if player:getPhase() == sgs.Player_Finish and room:askForSkillInvoke(player, self:objectName(), data) then
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') then
+            if use.from and use.from:objectName() ~= player:objectName() then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                local suitStr = use.card:getSuitString()
                 local judge = rinsan.createJudgeStruct({
-                    ['play_animation'] = true,
                     ['who'] = player,
                     ['reason'] = self:objectName(),
+                    ['play_animation'] = true,
+                    ['pattern'] = '.|' .. suitStr,
                 })
                 room:judge(judge)
-                rinsan.sendLogMessage(room, '#LuaJiarenForbidSlash', {
-                    ['from'] = player,
-                    ['arg'] = self:objectName(),
-                    ['arg2'] = judge.card:getSuitString(),
-                })
-                room:addPlayerMark(player, self:objectName() .. judge.card:getSuitString())
+                if judge:isGood() then
+                    local to_list = use.to
+                    to_list:removeOne(player)
+                    use.to = to_list
+                    data:setValue(use)
+                    local msgType = '$CancelTargetNoUser'
+                    local params = {
+                        ['to'] = player,
+                        ['arg'] = use.card:objectName(),
+                    }
+                    if use.from then
+                        params['from'] = use.from
+                        msgType = '$CancelTarget'
+                    end
+                    rinsan.sendLogMessage(room, msgType, params)
+                end
             end
         end
-    end,
-}
-
--- 清除标记
-LuaJiarenClear = sgs.CreateTriggerSkill {
-    name = 'LuaJiarenClear',
-    global = true,
-    frequency = sgs.Skill_Compulsory,
-    events = {sgs.TurnStart},
-    on_trigger = function(self, event, player, data, room)
-        rinsan.clearAllMarksContains(player, 'LuaJiaren')
-    end,
-}
-
--- 不能成为【杀】的合法目标
-LuaJiarenForbid = sgs.CreateProhibitSkill {
-    name = 'LuaJiarenForbid',
-    is_prohibited = function(self, from, to, card)
-        return card:isKindOf('Slash') and to:getMark('LuaJiaren' .. card:getSuitString()) > 0
+        return false
     end,
 }
 
@@ -2211,7 +2208,7 @@ LuaDuzhanCard = sgs.CreateSkillCard {
         local prompt = string.format('LuaDuzhanChooseSlashTarget:%s', target:objectName())
         local victims = room:getOtherPlayers(target)
         local victim = room:askForPlayerChosen(source, victims, self:objectName(), prompt, false, true)
-        local slashPrompt = string.format('@LuaDuzhanSlashTo:%s:%s', source:objectName(),victim:objectName())
+        local slashPrompt = string.format('@LuaDuzhanSlashTo:%s:%s', source:objectName(), victim:objectName())
         if not room:askForUseSlashTo(target, victim, slashPrompt) then
             if not target:isNude() then
                 local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false,
@@ -2241,7 +2238,8 @@ LuaDuzhan = sgs.CreateOneCardViewAsSkill {
 
 local function askForLixing(mikang, currentPlayer)
     local room = mikang:getRoom()
-    local card = room:askForCard(mikang, '.|.|.|.|.', '@LuaLixing-Give:' .. currentPlayer:objectName(), sgs.QVariant(), sgs.Card_MethodNone)
+    local card = room:askForCard(mikang, '.|.|.|.|.', '@LuaLixing-Give:' .. currentPlayer:objectName(), sgs.QVariant(),
+        sgs.Card_MethodNone)
     if card then
         room:showCard(mikang, card:getEffectiveId())
         room:addPlayerMark(mikang, 'LuaLixing-Clear')
@@ -2300,7 +2298,7 @@ LuaQinggong = sgs.CreateTriggerSkill {
                 return false
             end
             invokable = move.to and (move.to:objectName() == player:objectName()) and (move.card_ids:length() >= 2)
-            if(not invokable) or (move.from and move.to and move.from:objectName() == move.to:objectName()) then
+            if (not invokable) or (move.from and move.to and move.from:objectName() == move.to:objectName()) then
                 return false
             end
         end
@@ -2364,8 +2362,6 @@ table.insert(hiddenSkills, LuaQingyuTargetMod)
 table.insert(hiddenSkills, LuaQingyuMaxCards)
 table.insert(hiddenSkills, LuaShulianForbidden)
 table.insert(hiddenSkills, LuaFumoTargetMod)
-table.insert(hiddenSkills, LuaJiarenClear)
-table.insert(hiddenSkills, LuaJiarenForbid)
 table.insert(hiddenSkills, LuaXiandengStart)
 table.insert(hiddenSkills, LuaXiandengTargetMod)
 table.insert(hiddenSkills, LuaBaijia)
