@@ -285,6 +285,7 @@ return {
     ['$LuaDanshou2-JieZhuran_1'] = '主公，臣斗胆来挡住魏军的火力',
     ['~JieZhuran-JieZhuran_1'] = '望吾死后，江东依然无人干饭',
     -- 神太史慈
+    -- 知著侠
     ['$LuaDulie1-ExShenTaishici_1'] = '吾想起高兴的事',
     ['$LuaDulie2-ExShenTaishici_1'] = '咱们江东天险牢不可破',
     ['$LuaPowei1-ExShenTaishici_1'] = '君且看身后，我主公生孩子力', -- 一般破围语音
@@ -293,6 +294,15 @@ return {
     ['$LuaShenzhu1-ExShenTaishici_1'] = '看我此箭，取那冒进之人性命',
     ['$LuaShenzhu2-ExShenTaishici_1'] = '燕人张飞在此',
     ['~ExShenTaishici-ExShenTaishici_1'] = '神鸦不佑……',
+    -- 勇撼日月
+    ['$LuaDulie1-ExShenTaishici_2'] = '水背源则川竭，人背信则名裂！',
+    ['$LuaDulie2-ExShenTaishici_2'] = '善不由外来，名不可虚作！',
+    ['$LuaPowei1-ExShenTaishici_2'] = '惑敌以散其阵，适时上马出击！', -- 一般破围语音
+    ['$LuaPowei2-ExShenTaishici_2'] = '吾心所向，天亦难挡，更况尔等！', -- 破围成功
+    ['$LuaPowei3-ExShenTaishici_2'] = '此番破围不成，实乃预之不周！', -- 破围失败
+    ['$LuaShenzhu1-ExShenTaishici_2'] = '弓矢既调，只待此夭！',
+    ['$LuaShenzhu2-ExShenTaishici_2'] = '拈弓搭箭，舍矢如破！',
+    ['~ExShenTaishici-ExShenTaishici_2'] = '胜负兵家常事，何可自隳其志……',
     -- 曹昂
     ['$kangkai1-caoang_1'] = '阿瞒上马，你父亲我随后便来',
     ['$kangkai2-caoang_1'] = '叛军来得贼快，我替阿瞒殿后',
