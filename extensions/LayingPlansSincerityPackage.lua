@@ -767,7 +767,7 @@ LuaPowei = sgs.CreateTriggerSkill {
         room:notifySkillInvoked(player, self:objectName())
         room:broadcastSkillInvoke('LuaPowei', 2)
         if room:changeMaxHpForAwakenSkill(player, 0) then
-            room:acquireSkill(player, 'LuaShenzhu')
+            room:acquireSkill(player, 'LuaShenzhuo')
             room:addPlayerMark(player, self:objectName())
         end
     end,
@@ -814,8 +814,8 @@ LuaPoweiFailed = sgs.CreateTriggerSkill {
     end,
 }
 
-LuaShenzhu = sgs.CreateTriggerSkill {
-    name = 'LuaShenzhu',
+LuaShenzhuo = sgs.CreateTriggerSkill {
+    name = 'LuaShenzhuo',
     events = {sgs.CardFinished},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
@@ -835,8 +835,8 @@ LuaShenzhu = sgs.CreateTriggerSkill {
             elseif choice == choices[2] then
                 -- 摸三牌，然后本回合内不能用杀
                 player:drawCards(3, self:objectName())
-                if player:getMark('LuaShenzhuForbid') == 0 then
-                    room:addPlayerMark(player, 'LuaShenzhuForbid')
+                if player:getMark('LuaShenzhuoForbid') == 0 then
+                    room:addPlayerMark(player, 'LuaShenzhuoForbid')
                     room:setPlayerCardLimitation(player, 'use', 'Slash|.|.|.', true)
                 end
             end
@@ -844,30 +844,30 @@ LuaShenzhu = sgs.CreateTriggerSkill {
     end,
 }
 
-LuaShenzhuClear = sgs.CreateTriggerSkill {
-    name = 'LuaShenzhuClear',
+LuaShenzhuoClear = sgs.CreateTriggerSkill {
+    name = 'LuaShenzhuoClear',
     events = {sgs.EventPhaseChanging},
     global = true,
     on_trigger = function(self, event, player, data, room)
         if data:toPhaseChange().to == sgs.Player_NotActive then
             for _, p in sgs.qlist(room:getAlivePlayers()) do
-                if p:getMark('LuaShenzhuForbid') > 0 then
+                if p:getMark('LuaShenzhuoForbid') > 0 then
                     room:removePlayerCardLimitation(p, 'use', 'Slash|.|.|.$1')
                 end
-                rinsan.clearAllMarksContains(p, 'LuaShenzhu')
+                rinsan.clearAllMarksContains(p, 'LuaShenzhuo')
             end
         end
     end,
     can_trigger = rinsan.globalTrigger,
 }
 
-LuaShenzhuTargetMod = sgs.CreateTargetModSkill {
-    name = '#LuaShenzhuTargetMod',
+LuaShenzhuoTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaShenzhuoTargetMod',
     frequency = sgs.Skill_Compulsory,
     pattern = 'Slash',
     residue_func = function(self, player)
-        if player:hasSkill('LuaShenzhu') then
-            return player:getMark('LuaShenzhu')
+        if player:hasSkill('LuaShenzhuo') then
+            return player:getMark('LuaShenzhuo')
         else
             return 0
         end
@@ -876,12 +876,12 @@ LuaShenzhuTargetMod = sgs.CreateTargetModSkill {
 
 ExShenTaishici:addSkill(LuaDulie)
 ExShenTaishici:addSkill(LuaPowei)
-ExShenTaishici:addRelateSkill('LuaShenzhu')
-table.insert(hiddenSkills, LuaShenzhu)
+ExShenTaishici:addRelateSkill('LuaShenzhuo')
+table.insert(hiddenSkills, LuaShenzhuo)
 table.insert(hiddenSkills, LuaPoweiHelper)
 table.insert(hiddenSkills, LuaPoweiFailed)
-table.insert(hiddenSkills, LuaShenzhuClear)
-table.insert(hiddenSkills, LuaShenzhuTargetMod)
+table.insert(hiddenSkills, LuaShenzhuoClear)
+table.insert(hiddenSkills, LuaShenzhuoTargetMod)
 
 -- 神孙策
 ExShenSunce = sgs.General(extension, 'ExShenSunce', 'god', 6, true, true, false, 1)
