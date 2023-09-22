@@ -1662,6 +1662,7 @@ LuaTaose = sgs.CreateTriggerSkill {
 
 LuaJiaren = sgs.CreateTriggerSkill {
     name = 'LuaJiaren',
+    frequency = sgs.Skill_Compulsory,
     events = {sgs.TargetConfirming},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
@@ -1720,6 +1721,7 @@ LuaFabing = sgs.CreateTriggerSkill {
 
 LuaChengsheng = sgs.CreateTriggerSkill {
     name = 'LuaChengsheng',
+    frequency = sgs.Skill_Frequent,
     events = {sgs.EventPhaseChanging, sgs.CardEffected},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardEffected then
