@@ -57,6 +57,16 @@ end
 为节省篇幅，请移步[这里](./Generals.md)
 
 ## 补充说明
+
+### 关于禁用源码级别的包
+您可以在 config.lua 里找到 package_names 配置项，里面存放着对应的包名，根据需要可以注释掉（不建议删除），如下图所示
+
+![image](https://github.com/DZDcyj/QSGS-v2-Lua/assets/42711105/9a61c73b-8494-42d6-af52-b43a2727c716)
+
+**请勿将该配置项的更改提交到仓库中**
+
+### 关于 extra.lua
+
 游戏自带的`extra.lua`文件包含了大量其他的 lua 扩展包武将，但不可避免的存在有 bug，在此列出并提供参考修改方案
 
 > 现在已将 extra.lua 纳入仓库进行管理，无需手动进行操作
