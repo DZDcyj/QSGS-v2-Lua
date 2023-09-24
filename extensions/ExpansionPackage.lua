@@ -7653,7 +7653,7 @@ LuaJueyongUse = sgs.CreateTriggerSkill {
                 newCard:setSkillName(items[2])
                 cd:takeOver(newCard)
             end
-            
+
             room:setCardFlag(cd, 'LuaJueyongUse')
             local tag = string.format('%s_%d', JUE_PILE_NAME, id)
             if cd:isKindOf('Collateral') then
