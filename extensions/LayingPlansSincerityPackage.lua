@@ -573,7 +573,7 @@ LuaDulie = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        if use.card and use.card:isKindOf('Slash') then
+        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) then
             if use.from and use.from:getHp() > player:getHp() then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())

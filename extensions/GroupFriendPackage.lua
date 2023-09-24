@@ -1666,7 +1666,7 @@ LuaJiaren = sgs.CreateTriggerSkill {
     events = {sgs.TargetConfirming},
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        if use.card and use.card:isKindOf('Slash') then
+        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) then
             if use.from and use.from:objectName() ~= player:objectName() then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
