@@ -117,7 +117,7 @@ config = {
         'BossMode',
         'Yitian',
         'Wisdom',
-        'Test',
+        'Test', -- 注释此包会导致小型场景闪退
         'Dong',
     },
 
