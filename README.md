@@ -60,6 +60,7 @@ end
 
 ### 关于禁用源码级别的包
 您可以在 config.lua 里找到 package_names 配置项，里面存放着对应的包名，根据需要可以注释掉（不建议删除），如下图所示
+
 ![image](https://github.com/DZDcyj/QSGS-v2-Lua/assets/42711105/9a61c73b-8494-42d6-af52-b43a2727c716)
 
 **请勿将该配置项的更改提交到仓库中**
