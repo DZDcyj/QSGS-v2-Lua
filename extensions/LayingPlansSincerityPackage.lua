@@ -1098,11 +1098,11 @@ LuaPinghe = sgs.CreateTriggerSkill {
         end
         if player:getMaxHp() > 1 and (not player:isKongcheng()) then
             room:sendCompulsoryTriggerLog(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
             room:askForUseCard(player, '@@LuaPinghe!', 'LuaPingheGive', -1, sgs.Card_MethodNone)
             if damage.from and player:hasSkill('LuaYingba') then
                 damage.from:gainMark('@LuaPingding')
             end
-            room:broadcastSkillInvoke(self:objectName())
             return true
         end
     end,
