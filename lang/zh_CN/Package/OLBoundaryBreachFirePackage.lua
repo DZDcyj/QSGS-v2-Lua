@@ -30,4 +30,13 @@ return {
     ['#OLJieXunyu'] = '王佐之才',
     ['LuaOLJieming'] = '节命',
     [':LuaOLJieming'] = '当你受到1点伤害后或死亡时，你可以令一名角色摸X张牌，然后将手牌弃至X张（X为其体力上限且最多为5）',
+    ['OLJieDianwei'] = '界典韦',
+    ['&OLJieDianwei'] = '界典韦',
+    ['#OLJieDianwei'] = '古之恶来',
+    ['LuaOLQiangxi'] = '强袭',
+    [':LuaOLQiangxi'] = '出牌阶段限两次，你可以受到1点伤害或弃置一张武器牌，对一名其他角色造成1点伤害（每名角色每阶段限一次）',
+    ['luaolqiangxi'] = '强袭',
+    ['LuaOLNinge'] = '狞恶',
+    [':LuaOLNinge'] = '锁定技，当一名角色每回合第二次受到伤害后，若受伤角色或伤害来源为你，你摸一张牌并弃置场上一张牌',
+    ['@LuaOLNinge-choose'] = '“狞恶”被触发，你须弃置场上角色区域内的一张牌',
 }

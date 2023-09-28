@@ -23,6 +23,12 @@ return {
     ['$LuaKanpo3'] = '卧龙之才，吾也略懂',
     ['$LuaKanpo4'] = '这些小伎俩，逃不出我的眼睛！',
     ['~OLJiePangtong'] = '骥飞羽落，坡道归尘……',
+    -- 界典韦
+    ['$LuaOLQiangxi1'] = '典韦来也，谁敢一战？',
+    ['$LuaOLQiangxi2'] = '双戟青釭，百死无生！',
+    ['$LuaOLNinge1'] = '古之恶来，今之典韦！',
+    ['$LuaOLNinge2'] = '宁为刀俎，不为鱼肉！',
+    ['~OLJieDianwei'] = '为将者，怎可徒手而亡？',
     -- 界荀彧
     ['$LuaOLJieming1'] = '杀身成仁，不负皇恩',
     ['$LuaOLJieming2'] = '因势利导，是为良计',

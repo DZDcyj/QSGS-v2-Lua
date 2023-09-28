@@ -416,6 +416,92 @@ OLJiePangtong:addRelateSkill('LuaKanpo')
 table.insert(hiddenSkills, LuaOLLianhuanTargetMod)
 table.insert(hiddenSkills, LuaFengchuMute)
 
+-- 界典韦
+OLJieDianwei = sgs.General(extension, 'OLJieDianwei', 'wei', '4', true, true)
+
+LuaOLQiangxiCard = sgs.CreateSkillCard {
+    name = 'LuaOLQiangxi',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and to_select:getMark('LuaOLQiangxi_biu') == 0
+    end,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local target = effect.to
+        local room = source:getRoom()
+        room:notifySkillInvoked(source, self:objectName())
+        if self:subcardsLength() == 0 then
+            rinsan.doDamage(nil, source, 1)
+        end
+        rinsan.doDamage(source, target, 1)
+        room:addPlayerMark(target, 'LuaOLQiangxi_biu')
+    end,
+}
+
+LuaOLQiangxi = sgs.CreateViewAsSkill {
+    name = 'LuaOLQiangxi',
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        return to_select:isKindOf('Weapon')
+    end,
+    view_as = function(self, cards)
+        local vs_card = LuaOLQiangxiCard:clone()
+        if #cards == 1 then
+            vs_card:addSubcard(cards[1])
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return player:usedTimes('#LuaOLQiangxi') < 2
+    end,
+}
+
+local function doNinge(jiedianwei)
+    local room = jiedianwei:getRoom()
+    room:sendCompulsoryTriggerLog(jiedianwei, 'LuaOLNinge')
+    room:broadcastSkillInvoke('LuaOLNinge')
+    jiedianwei:drawCards(1, 'LuaOLNinge')
+    local targets = sgs.SPlayerList()
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        if rinsan.canDiscard(jiedianwei, p, 'hej') then
+            targets:append(p)
+        end
+    end
+    if targets:isEmpty() then
+        return
+    end
+    local target = room:askForPlayerChosen(jiedianwei, targets, 'LuaOLNinge', '@LuaOLNinge-choose', false)
+    if target and rinsan.canDiscard(jiedianwei, target, 'hej') then
+        room:doAnimate(rinsan.ANIMATE_INDICATE, jiedianwei:objectName(), target:objectName())
+        local card_id = room:askForCardChosen(jiedianwei, target, 'hej', 'LuaOLNinge', false, sgs.Card_MethodDiscard)
+        room:throwCard(card_id, target, jiedianwei)
+    end
+end
+
+LuaOLNinge = sgs.CreateTriggerSkill {
+    name = 'LuaOLNinge',
+    events = {sgs.Damaged},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        room:addPlayerMark(player, self:objectName() .. '-Clear')
+        if player:getMark(self:objectName() .. '-Clear') ~= 2 then
+            return false
+        end
+        if rinsan.RIGHT(self, damage.from) then
+            doNinge(damage.from)
+        end
+        if rinsan.RIGHT(self, damage.to) then
+            doNinge(damage.to)
+        end
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+OLJieDianwei:addSkill(LuaOLQiangxi)
+OLJieDianwei:addSkill(LuaOLNinge)
+
 -- 界荀彧
 OLJieXunyu = sgs.General(extension, 'OLJieXunyu', 'wei', '3', true, true)
 
