@@ -430,6 +430,7 @@ LuaOLQiangxiCard = sgs.CreateSkillCard {
         local source = effect.from
         local target = effect.to
         local room = source:getRoom()
+        room:notifySkillInvoked(source, self:objectName())
         if self:subcardsLength() == 0 then
             rinsan.doDamage(nil, source, 1)
         end
@@ -459,6 +460,7 @@ LuaOLQiangxi = sgs.CreateViewAsSkill {
 local function doNinge(jiedianwei)
     local room = jiedianwei:getRoom()
     room:sendCompulsoryTriggerLog(jiedianwei, 'LuaOLNinge')
+    room:broadcastSkillInvoke('LuaOLNinge')
     jiedianwei:drawCards(1, 'LuaOLNinge')
     local targets = sgs.SPlayerList()
     for _, p in sgs.qlist(room:getAlivePlayers()) do
