@@ -333,4 +333,13 @@ return {
     ['$LuaGaoyuan1-ExSufei_1'] = '望君可以美言几句',
     ['$LuaGaoyuan2-ExSufei_1'] = '吾之性命，尽在兴霸定夺之间',
     ['~ExSufei-ExSufei_1'] = '未能和兴霸兄同佐明主，实在是……',
+    -- 界李儒
+    -- 烈火焚城
+    ['$LuaJuece1-JieLiru_1'] = '我，最喜欢落井下石~',
+    ['$LuaJuece2-JieLiru_1'] = '一无所有？那就拿命来填！',
+    ['$LuaMieji1-JieLiru_1'] = '我要的是斩草除根~',
+    ['$LuaMieji2-JieLiru_1'] = '叫天天不应，叫地地不灵~',
+    ['$LuaFencheng1-JieLiru_1'] = '我要这满城的人都来给你陪葬~',
+    ['$LuaFencheng2-JieLiru_1'] = '一把火烧他个精光吧！诶啊哈哈哈哈哈~',
+    ['~JieLiru-JieLiru_1'] = '乱世的好戏才刚刚开始……',
 }
