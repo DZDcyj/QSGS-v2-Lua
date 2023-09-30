@@ -86,6 +86,7 @@ lang/zh_CN/Package/*.lua
 !jingang_renwang*
 !LandlordsPackage.lua
 !LayingPlans*.lua
+!Mobile*.lua
 !poison_knife*
 !PuyuanEquipCardPackage.lua
 !quench_blade*
