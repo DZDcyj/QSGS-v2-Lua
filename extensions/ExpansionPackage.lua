@@ -7418,4 +7418,198 @@ table.insert(hiddenSkills, LuaPoxiangMaxCards)
 table.insert(hiddenSkills, LuaJueyongUse)
 table.insert(hiddenSkills, LuaJueyongSpecialHandler)
 
+-- 杨仪
+ExYangyi = sgs.General(extension, 'ExYangyi', 'shu', '3', true, true)
+
+LuaDuoduan = sgs.CreateTriggerSkill {
+    name = 'LuaDuoduan',
+    events = {sgs.TargetConfirmed},
+    on_trigger = function(self, event, player, data, room)
+        if (not rinsan.RIGHT(self, player)) or player:getMark(self:objectName() .. '-Clear') > 0 then
+            return false
+        end
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') and use.to:contains(player) then
+            if use.from and use.from:isAlive() then
+                local card = room:askForCard(player, '.|.|.|.|.', 'LuaDuoduan-Invoke:' .. use.from:objectName(), data,
+                    sgs.Card_MethodRecast)
+                if card then
+                    room:addPlayerMark(player, self:objectName() .. '-Clear')
+                    room:moveCardTo(card, player, nil, sgs.Player_DiscardPile, sgs.CardMoveReason(
+                        sgs.CardMoveReason_S_REASON_RECAST, player:objectName(), card:objectName(), ''))
+                    rinsan.sendLogMessage(room, '#UseCard_Recase', {
+                        ['from'] = player,
+                        ['card_str'] = card:getEffectiveId(),
+                    })
+                    room:broadcastSkillInvoke('@recast')
+                    player:drawCards(1, 'recast')
+                    room:notifySkillInvoked(player, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    local choice = room:askForChoice(player, self:objectName(), 'LuaDuoduanChoice1+LuaDuoduanChoice2')
+                    if choice == 'LuaDuoduanChoice1' then
+                        -- 摸两张牌，然后此【杀】对你无效
+                        use.from:drawCards(2, self:objectName())
+                        local nullified_list = use.nullified_list
+                        table.insert(nullified_list, player:objectName())
+                        use.nullified_list = nullified_list
+                        data:setValue(use)
+                    elseif choice == 'LuaDuoduanChoice2' then
+                        room:askForDiscard(use.from, self:objectName(), 1, 1, false, true)
+                        local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
+                        for index, target in sgs.qlist(use.to) do
+                            if target:objectName() == player:objectName() then
+                                jink_table[index + 1] = 0
+                                break
+                            end
+                        end
+                        rinsan.sendLogMessage(room, '#NoJink', {
+                            ['from'] = player,
+                        })
+                        local jink_data = sgs.QVariant()
+                        jink_data:setValue(Table2IntList(jink_table))
+                        use.from:setTag('Jink_' .. use.card:toString(), jink_data)
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+local function needToRecord(card)
+    if card:isKindOf('NatureSlash') then
+        return false
+    end
+    return card:isKindOf('BasicCard') or card:isNDTrick()
+end
+
+local function getAllCardName()
+    local all_card = {}
+    for i = 0, 10000 do
+        local card = sgs.Sanguosha:getEngineCard(i)
+        if card == nil then
+            break
+        end
+        if not (Set(sgs.Sanguosha:getBanPackages()))[card:getPackage()] and needToRecord(card) and
+            not table.contains(all_card, card:objectName()) then
+            table.insert(all_card, card:objectName())
+        end
+    end
+    return all_card
+end
+
+LuaGongsunCard = sgs.CreateSkillCard {
+    name = 'LuaGongsun',
+    will_throw = true,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return rinsan.checkFilter(targets, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local target = targets[1]
+        local name = room:askForChoice(source, self:objectName(), table.concat(getAllCardName(), '+'))
+        local type = rinsan.firstToUpper(rinsan.replaceUnderline(name))
+        -- 标记：LuaGongsun-目标-卡牌名
+        local mark = string.format('%s-%s-%s', self:objectName(), target:objectName(), type)
+        -- 因为解除封锁时机只用考虑杨仪，单独加一个就行
+        room:addPlayerMark(source, mark)
+        room:setPlayerCardLimitation(source, 'use,response,discard', type .. '|.|.|hand', false)
+        room:setPlayerCardLimitation(target, 'use,response,discard', type .. '|.|.|hand', false)
+        local tos = sgs.SPlayerList()
+        tos:append(source)
+        tos:append(target)
+        rinsan.sendLogMessage(room, '#LuaGongsun', {
+            ['from'] = source,
+            ['tos'] = tos,
+            ['arg'] = name,
+            ['arg2'] = self:objectName(),
+        })
+    end,
+}
+
+LuaGongsunVS = sgs.CreateViewAsSkill {
+    name = 'LuaGongsun',
+    n = 2,
+    view_filter = function(self, selected, to_select)
+        return true
+    end,
+    view_as = function(self, cards)
+        if #cards < 2 then
+            return nil
+        end
+        local vs_card = LuaGongsunCard:clone()
+        for _, cd in ipairs(cards) do
+            vs_card:addSubcard(cd)
+        end
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaGongsun'
+    end,
+}
+
+LuaGongsun = sgs.CreateTriggerSkill {
+    name = 'LuaGongsun',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaGongsunVS,
+    on_trigger = function(self, event, player, data, room)
+        room:askForUseCard(player, '@@LuaGongsun', '@LuaGongsun', -1, sgs.Card_MethodNone)
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+local function handleGongsunMark(player, mark)
+    local items = mark:split('-')
+    local targetName = items[2]
+    local cardName = items[3]
+    local room = player:getRoom()
+    local target = rinsan.findPlayerByName(room, targetName)
+    room:removePlayerCardLimitation(player, 'use,response,discard', cardName .. '|.|.|hand$0')
+    if target and target:isAlive() then
+        room:removePlayerCardLimitation(target, 'use,response,discard', cardName .. '|.|.|hand$0')
+    end
+end
+
+LuaGongsunClear = sgs.CreateTriggerSkill {
+    name = 'LuaGongsunClear',
+    events = {sgs.EventPhaseStart, sgs.Death},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if not player:hasSkill('LuaGongsun') then
+            return false
+        end
+        if event == sgs.EventPhaseStart then
+            if player:getPhase() ~= sgs.Player_RoundStart then
+                return false
+            end
+        end
+        if event == sgs.Death then
+            local death = data:toDeath()
+            local splayer = death.who
+            if splayer:objectName() ~= player:objectName() then
+                return false
+            end
+        end
+        for _, mark in sgs.list(player:getMarkNames()) do
+            if string.find(mark, 'LuaGongsun-', 1, true) and player:getMark(mark) > 0 then
+                handleGongsunMark(player, mark)
+            end
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+LuaGongsun:setGuhuoDialog('lrd')
+
+ExYangyi:addSkill(LuaDuoduan)
+ExYangyi:addSkill(LuaGongsun)
+table.insert(hiddenSkills, LuaGongsunClear)
+
 rinsan.addHiddenSkills(hiddenSkills)
