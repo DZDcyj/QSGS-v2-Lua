@@ -194,9 +194,21 @@ LuaDizhu = sgs.CreateTriggerSkill {
 
         -- 避免“请功”触发
         room:setTag('FirstRound', sgs.QVariant(true))
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            -- 在手气卡使用前先令所有技能失效，避免不必要的其他结算
+            for _, skill in sgs.qlist(p:getVisibleSkillList()) do
+                room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
+            end
+        end
         -- 为自己增加一点体力上限
         rinsan.addPlayerMaxHp(player, 1)
         rinsan.recover(player, 1, player)
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            -- 恢复所有技能
+            for _, skill in sgs.qlist(p:getVisibleSkillList()) do
+                room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
+            end
+        end
         room:setTag('FirstRound', sgs.QVariant(false))
 
         -- 初始技能触发
