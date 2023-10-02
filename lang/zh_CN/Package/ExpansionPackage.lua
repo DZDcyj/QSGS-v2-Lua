@@ -618,5 +618,5 @@ return {
     ['luagongsun'] = '共损',
     ['@LuaGongsun'] = '你可以发动“共损”',
     ['~LuaGongsun'] = '选择两张牌→选择一名其他角色→点击“确定”',
-    ['#LuaGongsun'] = '%from 发动了“%arg2”，直到 %from 死亡的或其的下回合开始，%to 都不能使用、打出或弃置手牌中的【%arg】',
+    ['#LuaGongsun'] = '%from 发动了“%arg2”，直到 %from 死亡或其的下回合开始，%to 都不能使用、打出或弃置手牌中的【%arg】',
 }

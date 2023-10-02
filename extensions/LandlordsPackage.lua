@@ -159,6 +159,18 @@ local function adjustPlayer(landlord)
     until curr:objectName() == landlord:objectName()
 end
 
+-- 设置斗地主模式当前状态
+-- initState，是否为初始化状态，即是否无效化技能等
+local function setInitState(room, initState)
+    if initState then
+        room:setTag('FirstRound', sgs.QVariant(true))
+        rinsan.invalidateAllPlayersVisibleSkills(room)
+    else
+        rinsan.validateAllPlayersVisibleSkills(room)
+        room:setTag('FirstRound', sgs.QVariant(false))
+    end
+end
+
 LuaDizhu = sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
     events = {sgs.TurnStart},
@@ -186,18 +198,21 @@ LuaDizhu = sgs.CreateTriggerSkill {
         room:acquireSkill(player, 'LuaBahu')
         room:acquireSkill(player, 'LuaFeiyang')
 
+        -- 屏蔽技能影响
+        setInitState(room, true)
+
         -- 设置初始血量，主要针对不满血的武将
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             local start_hp = rinsan.getStartHp(p)
             room:setPlayerProperty(p, 'hp', sgs.QVariant(start_hp))
         end
 
-        -- 避免“请功”触发
-        room:setTag('FirstRound', sgs.QVariant(true))
         -- 为自己增加一点体力上限
         rinsan.addPlayerMaxHp(player, 1)
         rinsan.recover(player, 1, player)
-        room:setTag('FirstRound', sgs.QVariant(false))
+
+        -- 解除技能屏蔽
+        setInitState(room, false)
 
         -- 初始技能触发
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -219,22 +234,14 @@ LuaDizhu = sgs.CreateTriggerSkill {
         end
 
         -- 手气卡
-        -- 避免“自书”触发
-        room:setTag('FirstRound', sgs.QVariant(true))
-        for _, p in sgs.qlist(room:getAlivePlayers()) do
-            -- 在手气卡使用前先令所有技能失效，避免不必要的其他结算
-            for _, skill in sgs.qlist(p:getVisibleSkillList()) do
-                room:addPlayerMark(p, 'Qingcheng' .. skill:objectName())
-            end
-        end
+        -- 屏蔽技能影响
+        setInitState(room, true)
+
+        -- 手气卡
         rinsan.askForLuckCard(room)
-        for _, p in sgs.qlist(room:getAlivePlayers()) do
-            -- 恢复所有技能
-            for _, skill in sgs.qlist(p:getVisibleSkillList()) do
-                room:removePlayerMark(p, 'Qingcheng' .. skill:objectName())
-            end
-        end
-        room:setTag('FirstRound', sgs.QVariant(false))
+        
+        -- 解除技能屏蔽
+        setInitState(room, false)
 
         -- 初始技能触发
         for _, p in sgs.qlist(room:getAlivePlayers()) do

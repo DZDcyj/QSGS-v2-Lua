@@ -1836,6 +1836,46 @@ function executeExtraPhase(player, phase)
     thread:trigger(sgs.EventPhaseEnd, room, player)
 end
 
+-- 使角色技能失效
+function invalidatePlayerSkill(player, skill)
+    local room = player:getRoom()
+    room:addPlayerMark(player, 'Qingcheng' .. skill:objectName())
+end
+
+-- 使角色所有可见技能失效
+function invalidatePlayerAllVisibleSkills(player)
+    for _, skill in sgs.qlist(player:getVisibleSkillList()) do
+        invalidatePlayerSkill(player, skill)
+    end
+end
+
+-- 使所有角色所有可见技能失效
+function invalidateAllPlayersVisibleSkills(room)
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        invalidatePlayerAllVisibleSkills(p)
+    end
+end
+
+-- 恢复角色技能
+function validatePlayerSkill(player, skill)
+    local room = player:getRoom()
+    room:removePlayerMark(player, 'Qingcheng' .. skill:objectName())
+end
+
+-- 恢复角色所有可见技能
+function validatePlayerAllVisibleSkills(player)
+    for _, skill in sgs.qlist(player:getVisibleSkillList()) do
+        validatePlayerSkill(player, skill)
+    end
+end
+
+-- 恢复所有角色所有可见技能
+function validateAllPlayersVisibleSkills(room)
+    for _, p in sgs.qlist(room:getAlivePlayers()) do
+        validatePlayerAllVisibleSkills(p)
+    end
+end
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_CHANGE_HP'] = 32,
