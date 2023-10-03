@@ -7694,27 +7694,30 @@ LuaWangjing = sgs.CreateTriggerSkill {
     events = {sgs.CardResponded, sgs.TargetSpecified},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
+        local card
+        local targets = sgs.SPlayerList()
         if event == sgs.CardResponded then
             local resp = data:toCardResponse()
-            local card = resp.m_card
-            if card:getSkillName() == 'LuaJibing' and resp.m_who and hasMaxHp(resp.m_who) then
+            card = resp.m_card
+            if resp.m_who then
+                targets:append(resp.m_who)
+            end
+        else
+            local use = data:toCardUse()
+            card = use.card
+            targets = use.to
+        end
+        if card:getSkillName() ~= 'LuaJibing' then
+            return false
+        end
+        for _, p in sgs.qlist(targets) do
+            if hasMaxHp(p) then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
                 room:broadcastSkillInvoke(self:objectName())
                 player:drawCards(1, self:objectName())
             end
-        else
-            local use = data:toCardUse()
-            local card = use.card
-            if card:getSkillName() == 'LuaJibing' then
-                for _, p in sgs.qlist(use.to) do
-                    if hasMaxHp(p) then
-                        room:sendCompulsoryTriggerLog(player, self:objectName())
-                        room:broadcastSkillInvoke(self:objectName())
-                        player:drawCards(1, self:objectName())
-                    end
-                end
-            end
         end
+        return false
     end,
 }
 
