@@ -7612,4 +7612,203 @@ ExYangyi:addSkill(LuaDuoduan)
 ExYangyi:addSkill(LuaGongsun)
 table.insert(hiddenSkills, LuaGongsunClear)
 
+-- 马元义
+ExMayuanyi = sgs.General(extension, 'ExMayuanyi', 'qun', '4', true, true)
+
+LuaJibingVS = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaJibing',
+    filter_pattern = '.|.|.|LuaBing',
+    expand_pile = 'LuaBing',
+    view_as = function(self, card)
+        local useReason = sgs.Sanguosha:getCurrentCardUseReason()
+        local cardName
+        if useReason == sgs.CardUseStruct_CARD_USE_REASON_PLAY then
+            -- 主动使用
+            cardName = 'slash'
+        else
+            cardName = sgs.Sanguosha:getCurrentCardUsePattern()
+        end
+        local vs_card = sgs.Sanguosha:cloneCard(cardName, sgs.Card_NoSuit, 0)
+        vs_card:addSubcard(card)
+        vs_card:setSkillName(self:objectName())
+        return vs_card
+    end,
+    enabled_at_play = function(self, player)
+        if player:getPile('LuaBing'):isEmpty() then
+            return false
+        end
+        for _, id in sgs.qlist(player:getPile('LuaBing')) do
+            local cd = sgs.Sanguosha:getCard(id)
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:addSubcard(cd)
+            slash:setSkillName(self:objectName())
+            if slash:isAvailable(player) then
+                return true
+            end
+        end
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        if player:getPile('LuaBing'):isEmpty() then
+            return false
+        end
+        return pattern == 'slash' or pattern == 'jink'
+    end,
+}
+
+LuaJibing = sgs.CreateTriggerSkill {
+    name = 'LuaJibing',
+    events = {sgs.EventPhaseStart},
+    view_as_skill = LuaJibingVS,
+    on_trigger = function(self, event, player, data, room)
+        local len = player:getPile('LuaBing'):length()
+        if len >= rinsan.getKingdomCount(room) then
+            return false
+        end
+        if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            local ids = room:getNCards(2)
+            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            dummy:addSubcards(ids)
+            player:addToPile('LuaBing', dummy)
+            return true
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Draw)
+    end,
+}
+
+local function hasMaxHp(player)
+    for _, p in sgs.qlist(player:getRoom():getOtherPlayers(player)) do
+        if p:getHp() > player:getHp() then
+            return false
+        end
+    end
+    return true
+end
+
+LuaWangjing = sgs.CreateTriggerSkill {
+    name = 'LuaWangjing',
+    events = {sgs.CardResponded, sgs.TargetSpecified},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        local targets = sgs.SPlayerList()
+        if event == sgs.CardResponded then
+            local resp = data:toCardResponse()
+            card = resp.m_card
+            if resp.m_who then
+                targets:append(resp.m_who)
+            end
+        else
+            local use = data:toCardUse()
+            card = use.card
+            targets = use.to
+        end
+        if card:getSkillName() ~= 'LuaJibing' then
+            return false
+        end
+        for _, p in sgs.qlist(targets) do
+            if hasMaxHp(p) then
+                room:sendCompulsoryTriggerLog(player, self:objectName())
+                room:broadcastSkillInvoke(self:objectName())
+                player:drawCards(1, self:objectName())
+            end
+        end
+        return false
+    end,
+}
+
+LuaMoucuan = sgs.CreateTriggerSkill {
+    name = 'LuaMoucuan',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Wake,
+    on_trigger = function(self, event, player, data, room)
+        rinsan.sendLogMessage(room, '#LuaMoucuan', {
+            ['from'] = player,
+            ['arg'] = player:getPile('LuaBing'):length(),
+            ['arg2'] = self:objectName(),
+        })
+        room:notifySkillInvoked(player, self:objectName())
+        if room:changeMaxHpForAwakenSkill(player) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:addPlayerMark(player, self:objectName())
+            room:acquireSkill(player, 'LuaBinghuo')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        if rinsan.RIGHT(self, target) and rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start) then
+            local kingdoms = {}
+            table.insert(kingdoms, target:getKingdom())
+            for _, sib in sgs.qlist(target:getAliveSiblings()) do
+                if not table.contains(kingdoms, sib:getKingdom()) then
+                    table.insert(kingdoms, sib:getKingdom())
+                end
+            end
+            return target:getPile('LuaBing'):length() >= #kingdoms
+        end
+        return false
+    end,
+}
+
+LuaBinghuo = sgs.CreateTriggerSkill {
+    name = 'LuaBinghuo',
+    events = {sgs.EventPhaseStart},
+    on_trigger = function(self, event, player, data, room)
+        if player:getPhase() ~= sgs.Player_Finish then
+            return false
+        end
+        for _, mayuanyi in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if mayuanyi:getMark('LuaBinghuo-Clear') > 0 then
+                local target = room:askForPlayerChosen(mayuanyi, room:getAlivePlayers(), self:objectName(), 'LuaBinghuo-choose', true, true)
+                if target then
+                    room:broadcastSkillInvoke(self:objectName())
+                    local judge = rinsan.createJudgeStruct({
+                        ['play_animation'] = true,
+                        ['pattern'] = '.|black',
+                        ['who'] = target,
+                        ['reason'] = self:objectName(),
+                    })
+                    room:judge(judge)
+                    if judge:isGood() then
+                        rinsan.doDamage(mayuanyi, target, 1, sgs.DamageStruct_Thunder)
+                    end
+                end
+            end
+        end
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+LuaBinghuoRecord = sgs.CreateTriggerSkill {
+    name = 'LuaBinghuoRecord',
+    events = {sgs.CardResponded, sgs.CardUsed},
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        if event == sgs.CardResponded then
+            local resp = data:toCardResponse()
+            card = resp.m_card
+        else
+            local use = data:toCardUse()
+            card = use.card
+        end
+        if card:getSkillName() == 'LuaJibing' then
+            room:addPlayerMark(player, 'LuaBinghuo-Clear')
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+ExMayuanyi:addSkill(LuaJibing)
+ExMayuanyi:addSkill(LuaWangjing)
+ExMayuanyi:addSkill(LuaMoucuan)
+ExMayuanyi:addRelateSkill('LuaBinghuo')
+table.insert(hiddenSkills, LuaBinghuo)
+table.insert(hiddenSkills, LuaBinghuoRecord)
+
 rinsan.addHiddenSkills(hiddenSkills)
