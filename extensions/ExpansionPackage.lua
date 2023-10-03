@@ -7666,6 +7666,7 @@ LuaJibing = sgs.CreateTriggerSkill {
             return false
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
             local ids = room:getNCards(2)
             local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
             dummy:addSubcards(ids)
@@ -7760,6 +7761,7 @@ LuaBinghuo = sgs.CreateTriggerSkill {
             if mayuanyi:getMark('LuaBinghuo-Clear') > 0 then
                 local target = room:askForPlayerChosen(mayuanyi, room:getAlivePlayers(), self:objectName(), 'LuaBinghuo-choose', true, true)
                 if target then
+                    room:broadcastSkillInvoke(self:objectName())
                     local judge = rinsan.createJudgeStruct({
                         ['play_animation'] = true,
                         ['pattern'] = '.|black',
