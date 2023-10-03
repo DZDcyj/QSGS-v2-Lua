@@ -7728,6 +7728,7 @@ LuaMoucuan = sgs.CreateTriggerSkill {
             ['arg'] = player:getPile('LuaBing'):length(),
             ['arg2'] = self:objectName(),
         })
+        room:notifySkillInvoked(player, self:objectName())
         if room:changeMaxHpForAwakenSkill(player) then
             room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(player, self:objectName())
