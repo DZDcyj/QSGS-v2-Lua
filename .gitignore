@@ -69,6 +69,7 @@ imageformats/
 lang/zh_CN/*.lua
 lang/zh_CN/Audio/*.lua
 lang/zh_CN/Package/*.lua
+!CountryAsBefore*
 !DevineForcePackage*.lua
 !ExpansionConfig.lua
 !ExpansionPackageLines.lua
