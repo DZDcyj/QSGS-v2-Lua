@@ -1821,17 +1821,6 @@ LuaZhiyuanCard = sgs.CreateSkillCard {
             end
             return false
         end
-        -- 没选的时候至少要受伤或者牌数不大于体力值
-        -- 每回合每选项限一次
-        if sgs.Self:hasFlag('LuaZhiyuanDraw') then
-            -- 摸过牌了只能选回血的
-            return to_select:isWounded() and to_select:getHandcardNum() > to_select:getHp()
-        end
-        if sgs.Self:hasFlag('LuaZhiyuanRecover') then
-            -- 只能摸牌
-            return to_select:getHandcardNum() <= to_select:getHp()
-        end
-        -- 要么能摸牌，要么能回血
         return to_select:getHandcardNum() <= to_select:getHp() or to_select:isWounded()
     end,
     on_use = function(self, room, source, targets)
@@ -1839,10 +1828,8 @@ LuaZhiyuanCard = sgs.CreateSkillCard {
         for _, target in ipairs(targets) do
             if target:getHandcardNum() <= target:getHp() then
                 target:drawCards(1, self:objectName())
-                room:setPlayerFlag(source, 'LuaZhiyuanDraw')
             else
                 rinsan.recover(target, 1, source)
-                room:setPlayerFlag(source, 'LuaZhiyuanRecover')
             end
         end
     end,
@@ -1870,10 +1857,7 @@ LuaZhiyuan = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        if rinsan.RIGHT(self, target) then
-            return target:getPhase() == sgs.Player_Start or target:getPhase() == sgs.Player_Finish
-        end
-        return false
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start)
     end,
 }
 
