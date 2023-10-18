@@ -263,7 +263,10 @@ LuaDizhu = sgs.CreateTriggerSkill {
 
         -- 触发当前回合角色的技能
         for _, skill in sgs.qlist(player:getVisibleSkillList()) do
-            skill:trigger(sgs.TurnStart, room, player, sgs.QVariant())
+            local triggerSkill = sgs.Sanguosha:getTriggerSkill(skill:objectName())
+            if triggerSkill then
+                triggerSkill:trigger(sgs.TurnStart, room, player, data)
+            end
         end
     end,
     can_trigger = function(self, target)
