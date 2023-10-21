@@ -171,6 +171,16 @@ local function setInitState(room, initState)
     end
 end
 
+-- 判断是否需要触发技能，暂时先写死
+local function needTrigger(skill)
+    -- 当前涉及技能
+    -- 卑弥呼：纵傀
+    -- 神甘宁：劫营
+    -- 邓士载：争功
+    local turnStartTriggerSkills = {'zongkui', 'jieyingy', 'zhenggong'}
+    return table.contains(turnStartTriggerSkills, skill)
+end
+
 LuaDizhu = sgs.CreateTriggerSkill {
     name = 'LuaDizhu',
     events = {sgs.TurnStart},
@@ -239,7 +249,7 @@ LuaDizhu = sgs.CreateTriggerSkill {
 
         -- 手气卡
         rinsan.askForLuckCard(room)
-        
+
         -- 解除技能屏蔽
         setInitState(room, false)
 
@@ -259,6 +269,14 @@ LuaDizhu = sgs.CreateTriggerSkill {
         -- 处理锁定视为技
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             room:filterCards(p, p:getCards('he'), true)
+        end
+
+        -- 触发当前回合角色的技能
+        for _, skill in sgs.qlist(player:getVisibleSkillList()) do
+            local triggerSkill = sgs.Sanguosha:getTriggerSkill(skill:objectName())
+            if triggerSkill and needTrigger(triggerSkill:objectName()) then
+                triggerSkill:trigger(event, room, player, data)
+            end
         end
     end,
     can_trigger = function(self, target)
