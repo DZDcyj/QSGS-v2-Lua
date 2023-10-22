@@ -7575,9 +7575,12 @@ LuaBinghuo = sgs.CreateTriggerSkill {
                         ['pattern'] = '.|black',
                         ['who'] = target,
                         ['reason'] = self:objectName(),
+                        ['good'] = false,
+                        ['negative'] = true,
                     })
                     room:judge(judge)
-                    if judge:isGood() then
+                    -- 使用 negative 参数后判断反转，所以用 isBad 而非 isGood
+                    if judge:isBad() then
                         rinsan.doDamage(mayuanyi, target, 1, sgs.DamageStruct_Thunder)
                     end
                 end
