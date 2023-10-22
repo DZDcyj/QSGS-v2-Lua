@@ -76,9 +76,12 @@ thunder_blade_skill = sgs.CreateTriggerSkill {
                         ['reason'] = self:objectName(),
                         ['who'] = t,
                         ['play_animation'] = true,
+                        ['good'] = false,
+                        ['negative'] = true,
                     })
                     room:judge(judge)
-                    if judge:isGood() then
+                    -- 使用 negative 参数后判断反转，所以用 isBad 而非 isGood
+                    if judge:isBad() then
                         if judge.card:getSuit() == sgs.Card_Spade then
                             rinsan.doDamage(player, t, 3, sgs.DamageStruct_Thunder)
                             return

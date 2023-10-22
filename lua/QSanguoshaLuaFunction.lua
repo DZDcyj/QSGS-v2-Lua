@@ -598,10 +598,16 @@ function createJudgeStruct(params)
         judge.reason = ''
     end
 
-    if params['play_animation'] ~= nil then
+    if params['play_animation'] then
         judge.play_animation = params['play_animation']
     else
         judge.play_animation = false
+    end
+
+    if params['negative'] then
+        judge.negative = params['negative']
+    else
+        judge.negative = false
     end
 
     return judge
