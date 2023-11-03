@@ -37,6 +37,8 @@ LuaGuanjue = sgs.CreateTriggerSkill {
         if card and hasValidSuit(card) then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             local suit = card:getSuitString()
+            local selfMark = string.format('@LuaGuanjue-%s-Clear', suit)
+            room:setPlayerMark(player, selfMark, 1)
             local pattern = '.|' .. suit .. '|.|.|.'
             local checkMark = 'LuaGuanjue_ban_ur_' .. suit
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
