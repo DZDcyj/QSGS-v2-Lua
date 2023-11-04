@@ -243,7 +243,7 @@ quench_blade_skill_vs = sgs.CreateOneCardViewAsSkill {
     view_as = function(self, card)
         local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         dummy:addSubcard(card)
-        dummy:setSkillName(self:objectName());
+        dummy:setSkillName(self:objectName())
         return dummy
     end,
     enabled_at_play = function(self, player)
