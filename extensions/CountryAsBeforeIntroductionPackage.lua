@@ -252,9 +252,9 @@ LuaJuelie = sgs.CreateTriggerSkill {
                     end
                     room:setPlayerFlag(t, '-xuanhuo_InTempMoving')
                     room:setTag('LuaFakeMove', sgs.QVariant(false))
-                    local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-                    dummy:addSubcards(cards)
-                    room:throwCard(dummy, t, player)
+                    local to_discard = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                    to_discard:addSubcards(cards)
+                    room:throwCard(to_discard, t, player)
                 end
             end
         end
