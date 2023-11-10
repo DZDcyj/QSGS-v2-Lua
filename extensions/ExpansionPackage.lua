@@ -2593,6 +2593,7 @@ LuaRangjieCard = sgs.CreateSkillCard {
         thread:trigger(sgs.CardFinished, room, use.from, data)
     end,
     on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke('LuaRangjie')
         local from = targets[1]
         local to = targets[2]
         local disabled_ids = sgs.IntList()
@@ -2679,6 +2680,8 @@ LuaRangjie = sgs.CreateTriggerSkill {
                     room:setTag('LuaRangjieMoveFailed', sgs.QVariant(false))
                     return false
                 else
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:notifySkillInvoked(player, self:objectName())
                     params['type'] = string.gsub(choice, 'obtain', '') .. 'Card'
                     local card = rinsan.obtainTargetedTypeCard(room, params)
                     if card then
@@ -2689,7 +2692,6 @@ LuaRangjie = sgs.CreateTriggerSkill {
             room:setTag('LuaRangjieMoveFailed', sgs.QVariant(false))
             -- 只要发动了“让节”，就会摸牌，因为选择“取消”时已经跳出循环了，因此不需要冗余的判断
             player:drawCards(1, self:objectName())
-            room:broadcastSkillInvoke(self:objectName())
         end
         return false
     end,

@@ -1758,7 +1758,7 @@ LuaXiandeng = sgs.CreateTriggerSkill {
                 return false
             end
             room:sendCompulsoryTriggerLog(player, self:objectName())
-            room:addPlayerHistory(player, use.card:getClassName(), -1);
+            room:addPlayerHistory(player, use.card:getClassName(), -1)
             use.m_addHistory = false
             data:setValue(use)
             room:addPlayerMark(player, self:objectName() .. '_biu')
