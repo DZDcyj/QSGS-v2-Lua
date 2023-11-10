@@ -195,7 +195,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
             local damage = data:toDamage()
             if damage.card and damage.card:isKindOf('Slash') and damage.card:isBlack() and
                 (not damage.card:isVirtualCard()) then
-                room:setCardFlag(damage.card, 'LuaLiubingDamaged');
+                room:setCardFlag(damage.card, 'LuaLiubingDamaged')
             end
         end
     end,

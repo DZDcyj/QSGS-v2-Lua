@@ -122,4 +122,148 @@ ExQiLiubei:addSkill(LuaJishan)
 ExQiLiubei:addSkill(LuaZhenqiao)
 table.insert(hiddenSkills, LuaZhenqiaoAttackRange)
 
+-- 起·孙坚
+ExQiSunjian = sgs.General(extension, 'ExQiSunjian', 'qun', '4', true, true)
+
+LuaPingtaoCard = sgs.CreateSkillCard {
+    name = 'LuaPingtao',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        local target = targets[1]
+        local exchange = room:askForExchange(target, self:objectName(), 1, 1, true,
+            '@LuaPingtao:' .. source:objectName(), true)
+        if exchange then
+            source:obtainCard(exchange)
+            room:addPlayerMark(source, self:objectName() .. '-Clear')
+        else
+            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            slash:setSkillName(self:objectName())
+            room:useCard(sgs.CardUseStruct(slash, source, target))
+        end
+    end,
+}
+
+LuaPingtao = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaPingtao',
+    view_as = function(self, cards)
+        return LuaPingtaoCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaPingtao')
+    end,
+}
+
+LuaPingtaoTargetMod = sgs.CreateTargetModSkill {
+    name = '#LuaPingtaoTargetMod',
+    pattern = 'Slash',
+    residue_func = function(self, player)
+        return player:getMark('LuaPingtao-Clear')
+    end,
+}
+
+LuaJuelieVS = sgs.CreateViewAsSkill {
+    name = 'LuaJuelie',
+    target_fixed = true,
+    will_throw = true,
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return true
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        for _, card in ipairs(cards) do
+            dummy:addSubcard(card)
+        end
+        dummy:setSkillName(self:objectName())
+        return dummy
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaJuelie'
+    end,
+}
+
+LuaJuelie = sgs.CreateTriggerSkill {
+    name = 'LuaJuelie',
+    events = {sgs.TargetSpecified, sgs.DamageCaused},
+    view_as_skill = LuaJuelieVS,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            if damage.chain then
+                return false
+            end
+            if damage.card and damage.card:isKindOf('Slash') then
+                local minHp = true
+                local minHandcard = true
+                for _, p in sgs.qlist(room:getAlivePlayers()) do
+                    if p:getHp() < player:getHp() then
+                        minHp = false
+                    end
+                    if p:getHandcardNum() < player:getHandcardNum() then
+                        minHandcard = false
+                    end
+                end
+                if minHandcard or minHp then
+                    room:sendCompulsoryTriggerLog(player, self:objectName())
+                    damage.damage = damage.damage + 1
+                    data:setValue(damage)
+                end
+            end
+            return false
+        end
+        if not rinsan.canDiscard(player, player, 'he') then
+            return false
+        end
+        local use = data:toCardUse()
+        if use.card and use.card:isKindOf('Slash') then
+            for _, t in sgs.qlist(use.to) do
+                local dummy = room:askForCard(player, '@@LuaJuelie', '@LuaJuelie:' .. t:objectName(), data,
+                self:objectName())
+                local discard_n = dummy:subcardsLength()
+                if discard_n > 0 then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), t:objectName())
+                    local orig_places = {}
+                    local cards = sgs.IntList()
+                    room:setTag('LuaFakeMove', sgs.QVariant(true))
+                    room:setPlayerFlag(t, 'xuanhuo_InTempMoving')
+                    for i = 0, discard_n - 1, 1 do
+                        if not rinsan.canDiscard(player, t, 'he') then
+                            break
+                        end
+                        local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
+                            sgs.Card_MethodNone, cards)
+                        local place = room:getCardPlace(id)
+                        orig_places[i] = place
+                        cards:append(id)
+                        t:addToPile('#LuaJuelie', id, false)
+                    end
+                    for i = 0, cards:length() - 1, 1 do
+                        room:moveCardTo(sgs.Sanguosha:getCard(cards:at(i)), t, orig_places[i], false)
+                    end
+                    room:setPlayerFlag(t, '-xuanhuo_InTempMoving')
+                    room:setTag('LuaFakeMove', sgs.QVariant(false))
+                    local to_discard = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                    to_discard:addSubcards(cards)
+                    room:throwCard(to_discard, t, player)
+                end
+            end
+        end
+        return false
+    end,
+}
+
+ExQiSunjian:addSkill(LuaPingtao)
+ExQiSunjian:addSkill(LuaJuelie)
+table.insert(hiddenSkills, LuaPingtaoTargetMod)
+
 rinsan.addHiddenSkills(hiddenSkills)

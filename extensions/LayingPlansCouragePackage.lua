@@ -73,11 +73,11 @@ LuaZaoliUse = sgs.CreateTriggerSkill {
         if event == sgs.CardUsed then
             local use = data:toCardUse()
             card = use.card
-            isHandcard = use.m_isHandcard;
+            isHandcard = use.m_isHandcard
         else
             local resp = data:toCardResponse()
             card = resp.m_card
-            isHandcard = resp.m_isHandcard;
+            isHandcard = resp.m_isHandcard
         end
         if card and (not card:isKindOf('SkillCard')) and isHandcard and player:getMark('@LuaZaoli') < 4 then
             room:broadcastSkillInvoke('LuaZaoli')
