@@ -1780,7 +1780,7 @@ sgs.ai_skill_use_func['#LuaDingpinCard'] = function(_card, use, self)
     if #cardType > 1 or not self:toTurnOver(self.player) then
         self:sort(self.friends)
         for _, friend in ipairs(self.friends) do
-            if not friend:hasFlag('LuaDingpinSucceed') and friend:getHp() >= 2 then
+            if not friend:hasFlag('LuaDingpinSucceed') and friend:getHp() >= 2 and (not playerHasManjuanEffect(friend)) then
                 use.card = sgs.Card_Parse('#LuaDingpinCard:' .. cards[1]:getEffectiveId() .. ':')
                 if use.to then
                     use.to:append(friend)
