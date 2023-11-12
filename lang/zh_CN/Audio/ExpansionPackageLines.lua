@@ -308,4 +308,14 @@ return {
     ['$LuaBinghuo1'] = '黄巾既起，必灭不义之师！',
     ['$LuaBinghuo2'] = '诛官杀吏，尽除朝廷爪牙！',
     ['~ExMayuanyi'] = '唐周……无耻！',
+    -- 曹髦
+    ['$LuaQianlong1'] = '鸟栖于林，龙潜于渊',
+    ['$LuaQianlong2'] = '游鱼惊钓，潜龙飞天',
+    ['$LuaFensi1'] = '此贼之心，路人皆知！',
+    ['$LuaFensi2'] = '孤君烈忿，怒愈秋霜',
+    ['$LuaJuetao1'] = '登车拔剑起，奋跃搏乱臣',
+    ['$LuaJuetao2'] = '陵云决心意，登辇讨不臣',
+    ['$LuaZhushi1'] = '可有爱卿愿助朕讨贼？',
+    ['$LuaZhushi2'] = '泱泱大魏，忠臣俱亡乎？',
+    ['~ExTenYearCaomao'] = '宁作高贵乡公死，不作汉献帝生',
 }
