@@ -7656,7 +7656,9 @@ LuaQianlong = sgs.CreateTriggerSkill {
                 room:clearAG()
             end
             player:obtainCard(togain, false)
-            room:askForGuanxing(player, ids, sgs.Room_GuanxingDownOnly)
+            if not ids:isEmpty() then
+                room:askForGuanxing(player, ids, sgs.Room_GuanxingDownOnly)
+            end
         end
     end,
 }
