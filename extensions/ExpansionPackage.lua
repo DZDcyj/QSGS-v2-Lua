@@ -7627,4 +7627,212 @@ ExMayuanyi:addRelateSkill('LuaBinghuo')
 table.insert(hiddenSkills, LuaBinghuo)
 table.insert(hiddenSkills, LuaBinghuoRecord)
 
+ExTenYearCaomao = sgs.General(extension, 'ExTenYearCaomao$', 'wei', '4', true, true, false, 3)
+
+LuaQianlong = sgs.CreateTriggerSkill {
+    name = 'LuaQianlong',
+    events = {sgs.Damaged},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        if room:askForSkillInvoke(player, self:objectName(), data) then
+            local ids = room:getNCards(3)
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TURNOVER, player:objectName(),
+                self:objectName(), '')
+            room:fillAG(ids)
+            room:getThread():delay()
+            room:clearAG()
+            local togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            local x = player:getLostHp()
+            if x >= 3 then
+                togain:addSubcards(ids)
+                player:obtainCard(togain, false)
+                return false
+            end
+            for _ = 1, x, 1 do
+                room:fillAG(ids, player)
+                local id = room:askForAG(player, ids, false, self:objectName())
+                ids:removeOne(id)
+                togain:addSubcard(id)
+                room:clearAG()
+            end
+            player:obtainCard(togain, false)
+            room:askForGuanxing(player, ids, sgs.Room_GuanxingDownOnly)
+        end
+    end,
+}
+
+LuaFensi = sgs.CreateTriggerSkill {
+    name = 'LuaFensi',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        local targets = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:getHp() >= player:getHp() then
+                targets:append(p)
+            end
+        end
+        if targets:isEmpty() then
+            return false
+        end
+        local victim = room:askForPlayerChosen(player, targets, self:objectName(), 'LuaFensi-Choose', false, true)
+        if victim then
+            room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), victim:objectName())
+            rinsan.doDamage(player, victim, 1)
+            if victim:objectName() ~= player:objectName() then
+                local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                slash:setSkillName('_' .. self:objectName())
+                room:useCard(sgs.CardUseStruct(slash, victim, player))
+            end
+        end
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Start)
+    end,
+}
+
+LuaJuetaoPro = sgs.CreateProhibitSkill {
+    name = '#LuaJuetaoPro',
+    is_prohibited = function(self, from, to, card)
+        if card:hasFlag('LuaJuetao') then
+            return not to:hasFlag('LuaJuetaoTarget')
+        end
+        return false
+    end,
+}
+
+local function LuaJuetaoUseCard(source, target, to_use)
+    local room = source:getRoom()
+    room:setCardFlag(to_use, 'LuaJuetao')
+    if to_use:isKindOf('EquipCard') or to_use:isKindOf('Analeptic') or to_use:isKindOf('Peach') or
+        to_use:isKindOf('Lightning') or to_use:isKindOf('ExNihilo') then
+        -- 装备牌、桃酒、闪电、无中直接自行使用
+        room:useCard(sgs.CardUseStruct(to_use, source, source))
+    elseif to_use:isKindOf('GlobalEffect') or to_use:isKindOf('GodSalvation') or to_use:isKindOf('IronChain') then
+        -- 五谷桃园铁索就俩人
+        local targets = sgs.SPlayerList()
+        if source:isAlive() then
+            targets:append(source)
+        end
+        if target:isAlive() then
+            targets:append(target)
+        end
+        if targets:isEmpty() then
+            room:setCardFlag(to_use, '-LuaJuetao')
+            return true
+        end
+        room:sortByActionOrder(targets)
+        room:useCard(sgs.CardUseStruct(to_use, source, targets))
+    else
+        -- 剩下的应该就只有单体
+        if not target:isAlive() then
+            room:setCardFlag(to_use, '-LuaJuetao')
+            return true
+        end
+        room:useCard(sgs.CardUseStruct(to_use, source, target))
+    end
+    room:setCardFlag(to_use, '-LuaJuetao')
+    return false
+end
+
+LuaJuetaoCard = sgs.CreateSkillCard {
+    name = 'LuaJuetao',
+    will_throw = true,
+    target_fixed = false,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
+    end,
+    on_use = function(self, room, source, targets)
+        source:loseMark('@juetao')
+        local target = targets[1]
+        room:setPlayerFlag(source, 'LuaJuetaoTarget')
+        room:setPlayerFlag(target, 'LuaJuetaoTarget')
+        while true do
+            local id = room:getDrawPile():last()
+            local ids = sgs.IntList()
+            ids:append(id)
+            local to_use = sgs.Sanguosha:getCard(id)
+            room:fillAG(ids)
+            room:getThread():delay()
+            room:clearAG()
+            if not to_use:isAvailable(source) or (not source:isAlive()) then
+                break
+            end
+            if LuaJuetaoUseCard(source, target, to_use) then
+                break
+            end
+        end
+        room:setPlayerFlag(source, '-LuaJuetaoTarget')
+        room:setPlayerFlag(target, '-LuaJuetaoTarget')
+    end,
+}
+
+LuaJuetaoVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaJuetao',
+    view_as = function(self)
+        return LuaJuetaoCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return false
+    end,
+    enabled_at_response = function(self, player, pattern)
+        return pattern == '@@LuaJuetao'
+    end,
+}
+
+LuaJuetao = sgs.CreateTriggerSkill {
+    name = 'LuaJuetao',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@juetao',
+    view_as_skill = LuaJuetaoVS,
+    on_trigger = function(self, event, player, data, room)
+        room:askForUseCard(player, '@@LuaJuetao', '@LuaJuetao', -1, sgs.Card_MethodNone)
+    end,
+    can_trigger = function(self, target)
+        if rinsan.RIGHTATPHASE(self, target, sgs.Player_Play) then
+            return target:getMark('@juetao') > 0 and target:getHp() == 1
+        end
+    end,
+}
+
+LuaZhushi = sgs.CreateTriggerSkill {
+    name = 'LuaZhushi$',
+    events = {sgs.HpRecover},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if player:getKingdom() ~= 'wei' then
+            return false
+        end
+        local data2 = sgs.QVariant()
+        data2:setValue(player)
+        local caomaos = room:findPlayersBySkillName(self:objectName())
+        for _, caomao in sgs.qlist(caomaos) do
+            if caomao:objectName() == player:objectName() then
+                goto nextCaomao
+            end
+            local mark = string.format('%s-%s-%s-Clear', caomao:objectName(), player:objectName(), self:objectName())
+            if player:getMark(mark) == 0 and room:askForSkillInvoke(caomao, self:objectName(), data2) then
+                room:doAnimate(1, caomao:objectName(), player:objectName())
+                local data3 = sgs.QVariant()
+                data3:setValue(caomao)
+                if room:askForChoice(player, self:objectName(), 'LuaZhushiDraw+cancel', data3) ~= 'cancel' then
+                    room:doAnimate(1, player:objectName(), caomao:objectName())
+                    caomao:drawCards(1)
+                end
+                room:addPlayerMark(player, mark)
+            end
+            ::nextCaomao::
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+ExTenYearCaomao:addSkill(LuaQianlong)
+ExTenYearCaomao:addSkill(LuaFensi)
+ExTenYearCaomao:addSkill(LuaJuetao)
+ExTenYearCaomao:addSkill(LuaZhushi)
+
+table.insert(hiddenSkills, LuaJuetaoPro)
+
 rinsan.addHiddenSkills(hiddenSkills)
