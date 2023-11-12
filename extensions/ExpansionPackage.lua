@@ -7635,6 +7635,7 @@ LuaQianlong = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Frequent,
     on_trigger = function(self, event, player, data, room)
         if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
             local ids = room:getNCards(3)
             local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TURNOVER, player:objectName(),
                 self:objectName(), '')
@@ -7642,15 +7643,14 @@ LuaQianlong = sgs.CreateTriggerSkill {
             room:getThread():delay()
             room:clearAG()
             local togain = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-            local x = player:getLostHp()
-            if x >= 3 then
-                togain:addSubcards(ids)
-                player:obtainCard(togain, false)
-                return false
-            end
+            local x = math.min(3, player:getLostHp())
             for _ = 1, x, 1 do
                 room:fillAG(ids, player)
-                local id = room:askForAG(player, ids, false, self:objectName())
+                local id = room:askForAG(player, ids, true, self:objectName())
+                if id == -1 then
+                    room:clearAG()
+                    break
+                end
                 ids:removeOne(id)
                 togain:addSubcard(id)
                 room:clearAG()
@@ -7666,6 +7666,8 @@ LuaFensi = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
+        room:sendCompulsoryTriggerLog(player, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
         local targets = sgs.SPlayerList()
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             if p:getHp() >= player:getHp() then
@@ -7743,6 +7745,8 @@ LuaJuetaoCard = sgs.CreateSkillCard {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        room:broadcastSkillInvoke(self:objectName())
         source:loseMark('@juetao')
         local target = targets[1]
         room:setPlayerFlag(source, 'LuaJuetaoTarget')
@@ -7813,6 +7817,7 @@ LuaZhushi = sgs.CreateTriggerSkill {
             end
             local mark = string.format('%s-%s-%s-Clear', caomao:objectName(), player:objectName(), self:objectName())
             if player:getMark(mark) == 0 and room:askForSkillInvoke(caomao, self:objectName(), data2) then
+                room:broadcastSkillInvoke(self:objectName())
                 room:doAnimate(1, caomao:objectName(), player:objectName())
                 local data3 = sgs.QVariant()
                 data3:setValue(caomao)
