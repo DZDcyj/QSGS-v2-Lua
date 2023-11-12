@@ -7637,8 +7637,6 @@ LuaQianlong = sgs.CreateTriggerSkill {
         if room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
             local ids = room:getNCards(3)
-            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_TURNOVER, player:objectName(),
-                self:objectName(), '')
             room:fillAG(ids)
             room:getThread():delay()
             room:clearAG()
