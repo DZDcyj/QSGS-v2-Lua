@@ -294,7 +294,7 @@ LuaQuediCard = sgs.CreateSkillCard {
             local card_id = room:askForCardChosen(source, target, 'h', 'LuaQuedi', false, sgs.Card_MethodNone)
             local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
             room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
-            card = room:askForCard(source,'BasicCard|.|.|.','LuaQuediBeishui', sgs.QVariant())
+            card = room:askForCard(source, 'BasicCard|.|.|.', 'LuaQuediBeishui', sgs.QVariant())
         end
         if self:subcardsLength() > 0 then
             card = sgs.Sanguosha:getCard(self:getSubcards():first())
