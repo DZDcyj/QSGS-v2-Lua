@@ -7681,10 +7681,12 @@ LuaFensi = sgs.CreateTriggerSkill {
         if victim then
             room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), victim:objectName())
             rinsan.doDamage(player, victim, 1)
-            if victim:isAlive() and victim:objectName() ~= player:objectName() then
+            if victim:objectName() ~= player:objectName() then
                 local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                 slash:setSkillName('_' .. self:objectName())
-                room:useCard(sgs.CardUseStruct(slash, victim, player))
+                if victim:canSlash(player, slash, false) then
+                    room:useCard(sgs.CardUseStruct(slash, victim, player))
+                end
             end
         end
     end,
