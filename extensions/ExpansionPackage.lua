@@ -682,7 +682,7 @@ LuaZishu = sgs.CreateTriggerSkill {
     name = 'LuaZishu',
     frequency = sgs.Skill_Compulsory,
     global = true,
-    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseEnd},
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
@@ -700,7 +700,7 @@ LuaZishu = sgs.CreateTriggerSkill {
                     for _, id in sgs.qlist(move.card_ids) do
                         if room:getCardOwner(id):objectName() == player:objectName() and room:getCardPlace(id) ==
                             sgs.Player_PlaceHand then
-                            SendComLog(self, player, 1)
+                            SendComLog(self, player)
                             room:addPlayerMark(player, self:objectName() .. 'engine')
                             if player:getMark(self:objectName() .. 'engine') > 0 then
                                 player:drawCards(1, self:objectName())
@@ -711,7 +711,7 @@ LuaZishu = sgs.CreateTriggerSkill {
                     end
                 end
             end
-        elseif event == sgs.EventPhaseChanging and data:toPhaseChange().to == sgs.Player_NotActive then
+        elseif player:getPhase() == sgs.Player_Finish then
             for _, p in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
                 local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
                 for _, card in sgs.list(p:getHandcards()) do
@@ -720,26 +720,32 @@ LuaZishu = sgs.CreateTriggerSkill {
                     end
                 end
                 if dummy:subcardsLength() > 0 then
-                    SendComLog(self, p, 2)
+                    SendComLog(self, p)
                     room:addPlayerMark(p, self:objectName() .. 'engine')
                     if p:getMark(self:objectName() .. 'engine') > 0 then
                         room:throwCard(dummy, sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_NATURAL_ENTER,
                             p:objectName(), self:objectName(), nil), p)
                         room:removePlayerMark(p, self:objectName() .. 'engine')
                     end
-                    if player:getNextAlive():objectName() == p:objectName() then
-                        room:getThread():delay(2500)
-                    end
                 end
-            end
-            -- 自书弃牌完毕后移除所有玩家的自书弃牌标记
-            for _, p in sgs.qlist(room:getAlivePlayers()) do
-                rinsan.clearAllMarksContains(p, self:objectName())
             end
         end
         return false
     end,
     can_trigger = rinsan.targetTrigger,
+}
+
+LuaZishuClear = sgs.CreateTriggerSkill {
+    name = 'LuaZishuClear',
+    events = {sgs.TurnStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        -- 移除所有玩家的自书标记
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            rinsan.clearAllMarksContains(p, self:objectName())
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
 }
 
 LuaYingyuan = sgs.CreateTriggerSkill {
@@ -798,6 +804,7 @@ LuaYingyuanClear = sgs.CreateTriggerSkill {
 
 ExMaliang:addSkill(LuaZishu)
 ExMaliang:addSkill(LuaYingyuan)
+table.insert(hiddenSkills, LuaZishuClear)
 table.insert(hiddenSkills, LuaYingyuanClear)
 
 ExCaochun = sgs.General(extension, 'ExCaochun', 'wei', '4', true)
@@ -7569,7 +7576,8 @@ LuaBinghuo = sgs.CreateTriggerSkill {
         end
         for _, mayuanyi in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
             if mayuanyi:getMark('LuaBinghuo-Clear') > 0 then
-                local target = room:askForPlayerChosen(mayuanyi, room:getAlivePlayers(), self:objectName(), 'LuaBinghuo-choose', true, true)
+                local target = room:askForPlayerChosen(mayuanyi, room:getAlivePlayers(), self:objectName(),
+                    'LuaBinghuo-choose', true, true)
                 if target then
                     room:broadcastSkillInvoke(self:objectName())
                     local judge = rinsan.createJudgeStruct({
