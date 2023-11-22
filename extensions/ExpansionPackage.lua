@@ -742,7 +742,7 @@ LuaZishuClear = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         -- 移除所有玩家的自书标记
         for _, p in sgs.qlist(room:getAlivePlayers()) do
-            rinsan.clearAllMarksContains(p, self:objectName())
+            rinsan.clearAllMarksContains(p, 'LuaZishu')
         end
     end,
     can_trigger = rinsan.globalTrigger,
@@ -1037,9 +1037,12 @@ LuaPojun = sgs.CreateTriggerSkill {
 
 LuaPojunBack = sgs.CreateTriggerSkill {
     name = 'LuaPojunBack',
-    events = {sgs.EventPhaseStart},
+    events = {sgs.EventPhaseChanging},
     global = true,
     on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to ~= sgs.Player_NotActive then
+            return false
+        end
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             if p:getPile('LuaPojun'):length() > 0 then
                 local to_obtain = sgs.IntList()
@@ -1052,9 +1055,7 @@ LuaPojunBack = sgs.CreateTriggerSkill {
             end
         end
     end,
-    can_trigger = function(self, target)
-        return target and target:getPhase() == sgs.Player_Finish
-    end,
+    can_trigger = rinsan.targetTrigger,
 }
 
 LuaPojunDamage = sgs.CreateTriggerSkill {
