@@ -3500,7 +3500,7 @@ LuaZili = sgs.CreateTriggerSkill {
 LuaPaiyiCard = sgs.CreateSkillCard {
     name = 'LuaPaiyiCard',
     filter = function(self, selected, to_select)
-        return #selected == 0 and not to_select:hasFlag('LuaPaiyiUsedFlag')
+        return #selected == 0 and not to_select:getMark('LuaPaiyi_biu') == 0
     end,
     on_effect = function(self, effect)
         local source = effect.from
@@ -3508,7 +3508,7 @@ LuaPaiyiCard = sgs.CreateSkillCard {
         local room = source:getRoom()
         room:broadcastSkillInvoke('LuaPaiyi')
         room:drawCards(target, 2, 'LuaPaiyi')
-        room:setPlayerFlag(target, 'LuaPaiyiUsedFlag')
+        room:addPlayerMark(target, 'LuaPaiyi_biu')
         if target:getHandcardNum() > source:getHandcardNum() then
             rinsan.doDamage(source, target, 1)
         end
