@@ -1831,7 +1831,7 @@ function findPlayerByName(room, name)
 end
 
 -- 执行一个额外的阶段
-function executeExtraPhase(player, phase)
+function executeExtraPhase(player, phase, originPhase)
     player:setPhase(phase)
     local room = player:getRoom()
     room:broadcastProperty(player, 'phase')
@@ -1840,6 +1840,10 @@ function executeExtraPhase(player, phase)
         thread:trigger(sgs.EventPhaseProceeding, room, player)
     end
     thread:trigger(sgs.EventPhaseEnd, room, player)
+    if originPhase then
+        player:setPhase(originPhase)
+        room:broadcastProperty(player, 'phase')
+    end
 end
 
 -- 使角色技能失效
