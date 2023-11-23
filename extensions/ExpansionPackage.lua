@@ -3498,7 +3498,7 @@ LuaZili = sgs.CreateTriggerSkill {
 LuaPaiyiCard = sgs.CreateSkillCard {
     name = 'LuaPaiyiCard',
     filter = function(self, selected, to_select)
-        return #selected == 0 and not to_select:getMark('LuaPaiyi_biu') == 0
+        return #selected == 0 and to_select:getMark('LuaPaiyi_biu') == 0
     end,
     on_effect = function(self, effect)
         local source = effect.from
