@@ -976,7 +976,7 @@ LuaZuoxingCard = sgs.CreateSkillCard {
             if splayer then
                 room:loseMaxHp(splayer)
             end
-            room:setPlayerFlag(source, 'LuaZuoxing')
+            room:addPlayerMark(source, 'LuaZuoxing_biu')
         end
         return use_card
     end,
@@ -994,7 +994,7 @@ LuaZuoxingCard = sgs.CreateSkillCard {
             if splayer then
                 room:loseMaxHp(splayer)
             end
-            room:setPlayerFlag(source, 'LuaZuoxing')
+            room:addPlayerMark(source, 'LuaZuoxing_biu')
         end
         return use_card
     end,
@@ -1020,11 +1020,11 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
             return false
         end
         if rinsan.availableShenGuojiaExists(player) then
-            return not player:hasFlag('LuaZuoxing') and player:getPhase() == sgs.Player_Play
+            return player:getMark('LuaZuoxing_biu') == 0 and player:getPhase() == sgs.Player_Play
         end
         for _, p in sgs.qlist(player:getAliveSiblings()) do
             if rinsan.availableShenGuojiaExists(p) then
-                return not player:hasFlag('LuaZuoxing') and player:getPhase() == sgs.Player_Play
+                return player:getMark('LuaZuoxing_biu') == 0 and player:getPhase() == sgs.Player_Play
             end
         end
         return false
@@ -1042,7 +1042,7 @@ LuaZuoxingVS = sgs.CreateZeroCardViewAsSkill {
         if not current then
             return false
         end
-        if player:getPhase() ~= sgs.Player_Play or player:hasFlag('LuaZuoxing') then
+        if player:getPhase() ~= sgs.Player_Play or player:getMark('LuaZuoxing_biu') > 0 then
             return false
         end
         if rinsan.availableShenGuojiaExists(player) then
