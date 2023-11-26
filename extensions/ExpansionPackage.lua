@@ -7739,6 +7739,37 @@ local function LuaJuetaoUseCard(source, target, to_use)
     return false
 end
 
+-- 决讨统一判断
+local function juetaoAvailable(card, caomao, target)
+    -- 首先看牌是否能“亮起来”
+    if not card:isAvailable(caomao) then
+        return false
+    end
+    -- 判断是否可以单独对自己使用
+    if card:targetFilter(sgs.PlayerList(), caomao, caomao) then
+        return true
+    end
+    -- 判断是否可以单独对目标使用
+    if card:targetFilter(sgs.PlayerList(), target, caomao) then
+        return true
+    end
+
+    local includeSelfList = sgs.PlayerList()
+    local includeTargetList = sgs.PlayerList()
+    includeSelfList:append(caomao)
+    includeTargetList:append(target)
+    
+    -- 是否可以在已经选中自己的情况下，选择对方
+    if card:targetFilter(includeSelfList, target, caomao) then
+        return true
+    end
+    -- 是否可以在已经选择对方的情况下，选择自己
+    if card:targetFilter(includeTargetList, caomao, caomao) then
+        return true
+    end
+    return false
+end
+
 LuaJuetaoCard = sgs.CreateSkillCard {
     name = 'LuaJuetao',
     will_throw = true,
@@ -7761,7 +7792,7 @@ LuaJuetaoCard = sgs.CreateSkillCard {
             room:fillAG(ids)
             room:getThread():delay()
             room:clearAG()
-            if not to_use:isAvailable(source) or (not source:isAlive()) then
+            if juetaoAvailable(to_use, source, target) or (not source:isAlive()) then
                 break
             end
             if LuaJuetaoUseCard(source, target, to_use) then
