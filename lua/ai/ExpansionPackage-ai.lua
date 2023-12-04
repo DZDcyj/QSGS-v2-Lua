@@ -1564,7 +1564,7 @@ LuaPaiyi_skill.getTurnUseCard = function(self)
     local room = self.room
     local all_used = true
     for _, p in sgs.qlist(room:getAlivePlayers()) do
-        if not p:hasFlag('LuaPaiyiUsed') then
+        if p:getMark('LuaPaiyi_biu') == 0 then
             all_used = false
             break
         end
@@ -1587,7 +1587,7 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
     for _, friend in ipairs(self.friends_noself) do
         if friend:getHandcardNum() < 2 and friend:getHandcardNum() + 1 < self.player:getHandcardNum() and
             not self:needKongcheng(friend, true) and not playerHasManjuanEffect(friend) and
-            not friend:hasFlag('LuaPaiyiUsedFlag') then
+            friend:getMark('LuaPaiyi_biu') == 0 then
             target = friend
         end
         if target then
@@ -1595,7 +1595,7 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
         end
     end
     if not target then
-        if not self.player:hasFlag('LuaPaiyiUsedFlag') and self.player:getHandcardNum() < self.player:getHp() +
+        if self.player:getMark('LuaPaiyi_biu') == 0 and self.player:getHandcardNum() < self.player:getHp() +
             self.player:getPile('power'):length() - 1 then
             target = self.player
         end
@@ -1606,7 +1606,7 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
         for _, friend in ipairs(self.friends_noself) do
             if friend:getHandcardNum() + 2 > self.player:getHandcardNum() and
                 (self:getDamagedEffects(friend, self.player) or self:needToLoseHp(friend, self.player, nil, true)) and
-                not playerHasManjuanEffect(friend) and not friend:hasFlag('LuaPaiyiUsedFlag') then
+                not playerHasManjuanEffect(friend) and friend:getMark('LuaPaiyi_biu') == 0 then
                 target = friend
             end
             if target then
@@ -1621,7 +1621,7 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
                 not (self:hasSkills(sgs.masochism_skill, enemy) and not self.player:hasSkill('jueqing')) and
                 self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and
                 not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and enemy:getHandcardNum() >
-                self.player:getHandcardNum() and not enemy:hasFlag('LuaPaiyiUsedFlag') then
+                self.player:getHandcardNum() and enemy:getMark('LuaPaiyi_biu') == 0 then
                 target = enemy
             end
             if target then
@@ -1635,7 +1635,7 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
                     self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and not self:cantbeHurt(enemy) and
                     not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and
                     enemy:getHandcardNum() + 2 > self.player:getHandcardNum() and not enemy:hasSkill('manjuan') and
-                    not enemy:hasFlag('LuaPaiyiUsedFlag') then
+                    enemy:getMark('LuaPaiyi_biu') == 0 then
                     target = enemy
                 end
                 if target then
