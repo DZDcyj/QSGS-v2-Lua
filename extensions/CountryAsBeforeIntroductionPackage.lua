@@ -85,9 +85,11 @@ LuaZhenqiao = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
         local use = data:toCardUse()
-        if use.card and use.card:isKindOf('Slash') and use.card:getSkillName() ~= self:objectName() then
+        if use.card and use.card:isKindOf('Slash') and use.card:getSkillName() ~= self:objectName() and
+            (not use.card:hasFlag(self:objectName())) then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             use.card:setSkillName(self:objectName())
+            room:setCardFlag(use.card, self:objectName())
             local alives = sgs.SPlayerList()
             for _, p in sgs.qlist(use.to) do
                 if p:isAlive() then
@@ -228,7 +230,7 @@ LuaJuelie = sgs.CreateTriggerSkill {
         if use.card and use.card:isKindOf('Slash') then
             for _, t in sgs.qlist(use.to) do
                 local dummy = room:askForCard(player, '@@LuaJuelie', '@LuaJuelie:' .. t:objectName(), data,
-                self:objectName())
+                    self:objectName())
                 local discard_n = dummy:subcardsLength()
                 if discard_n > 0 then
                     room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), t:objectName())
@@ -240,8 +242,8 @@ LuaJuelie = sgs.CreateTriggerSkill {
                         if not rinsan.canDiscard(player, t, 'he') then
                             break
                         end
-                        local id = room:askForCardChosen(player, t, 'he', self:objectName(), false,
-                            sgs.Card_MethodNone, cards)
+                        local id = room:askForCardChosen(player, t, 'he', self:objectName(), false, sgs.Card_MethodNone,
+                            cards)
                         local place = room:getCardPlace(id)
                         orig_places[i] = place
                         cards:append(id)
