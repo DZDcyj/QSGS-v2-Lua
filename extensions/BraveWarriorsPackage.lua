@@ -60,7 +60,7 @@ LuaLijiVS = sgs.CreateViewAsSkill {
         return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
     end,
     view_filter = function(self, selected, to_select)
-        return not to_select:isEquipped()
+        return true
     end,
     view_as = function(self, cards)
         if #cards == 1 then
