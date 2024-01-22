@@ -2141,3 +2141,9 @@ sgs.ai_skill_use['@@LuaTongqu!'] = function(self, prompt, method)
     end
     return '#LuaTongqu:' .. table.concat(to_give, '+') .. ':.'
 end
+
+-- 助势选择
+sgs.ai_skill_choice['LuaZhushi'] = function(self, choices, data)
+    local caomao = data:toPlayer()
+    return self:isFriend(caomao) and 'LuaZhushiDraw' or 'cancel'
+end
