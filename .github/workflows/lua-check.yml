@@ -15,16 +15,6 @@ jobs:
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
-      - name: Clean LuaRocks Cache
-        run: |
-          echo "Cleaning the Lua Rocks Cache..."
-          echo "Check If Cache Exists..."
-          if [ -d "~/.cache/luarocks" ];then
-              echo "Cache Exists! Cleaning..."
-              rm -rf ~/.cache/luarocks
-            else
-              echo "No need to Clean Cache!"
-          fi
       - name: Lua Lint
         uses: GoatG33k/fivem-lua-lint-action@v1
         with:
