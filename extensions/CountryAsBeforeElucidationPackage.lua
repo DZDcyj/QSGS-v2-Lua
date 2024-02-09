@@ -56,6 +56,9 @@ LuaGuanjueClear = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseChanging},
     global = true,
     on_trigger = function(self, event, player, data, room)
+        if data:toPhaseChange().to ~= sgs.Player_NotActive then
+            return false
+        end
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             for _, suit in ipairs(VALID_SUITS) do
                 local mark = 'LuaGuanjue_ban_ur_' .. suit
