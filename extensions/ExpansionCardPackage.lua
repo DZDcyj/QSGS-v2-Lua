@@ -48,8 +48,7 @@ indirect_combination = sgs.CreateTrickCard {
                     ['to'] = target,
                     ['arg'] = 'jink',
                 })
-                local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false,
-                    sgs.Card_MethodNone)
+                local card_id = room:askForCardChosen(source, target, 'he', self:objectName(), false, sgs.Card_MethodNone)
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, source:objectName())
                 room:obtainCard(source, sgs.Sanguosha:getCard(card_id), reason, false)
             end
@@ -190,8 +189,7 @@ adjust_salt_plum = sgs.CreateTrickCard {
                 return
             end
             local choosePrompt = string.format('%s', 'AdjustSaltPlum-Choose')
-            local target =
-                room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), choosePrompt, true)
+            local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), choosePrompt, true)
             if target then
                 target:obtainCard(discard)
             end

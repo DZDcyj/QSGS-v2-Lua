@@ -16,12 +16,12 @@ jobs:
       - name: Checkout Branch
         uses: actions/checkout@v3
       - name: Lua Lint
-        uses: GoatG33k/fivem-lua-lint-action@v1
+        uses: lunarmodules/luacheck@v1.1.2
         with:
-          capture: "junit.xml"
-          args: "-d -t --ignore 112 113 143 212 --formatter JUnit"
+          args: "-d -t --ignore 112 113 143 212 --max-line-length 130 --formatter JUnit . >> ./junit.xml"
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v3.6.2
+        if: always()
         with:
           report_paths: "**/junit.xml"
           fail_on_failure: true
