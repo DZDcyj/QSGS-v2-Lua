@@ -729,13 +729,28 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
                 player:loseMark('@LuaPowei', player:getMark('@LuaPowei'))
             end
         elseif event == sgs.EventPhaseStart then
-            if player:getMark('@LuaPowei') == 0 or player:getPhase() ~= sgs.Player_RoundStart then
+            -- 先判断是否是回合开始时
+            if player:getPhase() ~= sgs.Player_RoundStart then
                 return false
             end
+            -- 若为神太史慈，则移动标记
+            if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
+                room:broadcastSkillInvoke('LuaPowei', 1)
+                moveLuaPoweiMark(player)
+            end
+            -- 若为非神太史慈，则执行下一步：判断是否有围标记
+            if player:getMark('@LuaPowei') == 0 then
+                return false
+            end
+            -- 有围标记，则询问神太史慈
             local stscs = room:findPlayersBySkillName('LuaPowei')
             local _data = sgs.QVariant()
             _data:setValue(player)
             for _, stsc in sgs.qlist(stscs) do
+                -- 若中途挨打了，就中止询问
+                if player:getMark('@LuaPowei') == 0 then
+                    break
+                end
                 room:broadcastSkillInvoke('LuaPowei', 1)
                 room:askForUseCard(stsc, '@@LuaPoweiHelper', 'LuaPowei_ask', -1, sgs.Card_MethodNone)
             end
@@ -744,9 +759,6 @@ LuaPoweiHelper = sgs.CreateTriggerSkill {
                 local stscs = room:findPlayersBySkillName('LuaPowei')
                 for _, stsc in sgs.qlist(stscs) do
                     rinsan.removeFromAttackRange(player, stsc)
-                end
-                if player:hasSkill('LuaPowei') and player:getMark('LuaPowei') == 0 then
-                    moveLuaPoweiMark(player)
                 end
             end
         end
