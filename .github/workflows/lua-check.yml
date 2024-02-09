@@ -18,4 +18,10 @@ jobs:
       - name: Lua Lint
         uses: lunarmodules/luacheck@v1.1.2
         with:
-          args: ". -d -t --ignore 112 113 143 212"
+          args: ". -d -t --ignore 112 113 143 212 --formatter JUnit"
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3.6.2
+        with:
+          report_paths: "**/junit.xml"
+          fail_on_failure: true
+          check_name: JUnit Report
