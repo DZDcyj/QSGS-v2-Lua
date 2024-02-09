@@ -18,7 +18,7 @@ jobs:
       - name: Lua Lint
         uses: lunarmodules/luacheck@v1.1.2
         with:
-          args: ". -d -t --ignore 112 113 143 212 --formatter JUnit"
+          args: "-d -t --ignore 112 113 143 212 --formatter JUnit . 2>>/github/workspace/junit.xml"
       - name: Find JUnit File
         if: always()
         run: |
