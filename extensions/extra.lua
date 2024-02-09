@@ -19,7 +19,7 @@ extension_lei = sgs.Package('lei', sgs.Package_GeneralPack)
 math.random()
 
 -- 仅限于本文件不检查单行长度
--- luacheck: push ignore 632
+-- luacheck: push ignore 631
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
