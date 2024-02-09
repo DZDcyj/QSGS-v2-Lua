@@ -7001,9 +7001,12 @@ LuaPoxiang = sgs.CreateTriggerSkill {
     view_as_skill = LuaPoxiangVS,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardsMoveOneTime then
+            if room:getTag('FirstRound'):toBool() then
+                return false
+            end
             local move = data:toMoveOneTime()
             if move.reason and move.reason.m_skillName == 'LuaPoxiang' then
-                if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() and
+                if move.to and move.to:objectName() == player:objectName() and
                     move.to_place == sgs.Player_PlaceHand and not move.card_ids:isEmpty() then
                     for _, id in sgs.qlist(move.card_ids) do
                         room:addPlayerMark(player, 'LuaPoxiang' .. id .. '-Clear')
