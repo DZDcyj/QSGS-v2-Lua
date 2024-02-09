@@ -1,7 +1,7 @@
 -- 限定-百战虎贲包 AI
 -- Created by DZDcyj at 2023/5/5
 -- 留赞
--- 力激 
+-- 力激
 local LuaLiji_skill = {}
 LuaLiji_skill.name = 'LuaLiji'
 table.insert(sgs.ai_skills, LuaLiji_skill)

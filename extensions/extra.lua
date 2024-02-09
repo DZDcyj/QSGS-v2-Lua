@@ -18,6 +18,9 @@ extension_yin = sgs.Package('yin', sgs.Package_GeneralPack)
 extension_lei = sgs.Package('lei', sgs.Package_GeneralPack)
 math.random()
 
+-- 仅限于本文件不检查单行长度
+-- luacheck: push ignore 632
+
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
@@ -10888,7 +10891,7 @@ bukuishishen = sgs.CreateTriggerSkill {
         end
     end,
 }
--- luacheck: pop
+-- luacheck: pop 561
 if not sgs.Sanguosha:getSkill('bukuishishen') then
     skills:append(bukuishishen)
 end
@@ -15497,3 +15500,5 @@ end
 return {extension, extension_z, extension_pm, extension6, extension7, extension_friend, extension_ol, extension_sp,
         extension_bf, card_slash, extension_yijiang, extension_god, extension_hulaoguan, extension_mobile, extension_star,
         extension_yin, extension_lei}
+
+-- luacheck: pop 632
