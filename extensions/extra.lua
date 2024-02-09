@@ -10891,7 +10891,7 @@ bukuishishen = sgs.CreateTriggerSkill {
         end
     end,
 }
--- luacheck: pop 561
+-- luacheck: pop
 if not sgs.Sanguosha:getSkill('bukuishishen') then
     skills:append(bukuishishen)
 end
@@ -15501,4 +15501,4 @@ return {extension, extension_z, extension_pm, extension6, extension7, extension_
         extension_bf, card_slash, extension_yijiang, extension_god, extension_hulaoguan, extension_mobile, extension_star,
         extension_yin, extension_lei}
 
--- luacheck: pop 632
+-- luacheck: pop
