@@ -25,9 +25,10 @@ LuaZhuiming = sgs.CreateTriggerSkill {
             if damage.chain then
                 return false
             end
-            if damage.card and player:getMark(string.format('%s-%s-Clear', self:objectName(), damage.card:toString())) > 0 then
+            local mark = string.format('%s-%s-Clear', self:objectName(), damage.card:toString())
+            if damage.card and player:getMark(mark) > 0 then
                 room:sendCompulsoryTriggerLog(player, self:objectName())
-                room:removePlayerMark(player, string.format('%s-%s-Clear', self:objectName(), damage.card:toString()))
+                room:removePlayerMark(player, mark)
                 damage.damage = damage.damage + 1
                 data:setValue(damage)
             end
