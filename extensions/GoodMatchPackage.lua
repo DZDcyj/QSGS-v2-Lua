@@ -255,4 +255,110 @@ ExTenYearCaojinyu:addSkill(LuaShanshen)
 ExTenYearCaojinyu:addSkill(LuaXianjing)
 table.insert(hiddenSkills, LuaYuqiClear)
 
+-- 孙翊
+ExTenYearSunyi = sgs.General(extension, 'ExTenYearSunyi', 'wu', '5', true, true)
+
+local JIQIAO_PILE_NAME = 'LuaJiqiao'
+
+LuaJiqiao = sgs.CreateTriggerSkill {
+    name = 'LuaJiqiao',
+    events = {sgs.EventPhaseStart, sgs.EventPhaseEnd},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseEnd then
+            if player:getPile(JIQIAO_PILE_NAME):isEmpty() then
+                return false
+            end
+            player:clearOnePrivatePile(JIQIAO_PILE_NAME)
+            return false
+        end
+        if room:askForSkillInvoke(player, self:objectName(), data) then
+            local ids = room:getNCards(player:getMaxHp())
+            player:addToPile(JIQIAO_PILE_NAME, ids)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+LuaJiqiaoFinished = sgs.CreateTriggerSkill {
+    name = 'LuaJiqiaoFinished',
+    events = {sgs.CardFinished},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or use.card:isKindOf('SkillCard') then
+            return false
+        end
+        room:sendCompulsoryTriggerLog(player, 'LuaJiqiao')
+        local ids = player:getPile(JIQIAO_PILE_NAME)
+        room:fillAG(ids, player)
+        local id = room:askForAG(player, ids, false, 'LuaJiqiao')
+        room:clearAG(player)
+        player:obtainCard(sgs.Sanguosha:getCard(id))
+        local redCount, blackCount = 0, 0
+        for _, cid in sgs.qlist(player:getPile(JIQIAO_PILE_NAME)) do
+            local cd = sgs.Sanguosha:getCard(cid)
+            if cd:isRed() then
+                redCount = redCount + 1
+            elseif cd:isBlack() then
+                blackCount = blackCount + 1
+            end
+        end
+        if redCount == blackCount then
+            rinsan.recover(player, 1)
+        else
+            room:loseHp(player)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (not target:getPile(JIQIAO_PILE_NAME):isEmpty())
+    end,
+}
+
+LuaXiongyi = sgs.CreateTriggerSkill {
+    name = 'LuaXiongyi',
+    frequency = sgs.Skill_Limited,
+    events = {sgs.AskForPeaches},
+    limit_mark = '@LuaXiongyi',
+    on_trigger = function(self, event, player, data, room)
+        local dying_data = data:toDying()
+        local source = dying_data.who
+        if source:objectName() == player:objectName() then
+            if player:askForSkillInvoke(self:objectName(), data) then
+                room:broadcastSkillInvoke(self:objectName())
+                player:loseMark('@LuaXiongyi')
+                local choices = {'LuaXiongyi1', 'LuaXiongyi2'}
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                if choice == choices[1] then
+                    -- 回复至三点体力
+                    local maxhp = player:getMaxHp()
+                    local hp = math.min(3, maxhp)
+                    rinsan.recover(player, hp - player:getHp())
+                    -- 将卡牌替换为徐氏
+                    room:changeHero(player, 'xushi', false, true, false, true)
+                    room:setPlayerProperty(player, 'maxhp', sgs.QVariant(maxhp))
+                else
+                    -- 回复至一点体力
+                    local maxhp = player:getMaxHp()
+                    local hp = math.min(1, maxhp)
+                    rinsan.recover(player, hp - player:getHp())
+                    -- 获得“魂姿”
+                    room:acquireSkill(player, 'hunzi')
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getMark('@LuaXiongyi') > 0
+    end,
+}
+
+ExTenYearSunyi:addSkill(LuaJiqiao)
+ExTenYearSunyi:addSkill(LuaXiongyi)
+table.insert(hiddenSkills, LuaJiqiaoFinished)
+
 rinsan.addHiddenSkills(hiddenSkills)
