@@ -6,6 +6,13 @@ extension = sgs.Package('GoodMatchPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
+
 -- 曹金玉
 ExTenYearCaojinyu = sgs.General(extension, 'ExTenYearCaojinyu', 'wei', '3', false, true)
 
@@ -112,8 +119,7 @@ LuaYuqi = sgs.CreateTriggerSkill {
                 _cjy:append(caojinyu)
                 local yuqi_cards = room:getNCards(totalCount, false)
                 local move = sgs.CardsMoveStruct(yuqi_cards, nil, caojinyu, sgs.Player_PlaceTable, sgs.Player_PlaceHand,
-                    sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(), self:objectName(),
-                        nil))
+                    sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(), self:objectName(), nil))
                 local moves = sgs.CardsMoveList()
                 moves:append(move)
                 room:notifyMoveCards(true, moves, false, _cjy)
@@ -129,8 +135,8 @@ LuaYuqi = sgs.CreateTriggerSkill {
                         sgs.CardMoveReason(), string.format('LuaYuqiGiveOut:%s:%s', victim:objectName(), giveCount)) then
                     local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
                         self:objectName(), nil)
-                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
-                        sgs.Player_PlaceTable, _reason)
+                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand, sgs.Player_PlaceTable,
+                        _reason)
                     for _, id in sgs.qlist(origin_yuqi) do
                         if room:getCardPlace(id) ~= sgs.Player_DrawPile then
                             move.card_ids:append(id)
@@ -155,8 +161,8 @@ LuaYuqi = sgs.CreateTriggerSkill {
                     sgs.CardMoveReason(), string.format('LuaYuqiKeep:%d', keepCount)) then
                     local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
                         self:objectName(), nil)
-                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
-                        sgs.Player_PlaceTable, _reason)
+                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand, sgs.Player_PlaceTable,
+                        _reason)
                     for _, id in sgs.qlist(origin_yuqi) do
                         if room:getCardPlace(id) ~= sgs.Player_DrawPile then
                             move.card_ids:append(id)
@@ -247,4 +253,6 @@ LuaXianjing = sgs.CreateTriggerSkill {
 ExTenYearCaojinyu:addSkill(LuaYuqi)
 ExTenYearCaojinyu:addSkill(LuaShanshen)
 ExTenYearCaojinyu:addSkill(LuaXianjing)
-rinsan.addSingleHiddenSkill(LuaYuqiClear)
+table.insert(hiddenSkills, LuaYuqiClear)
+
+rinsan.addHiddenSkills(hiddenSkills)
