@@ -272,6 +272,7 @@ LuaJiqiao = sgs.CreateTriggerSkill {
             return false
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
             local ids = room:getNCards(player:getMaxHp())
             player:addToPile(JIQIAO_PILE_NAME, ids)
         end
@@ -328,11 +329,11 @@ LuaXiongyi = sgs.CreateTriggerSkill {
         local source = dying_data.who
         if source:objectName() == player:objectName() then
             if player:askForSkillInvoke(self:objectName(), data) then
-                room:broadcastSkillInvoke(self:objectName())
                 player:loseMark('@LuaXiongyi')
                 local choices = {'LuaXiongyi1', 'LuaXiongyi2'}
                 local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
                 if choice == choices[1] then
+                    room:broadcastSkillInvoke(self:objectName(), 2)
                     -- 回复至三点体力
                     local maxhp = player:getMaxHp()
                     local hp = math.min(3, maxhp)
@@ -341,12 +342,13 @@ LuaXiongyi = sgs.CreateTriggerSkill {
                     room:changeHero(player, 'xushi', false, true, false, true)
                     room:setPlayerProperty(player, 'maxhp', sgs.QVariant(maxhp))
                 else
+                    room:broadcastSkillInvoke(self:objectName(), 1)
                     -- 回复至一点体力
                     local maxhp = player:getMaxHp()
                     local hp = math.min(1, maxhp)
                     rinsan.recover(player, hp - player:getHp())
                     -- 获得“魂姿”
-                    room:acquireSkill(player, 'hunzi')
+                    room:acquireSkill(player, 'LuaSunyiHunzi')
                 end
             end
         end
@@ -357,8 +359,42 @@ LuaXiongyi = sgs.CreateTriggerSkill {
     end,
 }
 
+LuaSunyiHunzi = sgs.CreateTriggerSkill {
+    name = 'LuaSunyiHunzi',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Wake,
+    on_trigger = function(self, event, player, data, room)
+        room:addPlayerMark(player, 'LuaSunyiHunzi')
+        rinsan.sendLogMessage(room, '#LuaHunzi', {
+            ['from'] = player,
+            ['arg'] = player:getHp(),
+            ['arg2'] = self:objectName(),
+        })
+        if room:changeMaxHpForAwakenSkill(player) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:notifySkillInvoked(player, self:objectName())
+            room:getThread():delay(6500)
+            room:setEmotion(player, 'skill/hunzi')
+            room:handleAcquireDetachSkills(player, 'LuaYingzi|LuaYinghun')
+            room:addPlayerMark(player, 'hunzi')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        if not rinsan.RIGHT(self, target) then
+            return false
+        end
+        return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start) and (target:getHp() <= 1)
+    end,
+}
+
+
 ExTenYearSunyi:addSkill(LuaJiqiao)
 ExTenYearSunyi:addSkill(LuaXiongyi)
+ExTenYearSunyi:addRelateSkill('LuaSunyiHunzi')
+ExTenYearSunyi:addRelateSkill('LuaYingzi')
+ExTenYearSunyi:addRelateSkill('LuaYinghun')
 table.insert(hiddenSkills, LuaJiqiaoFinished)
+table.insert(hiddenSkills, LuaSunyiHunzi)
 
 rinsan.addHiddenSkills(hiddenSkills)
