@@ -7832,4 +7832,155 @@ ExTenYearCaomao:addSkill(LuaZhushi)
 
 table.insert(hiddenSkills, LuaJuetaoPro)
 
+-- 周群
+ExZhouqun = sgs.General(extension, 'ExZhouqun', 'shu', '3', true, true)
+
+LuaTiansuanCard = sgs.CreateSkillCard {
+    name = 'LuaTiansuan',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        room:broadcastSkillInvoke(self:objectName())
+        room:notifySkillInvoked(source, self:objectName())
+        room:addPlayerMark(source, 'LuaTiansuan_lun')
+        -- Worst -> Best: 下下签 -> 上上签
+        local omikuji = {'@LuaTiansuanWorst', '@LuaTiansuanWorse', '@LuaTiansuanNormal', '@LuaTiansuanBetter', '@LuaTiansuanBest', 'cancel'}
+        local toChoose = {'@LuaTiansuanWorst', '@LuaTiansuanWorse', '@LuaTiansuanNormal', '@LuaTiansuanBetter', '@LuaTiansuanBest'}
+        local choice = room:askForChoice(source, self:objectName(), table.concat(omikuji, '+'))
+        if choice ~= 'cancel' then
+            -- 增加权重
+            table.insert(toChoose, choice)
+        end
+        -- 打乱顺序
+        rinsan.shuffleTable(toChoose)
+        -- 得到结果
+        local result = toChoose[1]
+        local prompt = string.format('LuaTiansuan-Choose:%s', result)
+        local target = room:askForPlayerChosen(source, room:getAlivePlayers(), self:objectName(), prompt, false, true)
+        if target then
+            rinsan.sendLogMessage(room, '#LuaTiansuanGain', {
+                ['from'] = target,
+                ['arg'] = result,
+            })
+            room:addPlayerMark(target, result)
+            if target:objectName() ~= source:objectName() then
+                local flag
+                if result == '@LuaTiansuanBest' then
+                    -- 获得其区域内一张牌
+                    flag = 'hej'
+                    -- 观看其手牌
+                    room:showAllCards(target, source)
+                elseif result == '@LuaTiansuanBetter' then
+                    -- 获得其一张牌
+                    flag = 'he'
+                end
+                if flag then
+                    local id = room:askForCardChosen(source, target, flag, self:objectName(), false, sgs.Card_MethodNone)
+                    room:obtainCard(source, id)
+                end
+            end
+        end
+    end,
+}
+
+LuaTiansuanVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaTiansuan',
+    view_as = function(self)
+        return LuaTiansuanCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('LuaTiansuan_lun') == 0
+    end,
+}
+
+LuaTiansuan = sgs.CreateTriggerSkill {
+    name = 'LuaTiansuan',
+    events = {sgs.DamageInflicted},
+    global = true,
+    view_as_skill = LuaTiansuanVS,
+    on_trigger = function(self, event, player, data, room)
+        local damage = data:toDamage()
+        if player:getMark('@LuaTiansuanBest') > 0 then
+            -- 上上签: 防止所有伤害
+            room:notifySkillInvoked(player, 'LuaTiansuan')
+            rinsan.sendLogMessage(room, '#LuaTiansuanWithArg', {
+                ['from'] = player,
+                ['arg'] = damage.damage,
+                ['arg2'] = '@LuaTiansuanBest'
+            })
+            return true
+        elseif player:getMark('@LuaTiansuanBetter') > 0 then
+            -- 上签: 摸一张牌，将伤害值调整为 1
+            room:notifySkillInvoked(player, 'LuaTiansuan')
+            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
+                ['from'] = player,
+                ['arg2'] = '@LuaTiansuanBetter'
+            })
+            player:drawCards(1, self:objectName())
+            damage.damage = 1
+            data:setValue(damage)
+        elseif player:getMark('@LuaTiansuanNormal') > 0 then
+            -- 中签: 伤害类型改为火焰，伤害值调整为 1
+            room:notifySkillInvoked(player, 'LuaTiansuan')
+            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
+                ['from'] = player,
+                ['arg2'] = '@LuaTiansuanNormal'
+            })
+            damage.damage = 1
+            damage.nature = sgs.DamageStruct_Fire
+            data:setValue(damage)
+        elseif player:getMark('@LuaTiansuanWorse') > 0 then
+            -- 下签: 受到的伤害 +1
+            room:notifySkillInvoked(player, 'LuaTiansuan')
+            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
+                ['from'] = player,
+                ['arg2'] = '@LuaTiansuanWorse'
+            })
+            damage.damage = damage.damage + 1
+            data:setValue(damage)
+        elseif player:getMark('@LuaTiansuanWorst') > 0 then
+            -- 下下签: 受到的伤害 +1（卡牌封锁单独处理）
+            room:notifySkillInvoked(player, 'LuaTiansuan')
+            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
+                ['from'] = player,
+                ['arg2'] = '@LuaTiansuanWorst'
+            })
+            damage.damage = damage.damage + 1
+            data:setValue(damage)
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+LuaTiansuanMark = sgs.CreateTriggerSkill {
+    name = 'LuaTiansuanMark',
+    events = {sgs.MarkChanged, sgs.TurnStart},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.MarkChanged then
+            local mark = data:toMark()
+            -- 这里处理下下签的卡牌封锁
+            if mark.name == '@LuaTiansuanWorst' then
+                if player:getMark(mark.name) > 0 then
+                    room:setPlayerCardLimitation(player, 'use', 'Peach,Analeptic|.|.|.', false)
+                else
+                    room:removePlayerCardLimitation(player, 'use', 'Peach,Analeptic|.|.|.$0')
+                end
+            end
+            return false            
+        end
+        -- 清理标记
+        if rinsan.RIGHT(self, player, 'LuaTiansuan') then
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                rinsan.clearAllMarksContains(p, '@LuaTiansuan')
+            end
+        end
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+ExZhouqun:addSkill(LuaTiansuan)
+table.insert(hiddenSkills, LuaTiansuanMark)
+
 rinsan.addHiddenSkills(hiddenSkills)
