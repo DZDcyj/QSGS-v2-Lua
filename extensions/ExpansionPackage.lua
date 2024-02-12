@@ -7844,8 +7844,10 @@ LuaTiansuanCard = sgs.CreateSkillCard {
         room:notifySkillInvoked(source, self:objectName())
         room:addPlayerMark(source, 'LuaTiansuan_lun')
         -- Worst -> Best: 下下签 -> 上上签
-        local omikuji = {'@LuaTiansuanWorst', '@LuaTiansuanWorse', '@LuaTiansuanNormal', '@LuaTiansuanBetter', '@LuaTiansuanBest', 'cancel'}
-        local toChoose = {'@LuaTiansuanWorst', '@LuaTiansuanWorse', '@LuaTiansuanNormal', '@LuaTiansuanBetter', '@LuaTiansuanBest'}
+        local omikuji = {'@LuaTiansuanWorst', '@LuaTiansuanWorse', '@LuaTiansuanNormal', '@LuaTiansuanBetter',
+                         '@LuaTiansuanBest', 'cancel'}
+        local toChoose = {'@LuaTiansuanWorst', '@LuaTiansuanWorse', '@LuaTiansuanNormal', '@LuaTiansuanBetter',
+                          '@LuaTiansuanBest'}
         local choice = room:askForChoice(source, self:objectName(), table.concat(omikuji, '+'))
         if choice ~= 'cancel' then
             -- 增加权重
@@ -7906,7 +7908,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
             rinsan.sendLogMessage(room, '#LuaTiansuanWithArg', {
                 ['from'] = player,
                 ['arg'] = damage.damage,
-                ['arg2'] = '@LuaTiansuanBest'
+                ['arg2'] = '@LuaTiansuanBest',
             })
             return true
         elseif player:getMark('@LuaTiansuanBetter') > 0 then
@@ -7914,7 +7916,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, 'LuaTiansuan')
             rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
                 ['from'] = player,
-                ['arg2'] = '@LuaTiansuanBetter'
+                ['arg2'] = '@LuaTiansuanBetter',
             })
             player:drawCards(1, self:objectName())
             damage.damage = 1
@@ -7924,7 +7926,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, 'LuaTiansuan')
             rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
                 ['from'] = player,
-                ['arg2'] = '@LuaTiansuanNormal'
+                ['arg2'] = '@LuaTiansuanNormal',
             })
             damage.damage = 1
             damage.nature = sgs.DamageStruct_Fire
@@ -7934,7 +7936,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, 'LuaTiansuan')
             rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
                 ['from'] = player,
-                ['arg2'] = '@LuaTiansuanWorse'
+                ['arg2'] = '@LuaTiansuanWorse',
             })
             damage.damage = damage.damage + 1
             data:setValue(damage)
@@ -7943,7 +7945,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, 'LuaTiansuan')
             rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
                 ['from'] = player,
-                ['arg2'] = '@LuaTiansuanWorst'
+                ['arg2'] = '@LuaTiansuanWorst',
             })
             damage.damage = damage.damage + 1
             data:setValue(damage)
@@ -7968,7 +7970,7 @@ LuaTiansuanMark = sgs.CreateTriggerSkill {
                     room:removePlayerCardLimitation(player, 'use', 'Peach,Analeptic|.|.|.$0')
                 end
             end
-            return false            
+            return false
         end
         -- 清理标记
         if rinsan.RIGHT(self, player, 'LuaTiansuan') then
