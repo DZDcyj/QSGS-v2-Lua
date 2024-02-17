@@ -7840,7 +7840,6 @@ LuaTiansuanCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
-        room:broadcastSkillInvoke(self:objectName())
         room:notifySkillInvoked(source, self:objectName())
         room:addPlayerMark(source, 'LuaTiansuan_lun')
         -- Worst -> Best: 下下签 -> 上上签

@@ -318,4 +318,8 @@ return {
     ['$LuaZhushi1'] = '可有爱卿愿助朕讨贼？',
     ['$LuaZhushi2'] = '泱泱大魏，忠臣俱亡乎？',
     ['~ExTenYearCaomao'] = '宁作高贵乡公死，不作汉献帝生',
+    -- 周群
+    ['$LuaTiansuan1'] = '汝既持签问卜，亦当应天授命',
+    ['$LuaTiansuan2'] = '尔若居正体道，福寿自当天成',
+    ['~ExZhouqun'] = '及时止损，过犹不及……',
 }
