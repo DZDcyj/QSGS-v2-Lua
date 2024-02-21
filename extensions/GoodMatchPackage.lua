@@ -6,6 +6,13 @@ extension = sgs.Package('GoodMatchPackage')
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
+-- 隐藏技能添加
+local hiddenSkills = {}
+
+-- General 定义如下
+-- sgs.General(package, name, kingdom, max_hp, male, hidden, never_shown, start_hp)
+-- 分别代表：扩展包、武将名、国籍、最大体力值、是否男性、是否在选将框中隐藏、是否完全不可见、初始血量
+
 -- 曹金玉
 ExTenYearCaojinyu = sgs.General(extension, 'ExTenYearCaojinyu', 'wei', '3', false, true)
 
@@ -112,8 +119,7 @@ LuaYuqi = sgs.CreateTriggerSkill {
                 _cjy:append(caojinyu)
                 local yuqi_cards = room:getNCards(totalCount, false)
                 local move = sgs.CardsMoveStruct(yuqi_cards, nil, caojinyu, sgs.Player_PlaceTable, sgs.Player_PlaceHand,
-                    sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(), self:objectName(),
-                        nil))
+                    sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(), self:objectName(), nil))
                 local moves = sgs.CardsMoveList()
                 moves:append(move)
                 room:notifyMoveCards(true, moves, false, _cjy)
@@ -129,8 +135,8 @@ LuaYuqi = sgs.CreateTriggerSkill {
                         sgs.CardMoveReason(), string.format('LuaYuqiGiveOut:%s:%s', victim:objectName(), giveCount)) then
                     local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
                         self:objectName(), nil)
-                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
-                        sgs.Player_PlaceTable, _reason)
+                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand, sgs.Player_PlaceTable,
+                        _reason)
                     for _, id in sgs.qlist(origin_yuqi) do
                         if room:getCardPlace(id) ~= sgs.Player_DrawPile then
                             move.card_ids:append(id)
@@ -155,8 +161,8 @@ LuaYuqi = sgs.CreateTriggerSkill {
                     sgs.CardMoveReason(), string.format('LuaYuqiKeep:%d', keepCount)) then
                     local _reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PREVIEW, caojinyu:objectName(),
                         self:objectName(), nil)
-                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand,
-                        sgs.Player_PlaceTable, _reason)
+                    move = sgs.CardsMoveStruct(sgs.IntList(), caojinyu, nil, sgs.Player_PlaceHand, sgs.Player_PlaceTable,
+                        _reason)
                     for _, id in sgs.qlist(origin_yuqi) do
                         if room:getCardPlace(id) ~= sgs.Player_DrawPile then
                             move.card_ids:append(id)
@@ -247,4 +253,148 @@ LuaXianjing = sgs.CreateTriggerSkill {
 ExTenYearCaojinyu:addSkill(LuaYuqi)
 ExTenYearCaojinyu:addSkill(LuaShanshen)
 ExTenYearCaojinyu:addSkill(LuaXianjing)
-rinsan.addSingleHiddenSkill(LuaYuqiClear)
+table.insert(hiddenSkills, LuaYuqiClear)
+
+-- 孙翊
+ExTenYearSunyi = sgs.General(extension, 'ExTenYearSunyi', 'wu', '5', true, true)
+
+local JIQIAO_PILE_NAME = 'LuaJiqiao'
+
+LuaJiqiao = sgs.CreateTriggerSkill {
+    name = 'LuaJiqiao',
+    events = {sgs.EventPhaseStart, sgs.EventPhaseEnd},
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseEnd then
+            if player:getPile(JIQIAO_PILE_NAME):isEmpty() then
+                return false
+            end
+            player:clearOnePrivatePile(JIQIAO_PILE_NAME)
+            return false
+        end
+        if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            local ids = room:getNCards(player:getMaxHp())
+            player:addToPile(JIQIAO_PILE_NAME, ids)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+LuaJiqiaoFinished = sgs.CreateTriggerSkill {
+    name = 'LuaJiqiaoFinished',
+    events = {sgs.CardFinished},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or use.card:isKindOf('SkillCard') then
+            return false
+        end
+        room:sendCompulsoryTriggerLog(player, 'LuaJiqiao')
+        local ids = player:getPile(JIQIAO_PILE_NAME)
+        room:fillAG(ids, player)
+        local id = room:askForAG(player, ids, false, 'LuaJiqiao')
+        room:clearAG(player)
+        player:obtainCard(sgs.Sanguosha:getCard(id))
+        local redCount, blackCount = 0, 0
+        for _, cid in sgs.qlist(player:getPile(JIQIAO_PILE_NAME)) do
+            local cd = sgs.Sanguosha:getCard(cid)
+            if cd:isRed() then
+                redCount = redCount + 1
+            elseif cd:isBlack() then
+                blackCount = blackCount + 1
+            end
+        end
+        if redCount == blackCount then
+            rinsan.recover(player, 1)
+        else
+            room:loseHp(player)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and (not target:getPile(JIQIAO_PILE_NAME):isEmpty())
+    end,
+}
+
+LuaXiongyi = sgs.CreateTriggerSkill {
+    name = 'LuaXiongyi',
+    frequency = sgs.Skill_Limited,
+    events = {sgs.AskForPeaches},
+    limit_mark = '@LuaXiongyi',
+    on_trigger = function(self, event, player, data, room)
+        local dying_data = data:toDying()
+        local source = dying_data.who
+        if source:objectName() == player:objectName() then
+            if player:askForSkillInvoke(self:objectName(), data) then
+                player:loseMark('@LuaXiongyi')
+                local choices = {'LuaXiongyi1', 'LuaXiongyi2'}
+                local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+                if choice == choices[1] then
+                    room:broadcastSkillInvoke(self:objectName(), 2)
+                    -- 回复至三点体力
+                    local maxhp = player:getMaxHp()
+                    local hp = math.min(3, maxhp)
+                    rinsan.recover(player, hp - player:getHp())
+                    -- 将卡牌替换为徐氏
+                    room:changeHero(player, 'xushi', false, true, false, true)
+                    room:setPlayerProperty(player, 'maxhp', sgs.QVariant(maxhp))
+                else
+                    room:broadcastSkillInvoke(self:objectName(), 1)
+                    -- 回复至一点体力
+                    local maxhp = player:getMaxHp()
+                    local hp = math.min(1, maxhp)
+                    rinsan.recover(player, hp - player:getHp())
+                    -- 获得“魂姿”
+                    room:acquireSkill(player, 'LuaSunyiHunzi')
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHT(self, target) and target:getMark('@LuaXiongyi') > 0
+    end,
+}
+
+LuaSunyiHunzi = sgs.CreateTriggerSkill {
+    name = 'LuaSunyiHunzi',
+    events = {sgs.EventPhaseStart},
+    frequency = sgs.Skill_Wake,
+    on_trigger = function(self, event, player, data, room)
+        room:addPlayerMark(player, 'LuaSunyiHunzi')
+        rinsan.sendLogMessage(room, '#LuaHunzi', {
+            ['from'] = player,
+            ['arg'] = player:getHp(),
+            ['arg2'] = self:objectName(),
+        })
+        if room:changeMaxHpForAwakenSkill(player) then
+            room:broadcastSkillInvoke(self:objectName())
+            room:notifySkillInvoked(player, self:objectName())
+            room:getThread():delay(6500)
+            room:setEmotion(player, 'skill/hunzi')
+            room:handleAcquireDetachSkills(player, 'LuaYingzi|LuaYinghun')
+            room:addPlayerMark(player, 'hunzi')
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        if not rinsan.RIGHT(self, target) then
+            return false
+        end
+        return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start) and (target:getHp() <= 1)
+    end,
+}
+
+
+ExTenYearSunyi:addSkill(LuaJiqiao)
+ExTenYearSunyi:addSkill(LuaXiongyi)
+ExTenYearSunyi:addRelateSkill('LuaSunyiHunzi')
+ExTenYearSunyi:addRelateSkill('LuaYingzi')
+ExTenYearSunyi:addRelateSkill('LuaYinghun')
+table.insert(hiddenSkills, LuaJiqiaoFinished)
+table.insert(hiddenSkills, LuaSunyiHunzi)
+
+rinsan.addHiddenSkills(hiddenSkills)

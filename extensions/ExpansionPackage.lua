@@ -3025,7 +3025,8 @@ LuaYingzi = sgs.CreateTriggerSkill {
         if event == sgs.DrawNCards then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             local count = data:toInt() + 1
-            room:broadcastSkillInvoke(self:objectName())
+            local index = player:getMark('LuaSunyiHunzi') > 0 and 3 or rinsan.random(1, 2)
+            room:broadcastSkillInvoke(self:objectName(), index)
             room:addPlayerMark(player, 'drawed')
             data:setValue(count)
         end
@@ -3053,10 +3054,14 @@ LuaYinghunCard = sgs.CreateSkillCard {
         local x = source:getLostHp()
         local room = source:getRoom()
         local good = false
-        local index = source:hasSkill('LuaMouHunzi') and rinsan.random(3, 4) or rinsan.random(1, 2)
+        local index = source:getMark('LuaMouHunzi') > 0 and rinsan.random(3, 4) or rinsan.random(1, 2)
+        if source:getMark('LuaSunyiHunzi') > 0 then
+            index = 5
+        end
         if x > 1 then
             local data = sgs.QVariant()
             data:setValue(dest)
+            room:notifySkillInvoked(source, self:objectName())
             local choice = room:askForChoice(source, 'LuaYinghun', 'd1tx+dxt1', data)
             if choice == 'd1tx' then
                 room:broadcastSkillInvoke('LuaYinghun', index)
@@ -3125,6 +3130,7 @@ LuaHunzi = sgs.CreateTriggerSkill {
         })
         if room:changeMaxHpForAwakenSkill(player) then
             room:broadcastSkillInvoke(self:objectName())
+            room:notifySkillInvoked(player, self:objectName())
             room:getThread():delay(6500)
             rinsan.recover(player, 1, player)
             room:setEmotion(player, 'skill/hunzi')
