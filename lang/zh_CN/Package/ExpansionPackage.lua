@@ -641,4 +641,31 @@ return {
     ['LuaZhushi'] = '助势',
     [':LuaZhushi'] = '主公技，<font color="#547998"><b>每名其他魏势力的角色的回合限一次</s></font>，当该角色回复体力时，你可以令其选择是否令你摸一张牌',
     ['LuaZhushiDraw'] = '令其摸一张牌',
+    ['ExZhouqun'] = '周群',
+    ['&ExZhouqun'] = '周群',
+    ['#ExZhouqun'] = '后圣',
+    ['LuaTiansuan'] = '天算',
+    [':LuaTiansuan'] = '每轮限一次，出牌阶段，你可以随机选取以下5个选项中的一项并令一名角色获得选项效果直到你的下个回合开始（随机选取前，你可以令其中的一个选项随机时的权重+1）\
+    1. 上上签：令你获得该效果的角色观看你的手牌并选择你区域内的一张牌获得；你防止受到的所有伤害；\
+    2. 上签：令你获得效果的角色获得你的一张牌；当你受到伤害时，摸一张牌，且最多承受1点伤害；\
+    3. 中签：当你受到伤害时，改为受到火焰伤害且最多承受1点伤害；\
+    4. 下签：你受到的伤害+1；\
+    5. 下下签：你受到的伤害+1，你不能使用【桃】和【酒】',
+    ['luatiansuan'] = '天算',
+    ['LuaTiansuan-Choose'] = '你可以选择一名角色获得 %src',
+    ['#LuaTiansuanGain'] = '%from 获得了 %arg',
+    ['@LuaTiansuanBest'] = '上上签',
+    [':@LuaTiansuanBest'] = '你观看获得效果角色的手牌并选择其区域内的一张牌获得；防止其受到的所有伤害',
+    ['@LuaTiansuanBetter'] = '上签',
+    [':@LuaTiansuanBetter'] = '你获得对应角色的一张牌；当其受到伤害时，摸一张牌，且最多承受1点伤害',
+    ['@LuaTiansuanNormal'] = '中签',
+    [':@LuaTiansuanNormal'] = '当其受到伤害时，改为受到火焰伤害且最多承受1点伤害',
+    ['@LuaTiansuanWorse'] = '下签',
+    [':@LuaTiansuanWorse'] = '其受到的伤害+1',
+    ['@LuaTiansuanWorst'] = '下下签',
+    [':@LuaTiansuanWorst'] = '其受到的伤害+1，且不能使用【桃】和【酒】',
+    ['#LuaTiansuanPrevent'] = '%from 的“%arg2”效果被触发，防止了 %arg 点伤害',
+    ['#LuaTiansuanPreventExtra'] = '%from 的“%arg2”效果被触发，伤害值由 %arg 减至 <font color="yellow"><b>1</b></font>',
+    ['#LuaTiansuanChangeNature'] = '%from 的“%arg2”效果被触发，伤害类型变为 <font color="yellow"><b>火焰</b></font>',
+    ['#LuaTiansuanExtraDamage'] = '%from 的“%arg2”效果被触发，伤害值增加 %arg',
 }
