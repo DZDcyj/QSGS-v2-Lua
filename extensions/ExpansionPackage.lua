@@ -7970,7 +7970,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
 
 LuaTiansuanMark = sgs.CreateTriggerSkill {
     name = 'LuaTiansuanMark',
-    events = {sgs.MarkChanged, sgs.TurnStart},
+    events = {sgs.MarkChanged, sgs.TurnStart, sgs.Death},
     global = true,
     on_trigger = function(self, event, player, data, room)
         if event == sgs.MarkChanged then
@@ -7985,11 +7985,20 @@ LuaTiansuanMark = sgs.CreateTriggerSkill {
             end
             return false
         end
-        -- 清理标记
-        if rinsan.RIGHT(self, player, 'LuaTiansuan') then
-            for _, p in sgs.qlist(room:getAlivePlayers()) do
-                rinsan.clearAllMarksContains(p, '@LuaTiansuan')
+        -- 周群的回合开始时，需要清理标记
+        if event == sgs.TurnStart then
+            if not rinsan.RIGHT(self, player, 'LuaTiansuan') then
+                return false
             end
+        elseif event == sgs.Death then
+            local death = data:toDeath()
+            if death.who:objectName() ~= player:objectName() or not player:hasSkill('LuaTiansuan') then
+                return false
+            end
+        end
+        -- 清理标记
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            rinsan.clearAllMarksContains(p, '@LuaTiansuan')
         end
     end,
     can_trigger = rinsan.globalTrigger,
