@@ -7904,7 +7904,7 @@ LuaTiansuan = sgs.CreateTriggerSkill {
         if player:getMark('@LuaTiansuanBest') > 0 then
             -- 上上签: 防止所有伤害
             room:notifySkillInvoked(player, 'LuaTiansuan')
-            rinsan.sendLogMessage(room, '#LuaTiansuanWithArg', {
+            rinsan.sendLogMessage(room, '#LuaTiansuanPrevent', {
                 ['from'] = player,
                 ['arg'] = damage.damage,
                 ['arg2'] = '@LuaTiansuanBest',
@@ -7913,28 +7913,41 @@ LuaTiansuan = sgs.CreateTriggerSkill {
         elseif player:getMark('@LuaTiansuanBetter') > 0 then
             -- 上签: 摸一张牌，将伤害值调整为 1
             room:notifySkillInvoked(player, 'LuaTiansuan')
-            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
-                ['from'] = player,
-                ['arg2'] = '@LuaTiansuanBetter',
-            })
+            if damage.damage > 1 then
+                rinsan.sendLogMessage(room, '#LuaTiansuanPreventExtra', {
+                    ['from'] = player,
+                    ['arg'] = damage.damage,
+                    ['arg2'] = '@LuaTiansuanBetter',
+                })
+            end
             player:drawCards(1, self:objectName())
             damage.damage = 1
             data:setValue(damage)
         elseif player:getMark('@LuaTiansuanNormal') > 0 then
             -- 中签: 伤害类型改为火焰，伤害值调整为 1
             room:notifySkillInvoked(player, 'LuaTiansuan')
-            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
-                ['from'] = player,
-                ['arg2'] = '@LuaTiansuanNormal',
-            })
+            if damage.damage > 1 then
+                rinsan.sendLogMessage(room, '#LuaTiansuanPreventExtra', {
+                    ['from'] = player,
+                    ['arg'] = damage.damage,
+                    ['arg2'] = '@LuaTiansuanNormal',
+                })
+            end
+            if damage.nature ~= sgs.DamageStruct_Fire then
+                rinsan.sendLogMessage(room, '#LuaTiansuanChangeNature', {
+                    ['from'] = player,
+                    ['arg2'] = '@LuaTiansuanNormal',
+                })
+            end
             damage.damage = 1
             damage.nature = sgs.DamageStruct_Fire
             data:setValue(damage)
         elseif player:getMark('@LuaTiansuanWorse') > 0 then
             -- 下签: 受到的伤害 +1
             room:notifySkillInvoked(player, 'LuaTiansuan')
-            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
+            rinsan.sendLogMessage(room, '#LuaTiansuanExtraDamage', {
                 ['from'] = player,
+                ['arg'] = 1,
                 ['arg2'] = '@LuaTiansuanWorse',
             })
             damage.damage = damage.damage + 1
@@ -7942,8 +7955,9 @@ LuaTiansuan = sgs.CreateTriggerSkill {
         elseif player:getMark('@LuaTiansuanWorst') > 0 then
             -- 下下签: 受到的伤害 +1（卡牌封锁单独处理）
             room:notifySkillInvoked(player, 'LuaTiansuan')
-            rinsan.sendLogMessage(room, '#LuaTiansuanNoArg', {
+            rinsan.sendLogMessage(room, '#LuaTiansuanExtraDamage', {
                 ['from'] = player,
+                ['arg'] = 1,
                 ['arg2'] = '@LuaTiansuanWorst',
             })
             damage.damage = damage.damage + 1

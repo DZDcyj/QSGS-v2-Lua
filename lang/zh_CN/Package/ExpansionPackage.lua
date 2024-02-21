@@ -664,6 +664,8 @@ return {
     [':@LuaTiansuanWorse'] = '其受到的伤害+1',
     ['@LuaTiansuanWorst'] = '下下签',
     [':@LuaTiansuanWorst'] = '其受到的伤害+1，且不能使用【桃】和【酒】',
-    ['#LuaTiansuanNoArg'] = '%from 的“%arg2”效果被触发',
-    ['#LuaTiansuanWithArg'] = '%from 的“%arg2”效果被触发，防止了 %arg 点伤害',
+    ['#LuaTiansuanPrevent'] = '%from 的“%arg2”效果被触发，防止了 %arg 点伤害',
+    ['#LuaTiansuanPreventExtra'] = '%from 的“%arg2”效果被触发，伤害值由 %arg 减至 <font color="yellow"><b>1</b></font>',
+    ['#LuaTiansuanChangeNature'] = '%from 的“%arg2”效果被触发，伤害类型变为 <font color="yellow"><b>火焰</b></font>',
+    ['#LuaTiansuanExtraDamage'] = '%from 的“%arg2”效果被触发，伤害值增加 %arg',
 }
