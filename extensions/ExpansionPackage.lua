@@ -7745,7 +7745,7 @@ LuaJuetaoCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
         room:broadcastSkillInvoke(self:objectName())
-        source:loseMark('@juetao')
+        source:loseMark('@LuaJuetaoMark')
         local target = targets[1]
         room:setPlayerFlag(source, 'LuaJuetaoTarget')
         room:setPlayerFlag(target, 'LuaJuetaoTarget')
@@ -7786,14 +7786,14 @@ LuaJuetao = sgs.CreateTriggerSkill {
     name = 'LuaJuetao',
     events = {sgs.EventPhaseStart},
     frequency = sgs.Skill_Limited,
-    limit_mark = '@juetao',
+    limit_mark = '@LuaJuetaoMark',
     view_as_skill = LuaJuetaoVS,
     on_trigger = function(self, event, player, data, room)
         room:askForUseCard(player, '@@LuaJuetao', '@LuaJuetao', -1, sgs.Card_MethodNone)
     end,
     can_trigger = function(self, target)
         if rinsan.RIGHTATPHASE(self, target, sgs.Player_Play) then
-            return target:getMark('@juetao') > 0 and target:getHp() == 1
+            return target:getMark('@LuaJuetaoMark') > 0 and target:getHp() == 1
         end
     end,
 }
