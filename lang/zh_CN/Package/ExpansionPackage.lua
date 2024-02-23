@@ -638,6 +638,7 @@ return {
     ['@LuaJuetao'] = '你可以发动“决讨”，指定一名其他角色依次对其使用牌堆底的牌',
     ['~LuaJuetao'] = '选择一名其他角色→点击“确定”',
     ['luajuetao'] = '决讨',
+    ['@LuaJuetaoMark'] = '决讨',
     ['LuaZhushi'] = '助势',
     [':LuaZhushi'] = '主公技，<font color="#547998"><b>每名其他魏势力的角色的回合限一次</s></font>，当该角色回复体力时，你可以令其选择是否令你摸一张牌',
     ['LuaZhushiDraw'] = '令其摸一张牌',
