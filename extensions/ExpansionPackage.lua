@@ -8018,7 +8018,7 @@ ExDongcheng = sgs.General(extension, 'ExDongcheng', 'qun', '4', true, true)
 
 LuaChengzhao = sgs.CreateTriggerSkill {
     name = 'LuaChengzhao',
-    events = {sgs.EventPhaseStart},
+    events = {sgs.EventPhaseEnd},
     on_trigger = function(self, event, player, data, room)
         for _, dongcheng in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
             if dongcheng:getMark('LuaChengzhao-Clear') > 1 then
