@@ -8037,6 +8037,7 @@ LuaChengzhao = sgs.CreateTriggerSkill {
                         slash:setSkillName('_LuaChengzhao')
                         rinsan.addQinggangTag(target, slash)
                         room:useCard(sgs.CardUseStruct(slash, dongcheng, target))
+                        target:removeQinggangTag(slash)
                     end
                 end
             end
