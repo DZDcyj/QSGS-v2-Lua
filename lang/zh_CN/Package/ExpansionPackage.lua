@@ -669,4 +669,10 @@ return {
     ['#LuaTiansuanPreventExtra'] = '%from 的“%arg2”效果被触发，伤害值由 %arg 减至 <font color="yellow"><b>1</b></font>',
     ['#LuaTiansuanChangeNature'] = '%from 的“%arg2”效果被触发，伤害类型变为 <font color="yellow"><b>火焰</b></font>',
     ['#LuaTiansuanExtraDamage'] = '%from 的“%arg2”效果被触发，伤害值增加 %arg',
+    ['ExDongcheng'] = '董承',
+    ['&ExDongcheng'] = '董承',
+    ['#ExDongcheng'] = '沥胆卫汉',
+    ['LuaChengzhao'] = '承诏',
+    [':LuaChengzhao'] = '一名角色的结束阶段，若你本回合获得过至少两张牌，你可以与一名角色拼点，若你赢，视为你对其使用一张无视防具的【杀】',
+    ['LuaChengzhao-Pindian'] = '你可以选择一名其他角色进行拼点，若你赢，视为对其使用一张无视防具的【杀】',
 }
