@@ -675,4 +675,5 @@ return {
     ['LuaChengzhao'] = '承诏',
     [':LuaChengzhao'] = '一名角色的结束阶段结束时，若你本回合获得过至少两张牌，你可以与一名角色拼点，若你赢，视为你对其使用一张无视防具的【杀】',
     ['LuaChengzhao-Pindian'] = '你可以选择一名其他角色进行拼点，若你赢，视为对其使用一张无视防具的【杀】',
+    ['#LuaChengzhaoEmpty'] = '没有可拼点目标可供 %from 发动“%arg”',
 }

@@ -8028,8 +8028,15 @@ LuaChengzhao = sgs.CreateTriggerSkill {
                         splayers:append(p)
                     end
                 end
-                local target =
-                room:askForPlayerChosen(dongcheng, splayers, self:objectName(), 'LuaChengzhao-Pindian', true, true)
+                if splayers:isEmpty() then
+                    rinsan.sendLogMessage(room, '#LuaChengzhaoEmpty', {
+                        ['from'] = dongcheng,
+                        ['arg'] = self:objectName(),
+                    })
+                    return false
+                end
+                local propmt = 'LuaChengzhao-Pindian'
+                local target = room:askForPlayerChosen(dongcheng, splayers, self:objectName(), propmt, true, true)
                 if target then
                     room:broadcastSkillInvoke(self:objectName())
                     if dongcheng:pindian(target, self:objectName()) then
@@ -8042,9 +8049,10 @@ LuaChengzhao = sgs.CreateTriggerSkill {
                 end
             end
         end
+        return false
     end,
     can_trigger = function(self, target)
-        return target and  target:isAlive() and target:getPhase() == sgs.Player_Finish
+        return target and target:isAlive() and target:getPhase() == sgs.Player_Finish
     end,
 }
 
@@ -8067,6 +8075,7 @@ LuaChengzhaoMark = sgs.CreateTriggerSkill {
                 end
             end
         end
+        return false
     end,
     can_trigger = rinsan.targetTrigger,
 }
