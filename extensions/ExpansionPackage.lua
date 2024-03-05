@@ -8013,4 +8013,74 @@ LuaTiansuanMark = sgs.CreateTriggerSkill {
 ExZhouqun:addSkill(LuaTiansuan)
 table.insert(hiddenSkills, LuaTiansuanMark)
 
+-- 董承
+ExDongcheng = sgs.General(extension, 'ExDongcheng', 'qun', '4', true, true)
+
+LuaChengzhao = sgs.CreateTriggerSkill {
+    name = 'LuaChengzhao',
+    events = {sgs.EventPhaseEnd},
+    on_trigger = function(self, event, player, data, room)
+        for _, dongcheng in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if dongcheng:getMark('LuaChengzhao-Clear') > 1 then
+                local splayers = sgs.SPlayerList()
+                for _, p in sgs.qlist(room:getOtherPlayers(dongcheng)) do
+                    if dongcheng:canPindian(p, self:objectName()) then
+                        splayers:append(p)
+                    end
+                end
+                if splayers:isEmpty() then
+                    rinsan.sendLogMessage(room, '#LuaChengzhaoEmpty', {
+                        ['from'] = dongcheng,
+                        ['arg'] = self:objectName(),
+                    })
+                    return false
+                end
+                local propmt = 'LuaChengzhao-Pindian'
+                local target = room:askForPlayerChosen(dongcheng, splayers, self:objectName(), propmt, true, true)
+                if target then
+                    room:broadcastSkillInvoke(self:objectName())
+                    if dongcheng:pindian(target, self:objectName()) then
+                        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+                        slash:setSkillName('_LuaChengzhao')
+                        rinsan.addQinggangTag(target, slash)
+                        room:useCard(sgs.CardUseStruct(slash, dongcheng, target))
+                        target:removeQinggangTag(slash)
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:getPhase() == sgs.Player_Finish
+    end,
+}
+
+LuaChengzhaoMark = sgs.CreateTriggerSkill {
+    name = 'LuaChengzhaoMark',
+    frequency = sgs.Skill_Compulsory,
+    global = true,
+    events = {sgs.CardsMoveOneTime},
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() then
+            for _, id in sgs.qlist(move.card_ids) do
+                if room:getCardOwner(id):objectName() == player:objectName() and room:getCardPlace(id) ==
+                    sgs.Player_PlaceHand then
+                    room:addPlayerMark(player, self:objectName() .. 'engine')
+                    if player:getMark(self:objectName() .. 'engine') > 0 then
+                        room:addPlayerMark(player, 'LuaChengzhao-Clear')
+                        room:removePlayerMark(player, self:objectName() .. 'engine')
+                    end
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+ExDongcheng:addSkill(LuaChengzhao)
+table.insert(hiddenSkills, LuaChengzhaoMark)
+
 rinsan.addHiddenSkills(hiddenSkills)

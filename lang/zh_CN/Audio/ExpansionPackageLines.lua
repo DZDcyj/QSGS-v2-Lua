@@ -322,4 +322,8 @@ return {
     ['$LuaTiansuan1'] = '汝既持签问卜，亦当应天授命',
     ['$LuaTiansuan2'] = '尔若居正体道，福寿自当天成',
     ['~ExZhouqun'] = '及时止损，过犹不及……',
+    -- 董承
+    ['$LuaChengzhao1'] = '定当为皇上诛杀首害！',
+    ['$LuaChengzhao2'] = '此诏字字诛心，岂能不斩曹贼！',
+    ['~ExDongcheng'] = '九泉之下，我等着你曹贼到来！',
 }
