@@ -2260,7 +2260,7 @@ LuaLixingExtraPhase = sgs.CreateTriggerSkill {
             rinsan.sendLogMessage(room, '#LuaDangxianExtraPhase', {
                 ['from'] = player,
             })
-            rinsan.executeExtraPhase(player, sgs.Player_Play, sgs.Player_Discard)
+            rinsan.executeExtraPhase(player, sgs.Player_Play, sgs.Player_Finish)
         end
         return false
     end,
