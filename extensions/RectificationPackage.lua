@@ -165,6 +165,10 @@ LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
             card = resp.m_card
         end
         if card and (not card:isKindOf('SkillCard')) then
+            -- 除去虚拟牌计算
+            if card:isVirtualCard() and card:subcardsLength() == 0 then
+                return false
+            end
             local numberTable = getRectificationStringTable(player, NUMBER_TAG)
             local suitTable = getRectificationStringTable(player, SUIT_TAG)
             local number = card:getNumber()
