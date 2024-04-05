@@ -204,8 +204,7 @@ LuaYajun = sgs.CreateTriggerSkill {
                     from = pindian.to
                 end
                 if toMove then
-                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, from:objectName(), '',
-                        'LuaYajun', '')
+                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, from:objectName(), '', 'LuaYajun', '')
                     room:moveCardTo(toMove, from, nil, sgs.Player_DrawPile, reason, true)
                 end
             else
@@ -361,8 +360,7 @@ LuaYangjieCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = false,
     filter = function(self, selected, to_select)
-        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and
-                   sgs.Self:canPindian(to_select, self:objectName())
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and sgs.Self:canPindian(to_select, self:objectName())
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
