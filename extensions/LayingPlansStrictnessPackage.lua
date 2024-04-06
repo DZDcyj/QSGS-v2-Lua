@@ -596,7 +596,7 @@ LuaShangyiCard = sgs.CreateSkillCard {
         room:clearAG(target)
         room:showAllCards(target, source)
         room:clearAG(source)
-        if target:isKongcheng() then
+        if not target:isKongcheng() then
             local cards = target:handCards()
             room:fillAG(cards, source)
             local id = room:askForAG(source, cards, false, self:objectName())
