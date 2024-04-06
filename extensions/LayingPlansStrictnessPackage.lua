@@ -596,7 +596,7 @@ LuaShangyiCard = sgs.CreateSkillCard {
         room:clearAG(target)
         room:showAllCards(target, source)
         room:clearAG(source)
-        if target:getHandcardNum() > 0 then
+        if target:isKongcheng() then
             local cards = target:handCards()
             room:fillAG(cards, source)
             local id = room:askForAG(source, cards, false, self:objectName())
@@ -635,8 +635,7 @@ LuaJianyi = sgs.CreateTriggerSkill {
                 local shields = room:getTag('LuaJianyi'):toIntList()
                 for _, id in sgs.qlist(move.card_ids) do
                     local cd = sgs.Sanguosha:getCard(id)
-                    if cd:isKindOf('Armor') and room:getCardPlace(id) == sgs.Player_DiscardPile and
-                        (not shields:contains(id)) then
+                    if cd:isKindOf('Armor') and (not shields:contains(id)) then
                         shields:append(id)
                     end
                 end
@@ -650,7 +649,13 @@ LuaJianyi = sgs.CreateTriggerSkill {
         if change.to == sgs.Player_NotActive then
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do
                 if p:hasSkill(self:objectName()) then
-                    local shields = room:getTag('LuaJianyi'):toIntList()
+                    local orig_shields = room:getTag('LuaJianyi'):toIntList()
+                    local shields = sgs.IntList()
+                    for _, id in sgs.qlist(orig_shields) do
+                        if room:getCardPlace(id) == sgs.Player_DiscardPile then
+                            shields:append(id)
+                        end
+                    end
                     if shields:isEmpty() then
                         break
                     end
