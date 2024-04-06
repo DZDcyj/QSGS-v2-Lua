@@ -7,6 +7,9 @@ extension = sgs.Package('PuyuanEquipCardPackage', sgs.Package_CardPack)
 local rinsan = require('QSanguoshaLuaFunction')
 
 local function weaponTrigger(self, target)
+    if not target then
+        return false
+    end
     local weapon = target:getWeapon()
     return target and weapon and weapon:objectName() == self:objectName()
 end

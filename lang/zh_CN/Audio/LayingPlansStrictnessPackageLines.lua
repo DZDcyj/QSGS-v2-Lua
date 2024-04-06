@@ -34,4 +34,10 @@ return {
     ['$LuaZhengjun2'] = '汝等不怀余力，皆有平贼之功！', -- 整肃成功
     ['$LuaZhengjun3'] = '仁恕之道，终非治军良策！', -- 整肃失败
     ['~ExHuangfusong'] = '力有所能，臣必为也……',
+    -- 蒋钦
+    ['$LuaShangyi1'] = '国士，当以义为先！',
+    ['$LuaShangyi2'] = '豪侠尚义，何拘俗礼！',
+    ['$LuaJianyi1'] = '今虽富贵，亦不可浪费',
+    ['$LuaJianyi2'] = '缩衣克俭，才是兴家之道',
+    ['~ExJiangqin'] = '奋敌护主，成吾忠名……',
 }

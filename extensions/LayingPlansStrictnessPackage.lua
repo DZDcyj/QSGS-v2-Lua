@@ -204,8 +204,7 @@ LuaYajun = sgs.CreateTriggerSkill {
                     from = pindian.to
                 end
                 if toMove then
-                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, from:objectName(), '',
-                        'LuaYajun', '')
+                    local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, from:objectName(), '', 'LuaYajun', '')
                     room:moveCardTo(toMove, from, nil, sgs.Player_DrawPile, reason, true)
                 end
             else
@@ -361,8 +360,7 @@ LuaYangjieCard = sgs.CreateSkillCard {
     target_fixed = false,
     will_throw = false,
     filter = function(self, selected, to_select)
-        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and
-                   sgs.Self:canPindian(to_select, self:objectName())
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and sgs.Self:canPindian(to_select, self:objectName())
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
@@ -580,5 +578,112 @@ LuaZhengjun = sgs.CreateTriggerSkill {
 ExHuangfusong:addSkill(LuaTaoluan)
 ExHuangfusong:addSkill(LuaShiji)
 ExHuangfusong:addSkill(LuaZhengjun)
+
+ExJiangqin = sgs.General(extension, 'ExJiangqin', 'wu', '4', true, true)
+
+LuaShangyiCard = sgs.CreateSkillCard {
+    name = 'LuaShangyi',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0) and (not to_select:isKongcheng())
+    end,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local target = targets[1]
+        room:showAllCards(source, target)
+        room:getThread():delay(1000)
+        room:clearAG(target)
+        room:showAllCards(target, source)
+        room:clearAG(source)
+        if not target:isKongcheng() then
+            local cards = target:handCards()
+            room:fillAG(cards, source)
+            local id = room:askForAG(source, cards, false, self:objectName())
+            if id ~= -1 then
+                room:obtainCard(source, id)
+            end
+            room:clearAG(source)
+        end
+    end,
+}
+
+LuaShangyi = sgs.CreateOneCardViewAsSkill {
+    name = 'LuaShangyi',
+    view_filter = function(self, to_select)
+        return true
+    end,
+    view_as = function(self, card)
+        local shangyiCard = LuaShangyiCard:clone()
+        shangyiCard:addSubcard(card)
+        return shangyiCard
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaShangyi')
+    end,
+}
+
+LuaJianyi = sgs.CreateTriggerSkill {
+    name = 'LuaJianyi',
+    events = {sgs.CardsMoveOneTime, sgs.EventPhaseChanging},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if (move.to_place == sgs.Player_DiscardPile) and
+                rinsan.moveBasicReasonCompare(move.reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) then
+                local shields = room:getTag('LuaJianyi'):toIntList()
+                for _, id in sgs.qlist(move.card_ids) do
+                    local cd = sgs.Sanguosha:getCard(id)
+                    if cd:isKindOf('Armor') and (not shields:contains(id)) then
+                        shields:append(id)
+                    end
+                end
+                local shieldVariant = sgs.QVariant()
+                shieldVariant:setValue(shields)
+                room:setTag('LuaJianyi', shieldVariant)
+            end
+            return false
+        end
+        local change = data:toPhaseChange()
+        if change.to == sgs.Player_NotActive then
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do
+                if p:hasSkill(self:objectName()) then
+                    local orig_shields = room:getTag('LuaJianyi'):toIntList()
+                    local shields = sgs.IntList()
+                    for _, id in sgs.qlist(orig_shields) do
+                        if room:getCardPlace(id) == sgs.Player_DiscardPile then
+                            shields:append(id)
+                        end
+                    end
+                    if shields:isEmpty() then
+                        break
+                    end
+                    room:sendCompulsoryTriggerLog(p, self:objectName())
+                    room:broadcastSkillInvoke(self:objectName())
+                    room:fillAG(shields, p)
+                    local id = room:askForAG(p, shields, false, self:objectName())
+                    if id ~= -1 then
+                        room:obtainCard(p, id)
+                    end
+                    room:clearAG(p)
+                    shields:removeAll(id)
+                    local variant = sgs.QVariant()
+                    variant:setValue(shields)
+                    room:setTag('LuaJianyi', variant)
+                end
+            end
+            local emptyList = sgs.IntList()
+            local emptyVariant = sgs.QVariant()
+            emptyVariant:setValue(emptyList)
+            room:setTag('LuaJianyi', emptyVariant)
+        end
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+ExJiangqin:addSkill(LuaShangyi)
+ExJiangqin:addSkill(LuaJianyi)
 
 rinsan.addHiddenSkills(hiddenSkills)
