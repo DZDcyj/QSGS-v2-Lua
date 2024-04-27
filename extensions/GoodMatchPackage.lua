@@ -351,16 +351,16 @@ LuaXiongyi = sgs.CreateTriggerSkill {
                             -- 如果主将是孙翊
                             -- 默认副将不是，如果副将也是，做额外询问
                             if secondGeneralName == 'ExTenYearSunyi' then
-                                local choice = room:askForChoice(player, self:objectName(), 'GeneralA+GeneralB')
-                                isSecondaryHero = (choice == 'GeneralB')
+                                local general_choice = room:askForChoice(player, self:objectName(), 'GeneralA+GeneralB')
+                                isSecondaryHero = (general_choice == 'GeneralB')
                             end
                         else
                             -- 默认副将不为，此处默认为
                             isSecondaryHero = true
                             -- 主将不是孙翊，若副将也不是孙翊，则额外询问
                             if secondGeneralName ~= 'ExTenYearSunyi' then
-                                local choice = room:askForChoice(player, self:objectName(), 'GeneralA+GeneralB')
-                                isSecondaryHero = (choice == 'GeneralB')
+                                local general_choice = room:askForChoice(player, self:objectName(), 'GeneralA+GeneralB')
+                                isSecondaryHero = (general_choice == 'GeneralB')
                             end
                         end
                     end
