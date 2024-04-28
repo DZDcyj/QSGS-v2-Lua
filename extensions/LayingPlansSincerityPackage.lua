@@ -193,8 +193,7 @@ LuaLiubingObtain = sgs.CreateTriggerSkill {
             end
         else
             local damage = data:toDamage()
-            if damage.card and damage.card:isKindOf('Slash') and damage.card:isBlack() and
-                (not damage.card:isVirtualCard()) then
+            if damage.card and damage.card:isKindOf('Slash') and damage.card:isBlack() and (not damage.card:isVirtualCard()) then
                 room:setCardFlag(damage.card, 'LuaLiubingDamaged')
             end
         end
@@ -355,8 +354,8 @@ LuaChuhaiWake = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data, room)
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
-            if move.to and move.to:objectName() == player:objectName() and player:hasSkill('LuaChuhai') and
-                move.to_place == sgs.Player_PlaceEquip then
+            if move.to and move.to:objectName() == player:objectName() and player:hasSkill('LuaChuhai') and move.to_place ==
+                sgs.Player_PlaceEquip then
                 if player:getMark('LuaChuhaiWake') > 0 then
                     return false
                 end
@@ -448,8 +447,7 @@ LuaZhangming = sgs.CreateTriggerSkill {
             end
         elseif event == sgs.TrickCardCanceling then
             local effect = data:toCardEffect()
-            if effect.from and rinsan.RIGHT(self, effect.from) and effect.card and effect.card:getSuit() ==
-                sgs.Card_Club then
+            if effect.from and rinsan.RIGHT(self, effect.from) and effect.card and effect.card:getSuit() == sgs.Card_Club then
                 return true
             end
         elseif event == sgs.CardAsked then
@@ -1073,7 +1071,6 @@ LuaPingheCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, 'LuaPinghe')
         local target = targets[1]
-        room:loseMaxHp(source)
         local card = sgs.Sanguosha:getCard(self:getSubcards():first())
         target:obtainCard(card, false)
     end,
@@ -1111,6 +1108,7 @@ LuaPinghe = sgs.CreateTriggerSkill {
         if player:getMaxHp() > 1 and (not player:isKongcheng()) then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
+            room:loseMaxHp(player)
             room:askForUseCard(player, '@@LuaPinghe!', 'LuaPingheGive', -1, sgs.Card_MethodNone)
             if damage.from and player:hasSkill('LuaYingba') then
                 damage.from:gainMark('@LuaPingding')
