@@ -338,8 +338,35 @@ LuaXiongyi = sgs.CreateTriggerSkill {
                     local maxhp = player:getMaxHp()
                     local hp = math.min(3, maxhp)
                     rinsan.recover(player, hp - player:getHp())
+                    -- 需要根据主副将判断
+                    local firstGeneralName = player:getGeneralName()
+                    local secondGeneralName = player:getGeneral2Name()
+
+                    -- 默认单将，改主将位置
+                    local isSecondaryHero = false
+
+                    -- 双将才涉及询问，否则默认主将
+                    if secondGeneralName ~= '' then
+                        if firstGeneralName == 'ExTenYearSunyi' then
+                            -- 如果主将是孙翊
+                            -- 默认副将不是，如果副将也是，做额外询问
+                            if secondGeneralName == 'ExTenYearSunyi' then
+                                local general_choice = room:askForChoice(player, self:objectName(), 'GeneralA+GeneralB')
+                                isSecondaryHero = (general_choice == 'GeneralB')
+                            end
+                        else
+                            -- 默认副将不为，此处默认为
+                            isSecondaryHero = true
+                            -- 主将不是孙翊，若副将也不是孙翊，则额外询问
+                            if secondGeneralName ~= 'ExTenYearSunyi' then
+                                local general_choice = room:askForChoice(player, self:objectName(), 'GeneralA+GeneralB')
+                                isSecondaryHero = (general_choice == 'GeneralB')
+                            end
+                        end
+                    end
+
                     -- 将卡牌替换为徐氏
-                    room:changeHero(player, 'xushi', false, true, false, true)
+                    room:changeHero(player, 'xushi', false, true, isSecondaryHero, true)
                     room:setPlayerProperty(player, 'maxhp', sgs.QVariant(maxhp))
                 else
                     room:broadcastSkillInvoke(self:objectName(), 1)
@@ -387,7 +414,6 @@ LuaSunyiHunzi = sgs.CreateTriggerSkill {
         return rinsan.canWakeAtPhase(target, self:objectName(), sgs.Player_Start) and (target:getHp() <= 1)
     end,
 }
-
 
 ExTenYearSunyi:addSkill(LuaJiqiao)
 ExTenYearSunyi:addSkill(LuaXiongyi)
