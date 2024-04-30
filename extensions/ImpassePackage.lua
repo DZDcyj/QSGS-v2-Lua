@@ -157,6 +157,9 @@ LuaDaji = sgs.CreateTriggerSkill {
             if (not isBaozou(player)) or (not player:isWounded()) then
                 return false
             end
+            if player:getPhase() ~= sgs.Player_NotActive then
+                return false
+            end
             local use = data:toCardUse()
             if use.card and use.card:isKindOf('TrickCard') then
                 if use.to:length() == 1 and use.to:contains(player) then
