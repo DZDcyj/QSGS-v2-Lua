@@ -433,17 +433,22 @@ LuaXunshiTargetMod = sgs.CreateTargetModSkill {
 
 LuaXunshiUsed = sgs.CreateTriggerSkill {
     name = 'LuaXunshiUsed',
-    events = {sgs.CardUsed},
+    events = {sgs.CardUsed, sgs.CardResponded},
     global = true,
     on_trigger = function(self, event, player, data, room)
-        local use = data:toCardUse()
-        if use.card:isKindOf('SkillCard') then
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            card = data:toCardResponse().m_card
+        end
+        if (not card) or card:isKindOf('SkillCard') then
             return false
         end
         if player:getMark('LuaXunshiAdd') >= 4 then
             return false
         end
-        if use.card:getSuit() == sgs.Card_NoSuit then
+        if card:getSuit() == sgs.Card_NoSuit then
             room:addPlayerMark(player, 'LuaXunshiAdd')
         end
     end,
