@@ -25,17 +25,28 @@ LuaZaoli = sgs.CreateTriggerSkill {
         if isStart then
             room:sendCompulsoryTriggerLog(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName())
-        end
-        for _, cd in sgs.qlist(player:getHandcards()) do
-            -- 带 -Clear 的标记通通由 extra.lua 内部接管，回合结束后消除
-            if player:getMark(string.format('%s%d-Clear', self:objectName(), cd:getId())) == 0 then
-                if isStart then
+            -- 卡牌封禁移到前面
+            -- 仅封禁手牌中的、非本回合获取到的牌
+            for _, cd in sgs.qlist(player:getHandcards()) do
+                -- 带 -Clear 的标记通通由 extra.lua 内部接管，回合结束后消除
+                if player:getMark(string.format('%s%d-Clear', self:objectName(), cd:getId())) == 0 then
                     room:setPlayerCardLimitation(player, 'use, response', cd:toString(), false)
-                else
-                    room:removePlayerCardLimitation(player, 'use, response', cd:toString() .. '$0')
                 end
             end
+            return false
         end
+
+        -- 拆分出牌阶段开始时和出牌阶段结束时，避免出现清理失败的问题
+        -- 单独处理解除卡牌封禁的问题
+        -- 直接解除所有带卡牌标签的封禁
+        for i = 0, 10000 do
+            local _cd = sgs.Sanguosha:getEngineCard(i)
+            if _cd == nil then
+                break
+            end
+            room:removePlayerCardLimitation(player, 'use, response', _cd:toString() .. '$0')
+        end
+
         return false
     end,
     can_trigger = function(self, target)
@@ -758,8 +769,7 @@ LuaChongjian = sgs.CreateTriggerSkill {
             room:setPlayerFlag(victim, 'xuanhuo_InTempMoving')
             room:setTag('LuaFakeMove', sgs.QVariant(true))
             for i = 0, x - 1, 1 do
-                local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone,
-                    cards)
+                local id = room:askForCardChosen(player, victim, 'e', self:objectName(), false, sgs.Card_MethodNone, cards)
                 local place = room:getCardPlace(id)
                 orig_places[i] = place
                 cards:append(id)
@@ -970,8 +980,7 @@ LuaShanxie = sgs.CreateTriggerSkill {
                 local index = effect.jink_num
                 while index > 0 do
                     local suffix = index == effect.jink_num and '-start' or ''
-                    prompt = string.format('@LuaShanxie-multi-jink%s:%s::%s:%s', suffix, slasher:objectName(), index,
-                        number)
+                    prompt = string.format('@LuaShanxie-multi-jink%s:%s::%s:%s', suffix, slasher:objectName(), index, number)
                     local temp = room:askForCard(effect.to, 'jink', prompt, data, sgs.Card_MethodUse, effect.from)
                     if room:isJinkEffected(effect.to, temp) then
                         jink:addSubcard(temp:getEffectiveId())
