@@ -8083,4 +8083,99 @@ LuaChengzhaoMark = sgs.CreateTriggerSkill {
 ExDongcheng:addSkill(LuaChengzhao)
 table.insert(hiddenSkills, LuaChengzhaoMark)
 
+-- 鲍信
+ExBaoxin = sgs.General(extension, 'ExBaoxin', 'qun', '4', true, true)
+
+LuaMutaoCard = sgs.CreateSkillCard {
+    name = 'LuaMutao',
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return #targets == 0
+    end,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local slasher = targets[1]
+        local slashes = sgs.IntList()
+        for _, cd in sgs.qlist(slasher:getHandcards()) do
+            if cd:isKindOf('Slash') then
+                slashes:append(cd:getEffectiveId())
+            end
+        end
+        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        dummy:addSubcards(slashes)
+        slasher:addToPile('LuaMutao', dummy)
+        local curr = slasher
+        for _, id in sgs.qlist(slashes) do
+            curr = curr:getNextAlive(1)
+            curr:obtainCard(sgs.Sanguosha:getCard(id), true)
+        end
+        local slashCount = 0
+        for _, cd in sgs.qlist(curr:getHandcards()) do
+            if cd:isKindOf('Slash') then
+                slashCount = slashCount + 1
+            end
+        end
+        local damageCount = math.min(2, slashCount)
+        if damageCount > 0 then
+            room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), curr:objectName())
+            rinsan.doDamage(source, curr, damageCount)
+        end
+    end,
+}
+
+LuaMutao = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaMutao',
+    view_as = function(self, cards)
+        return LuaMutaoCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaMutao')
+    end,
+}
+
+LuaYimou = sgs.CreateTriggerSkill {
+    name = 'LuaYimou',
+    events = {sgs.Damaged},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        local victim = data:toDamage().to
+        if not victim:isAlive() then
+            return false
+        end
+        for _, baoxin in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if baoxin:distanceTo(victim) <= 1 and room:askForSkillInvoke(baoxin, self:objectName(), data) then
+                local choice = room:askForChoice(baoxin, self:objectName(), 'LuaYimouChoice1+LuaYimouChoice2')
+                room:broadcastSkillInvoke(self:objectName())
+                if choice == 'LuaYimouChoice1' then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, baoxin:objectName(), victim:objectName())
+                    -- 从牌堆中获取一张杀
+                    local togain = rinsan.obtainTargetedTypeCard(room, {
+                        ['type'] = 'Slash',
+                    })
+                    if togain then
+                        player:obtainCard(togain, true)
+                    end
+                else
+                    -- 交给别的角色一张牌，然后摸一张牌
+                    local target = room:askForPlayerChosen(victim, room:getOtherPlayers(victim), self:objectName(),
+                        '@LuaYimou-choose', false)
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, victim:objectName(), target:objectName())
+                    local prompt = string.format('LuaYimou-Give:%s', target:objectName())
+                    local give = room:askForExchange(player, self:objectName(), 1, 1, true, prompt, false)
+                    if give then
+                        room:moveCardTo(give, target, sgs.Player_PlaceHand, false)
+                    end
+                    victim:drawCards(1, self:objectName())
+                end
+            end
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+ExBaoxin:addSkill(LuaMutao)
+ExBaoxin:addSkill(LuaYimou)
+
 rinsan.addHiddenSkills(hiddenSkills)
