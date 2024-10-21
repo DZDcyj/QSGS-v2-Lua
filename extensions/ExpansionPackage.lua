@@ -8137,15 +8137,24 @@ LuaMutao = sgs.CreateZeroCardViewAsSkill {
 LuaYimou = sgs.CreateTriggerSkill {
     name = 'LuaYimou',
     events = {sgs.Damaged},
-    frequency = sgs.Skill_Frequent,
     on_trigger = function(self, event, player, data, room)
         local victim = data:toDamage().to
         if not victim:isAlive() then
             return false
         end
         for _, baoxin in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-            if baoxin:distanceTo(victim) <= 1 and room:askForSkillInvoke(baoxin, self:objectName(), data) then
-                local choice = room:askForChoice(baoxin, self:objectName(), 'LuaYimouChoice1+LuaYimouChoice2')
+            local data2 = sgs.QVariant()
+            data2:setValue(victim)
+            if baoxin:distanceTo(victim) <= 1 then
+                local choices = {'LuaYimouChoice1'}
+                if not victim:isKongcheng() then
+                    table.insert(choices, 'LuaYimouChoice2')
+                end
+                table.insert(choices, 'cancel')
+                local choice = room:askForChoice(baoxin, self:objectName(), table.concat(choices, '+'))
+                if choice == 'cancel' then
+                    goto next_baoxin
+                end
                 room:broadcastSkillInvoke(self:objectName())
                 if choice == 'LuaYimouChoice1' then
                     room:doAnimate(rinsan.ANIMATE_INDICATE, baoxin:objectName(), victim:objectName())
@@ -8162,13 +8171,14 @@ LuaYimou = sgs.CreateTriggerSkill {
                         '@LuaYimou-choose', false)
                     room:doAnimate(rinsan.ANIMATE_INDICATE, victim:objectName(), target:objectName())
                     local prompt = string.format('LuaYimou-Give:%s', target:objectName())
-                    local give = room:askForExchange(player, self:objectName(), 1, 1, true, prompt, false)
+                    local give = room:askForExchange(player, self:objectName(), 1, 1, false, prompt, false)
                     if give then
                         room:moveCardTo(give, target, sgs.Player_PlaceHand, false)
                     end
                     victim:drawCards(1, self:objectName())
                 end
             end
+            ::next_baoxin::
         end
         return false
     end,
