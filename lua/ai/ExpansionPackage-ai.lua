@@ -2147,3 +2147,16 @@ sgs.ai_skill_choice['LuaZhushi'] = function(self, choices, data)
     local caomao = data:toPlayer()
     return self:isFriend(caomao) and 'LuaZhushiDraw' or 'cancel'
 end
+
+-- 毅谋选择
+-- 应援选择目标
+sgs.ai_skill_playerchosen['LuaYimou'] = function(self, targets)
+    targets = sgs.QList2Table(targets)
+    self:sort(targets)
+    for _, target in ipairs(targets) do
+        if self:isFriend(target) and not playerHasManjuanEffect(target) and not self:needKongcheng(target, true) then
+            return target
+        end
+    end
+    return targets[rinsan.random(1, #targets)]
+end
