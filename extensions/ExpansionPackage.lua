@@ -8119,7 +8119,7 @@ LuaMutaoCard = sgs.CreateSkillCard {
         local damageCount = math.min(2, slashCount)
         if damageCount > 0 then
             room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), curr:objectName())
-            rinsan.doDamage(source, curr, damageCount)
+            rinsan.doDamage(slasher, curr, damageCount)
         end
     end,
 }
