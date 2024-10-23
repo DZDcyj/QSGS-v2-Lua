@@ -2149,7 +2149,7 @@ sgs.ai_skill_choice['LuaZhushi'] = function(self, choices, data)
 end
 
 -- 毅谋选择
--- 应援选择目标
+-- 毅谋选择目标
 sgs.ai_skill_playerchosen['LuaYimou'] = function(self, targets)
     targets = sgs.QList2Table(targets)
     self:sort(targets)

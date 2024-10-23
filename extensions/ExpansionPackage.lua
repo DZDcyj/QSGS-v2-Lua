@@ -8143,8 +8143,6 @@ LuaYimou = sgs.CreateTriggerSkill {
             return false
         end
         for _, baoxin in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
-            local data2 = sgs.QVariant()
-            data2:setValue(victim)
             if baoxin:distanceTo(victim) <= 1 then
                 local choices = {'LuaYimouChoice1'}
                 if not victim:isKongcheng() then
