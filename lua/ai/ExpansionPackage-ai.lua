@@ -2148,15 +2148,50 @@ sgs.ai_skill_choice['LuaZhushi'] = function(self, choices, data)
     return self:isFriend(caomao) and 'LuaZhushiDraw' or 'cancel'
 end
 
--- 毅谋选择
--- 毅谋选择目标
-sgs.ai_skill_playerchosen['LuaYimou'] = function(self, targets)
-    targets = sgs.QList2Table(targets)
-    self:sort(targets)
-    for _, target in ipairs(targets) do
-        if self:isFriend(target) and not playerHasManjuanEffect(target) and not self:needKongcheng(target, true) then
-            return target
-        end
-    end
-    return targets[rinsan.random(1, #targets)]
+-- 毅谋给牌选择
+sgs.ai_skill_askforyiji['LuaYimou'] = function(self, card_ids)
+	local available_friends = {}
+	for _, friend in ipairs(self.friends_noself) do
+		if not friend:hasSkill("manjuan") and not self:isLihunTarget(friend) then table.insert(available_friends, friend) end
+	end
+
+	local toGive, allcards = {}, {}
+	local keep
+	for _, id in ipairs(card_ids) do
+		local card = sgs.Sanguosha:getCard(id)
+		if not keep and (isCard("Jink", card, self.player) or isCard("Analeptic", card, self.player)) then
+			keep = true
+		else
+			table.insert(toGive, card)
+		end
+		table.insert(allcards, card)
+	end
+
+	local cards = #toGive > 0 and toGive or allcards
+	self:sortByKeepValue(cards, true)
+	local id = cards[1]:getId()
+
+	local card, friend = self:getCardNeedPlayer(cards)
+	if card and friend and table.contains(available_friends, friend) then return friend, card:getId() end
+
+	if #available_friends > 0 then
+		self:sort(available_friends, "handcard")
+		for _, afriend in ipairs(available_friends) do
+			if not self:needKongcheng(afriend, true) then
+				return afriend, id
+			end
+		end
+		self:sort(available_friends, "defense")
+		return available_friends[1], id
+	end
+
+    -- 没有友方，选择最差的牌给随机一人
+    local all_players = self.room:getOtherPlayers(self.player)
+    local all_players_table = sgs.QList2Table(all_players)
+    rinsan.shuffleTable(all_players_table)
+
+    self:sortByKeepValue(cards)
+	id = cards[1]:getId()
+
+	return all_players_table[rinsan.random(1, #all_players_table)], id
 end
