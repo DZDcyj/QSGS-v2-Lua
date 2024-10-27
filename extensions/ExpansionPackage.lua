@@ -8165,6 +8165,7 @@ LuaYimou = sgs.CreateTriggerSkill {
                     end
                 else
                     -- 交给别的角色一张牌，然后摸一张牌
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, baoxin:objectName(), victim:objectName())
                     room:askForYiji(victim, victim:handCards(), self:objectName(), false, false, false, 1)
                     victim:drawCards(1, self:objectName())
                 end
