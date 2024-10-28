@@ -394,8 +394,7 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                     for _, enemy in ipairs(self.enemies) do
                         -- 敌人必须有对应的判定区
                         if enemy:hasJudgeArea() and not enemy:containsTrick(judge:objectName()) and
-                            not enemy:containsTrick('YanxiaoCard') and
-                            not self.room:isProhibited(self.player, enemy, judge) and
+                            not enemy:containsTrick('YanxiaoCard') and not self.room:isProhibited(self.player, enemy, judge) and
                             not (enemy:hasSkill('hongyan') or judge:isKindOf('Lightning')) then
                             target = enemy
                             break
@@ -422,8 +421,7 @@ sgs.ai_skill_use['@@LuaRangjie'] = function(self, prompt, method)
                 if judge:isKindOf('YanxiaoCard') then
                     for _, friend in ipairs(self.friends) do
                         if friend:hasJudgeArea() and not friend:containsTrick(judge:objectName()) and
-                            not self.room:isProhibited(self.player, friend, judge) and
-                            not friend:getJudgingArea():isEmpty() then
+                            not self.room:isProhibited(self.player, friend, judge) and not friend:getJudgingArea():isEmpty() then
                             target = friend
                             break
                         end
@@ -738,8 +736,8 @@ sgs.ai_skill_use['@@LuaYinghun'] = function(self, prompt, method)
             end
         end
 
-        if not target and assistTarget and not playerHasManjuanEffect(assistTarget) and assistTarget:getCardCount(true) >
-            0 and not self:needKongcheng(assistTarget, true) then
+        if not target and assistTarget and not playerHasManjuanEffect(assistTarget) and assistTarget:getCardCount(true) > 0 and
+            not self:needKongcheng(assistTarget, true) then
             target = assistTarget
         end
 
@@ -1286,8 +1284,7 @@ sgs.ai_skill_invoke.LuaShouye = function(self, data)
     local use = data:toCardUse()
     local card = use.card
     -- 判断牌是否为好牌，不是就发动
-    if card:isKindOf('Peach') or card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or
-        card:isKindOf('ExNihilo') then
+    if card:isKindOf('Peach') or card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
         return false
     end
     return true
@@ -1360,17 +1357,16 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
         end
     end
 
-    if dengai and self:isFriend(dengai) and
-        (not self:isWeak(dengai) or self:getEnemyNumBySeat(self.player, dengai) == 0) and dengai:hasSkill('zaoxian') and
-        dengai:getMark('zaoxian') == 0 and dengai:getPile('field'):length() == 2 and add_player(dengai, 1) ==
-        LuaLiezhi_mark then
+    if dengai and self:isFriend(dengai) and (not self:isWeak(dengai) or self:getEnemyNumBySeat(self.player, dengai) == 0) and
+        dengai:hasSkill('zaoxian') and dengai:getMark('zaoxian') == 0 and dengai:getPile('field'):length() == 2 and
+        add_player(dengai, 1) == LuaLiezhi_mark then
         return parseLuaLiezhiCard()
     end
 
     if jiedengai and self:isFriend(jiedengai) and
         (not self:isWeak(jiedengai) or self:getEnemyNumBySeat(self.player, jiedengai) == 0) and
-        jiedengai:hasSkill('LuaZaoxian') and jiedengai:getMark('zaoxian') == 0 and jiedengai:getPile('field'):length() ==
-        2 and add_player(jiedengai, 1) == LuaLiezhi_mark then
+        jiedengai:hasSkill('LuaZaoxian') and jiedengai:getMark('zaoxian') == 0 and jiedengai:getPile('field'):length() == 2 and
+        add_player(jiedengai, 1) == LuaLiezhi_mark then
         return parseLuaLiezhiCard()
     end
 
@@ -1412,8 +1408,7 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
             local def = sgs.getDefenseSlash(enemy)
             local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
             local eff = self:slashIsEffective(slash, enemy, zhijiangwei) and sgs.isGoodTarget(enemy, self.enemies, self)
-            if zhijiangwei:canSlash(enemy, slash) and not self:slashProhibit(slash, enemy, zhijiangwei) and eff and def <
-                4 then
+            if zhijiangwei:canSlash(enemy, slash) and not self:slashProhibit(slash, enemy, zhijiangwei) and eff and def < 4 then
                 isGood = true
             end
         end
@@ -1422,8 +1417,8 @@ sgs.ai_skill_use['@@LuaLiezhi'] = function(self, prompt, method)
         end
     end
 
-    local goodSkills = {'jijiu', 'qingnang', 'xinzhan', 'leiji', 'jieyin', 'beige', 'kanpo', 'liuli', 'qiaobian',
-                        'zhiheng', 'guidao', 'longhun', 'xuanfeng', 'tianxiang', 'noslijian', 'lijian'}
+    local goodSkills = {'jijiu', 'qingnang', 'xinzhan', 'leiji', 'jieyin', 'beige', 'kanpo', 'liuli', 'qiaobian', 'zhiheng',
+                        'guidao', 'longhun', 'xuanfeng', 'tianxiang', 'noslijian', 'lijian'}
 
     for i = 1, #self.enemies, 1 do
         local p = self.enemies[i]
@@ -1586,8 +1581,8 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
     self:sort(self.friends_noself, 'defense')
     for _, friend in ipairs(self.friends_noself) do
         if friend:getHandcardNum() < 2 and friend:getHandcardNum() + 1 < self.player:getHandcardNum() and
-            not self:needKongcheng(friend, true) and not playerHasManjuanEffect(friend) and
-            friend:getMark('LuaPaiyi_biu') == 0 then
+            not self:needKongcheng(friend, true) and not playerHasManjuanEffect(friend) and friend:getMark('LuaPaiyi_biu') ==
+            0 then
             target = friend
         end
         if target then
@@ -1633,9 +1628,8 @@ sgs.ai_skill_use_func['#LuaPaiyiCard'] = function(card, use, self)
                 if not (self:hasSkills(sgs.masochism_skill, enemy) and not self.player:hasSkill('jueqing')) and
                     not enemy:hasSkills(sgs.cardneed_skill .. '|jijiu|tianxiang|buyi') and
                     self:damageIsEffective(enemy, sgs.DamageStruct_Normal, self.player) and not self:cantbeHurt(enemy) and
-                    not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and
-                    enemy:getHandcardNum() + 2 > self.player:getHandcardNum() and not enemy:hasSkill('manjuan') and
-                    enemy:getMark('LuaPaiyi_biu') == 0 then
+                    not (self:getDamagedEffects(enemy, self.player) or self:needToLoseHp(enemy)) and enemy:getHandcardNum() +
+                    2 > self.player:getHandcardNum() and not enemy:hasSkill('manjuan') and enemy:getMark('LuaPaiyi_biu') == 0 then
                     target = enemy
                 end
                 if target then
@@ -1659,8 +1653,7 @@ sgs.ai_card_intention.LuaPaiyiCard = function(self, card, from, tos)
         return
     end
     if not playerHasManjuanEffect(to) and
-        ((to:getHandcardNum() < 2 and to:getHandcardNum() + 1 < from:getHandcardNum() and
-            not self:needKongcheng(to, true)) or
+        ((to:getHandcardNum() < 2 and to:getHandcardNum() + 1 < from:getHandcardNum() and not self:needKongcheng(to, true)) or
             (to:getHandcardNum() + 2 > from:getHandcardNum() and
                 (self:getDamagedEffects(to, from) or self:needToLoseHp(to, from)))) then
         return
@@ -2146,4 +2139,56 @@ end
 sgs.ai_skill_choice['LuaZhushi'] = function(self, choices, data)
     local caomao = data:toPlayer()
     return self:isFriend(caomao) and 'LuaZhushiDraw' or 'cancel'
+end
+
+-- 毅谋给牌选择
+sgs.ai_skill_askforyiji['LuaYimou'] = function(self, card_ids)
+    local available_friends = {}
+    for _, friend in ipairs(self.friends_noself) do
+        if not friend:hasSkill("manjuan") and not self:isLihunTarget(friend) then
+            table.insert(available_friends, friend)
+        end
+    end
+
+    local toGive, allcards = {}, {}
+    local keep
+    for _, id in ipairs(card_ids) do
+        local card = sgs.Sanguosha:getCard(id)
+        if not keep and (isCard("Jink", card, self.player) or isCard("Analeptic", card, self.player)) then
+            keep = true
+        else
+            table.insert(toGive, card)
+        end
+        table.insert(allcards, card)
+    end
+
+    local cards = #toGive > 0 and toGive or allcards
+    self:sortByKeepValue(cards, true)
+    local id = cards[1]:getId()
+
+    local card, friend = self:getCardNeedPlayer(cards)
+    if card and friend and table.contains(available_friends, friend) then
+        return friend, card:getId()
+    end
+
+    if #available_friends > 0 then
+        self:sort(available_friends, "handcard")
+        for _, afriend in ipairs(available_friends) do
+            if not self:needKongcheng(afriend, true) then
+                return afriend, id
+            end
+        end
+        self:sort(available_friends, "defense")
+        return available_friends[1], id
+    end
+
+    -- 没有友方，选择最差的牌给随机一人
+    local all_players = self.room:getOtherPlayers(self.player)
+    local all_players_table = sgs.QList2Table(all_players)
+    rinsan.shuffleTable(all_players_table)
+
+    self:sortByKeepValue(cards)
+    id = cards[1]:getId()
+
+    return all_players_table[rinsan.random(1, #all_players_table)], id
 end

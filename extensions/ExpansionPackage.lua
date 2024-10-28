@@ -8083,4 +8083,101 @@ LuaChengzhaoMark = sgs.CreateTriggerSkill {
 ExDongcheng:addSkill(LuaChengzhao)
 table.insert(hiddenSkills, LuaChengzhaoMark)
 
+-- 鲍信
+ExBaoxin = sgs.General(extension, 'ExBaoxin', 'qun', '4', true, true)
+
+LuaMutaoCard = sgs.CreateSkillCard {
+    name = 'LuaMutao',
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return #targets == 0
+    end,
+    will_throw = false,
+    on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
+        local slasher = targets[1]
+        local slashes = sgs.IntList()
+        for _, cd in sgs.qlist(slasher:getHandcards()) do
+            if cd:isKindOf('Slash') then
+                slashes:append(cd:getEffectiveId())
+            end
+        end
+        local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        dummy:addSubcards(slashes)
+        slasher:addToPile('LuaMutao', dummy)
+        local curr = slasher
+        for _, id in sgs.qlist(slashes) do
+            curr = curr:getNextAlive(1)
+            curr:obtainCard(sgs.Sanguosha:getCard(id), true)
+        end
+        local slashCount = 0
+        for _, cd in sgs.qlist(curr:getHandcards()) do
+            if cd:isKindOf('Slash') then
+                slashCount = slashCount + 1
+            end
+        end
+        local damageCount = math.min(2, slashCount)
+        if damageCount > 0 then
+            room:doAnimate(rinsan.ANIMATE_INDICATE, source:objectName(), curr:objectName())
+            rinsan.doDamage(slasher, curr, damageCount)
+        end
+    end,
+}
+
+LuaMutao = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaMutao',
+    view_as = function(self, cards)
+        return LuaMutaoCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaMutao')
+    end,
+}
+
+LuaYimou = sgs.CreateTriggerSkill {
+    name = 'LuaYimou',
+    events = {sgs.Damaged},
+    on_trigger = function(self, event, player, data, room)
+        local victim = data:toDamage().to
+        if not victim:isAlive() then
+            return false
+        end
+        for _, baoxin in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
+            if victim:distanceTo(baoxin) <= 1 then
+                local choices = {'LuaYimouChoice1'}
+                if not victim:isKongcheng() then
+                    table.insert(choices, 'LuaYimouChoice2')
+                end
+                table.insert(choices, 'cancel')
+                local choice = room:askForChoice(baoxin, self:objectName(), table.concat(choices, '+'))
+                if choice == 'cancel' then
+                    goto next_baoxin
+                end
+                room:broadcastSkillInvoke(self:objectName())
+                if choice == 'LuaYimouChoice1' then
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, baoxin:objectName(), victim:objectName())
+                    -- 从牌堆中获取一张杀
+                    local togain = rinsan.obtainTargetedTypeCard(room, {
+                        ['type'] = 'Slash',
+                    })
+                    if togain then
+                        player:obtainCard(togain, true)
+                    end
+                else
+                    -- 交给别的角色一张牌，然后摸一张牌
+                    room:doAnimate(rinsan.ANIMATE_INDICATE, baoxin:objectName(), victim:objectName())
+                    room:askForYiji(victim, victim:handCards(), self:objectName(), false, false, false, 1)
+                    victim:drawCards(1, self:objectName())
+                end
+            end
+            ::next_baoxin::
+        end
+        return false
+    end,
+    can_trigger = rinsan.targetTrigger,
+}
+
+ExBaoxin:addSkill(LuaMutao)
+ExBaoxin:addSkill(LuaYimou)
+
 rinsan.addHiddenSkills(hiddenSkills)
