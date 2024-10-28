@@ -2185,7 +2185,6 @@ sgs.ai_skill_askforyiji['LuaYimou'] = function(self, card_ids)
     -- 没有友方，选择最差的牌给随机一人
     local all_players = self.room:getOtherPlayers(self.player)
     local all_players_table = sgs.QList2Table(all_players)
-    rinsan.shuffleTable(all_players_table)
 
     self:sortByKeepValue(cards)
     id = cards[1]:getId()
