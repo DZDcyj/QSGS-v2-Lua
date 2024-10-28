@@ -821,8 +821,8 @@ end
 -- 打乱 table
 function shuffleTable(table)
     local len = #table
-    for i = 0, len - 1, 1 do
-        local j = random(i, len - 1)
+    for i = 1, len, 1 do
+        local j = random(i, len)
         table[i], table[j] = table[j], table[i]
     end
 end
