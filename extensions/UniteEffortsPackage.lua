@@ -230,6 +230,118 @@ local function findPlayerByName(room, name)
     return nil
 end
 
+-- 首先获取对应的 Marks
+local function getUniteEffortsMarks(player)
+    local marks = {}
+    for i = 1, #UNITE_EFFORTS_CHOICES, 1 do
+        local markPrefix = string.format('%s-%s', UNITE_EFFORTS_CHOICES[i], player:objectName())
+        for _, mark in sgs.list(player:getMarkNames()) do
+            -- 必须显式 plain
+            if string.find(mark, markPrefix, 1, true) and player:getMark(mark) > 0 then
+                table.insert(marks, mark)
+            end
+        end
+    end
+    return marks
+end
+
+-- 协力成功的不同对应
+local UNITE_EFFORTS_BONUS_FUNCS = {
+    ['LuaXieji'] = function(invoker, collaborator)
+        local room = invoker:getRoom()
+        rinsan.sendLogMessage(room, '#UniteEfforts-Success', {
+            ['from'] = invoker,
+            ['to'] = collaborator,
+            ['arg'] = 'LuaXiejiUniteEfforts',
+        })
+        room:askForUseCard(invoker, '@@LuaXieji', '@LuaXieji')
+    end,
+}
+
+-- 协力即时成功的不同对应
+local UNITE_EFFORTS_INSTANT_BONUS_FUNCS = {}
+
+-- 协力失败不同对应
+local UNITE_EFFORTS_FAILED_FUNCS = {
+    ['LuaXieji'] = function(invoker, collaborator)
+        local room = invoker:getRoom()
+        rinsan.sendLogMessage(room, '#UniteEfforts-Failure', {
+            ['from'] = invoker,
+            ['to'] = collaborator,
+            ['arg'] = 'LuaXiejiUniteEfforts',
+        })
+    end,
+}
+
+local function doUniteEfforts(player)
+    local room = player:getRoom()
+
+    -- 获取所有涉及到协力的标记
+    local marks = getUniteEffortsMarks(player)
+    for _, mark in ipairs(marks) do
+        local items = mark:split('-')
+        local choice = items[1] -- 协力类型
+        -- 协力协助者即为 player，无需从 mark 中获取
+        local fromName = items[3] -- 协力发起者
+        local from = findPlayerByName(room, fromName)
+        if not from then
+            goto next_mark
+        end
+        local skillName = items[4] -- 协力技能名称
+        local checkFunc = UNITE_EFFORTS_CHECK_FUNCTIONS[choice]
+        if not checkFunc then
+            goto next_mark
+        end
+        local success = checkFunc(from, player)
+        room:notifySkillInvoked(from, skillName)
+        if success then
+            local bonusFunc = UNITE_EFFORTS_BONUS_FUNCS[skillName]
+            if bonusFunc then
+                bonusFunc(from, player)
+            end
+        else
+            local failFunc = UNITE_EFFORTS_FAILED_FUNCS[skillName]
+            if failFunc then
+                failFunc(from, player)
+            end
+        end
+        ::next_mark::
+    end
+end
+
+-- 即时成功检查接口
+local function doUniteEffortsInstantCheck(player)
+    local room = player:getRoom()
+
+    -- 获取所有涉及到协力的标记
+    local marks = getUniteEffortsMarks(player)
+    for _, mark in ipairs(marks) do
+        local items = mark:split('-')
+        local choice = items[1] -- 协力类型
+        -- 协力协助者即为 player，无需从 mark 中获取
+        local fromName = items[3] -- 协力发起者
+        local from = findPlayerByName(room, fromName)
+        if not from then
+            goto next_mark
+        end
+        local skillName = items[4] -- 协力技能名称
+        local checkFunc = UNITE_EFFORTS_CHECK_FUNCTIONS[choice]
+        if not checkFunc then
+            goto next_mark
+        end
+        local success = checkFunc(from, player)
+        if success then
+            -- 不在即时成功处进行默认提示，自行在 BONUS_FUNC 中体现，包括对应的标记之类的
+            -- PS: 目前只有谋赵云有即时的，考虑在 BONUS_FUNC 中判断是否已成功进行标记
+            local bonusFunc = UNITE_EFFORTS_INSTANT_BONUS_FUNCS[skillName]
+            if bonusFunc then
+                bonusFunc(from, player)
+            end
+        end
+        ::next_mark::
+    end
+end
+
 -- 使用、打出牌记录
 LuaUniteEffortsUseResponseRecord = sgs.CreateTriggerSkill {
     name = 'LuaUniteEffortsUseResponseRecord',
@@ -247,6 +359,7 @@ LuaUniteEffortsUseResponseRecord = sgs.CreateTriggerSkill {
             local suit = card:getSuitString()
             table.insert(suitTable, suit)
             setUniteEffortsStringTable(player, USE_TAG, suitTable)
+            doUniteEffortsInstantCheck(player)
         end
         return false
     end,
@@ -277,6 +390,7 @@ LuaUniteEffortsDiscardRecord = sgs.CreateTriggerSkill {
             table.insert(discardSuitTable, cd:getSuitString())
         end
         setUniteEffortsStringTable(player, DISCARD_TAG, discardSuitTable)
+        doUniteEffortsInstantCheck(player)
         return false
     end,
     can_trigger = rinsan.targetAliveTrigger,
@@ -300,6 +414,7 @@ LuaUniteEffortsDrawRecord = sgs.CreateTriggerSkill {
             end
             if x > 0 then
                 increaseTagCount(player, DRAW_TAG, x)
+                doUniteEffortsInstantCheck(player)
             end
         end
         return false
@@ -316,83 +431,12 @@ LuaUniteEffortsDamageRecord = sgs.CreateTriggerSkill {
         local damage = data:toDamage()
         if damage.damage > 0 then
             increaseTagCount(player, DAMAGE_TAG, damage.damage)
+            doUniteEffortsInstantCheck(player)
         end
         return false
     end,
     can_trigger = rinsan.targetAliveTrigger,
 }
-
--- 首先获取对应的 Marks
-local function getUniteEffortsMarks(player)
-    local marks = {}
-    for i = 1, #UNITE_EFFORTS_CHOICES, 1 do
-        local markPrefix = string.format('%s-%s', UNITE_EFFORTS_CHOICES[i], player:objectName())
-        for _, mark in sgs.list(player:getMarkNames()) do
-            -- 必须显式 plain
-            if string.find(mark, markPrefix, 1, true) and player:getMark(mark) > 0 then
-                table.insert(marks, mark)
-            end
-        end
-    end
-    return marks
-end
-
--- 协力成功的不同对应
-local UNITE_EFFORTS_BONUS_FUNCS = {
-    ['LuaXieji'] = function(invoker, collaborator)
-        local room = invoker:getRoom()
-        room:askForUseCard(invoker, '@@LuaXieji', '@LuaXieji')
-    end,
-}
-
--- 协力失败不同对应
-local UNITE_EFFORTS_FAILED_FUNCS = {}
-
-local function doUniteEfforts(player)
-    local room = player:getRoom()
-
-    -- 获取所有涉及到协力的标记
-    local marks = getUniteEffortsMarks(player)
-    for _, mark in ipairs(marks) do
-        local items = mark:split('-')
-        local choice = items[1] -- 协力类型
-        -- 协力协助者即为 player，无需从 mark 中获取
-        local fromName = items[3] -- 协力发起者
-        local from = findPlayerByName(room, fromName)
-        if not from then
-            goto next_mark
-        end
-        local skillName = items[4] -- 协力技能名称
-        local checkFunc = UNITE_EFFORTS_CHECK_FUNCTIONS[choice]
-        if not checkFunc then
-            goto next_mark
-        end
-        local success = checkFunc(from, player)
-        room:notifySkillInvoked(from, skillName)
-        if success then
-            rinsan.sendLogMessage(room, '#UniteEfforts-Success', {
-                ['from'] = from,
-                ['to'] = player,
-                ['arg'] = skillName .. 'UniteEfforts',
-            })
-            local bonusFunc = UNITE_EFFORTS_BONUS_FUNCS[skillName]
-            if bonusFunc then
-                bonusFunc(from, player)
-            end
-        else
-            rinsan.sendLogMessage(room, '#UniteEfforts-Failure', {
-                ['from'] = from,
-                ['to'] = player,
-                ['arg'] = skillName .. 'UniteEfforts',
-            })
-            local failFunc = UNITE_EFFORTS_FAILED_FUNCS[skillName]
-            if failFunc then
-                failFunc(from, player)
-            end
-        end
-        ::next_mark::
-    end
-end
 
 LuaUniteEffortsCheck = sgs.CreateTriggerSkill {
     name = 'LuaUniteEffortsCheck',
