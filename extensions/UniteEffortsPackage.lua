@@ -245,15 +245,31 @@ local function getUniteEffortsMarks(player)
     return marks
 end
 
+-- 基础失败（提示失败消息）
+local function UNITE_BASIC_FAILED_FUNC(invoker, collaborator, skillName)
+    local room = invoker:getRoom()
+    rinsan.sendLogMessage(room, '#UniteEfforts-Failure', {
+        ['from'] = invoker,
+        ['to'] = collaborator,
+        ['arg'] = skillName .. 'UniteEfforts',
+    })
+end
+
+-- 基础成功（提示成功消息）
+local function UNITE_BASIC_BONUS_FUNC(invoker, collaborator, skillName)
+    local room = invoker:getRoom()
+    rinsan.sendLogMessage(room, '#UniteEfforts-Success', {
+        ['from'] = invoker,
+        ['to'] = collaborator,
+        ['arg'] = skillName .. 'UniteEfforts',
+    })
+end
+
 -- 协力成功的不同对应
 local UNITE_EFFORTS_BONUS_FUNCS = {
     ['LuaXieji'] = function(invoker, collaborator)
+        UNITE_BASIC_BONUS_FUNC(invoker, collaborator, 'LuaXieji')
         local room = invoker:getRoom()
-        rinsan.sendLogMessage(room, '#UniteEfforts-Success', {
-            ['from'] = invoker,
-            ['to'] = collaborator,
-            ['arg'] = 'LuaXiejiUniteEfforts',
-        })
         room:askForUseCard(invoker, '@@LuaXieji', '@LuaXieji')
     end,
 }
@@ -263,14 +279,7 @@ local UNITE_EFFORTS_INSTANT_BONUS_FUNCS = {}
 
 -- 协力失败不同对应
 local UNITE_EFFORTS_FAILED_FUNCS = {
-    ['LuaXieji'] = function(invoker, collaborator)
-        local room = invoker:getRoom()
-        rinsan.sendLogMessage(room, '#UniteEfforts-Failure', {
-            ['from'] = invoker,
-            ['to'] = collaborator,
-            ['arg'] = 'LuaXiejiUniteEfforts',
-        })
-    end,
+    ['LuaXieji'] = UNITE_BASIC_FAILED_FUNC,
 }
 
 local function doUniteEfforts(player)
@@ -297,12 +306,14 @@ local function doUniteEfforts(player)
         if success then
             local bonusFunc = UNITE_EFFORTS_BONUS_FUNCS[skillName]
             if bonusFunc then
+                -- 成功通常更多自定义的情况，不传 skillName 亦可
                 bonusFunc(from, player)
             end
         else
             local failFunc = UNITE_EFFORTS_FAILED_FUNCS[skillName]
             if failFunc then
-                failFunc(from, player)
+                -- 多传 skillName 参数用于适配基础失败方法
+                failFunc(from, player, skillName)
             end
         end
         ::next_mark::
