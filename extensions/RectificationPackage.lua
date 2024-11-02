@@ -221,41 +221,6 @@ local function getRectificationMarks(player)
     return marks
 end
 
--- 整肃即时检查
-local function doInstantRectificationCheck(player)
-    local room = player:getRoom()
-    -- 获取所有涉及到整肃的标记
-    local marks = getRectificationMarks(player)
-    for _, mark in ipairs(marks) do
-        local items = mark:split('-')
-        local choice = items[1] -- 整肃类型
-        -- 整肃执行者即为 player，无需从 mark 中获取
-        local fromName = items[3] -- 整肃发起者
-        local from = findPlayerByName(room, fromName)
-        if not from then
-            goto next_mark
-        end
-        local skillName = items[4] -- 整肃技能名称
-        -- 若已经失败，则不用继续
-        if player:getMark(string.format('%s-RectificationFailed-Clear', skillName)) > 0 then
-            goto next_mark
-        end
-        local success = RECTIFICATION_INSTANT_FAILURE_CHECK_FUNCTIONS[choice](player)
-        -- 失败默认放失败语音，再标记失败即可
-        if not success then
-            room:notifySkillInvoked(from, skillName)
-            rinsan.sendLogMessage(room, '#Rectification-Failure', {
-                ['from'] = player,
-                ['to'] = from,
-                ['arg'] = skillName .. 'Rectification',
-            })
-            room:addPlayerMark(player, string.format('%s-RectificationFailed-Clear', skillName))
-            room:broadcastSkillInvoke(skillName, 3)
-        end
-        ::next_mark::
-    end
-end
-
 -- 整肃成功的不同对应
 local RECTIFICATION_BONUS_FUNCS = {
     ['LuaHoufeng'] = function(from, to)
@@ -281,6 +246,58 @@ local RECTIFICATION_BONUS_FUNCS = {
     end,
 }
 
+-- 基础整肃失败（提示信息+语音播放）
+local function RECTIFICATION_BASIC_FAILED_FUNC(from, to, skillName)
+    local room = from:getRoom()
+    room:notifySkillInvoked(from, skillName)
+    rinsan.sendLogMessage(room, '#Rectification-Failure', {
+        ['from'] = from,
+        ['to'] = to,
+        ['arg'] = skillName .. 'Rectification',
+    })
+    room:broadcastSkillInvoke(skillName, 3)
+end
+
+-- 整肃失败时的不同对应
+local RECTIFICATION_FAILED_FUNCS = {
+    ['LuaHoufeng'] = RECTIFICATION_BASIC_FAILED_FUNC,
+    ['LuaZhengjun'] = RECTIFICATION_BASIC_FAILED_FUNC,
+    ['LuaYanji'] = RECTIFICATION_BASIC_FAILED_FUNC,
+    ['LuaLixing'] = RECTIFICATION_BASIC_FAILED_FUNC,
+}
+
+-- 整肃即时检查
+local function doInstantRectificationCheck(player)
+    local room = player:getRoom()
+    -- 获取所有涉及到整肃的标记
+    local marks = getRectificationMarks(player)
+    for _, mark in ipairs(marks) do
+        local items = mark:split('-')
+        local choice = items[1] -- 整肃类型
+        -- 整肃执行者即为 player，无需从 mark 中获取
+        local fromName = items[3] -- 整肃发起者
+        local from = findPlayerByName(room, fromName)
+        if not from then
+            goto next_mark
+        end
+        local skillName = items[4] -- 整肃技能名称
+        -- 若已经失败，则不用继续
+        if player:getMark(string.format('%s-RectificationFailed-Clear', skillName)) > 0 then
+            goto next_mark
+        end
+        local success = RECTIFICATION_INSTANT_FAILURE_CHECK_FUNCTIONS[choice](player)
+        -- 失败默认放失败语音，再标记失败即可
+        if not success then
+            room:addPlayerMark(player, string.format('%s-RectificationFailed-Clear', skillName))
+            local failedFunc = RECTIFICATION_FAILED_FUNCS[skillName]
+            if failedFunc then
+                failedFunc(from, player, skillName)
+            end
+        end
+        ::next_mark::
+    end
+end
+
 -- 默认 2 为整肃成功语音，3 为失败语音
 local function doRectification(player)
     local room = player:getRoom()
@@ -301,9 +318,9 @@ local function doRectification(player)
             goto next_mark
         end
         local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
-        room:notifySkillInvoked(from, skillName)
         if success then
             room:broadcastSkillInvoke(skillName, 2)
+            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Success', {
                 ['from'] = player,
                 ['to'] = from,
@@ -314,12 +331,10 @@ local function doRectification(player)
                 bonusFunc(from, player)
             end
         else
-            rinsan.sendLogMessage(room, '#Rectification-Failure', {
-                ['from'] = player,
-                ['to'] = from,
-                ['arg'] = skillName .. 'Rectification',
-            })
-            room:broadcastSkillInvoke(skillName, 3)
+            local failedFunc = RECTIFICATION_FAILED_FUNCS[skillName]
+            if failedFunc then
+                failedFunc(from, player, skillName)
+            end
         end
         ::next_mark::
     end
