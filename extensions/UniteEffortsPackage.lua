@@ -26,7 +26,7 @@ local USE_TAG = 'UniteEffortsPackage_Play_Suit'
 local DISCARD_TAG = 'UniteEffortsPackage_Discard_Suit'
 
 -- 发动时 Flag，避免回合结束后清除记录 Tag
-INVOKING_MARK = 'LuaUniteEffortsSkillInvoked'
+local INVOKING_MARK = 'LuaUniteEffortsSkillInvoked'
 
 -- 获取角色对应协力 tagName 的 table
 local function getUniteEffortsStringTable(player, tagName)
@@ -70,7 +70,7 @@ local function askForUniteEffortsChoice(player, skillName, to, ignoreChosen)
     return room:askForChoice(player, skillName, table.concat(choices, '+'))
 end
 
--- 是否可以发动协力
+-- 对外暴露接口: 是否可以发动协力
 function canBeAskedForUniteEfforts(player, ignoreChosen)
     if ignoreChosen then
         return true
@@ -83,8 +83,34 @@ function canBeAskedForUniteEfforts(player, ignoreChosen)
     return false
 end
 
+-- 获取备份 Tag 名称
+local function getBackupTagName(name)
+    return name .. '_Backup'
+end
+
+-- 启动备份
+local function setUpBackupTag(player)
+    local discardData = getUniteEffortsStringTable(player, DISCARD_TAG)
+    local useData = getUniteEffortsStringTable(player, USE_TAG)
+    setUniteEffortsStringTable(player, getBackupTagName(DISCARD_TAG), discardData)
+    setUniteEffortsStringTable(player, getBackupTagName(USE_TAG), useData)
+
+    local drawCount = player:getTag(DRAW_TAG):toInt()
+    local damageCount = player:getTag(DAMAGE_TAG):toInt()
+    player:setTag(getBackupTagName(DRAW_TAG), sgs.QVariant(drawCount))
+    player:setTag(getBackupTagName(DAMAGE_TAG), sgs.QVariant(damageCount))
+end
+
+-- 本回合记录备份
+local function prepareUniteEfforts(player)
+    setUpBackupTag(player)
+    player:getRoom():addPlayerMark(player, INVOKING_MARK)
+end
+
 -- 询问协力，暴露的外部接口
 function askForUniteEfforts(from, to, skillName, isFromChoose, ignoreChosen)
+    -- 在此之前需要启动备份当前回合记录
+    prepareUniteEfforts(from)
     local room = from:getRoom()
     local chooser = isFromChoose and from or to
     local choice = askForUniteEffortsChoice(chooser, skillName, to, ignoreChosen)
@@ -104,29 +130,11 @@ function askForUniteEfforts(from, to, skillName, isFromChoose, ignoreChosen)
 end
 
 -- 清除所有记录值
-function clearAllUniteEffortsTags(player)
+local function clearAllUniteEffortsTags(player)
     player:removeTag(DISCARD_TAG)
     player:removeTag(USE_TAG)
     player:removeTag(DRAW_TAG)
     player:removeTag(DAMAGE_TAG)
-end
-
--- 获取备份 Tag 名称
-local function getBackupTagName(name)
-    return name .. '_Backup'
-end
-
--- 启动备份
-function setUpBackupTag(player)
-    local discardData = getUniteEffortsStringTable(player, DISCARD_TAG)
-    local useData = getUniteEffortsStringTable(player, USE_TAG)
-    setUniteEffortsStringTable(player, getBackupTagName(DISCARD_TAG), discardData)
-    setUniteEffortsStringTable(player, getBackupTagName(USE_TAG), useData)
-
-    local drawCount = player:getTag(DRAW_TAG):toInt()
-    local damageCount = player:getTag(DAMAGE_TAG):toInt()
-    player:setTag(getBackupTagName(DRAW_TAG), sgs.QVariant(drawCount))
-    player:setTag(getBackupTagName(DAMAGE_TAG), sgs.QVariant(damageCount))
 end
 
 -- 更新 Table
@@ -153,8 +161,8 @@ local function updateIntTag(player, tagName)
     end
 end
 
--- 更新现有记录
-function removeBackupTagRecord(player)
+-- 更新现有记录（移除本回合之前的）
+local function removeBackupTagRecord(player)
     updateTableTag(player, DISCARD_TAG)
     updateTableTag(player, USE_TAG)
     updateIntTag(player, DRAW_TAG)
@@ -164,21 +172,21 @@ end
 -- 协力检查函数
 local UNITE_EFFORTS_CHECK_FUNCTIONS = {
     ['UniteEffortsPackage_Tongchou'] = function(invoker, collaborator)
-        -- 同仇，你与其造成的伤害值之和不小于 4
+        -- 同仇: 你与其造成的伤害值之和不小于 4
         local invokerDamageCount = invoker:getTag(DAMAGE_TAG):toInt()
         local collaboratorDamageCount = collaborator:getTag(DAMAGE_TAG):toInt()
         local result = invokerDamageCount + collaboratorDamageCount
         return result >= 4
     end,
     ['UniteEffortsPackage_Bingjin'] = function(invoker, collaborator)
-        -- 并进，你与其总计摸过至少 8 张牌
+        -- 并进: 你与其总计摸过至少 8 张牌
         local invokerDamageCount = invoker:getTag(DRAW_TAG):toInt()
         local collaboratorDamageCount = collaborator:getTag(DRAW_TAG):toInt()
         local result = invokerDamageCount + collaboratorDamageCount
         return result >= 8
     end,
     ['UniteEffortsPackage_Shucai'] = function(invoker, collaborator)
-        -- 疏财，你与其弃置的牌中包含 4 种花色
+        -- 疏财: 你与其弃置的牌中包含 4 种花色
         local invokerDiscard = getUniteEffortsStringTable(invoker, DISCARD_TAG)
         local collaboratorDiscard = getUniteEffortsStringTable(collaborator, DISCARD_TAG)
         local suits = {}
@@ -195,7 +203,7 @@ local UNITE_EFFORTS_CHECK_FUNCTIONS = {
         return #suits >= 4
     end,
     ['UniteEffortsPackage_Luli'] = function(invoker, collaborator)
-        -- 勠力：你与其使用或打出的牌中包含 4 种花色
+        -- 勠力: 你与其使用或打出的牌中包含 4 种花色
         local invokerUse = getUniteEffortsStringTable(invoker, USE_TAG)
         local collaboratorUse = getUniteEffortsStringTable(collaborator, USE_TAG)
         local suits = {}
@@ -285,8 +293,8 @@ LuaUniteEffortsDrawRecord = sgs.CreateTriggerSkill {
             local x = 0
             for index, id in sgs.qlist(move.card_ids) do
                 local owner = room:getCardOwner(id)
-                if move.from_places:at(index) == sgs.Player_DrawPile and owner and owner:objectName() ==
-                    player:objectName() and room:getCardPlace(id) == sgs.Player_PlaceHand then
+                if move.from_places:at(index) == sgs.Player_DrawPile and owner and owner:objectName() == player:objectName() and
+                    room:getCardPlace(id) == sgs.Player_PlaceHand then
                     x = x + 1
                 end
             end
