@@ -122,11 +122,11 @@ local RECTIFICATION_CHECK_FUNCTIONS = {
     end,
     ['RectificationPackage_Mingzhi'] = function(player)
         local mingzhiTable = getRectificationStringTable(player, DISCARD_TAG)
-        -- 使用过至少两张牌
+        -- 弃置了至少两张牌
         if #mingzhiTable < 2 then
             return false
         end
-        -- 花色一致
+        -- 花色不一致
         local suits = {}
         for _, suit in ipairs(mingzhiTable) do
             if table.contains(suits, suit) then
@@ -148,71 +148,45 @@ local function findPlayerByName(room, name)
     return nil
 end
 
--- 出牌阶段用牌记录
-LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
-    name = 'LuaRectificationPlayPhaseRecord',
-    events = {sgs.CardUsed, sgs.CardResponded},
-    global = true,
-    on_trigger = function(self, event, player, data, room)
-        local card
-        if event == sgs.CardUsed then
-            card = data:toCardUse().card
-        else
-            local resp = data:toCardResponse()
-            if not resp.m_isUse then
+-- 即时失败检查
+-- 如擂进使用了不大于点数的牌等情况
+local RECTIFICATION_INSTANT_FAILURE_CHECK_FUNCTIONS = {
+    ['RectificationPackage_Leijin'] = function(player)
+        local leijinTable = getRectificationStringTable(player, NUMBER_TAG)
+        -- 点数非严格递增，则失败
+        for i = 1, #leijinTable - 1, 1 do
+            if tonumber(leijinTable[i]) >= tonumber(leijinTable[i + 1]) then
                 return false
             end
-            card = resp.m_card
         end
-        if card and (not card:isKindOf('SkillCard')) then
-            -- 除去虚拟牌计算
-            if card:isVirtualCard() and card:subcardsLength() == 0 then
+        return true
+    end,
+    ['RectificationPackage_Bianzhen'] = function(player)
+        local bianzhenTable = getRectificationStringTable(player, SUIT_TAG)
+        if #bianzhenTable == 0 then
+            return true
+        end
+        -- 花色不一致，则失败
+        local fixedSuit = bianzhenTable[1]
+        for _, suit in ipairs(bianzhenTable) do
+            if suit ~= fixedSuit then
                 return false
             end
-            local numberTable = getRectificationStringTable(player, NUMBER_TAG)
-            local suitTable = getRectificationStringTable(player, SUIT_TAG)
-            local number = card:getNumber()
-            local suit = card:getSuitString()
-            table.insert(numberTable, number)
-            table.insert(suitTable, suit)
-            setRectificationStringTable(player, NUMBER_TAG, numberTable)
-            setRectificationStringTable(player, SUIT_TAG, suitTable)
         end
-        return false
+        return true
     end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and target:getPhase() == sgs.Player_Play
-    end,
-}
-
--- 弃牌阶段弃牌记录
-LuaRectificationDiscardPhaseRecord = sgs.CreateTriggerSkill {
-    name = 'LuaRectificationDiscardPhaseRecord',
-    events = {sgs.CardsMoveOneTime},
-    global = true,
-    on_trigger = function(self, event, player, data, room)
-        local move = data:toMoveOneTime()
-        local source = move.from
-        if not source then
-            return false
+    ['RectificationPackage_Mingzhi'] = function(player)
+        local mingzhiTable = getRectificationStringTable(player, DISCARD_TAG)
+        -- 花色一致，则失败
+        local suits = {}
+        for _, suit in ipairs(mingzhiTable) do
+            if table.contains(suits, suit) then
+                return false
+            else
+                table.insert(suits, suit)
+            end
         end
-        if player:objectName() ~= source:objectName() then
-            return false
-        end
-        local reason = move.reason
-        if not rinsan.moveBasicReasonCompare(reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) then
-            return false
-        end
-        local discardSuitTable = getRectificationStringTable(player, DISCARD_TAG)
-        for _, id in sgs.qlist(move.card_ids) do
-            local cd = sgs.Sanguosha:getCard(id)
-            table.insert(discardSuitTable, cd:getSuitString())
-        end
-        setRectificationStringTable(player, DISCARD_TAG, discardSuitTable)
-        return false
-    end,
-    can_trigger = function(self, target)
-        return target and target:isAlive() and target:getPhase() == sgs.Player_Discard
+        return true
     end,
 }
 
@@ -272,6 +246,58 @@ local RECTIFICATION_BONUS_FUNCS = {
     end,
 }
 
+-- 基础整肃失败（提示信息+语音播放）
+local function RECTIFICATION_BASIC_FAILED_FUNC(from, to, skillName)
+    local room = from:getRoom()
+    room:notifySkillInvoked(from, skillName)
+    rinsan.sendLogMessage(room, '#Rectification-Failure', {
+        ['from'] = from,
+        ['to'] = to,
+        ['arg'] = skillName .. 'Rectification',
+    })
+    room:broadcastSkillInvoke(skillName, 3)
+end
+
+-- 整肃失败时的不同对应
+local RECTIFICATION_FAILED_FUNCS = {
+    ['LuaHoufeng'] = RECTIFICATION_BASIC_FAILED_FUNC,
+    ['LuaZhengjun'] = RECTIFICATION_BASIC_FAILED_FUNC,
+    ['LuaYanji'] = RECTIFICATION_BASIC_FAILED_FUNC,
+    ['LuaLixing'] = RECTIFICATION_BASIC_FAILED_FUNC,
+}
+
+-- 整肃即时检查
+local function doInstantRectificationCheck(player)
+    local room = player:getRoom()
+    -- 获取所有涉及到整肃的标记
+    local marks = getRectificationMarks(player)
+    for _, mark in ipairs(marks) do
+        local items = mark:split('-')
+        local choice = items[1] -- 整肃类型
+        -- 整肃执行者即为 player，无需从 mark 中获取
+        local fromName = items[3] -- 整肃发起者
+        local from = findPlayerByName(room, fromName)
+        if not from then
+            goto next_mark
+        end
+        local skillName = items[4] -- 整肃技能名称
+        -- 若已经失败，则不用继续
+        if player:getMark(string.format('%s-RectificationFailed-Clear', skillName)) > 0 then
+            goto next_mark
+        end
+        local success = RECTIFICATION_INSTANT_FAILURE_CHECK_FUNCTIONS[choice](player)
+        -- 失败默认放失败语音，再标记失败即可
+        if not success then
+            room:addPlayerMark(player, string.format('%s-RectificationFailed-Clear', skillName))
+            local failedFunc = RECTIFICATION_FAILED_FUNCS[skillName]
+            if failedFunc then
+                failedFunc(from, player, skillName)
+            end
+        end
+        ::next_mark::
+    end
+end
+
 -- 默认 2 为整肃成功语音，3 为失败语音
 local function doRectification(player)
     local room = player:getRoom()
@@ -287,10 +313,14 @@ local function doRectification(player)
             goto next_mark
         end
         local skillName = items[4] -- 整肃技能名称
+        -- 若已经失败，则不用继续
+        if player:getMark(string.format('%s-RectificationFailed-Clear', skillName)) > 0 then
+            goto next_mark
+        end
         local success = RECTIFICATION_CHECK_FUNCTIONS[choice](player)
-        room:notifySkillInvoked(from, skillName)
         if success then
             room:broadcastSkillInvoke(skillName, 2)
+            room:notifySkillInvoked(from, skillName)
             rinsan.sendLogMessage(room, '#Rectification-Success', {
                 ['from'] = player,
                 ['to'] = from,
@@ -301,16 +331,84 @@ local function doRectification(player)
                 bonusFunc(from, player)
             end
         else
-            rinsan.sendLogMessage(room, '#Rectification-Failure', {
-                ['from'] = player,
-                ['to'] = from,
-                ['arg'] = skillName .. 'Rectification',
-            })
-            room:broadcastSkillInvoke(skillName, 3)
+            local failedFunc = RECTIFICATION_FAILED_FUNCS[skillName]
+            if failedFunc then
+                failedFunc(from, player, skillName)
+            end
         end
         ::next_mark::
     end
 end
+
+-- 出牌阶段用牌记录
+LuaRectificationPlayPhaseRecord = sgs.CreateTriggerSkill {
+    name = 'LuaRectificationPlayPhaseRecord',
+    events = {sgs.CardUsed, sgs.CardResponded},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local card
+        if event == sgs.CardUsed then
+            card = data:toCardUse().card
+        else
+            local resp = data:toCardResponse()
+            if not resp.m_isUse then
+                return false
+            end
+            card = resp.m_card
+        end
+        if card and (not card:isKindOf('SkillCard')) then
+            -- 除去虚拟牌计算
+            if card:isVirtualCard() and card:subcardsLength() == 0 then
+                return false
+            end
+            local numberTable = getRectificationStringTable(player, NUMBER_TAG)
+            local suitTable = getRectificationStringTable(player, SUIT_TAG)
+            local number = card:getNumber()
+            local suit = card:getSuitString()
+            table.insert(numberTable, number)
+            table.insert(suitTable, suit)
+            setRectificationStringTable(player, NUMBER_TAG, numberTable)
+            setRectificationStringTable(player, SUIT_TAG, suitTable)
+            doInstantRectificationCheck(player)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:getPhase() == sgs.Player_Play
+    end,
+}
+
+-- 弃牌阶段弃牌记录
+LuaRectificationDiscardPhaseRecord = sgs.CreateTriggerSkill {
+    name = 'LuaRectificationDiscardPhaseRecord',
+    events = {sgs.CardsMoveOneTime},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local move = data:toMoveOneTime()
+        local source = move.from
+        if not source then
+            return false
+        end
+        if player:objectName() ~= source:objectName() then
+            return false
+        end
+        local reason = move.reason
+        if not rinsan.moveBasicReasonCompare(reason.m_reason, sgs.CardMoveReason_S_REASON_DISCARD) then
+            return false
+        end
+        local discardSuitTable = getRectificationStringTable(player, DISCARD_TAG)
+        for _, id in sgs.qlist(move.card_ids) do
+            local cd = sgs.Sanguosha:getCard(id)
+            table.insert(discardSuitTable, cd:getSuitString())
+        end
+        setRectificationStringTable(player, DISCARD_TAG, discardSuitTable)
+        doInstantRectificationCheck(player)
+        return false
+    end,
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:getPhase() == sgs.Player_Discard
+    end,
+}
 
 LuaRectificationCheck = sgs.CreateTriggerSkill {
     name = 'LuaRectificationCheck',
