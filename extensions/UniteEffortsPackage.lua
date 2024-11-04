@@ -84,6 +84,7 @@ function canBeAskedForUniteEfforts(player, ignoreChosen)
 end
 
 -- 获取备份 Tag 名称
+-- 由于协力通常会有回合外的记录，所以此处记录时需要分开，将本回合的记录保留
 local function getBackupTagName(name)
     return name .. '_Backup'
 end
@@ -109,7 +110,7 @@ end
 
 -- 询问协力，暴露的外部接口
 function askForUniteEfforts(from, to, skillName, isFromChoose, ignoreChosen)
-    -- 在此之前需要启动备份当前回合记录
+    -- 在此之前需要启动备份
     prepareUniteEfforts(from)
     local room = from:getRoom()
     local chooser = isFromChoose and from or to
