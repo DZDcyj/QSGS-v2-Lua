@@ -291,7 +291,7 @@ local function doInstantRectificationCheck(player)
             room:addPlayerMark(player, string.format('%s-RectificationFailed-Clear', skillName))
             local failedFunc = RECTIFICATION_FAILED_FUNCS[skillName]
             if failedFunc then
-                failedFunc(from, player, skillName)
+                failedFunc(player, from, skillName)
             end
         end
         ::next_mark::
@@ -333,7 +333,7 @@ local function doRectification(player)
         else
             local failedFunc = RECTIFICATION_FAILED_FUNCS[skillName]
             if failedFunc then
-                failedFunc(from, player, skillName)
+                failedFunc(player, from, skillName)
             end
         end
         ::next_mark::
