@@ -2725,12 +2725,7 @@ LuaYizhengVS = sgs.CreateViewAsSkill {
         return LuaYizhengCard:clone()
     end,
     enabled_at_play = function(self, player)
-        for _, p in sgs.qlist(player:getSiblings()) do
-            if not p:isKongcheng() and p:objectName() ~= player:objectName() and p:getHp() <= player:getHp() then
-                return not player:hasUsed('#LuaYizhengCard')
-            end
-        end
-        return false
+        return not player:hasUsed('#LuaYizhengCard')
     end,
 }
 
