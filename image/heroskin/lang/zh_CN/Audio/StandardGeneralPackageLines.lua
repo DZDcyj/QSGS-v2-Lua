@@ -342,4 +342,11 @@ return {
     ['$LuaFencheng1-JieLiru_1'] = '我要这满城的人都来给你陪葬~',
     ['$LuaFencheng2-JieLiru_1'] = '一把火烧他个精光吧！诶啊哈哈哈哈哈~',
     ['~JieLiru-JieLiru_1'] = '乱世的好戏才刚刚开始……',
+    --鲍信
+    --牢大
+    ['$LuaMutao1-ExBaoxin_1'] = 'Man',
+    ['$LuaMutao2-ExBaoxin_1'] = 'hahahaha',
+    ['$LuaYimou1-ExBaoxin_1'] = 'What can I say',
+    ['$LuaYimou2-ExBaoxin_1'] = '(Music)',
+    ['~ExBaoxin-ExBaoxin_1'] = 'Mamba out',
 }
