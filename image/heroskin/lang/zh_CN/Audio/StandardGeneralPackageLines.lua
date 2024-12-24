@@ -348,5 +348,5 @@ return {
     ['$LuaMutao2-ExBaoxin_1'] = 'hahahaha',
     ['$LuaYimou1-ExBaoxin_1'] = 'What can I say',
     ['$LuaYimou2-ExBaoxin_1'] = '(Music)',
-    ['~ExBaoxin-ExBaoxin_1'] = 'Manba out',
+    ['~ExBaoxin-ExBaoxin_1'] = 'Mamba out',
 }
