@@ -5810,13 +5810,23 @@ JieGongsunzan = sgs.General(extension, 'JieGongsunzan', 'qun', '4', true, true)
 JieYicong = sgs.CreateDistanceSkill {
     name = 'JieYicong',
     correct_func = function(self, from, to)
+        -- 进攻减去距离
+        local attackMinus = 0
+        -- 防御增加距离
+        local defensePlus = 0
         if from:hasSkill('JieYicong') then
-            return -from:getHp() + 1
+            -- 若攻方有义从技能，添加技能修正
+            -- 若此时生命值小于 0，如周泰不屈情况，则需要调整为 0
+            attackMinus = math.max(from:getHp() - 1, 0)
         end
         if to:hasSkill('JieYicong') then
-            return to:getLostHp() - 1
+            -- 若守方有技能修正
+            -- 若此时失去生命值为 0，则需要调整
+            -- PS：失去计算以 0 为最低基线，周泰情况 getLostHp 的减去值亦为 0
+            defensePlus = math.max(to:getLostHp() - 1, 0)
         end
-        return 0
+        -- 返回最终结果：守方加成减去攻方减成
+        return defensePlus - attackMinus
     end,
 }
 
