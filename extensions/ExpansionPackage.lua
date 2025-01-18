@@ -8203,7 +8203,6 @@ LuaJianyingCard = sgs.CreateSkillCard {
     end,
     on_validate = function(self, card_use)
         local source = card_use.from
-        local room = source:getRoom()
         local use_card = rinsan.guhuoCardOnValidate(self, card_use, 'LuaJianying', 'yizan', 'Yizan')
         local suit_mark = source:getMark(LuaJianyingSuitMark)
         if suit_mark > 0 then
