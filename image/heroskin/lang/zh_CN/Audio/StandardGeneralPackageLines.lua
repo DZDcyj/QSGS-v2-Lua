@@ -162,11 +162,18 @@ return {
     ['$songci2-chenlin_1'] = '汝阉人之后，本无懿德！',
     ['~chenlin-chenlin_1'] = '大胆贼人，还不伏诛……',
     -- 沮授
+    -- 监军谋国
     ['$jianying1-jvshou_1'] = '缓而耗之，曹军自乱',
     ['$jianying2-jvshou_1'] = '徐以攻敌，缓图天下',
     ['$shibei1-jvshou_1'] = '矢志不降，克定北还！',
     ['$shibei2-jvshou_1'] = '心如归雁，死不足拦',
     ['~jvshou-jvshou_1'] = '宁侍庸主，不媚汉贼！',
+    -- 初冬观雪
+    ['$jianying1-jvshou_2'] = '主公坐占胜机，缓行亦无所碍',
+    ['$jianying2-jvshou_2'] = '得胜已是定局，何必急功近利？',
+    ['$shibei1-jvshou_2'] = '尽忠竭命，绝不动摇',
+    ['$shibei2-jvshou_2'] = '身困敌营，不改向北赤心',
+    ['~jvshou-jvshou_2'] = '只望河北，不受战火侵扰……',
     -- 马超
     ['$tieji1-machao_1'] = '你可闪得过此一击？',
     ['$tieji2-machao_1'] = '（马蹄声）',
