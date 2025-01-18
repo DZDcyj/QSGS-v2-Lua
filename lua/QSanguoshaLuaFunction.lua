@@ -673,6 +673,7 @@ function getStartHp(player)
         ['ExShenSunce'] = 1,
         ['ExMouHuaxiong'] = 3,
         ['ExTenYearCaomao'] = 3,
+        ['JieJushou'] = 2,
     }
     return general_hp_map[player:getGeneralName()] or player:getGeneral():getMaxHp()
 end
@@ -1415,6 +1416,45 @@ function getColorString(card)
         return 'black'
     end
     return 'no_suit'
+end
+
+-- 避免一堆 if-else
+local suitNumFuncs = {
+    [sgs.Card_Spade] = function()
+        return 1
+    end,
+    [sgs.Card_Club] = function()
+        return 2
+    end,
+    [sgs.Card_Heart] = function()
+        return 3
+    end,
+    [sgs.Card_Diamond] = function()
+        return 4
+    end,
+}
+
+local suits = {
+    sgs.Card_Spade,
+    sgs.Card_Club,
+    sgs.Card_Heart,
+    sgs.Card_Diamond,
+}
+
+-- 花色转数字
+function Suit2Num(suit)
+    local f = suitNumFuncs[suit]
+    if f then
+        return f()
+    end
+    return 0
+end
+
+function Num2Suit(num)
+    if num < 1 or num > 5 then
+        return sgs.Card_NoSuit
+    end
+    return suits[num]
 end
 
 -- 判断字符串是否以给定前缀开头

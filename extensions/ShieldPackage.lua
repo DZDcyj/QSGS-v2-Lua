@@ -14,6 +14,7 @@ local START_SHIELDS = {
     ['ExMouHuaxiong'] = 1,
     ['ExMouCaoren'] = 1,
     ['ExStarWeiyan'] = 1,
+    ['JieJushou'] = 3,
 }
 
 -- 护甲结算
