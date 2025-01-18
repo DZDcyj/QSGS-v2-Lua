@@ -8280,7 +8280,7 @@ LuaJianying = sgs.CreateTriggerSkill {
                 card = data:toCardResponse().m_card
             end
         end
-        if (not card) or (card:isKindOf('SkillName')) then
+        if (not card) or (card:isKindOf('SkillCard')) then
             return false
         end
         local suit = player:getMark(LuaJianyingSuitMark)
