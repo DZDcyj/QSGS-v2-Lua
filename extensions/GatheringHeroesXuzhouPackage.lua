@@ -43,6 +43,9 @@ LuaLiluMaxHp = sgs.CreateTriggerSkill {
         if dataStr[1] ~= 'Yiji' then
             return false
         end
+        if dataStr[2] ~= 'LuaLilu' then
+            return false
+        end
         local prev = player:getMark(LuaLiluMark)
         local curr = #(dataStr[5]:split('+'))
         if curr > prev then
