@@ -356,4 +356,11 @@ return {
     ['$LuaYimou1-ExBaoxin_1'] = 'What can I say',
     ['$LuaYimou2-ExBaoxin_1'] = '(Music)',
     ['~ExBaoxin-ExBaoxin_1'] = 'Mamba out',
+    -- 界沮授
+    -- 初冬观雪
+    ['$LuaJianying1-JieJushou_1'] = '主公坐占胜机，缓行亦无所碍',
+    ['$LuaJianying2-JieJushou_1'] = '得胜已是定局，何必急功近利？',
+    ['$LuaShibei1-JieJushou_1'] = '尽忠竭命，绝不动摇',
+    ['$LuaShibei2-JieJushou_1'] = '身困敌营，不改向北赤心',
+    ['~JieJushou-JieJushou_1'] = '只望河北，不受战火侵扰……',
 }
