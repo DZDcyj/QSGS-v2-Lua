@@ -24,6 +24,7 @@ LuaLilu = sgs.CreateTriggerSkill {
                 player:drawCards(diff, self:objectName())
             end
             local maxCardCount = math.min(5, player:getHandcardNum())
+            room:broadcastSkillInvoke(self:objectName())
             room:askForYiji(player, player:handCards(), self:objectName(), false, false, false, maxCardCount)
             return true
         end
@@ -73,6 +74,7 @@ LuaTenYearYizheng = sgs.CreateTriggerSkill {
         local target = room:askForPlayerChosen(player, room:getOtherPlayers(player), self:objectName(),
             'LuaTenYearYizheng-choose', true, true)
         if target then
+            room:broadcastSkillInvoke(self:objectName())
             room:addPlayerMark(target, 'LuaTenYearYizheng-' .. player:objectName())
             target:gainMark('@LuaTenYearYizheng')
         end
