@@ -64,12 +64,6 @@ jobs:
       # 检出分支
       - name: Checkout Branch
         uses: actions/checkout@v3
-        with:
-          lfs: true
-
-      # 更新 LFS 文件
-      - name: Checkout LFS Objects
-        run: git lfs checkout
 
       # 复制当前分支文件到临时文件夹
       - name: Copy Branch Files
