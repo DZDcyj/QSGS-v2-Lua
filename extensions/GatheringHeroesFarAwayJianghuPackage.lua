@@ -22,17 +22,6 @@ local available_dunshi_skills = { -- 仁义礼智信技能表
 
 local dunshi_patterns = {'slash', 'jink', 'peach', 'analeptic'}
 
-function getPos(table, value)
-    for i, v in ipairs(table) do
-        if v == value then
-            return i
-        end
-    end
-    return 0
-end
-
-local pos = 0
-
 LuaDunshi_select = sgs.CreateSkillCard {
     name = 'LuaDunshi',
     will_throw = false,
@@ -59,7 +48,7 @@ LuaDunshi_select = sgs.CreateSkillCard {
                     poi:setSkillName('LuaDunshi')
                     room:useCard(sgs.CardUseStruct(poi, source, source), true)
                 else
-                    pos = getPos(dunshi_patterns, pattern)
+                    local pos = rinsan.getPos(dunshi_patterns, pattern)
                     room:setPlayerMark(source, 'LuaDunshipos', pos)
                     room:askForUseCard(source, '@@LuaDunshi', '@LuaDunshi:' .. pattern) -- %src
                 end
@@ -145,7 +134,7 @@ LuaDunshiCard = sgs.CreateSkillCard {
             use_card = sgs.Sanguosha:cloneCard(name, sgs.Card_NoSuit, -1)
         end
         if use_card == nil then
-            return false
+            return nil
         end
         use_card:setSkillName('LuaDunshi')
         local available = true
@@ -216,7 +205,7 @@ LuaDunshiVS = sgs.CreateViewAsSkill {
             return true
         end
         for _, p in pairs(pattern:split('+')) do
-            if table.contains(dunshi_patterns, pattern) then
+            if table.contains(dunshi_patterns, p) then
                 if player:getMark(self:objectName() .. p) == 0 then
                     return true
                 end
@@ -243,7 +232,25 @@ LuaDunshi = sgs.CreateTriggerSkill {
             end
             for _, guanning in sgs.qlist(room:findPlayersBySkillName(self:objectName())) do
                 if from:getMark(self:objectName() .. guanning:objectName() .. '-Clear') > 0 then
-                    local skill_choices = {'LuaDunshi1', 'LuaDunshi2', 'LuaDunshi3'}
+                    local skill_choices = {}
+                    -- 获得技能并防止伤害
+                    local available_skills = {}
+                    for _, skill in ipairs(available_dunshi_skills) do
+                        if not from:hasSkill(skill) then
+                            table.insert(available_skills, skill)
+                        end
+                    end
+                    rinsan.shuffleTable(available_skills)
+                    local skill_to_choose = {}
+                    for i = 1, #available_skills, 1 do
+                        table.insert(skill_to_choose, available_skills[i])
+                        if i == 3 then
+                            break
+                        end
+                    end
+                    if #skill_to_choose > 0 then
+                        table.insert(skill_choices, 'LuaDunshi1')
+                    end
                     -- 用于记录已删除的牌名
                     local choices = {}
                     for _, pattern in ipairs(dunshi_patterns) do
@@ -254,6 +261,8 @@ LuaDunshi = sgs.CreateTriggerSkill {
                     if #skill_choices == 0 then
                         goto next_guanning
                     end
+                    table.insert(skill_choices, 'LuaDunshi2')
+                    table.insert(skill_choices, 'LuaDunshi3')
                     local skill_choice1 = room:askForChoice(guanning, self:objectName(), table.concat(skill_choices, '+'))
                     table.removeAll(skill_choices, skill_choice1)
                     local skill_choice2 = room:askForChoice(guanning, self:objectName(), table.concat(skill_choices, '+'))
@@ -274,26 +283,10 @@ LuaDunshi = sgs.CreateTriggerSkill {
                     end
                     if table.contains(total_chosen, 'LuaDunshi1') then
                         -- 获得技能并防止伤害
-                        local available_skills = {}
-                        for _, skill in ipairs(available_dunshi_skills) do
-                            if not from:hasSkill(skill) then
-                                table.insert(available_skills, skill)
-                            end
-                        end
-                        rinsan.shuffleTable(available_skills)
-                        local skill_to_choose = {}
-                        for i = 1, #available_skills, 1 do
-                            table.insert(skill_to_choose, available_skills[i])
-                            if i == 3 then
-                                break
-                            end
-                        end
-                        if #skill_to_choose > 0 then
-                            local gain = room:askForChoice(guanning, self:objectName(), table.concat(skill_to_choose, '+'))
-                            room:acquireSkill(from, gain)
-                            room:removePlayerMark(from, self:objectName() .. guanning:objectName() .. '-Clear')
-                            return true
-                        end
+                        local gain = room:askForChoice(guanning, self:objectName(), table.concat(skill_to_choose, '+'))
+                        room:acquireSkill(from, gain)
+                        room:removePlayerMark(from, self:objectName() .. guanning:objectName() .. '-Clear')
+                        return true
                     end
                     room:removePlayerMark(from, self:objectName() .. guanning:objectName() .. '-Clear')
                 end
@@ -310,7 +303,7 @@ LuaDunshi = sgs.CreateTriggerSkill {
         if card and card:hasFlag('LuaDunshi') then
             room:addPlayerMark(player, 'LuaDunshi-Clear')
             room:addPlayerMark(room:getCurrent(), self:objectName() .. player:objectName() .. '-Clear')
-            room:setPlayerMark(player, 'LuaDunshi-Used-Clear', getPos(dunshi_patterns, card:objectName()))
+            room:setPlayerMark(player, 'LuaDunshi-Used-Clear', rinsan.getPos(dunshi_patterns, card:objectName()))
         end
     end,
     can_trigger = rinsan.globalTrigger,
