@@ -258,7 +258,7 @@ LuaDunshi = sgs.CreateTriggerSkill {
                     -- 用于记录已删除的牌名
                     local choices = {}
                     for _, pattern in ipairs(dunshi_patterns) do
-                        if player:getMark('LuaDunshi' .. pattern) == 0 then
+                        if guanning:getMark('LuaDunshi' .. pattern) == 0 then
                             table.insert(choices, pattern)
                         end
                     end
