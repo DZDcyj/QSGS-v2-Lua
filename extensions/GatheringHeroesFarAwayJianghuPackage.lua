@@ -50,7 +50,7 @@ LuaDunshi_select = sgs.CreateSkillCard {
                 else
                     local pos = rinsan.getPos(dunshi_patterns, pattern)
                     room:setPlayerMark(source, 'LuaDunshipos', pos)
-                    room:askForUseCard(source, '@@LuaDunshi', '@LuaDunshi:' .. pattern) -- %src
+                    room:askForUseCard(source, '@@LuaDunshi', '@LuaDunshi:' .. pattern)
                 end
             end
         end
@@ -75,8 +75,12 @@ LuaDunshiCard = sgs.CreateSkillCard {
             if card and card:targetFixed() then
                 return false
             else
-                return card and card:targetFilter(plist, to_select, sgs.Self) and
-                           not sgs.Self:isProhibited(to_select, card, plist)
+                if card then
+                    local filter = card:targetFilter(plist, to_select, sgs.Self)
+                    local prohibited = sgs.Self:isProhibited(to_select, card, plist)
+                    return filter and (not prohibited)
+                end
+                return false
             end
         end
         return true
