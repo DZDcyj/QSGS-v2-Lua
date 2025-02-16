@@ -107,7 +107,12 @@ LuaJiufa = sgs.CreateTriggerSkill {
                 end
                 for number, count in ipairs(numberTable) do
                     if count == 1 then
+                        local _card_ids = sgs.IntList()
+                        -- 深拷贝
                         for _, id in sgs.qlist(ids) do
+                            _card_ids:append(id)
+                        end
+                        for _, id in sgs.qlist(_card_ids) do
                             local curr = sgs.Sanguosha:getCard(id)
                             if curr:getNumber() == number then
                                 ids:removeOne(id)
