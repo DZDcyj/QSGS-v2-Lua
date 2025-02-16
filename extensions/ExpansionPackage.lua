@@ -8324,4 +8324,180 @@ LuaShibei = sgs.CreateTriggerSkill {
 JieJushou:addSkill(LuaJianying)
 JieJushou:addSkill(LuaShibei)
 
+-- 张恭
+ExZhanggong = sgs.General(extension, 'ExZhanggong', 'wei', 3, true, true, false)
+
+LuaQianxinCard = sgs.CreateSkillCard {
+    name = 'LuaQianxin',
+    will_throw = false,
+    target_fixed = false,
+    filter = function(self, targets, to_select)
+        return rinsan.checkFilter(targets, to_select, rinsan.LESS, self:subcardsLength())
+    end,
+    feasible = function(self, targets)
+        return #targets > 0 and #targets == self:subcardsLength()
+    end,
+    on_use = function(self, room, source, targets)
+        local letters = sgs.QList2Table(self:getSubcards())
+        rinsan.shuffleTable(letters)
+        local index = 1
+        for _, target in ipairs(targets) do
+            local curr = letters[index]
+            local mark = string.format('%s-%s-%d', self:objectName(), source:objectName(), curr)
+            room:addPlayerMark(target, mark)
+            index = index + 1
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_GIVE, source:objectName(), target:objectName(),
+                'LuaQianxin', nil)
+            room:moveCardTo(sgs.Sanguosha:getCard(curr), source, target, sgs.Player_PlaceHand, reason)
+        end
+    end,
+}
+
+LuaQianxinVS = sgs.CreateViewAsSkill {
+    name = 'LuaQianxin',
+    n = 999,
+    view_filter = function(self, selected, to_select)
+        return not to_select:isEquipped()
+    end,
+    view_as = function(self, cards)
+        if #cards == 0 then
+            return nil
+        end
+        local give = LuaQianxinCard:clone()
+        for _, cd in ipairs(cards) do
+            give:addSubcard(cd)
+        end
+        return give
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaQianxin')
+    end,
+}
+
+LuaQianxin = sgs.CreateTriggerSkill {
+    name = 'LuaQianxin',
+    events = {sgs.EventPhaseStart},
+    global = true,
+    view_as_skill = LuaQianxinVS,
+    on_trigger = function(self, event, player, data, room)
+        local zhanggongs = room:findPlayersBySkillName(self:objectName())
+        -- 见
+        local reject_draw_count = 0
+        for _, zhanggong in sgs.qlist(zhanggongs) do
+            local invoke = false
+            for _, cid in sgs.qlist(player:handCards()) do
+                local mark = string.format('%s-%s-%d', self:objectName(), zhanggong:objectName(), cid)
+                if player:getMark(mark) > 0 then
+                    invoke = true
+                    break
+                end
+            end
+            if invoke then
+                local _data = sgs.QVariant()
+                _data:setValue(zhanggong)
+                local choice = room:askForChoice(player, self:objectName(), 'accept_letter+reject_letter', _data)
+                if choice == 'accept_letter' then
+                    zhanggong:drawCards(2, self:objectName())
+                else
+                    reject_draw_count = reject_draw_count + 1
+                end
+            end
+        end
+        rinsan.clearAllMarksContains(player, 'LuaQianxin')
+        if reject_draw_count > 0 then
+            room:addPlayerMark(player, 'LuaQianxinMinus-Clear', reject_draw_count)
+        end
+        return false
+    end,
+    can_trigger = function(self, player)
+        return player and player:isAlive() and player:getPhase() == sgs.Player_Start
+    end,
+}
+
+LuaQianxinMaxCards = sgs.CreateMaxCardsSkill {
+    name = 'LuaQianxinMaxCards',
+    extra_func = function(self, target)
+        local letter_rejected = target:getMark('LuaQianxinMinus-Clear')
+        return -2 * letter_rejected
+    end,
+}
+
+LuaZhenxing = sgs.CreateTriggerSkill {
+    name = 'LuaZhenxing',
+    events = {sgs.EventPhaseStart, sgs.Damaged},
+    frequency = sgs.Skill_Frequent,
+    on_trigger = function(self, event, player, data, room)
+        local invokable = false
+        if event == sgs.EventPhaseStart then
+            invokable = (player:getPhase() == sgs.Player_Finish)
+        else
+            invokable = true
+        end
+        if invokable and room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
+            local ids = room:getNCards(3)
+            room:fillAG(ids, player)
+            local to_get = sgs.IntList()
+            local to_back = sgs.IntList()
+            local suitTable = {0, 0, 0, 0, 0}
+            for _, id in sgs.qlist(ids) do
+                local curr = sgs.Sanguosha:getCard(id)
+                local currSuit = rinsan.Suit2Num(curr:getSuit())
+                suitTable[currSuit] = suitTable[currSuit] + 1
+            end
+            -- 深拷贝
+            local _ids = sgs.IntList()
+            for _, id in sgs.qlist(ids) do
+                _ids:append(id)
+            end
+
+            -- 去除花色一致的
+            for suit, count in ipairs(suitTable) do
+                player:speak(string.format('%s: %d', suit, count))
+                if count > 1 then
+                    for _, id in sgs.qlist(_ids) do
+                        local curr = sgs.Sanguosha:getCard(id)
+                        if rinsan.Suit2Num(curr:getSuit()) == suit then
+                            ids:removeAll(id)
+                            to_back:append(id)
+                            room:takeAG(nil, id, false)
+                        end
+                    end
+                end
+            end
+
+            -- 若有可选的选一张
+            if not ids:isEmpty() then
+                local card_id = room:askForAG(player, ids, false, self:objectName())
+                to_get:append(card_id)
+                ids:removeOne(card_id)
+                for _, id in sgs.qlist(ids) do
+                    to_back:append(id)
+                end
+                room:takeAG(player, card_id, false)
+            end
+
+            local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            if not to_get:isEmpty() then
+                dummy:addSubcards(rinsan.getCardList(to_get))
+                player:obtainCard(dummy)
+            end
+            local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, '', self:objectName(), nil)
+            local move = sgs.CardsMoveStruct(to_back, nil, nil, sgs.Player_PlaceTable, sgs.Player_DrawPile, reason)
+            local moves = sgs.CardsMoveList()
+            moves:append(move)
+            room:notifyMoveCards(true, moves, false)
+            room:notifyMoveCards(false, moves, false)
+            room:returnToTopDrawPile(to_back)
+            dummy:deleteLater()
+            room:clearAG(player)
+        end
+    end,
+}
+
+ExZhanggong:addSkill(LuaQianxin)
+ExZhanggong:addSkill(LuaZhenxing)
+
+table.insert(hiddenSkills, LuaQianxinMaxCards)
+
 rinsan.addHiddenSkills(hiddenSkills)
