@@ -8427,11 +8427,9 @@ LuaZhenxing = sgs.CreateTriggerSkill {
     events = {sgs.EventPhaseStart, sgs.Damaged},
     frequency = sgs.Skill_Frequent,
     on_trigger = function(self, event, player, data, room)
-        local invokable = false
+        local invokable = true
         if event == sgs.EventPhaseStart then
             invokable = (player:getPhase() == sgs.Player_Finish)
-        else
-            invokable = true
         end
         if invokable and room:askForSkillInvoke(player, self:objectName(), data) then
             room:broadcastSkillInvoke(self:objectName())
