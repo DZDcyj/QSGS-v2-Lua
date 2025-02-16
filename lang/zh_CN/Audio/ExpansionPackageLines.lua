@@ -338,4 +338,10 @@ return {
     ['$LuaShibei1'] = '只有杀身士，绝无降曹夫！',
     ['$LuaShibei2'] = '心向袁氏，绝无背离可言！',
     ['~JieJushou'] = '授，无愧主公之恩…',
+    -- 张恭
+    ['$LuaQianxin1'] = '兵困绝地，将至如归！',
+    ['$LuaQianxin2'] = '临危之际，速速来援！',
+    ['$LuaZhenxing1'] = '东征西讨，募军百里挑一',
+    ['$LuaZhenxing2'] = '众口铄金，积毁销骨',
+    ['~ExZhanggong'] = '大漠孤烟，孤立无援啊……',
 }

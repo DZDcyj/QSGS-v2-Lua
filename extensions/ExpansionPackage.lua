@@ -8338,6 +8338,7 @@ LuaQianxinCard = sgs.CreateSkillCard {
         return #targets > 0 and #targets == self:subcardsLength()
     end,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local letters = sgs.QList2Table(self:getSubcards())
         rinsan.shuffleTable(letters)
         local index = 1
@@ -8381,7 +8382,6 @@ LuaQianxin = sgs.CreateTriggerSkill {
     view_as_skill = LuaQianxinVS,
     on_trigger = function(self, event, player, data, room)
         local zhanggongs = room:findPlayersBySkillName(self:objectName())
-        -- 见
         local reject_draw_count = 0
         for _, zhanggong in sgs.qlist(zhanggongs) do
             local invoke = false
@@ -8451,7 +8451,6 @@ LuaZhenxing = sgs.CreateTriggerSkill {
 
             -- 去除花色一致的
             for suit, count in ipairs(suitTable) do
-                player:speak(string.format('%s: %d', suit, count))
                 if count > 1 then
                     for _, id in sgs.qlist(_ids) do
                         local curr = sgs.Sanguosha:getCard(id)
