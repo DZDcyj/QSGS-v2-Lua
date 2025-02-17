@@ -16,8 +16,8 @@ local available_dunshi_skills = { -- 仁义礼智信技能表
 'rende', 'renxin', 'suiren', -- 仁
 'juyi', 'yicong', 'yijue', 'yishe', 'yixiang', 'tianyi', 'LuaYizheng', 'LuaStarYishi', 'LuaZhiyi', 'LuaShangyi', -- 义
 'lixia', 'LuaLilu', 'yili', 'lirang', -- 礼
-'zhiyu', 'zhichi', 'jizhi', 'shenzhi' -- 智
--- 信
+'zhiyu', 'zhichi', 'jizhi', 'shenzhi', -- 智
+'LuaQianxin' -- 信
 }
 
 local dunshi_patterns = {'slash', 'jink', 'peach', 'analeptic'}

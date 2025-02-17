@@ -2191,3 +2191,24 @@ sgs.ai_skill_askforyiji['LuaYimou'] = function(self, card_ids)
 
     return all_players_table[rinsan.random(1, #all_players_table)], id
 end
+
+-- 遣信选择
+sgs.ai_skill_choice['LuaQianxin'] = function(self, choices, data)
+    local items = choices:split('+')
+    local target = data:toPlayer()
+    -- 队友无脑选摸牌
+    if self:isFriend(target) then
+        return items[1]
+    end
+    -- 非队友根据情况选择
+    -- 选择保命
+    if self:isWeak() then
+        return items[1]
+    end
+    -- 如果觉得可以趁机直接干掉，就选掉上限
+    if (not self:needBear()) and self:isWeak(zhangrang) then
+        return items[1]
+    end
+    -- 随机
+    return items[rinsan.random(1, 2)]
+end
