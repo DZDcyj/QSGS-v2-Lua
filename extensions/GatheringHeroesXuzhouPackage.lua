@@ -23,9 +23,8 @@ LuaLilu = sgs.CreateTriggerSkill {
             if diff > 0 then
                 player:drawCards(diff, self:objectName())
             end
-            local maxCardCount = math.min(5, player:getHandcardNum())
             room:broadcastSkillInvoke(self:objectName())
-            room:askForYiji(player, player:handCards(), self:objectName(), false, false, false, maxCardCount)
+            room:askForYiji(player, player:handCards(), self:objectName(), false, false, false, player:getHandcardNum())
             return true
         end
         return false
