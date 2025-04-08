@@ -8285,9 +8285,9 @@ LuaJianying = sgs.CreateTriggerSkill {
         end
         local suit = player:getMark(LuaJianyingSuitMark)
         local number = player:getMark(LuaJianyingNumberMark)
-        local card_suit = rinsan.Suit2Num(card:getSuit())
+        local card_suit = rinsan.Suit2Num(card:getSuit(), true)
         local card_number = card:getNumber()
-        player:setMark(LuaJianyingSuitMark, rinsan.Suit2Num(card:getSuit()))
+        player:setMark(LuaJianyingSuitMark, rinsan.Suit2Num(card:getSuit(), true))
         player:setMark(LuaJianyingNumberMark, card_number)
         if number == card_number or suit == card_suit then
             if room:askForSkillInvoke(player, self:objectName(), data) then
