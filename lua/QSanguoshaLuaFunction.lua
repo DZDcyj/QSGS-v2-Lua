@@ -1443,12 +1443,14 @@ local suits = {
 }
 
 -- 花色转数字
-function Suit2Num(suit)
+function Suit2Num(suit, no_suit_as_positive)
+    -- 是否将无花色的视为非零数字，此处用于修正渐营 BUG
+    no_suit_as_positive = no_suit_as_positive or false
     local f = suitNumFuncs[suit]
     if f then
         return f()
     end
-    return 0
+    return no_suit_as_positive and 5 or 0
 end
 
 function Num2Suit(num)
