@@ -2335,6 +2335,16 @@ LuaShouye = sgs.CreateTriggerSkill {
                     rinsan.sendLogMessage(room, '#ShouyeSucceed', {
                         ['from'] = p,
                     })
+                    if use.card:isKindOf('DelayedTrick') then
+                        -- 延时锦囊牌立即回收
+                        rinsan.sendLogMessage(room, '#LuaSkillInvalidateCard', {
+                            ['from'] = p,
+                            ['arg'] = use.card:objectName(),
+                            ['arg2'] = 'LuaShouye',
+                        })
+                        room:obtainCard(p, use.card)
+                        return false
+                    end
                     local nullified_list = use.nullified_list
                     table.insert(nullified_list, p:objectName())
                     use.nullified_list = nullified_list
