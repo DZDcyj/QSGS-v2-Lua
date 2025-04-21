@@ -8507,4 +8507,111 @@ ExZhanggong:addSkill(LuaZhenxing)
 
 table.insert(hiddenSkills, LuaQianxinMaxCards)
 
+-- 势太史慈
+ShiTaishici = sgs.General(extension, 'ShiTaishici', 'wu', '4', true, true)
+
+-- 计算酣战对应数值
+local function getHanzhanNum(shitaishici, player)
+    -- 分别对应：当前体力值/已损失体力值/存活角色数
+    if shitaishici:getMark('LuaZhenfeng-Hanzhan') == 1 then
+        return player:getHp()
+    elseif shitaishici:getMark('LuaZhenfeng-Hanzhan') == 2 then
+        return player:getLostHp()
+    elseif shitaishici:getMark('LuaZhenfeng-Hanzhan') == 3 then
+        return player:getRoom():alivePlayerCount()
+    end
+    -- 默认情况下，获取最大体力值
+    return player:getMaxHp()
+end
+
+LuaHanzhanCard = sgs.CreateSkillCard {
+    name = 'LuaHanzhan',
+    target_fixed = false,
+    will_throw = true,
+    filter = function(self, selected, to_select)
+        return rinsan.checkFilter(selected, to_select, rinsan.EQUAL, 0)
+    end,
+    on_effect = function(self, effect)
+        local source = effect.from
+        local target = effect.to
+        local room = source:getRoom()
+        local sourceDraw = getHanzhanNum(source, source) - source:getHandcardNum()
+        local targetDraw = getHanzhanNum(source, target) - target:getHandcardNum()
+        if sourceDraw > 0 then
+            source:drawCards(math.min(sourceDraw, 3), self:objectName())
+        end
+        if targetDraw > 0 then
+            target:drawCards(math.min(targetDraw, 3), self:objectName())
+        end
+        local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
+        duel:setSkillName(self:objectName())
+        room:useCard(sgs.CardUseStruct(duel, source, target))
+    end,
+}
+
+LuaHanzhan = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaHanzhan',
+    view_as = function(self, cards)
+        return LuaHanzhanCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return not player:hasUsed('#LuaHanzhan')
+    end,
+}
+
+LuaZhenfengCard = sgs.CreateSkillCard {
+    name = 'LuaZhenfeng',
+    target_fixed = true,
+    will_throw = true,
+    on_use = function(self, room, source, targets)
+        source:loseMark('@LuaZhenfeng')
+        local choices = {'LuaZhenfengRecover'}
+        if source:hasSkill('LuaHanzhan') or source:hasSkill('LuaZhanlie') then
+            table.insert(choices, 'LuaZhenfengChangeValue')
+        end
+        local choice = room:askForChoice(source, self:objectName(), table.concat(choices, '+'))
+        if choice == 'LuaZhenfengRecover' then
+            -- 回复 2 点体力
+            rinsan.recover(source, 2, source)
+            return
+        end
+        local changeValueChoices = {'LuaZhenfeng-CurrentHP', 'LuaZhenfeng-LostHp', 'LuaZhenfeng-CurrentAlivePlayers'}
+        table.insert(changeValueChoices, 'cancel')
+        if source:hasSkill('LuaHanzhan') then
+            local choice = room:askForChoice(source, 'LuaZhenfeng-Hanzhan', table.concat(changeValueChoices, '+'))
+            -- 即使取消也是 4，不做额外判断
+            local index = rinsan.getPos(changeValueChoices, choice)
+            room:setPlayerMark(source, 'LuaZhenfeng-Hanzhan', index)
+        end
+        if source:hasSkill('LuaZhanlie') then
+            local choice = room:askForChoice(source, 'LuaZhenfeng-Zhanlie', table.concat(changeValueChoices, '+'))
+            -- 即使取消也是 4，不做额外判断
+            local index = rinsan.getPos(changeValueChoices, choice)
+            room:setPlayerMark(source, 'LuaZhenfeng-Zhanlie', index)
+        end
+    end,
+}
+
+LuaZhenfengVS = sgs.CreateZeroCardViewAsSkill {
+    name = 'LuaZhenfeng',
+    view_as = function(self, cards)
+        return LuaZhenfengCard:clone()
+    end,
+    enabled_at_play = function(self, player)
+        return player:getMark('@LuaZhenfeng') > 0
+    end,
+}
+
+LuaZhenfeng = sgs.CreateTriggerSkill {
+    name = 'LuaZhenfeng',
+    frequency = sgs.Skill_Limited,
+    limit_mark = '@LuaZhenfeng',
+    view_as_skill = LuaZhenfengVS,
+    on_trigger = function()
+    end,
+}
+
+ShiTaishici:addSkill(LuaHanzhan)
+ShiTaishici:addSkill(LuaZhenfeng)
+
 rinsan.addHiddenSkills(hiddenSkills)
