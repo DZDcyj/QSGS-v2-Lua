@@ -8559,6 +8559,185 @@ LuaHanzhan = sgs.CreateZeroCardViewAsSkill {
     end,
 }
 
+local LuaZhanlieMark = '@LuaZhanlieMark'
+
+local function acquireZhanlieMark(player, amount)
+    if amount <= 0 then
+        return
+    end
+    local curr = player:getMark(LuaZhanlieMark)
+    local diff = 6 - curr
+    -- diff 代表与 6 相差多少
+    if diff <= 0 then
+        return
+    end
+    player:gainMark(LuaZhanlieMark, math.min(diff, amount))
+end
+
+-- 计算战烈对应数值
+local function getZhanlieNum(shitaishici, player)
+    -- 分别对应：当前体力值/已损失体力值/存活角色数
+    if shitaishici:getMark('LuaZhenfeng-Zhanlie') == 1 then
+        return player:getHp()
+    elseif shitaishici:getMark('LuaZhenfeng-Zhanlie') == 2 then
+        return player:getLostHp()
+    elseif shitaishici:getMark('LuaZhenfeng-Zhanlie') == 3 then
+        return player:getRoom():alivePlayerCount()
+    end
+    -- 默认情况下，获取攻击范围
+    return player:getAttackRange()
+end
+
+-- 战烈：记录标记
+LuaZhanlieGainMark = sgs.CreateTriggerSkill {
+    name = 'LuaZhanlieGainMark',
+    events = {sgs.EventPhaseStart, sgs.CardsMoveOneTime},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.EventPhaseStart then
+            if room:getCurrent():getPhase() == sgs.Player_RoundStart then
+                for _, shitaishici in sgs.qlist(room:findPlayersBySkillName('LuaZhanlie')) do
+                    room:setPlayerMark(shitaishici, 'LuaZhanlie-Limit', getZhanlieNum(shitaishici, shitaishici))
+                end
+            end
+            return false
+        end
+        if room:getTag('FirstRound'):toBool() then
+            return false
+        end
+        if not player:hasSkill('LuaZhanlie') then
+            return false
+        end
+        local move = data:toMoveOneTime()
+        local slashCount = 0
+        if move.to_place == sgs.Player_DiscardPile then
+            for _, id in sgs.qlist(move.card_ids) do
+                local card = sgs.Sanguosha:getCard(id)
+                if card:isKindOf('Slash') then
+                    slashCount = slashCount + 1
+                end
+            end
+        end
+        if slashCount == 0 then
+            return false
+        end
+        local limit = player:getMark('LuaZhanlie-Limit')
+        acquireZhanlieMark(player, math.min(limit, slashCount))
+        room:removePlayerMark(player, 'LuaZhanlie-Limit', slashCount)
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+-- 战烈：主技能，出牌阶段结束时询问出杀
+LuaZhanlie = sgs.CreateTriggerSkill {
+    name = 'LuaZhanlie',
+    events = {sgs.EventPhaseEnd},
+    on_trigger = function(self, event, player, data, room)
+        local curr = player:getMark(LuaZhanlieMark)
+        if curr <= 0 then
+            return false
+        end
+        local zhanlieSlash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        zhanlieSlash:setSkillName('_' .. self:objectName())
+        local splayers = sgs.SPlayerList()
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if player:canSlash(p, zhanlieSlash, false) then
+                splayers:append(p)
+            end
+        end
+        local target = room:askForPlayerChosen(player, splayers, self:objectName(), 'LuaZhanlie-choose', true, true)
+        if not target then
+            return false
+        end
+        local times = math.floor(curr / 3)
+        local choices = {'LuaZhanlieExtraTarget', 'LuaZhanlieExtraDamage', 'LuaZhanlieExtraDiscard', 'LuaZhanlieExtraDraw'}
+        table.insert(choices, 'cancel')
+        for i = 1, times, 1 do
+            local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
+            if choice == 'cancel' then
+                break
+            end
+            table.removeAll(choices, choice)
+            room:setCardFlag(zhanlieSlash, choice)
+        end
+        if target then
+            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
+            player:loseAllMarks(LuaZhanlieMark)
+        end
+        return false
+    end,
+    can_trigger = function(self, target)
+        return rinsan.RIGHTATPHASE(self, target, sgs.Player_Play)
+    end,
+}
+
+-- 战烈：额外目标
+LuaZhanlieTarget = sgs.CreateTargetModSkill {
+    name = '#LuaZhanlieTarget',
+    pattern = 'Slash',
+    extra_target_func = function(self, from, card)
+        if card and card:hasFlag('LuaZhanlieExtraTarget') then
+            return 1
+        end
+        return 0
+    end,
+}
+
+-- 战烈：摸牌与加伤害
+LuaZhanlieDamageDraw = sgs.CreateTriggerSkill {
+    name = 'LuaZhanlieDamageDraw',
+    events = {sgs.DamageCaused, sgs.CardFinished},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        if event == sgs.DamageCaused then
+            local damage = data:toDamage()
+            if damage.card and damage.card:hasFlag('LuaZhanlieExtraDamage') then
+                damage.damage = damage.damage + 1
+                data:setValue(damage)
+            end
+            return false
+        end
+        local use = data:toCardUse()
+        if use.card and use.card:hasFlag('LuaZhanlieExtraDraw') then
+            use.from:drawCards(2, 'LuaZhanlie')
+        end
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
+-- 战烈：出杀要求弃牌
+LuaZhanlieDiscard = sgs.CreateTriggerSkill {
+    name = 'LuaZhanlieDiscard',
+    events = {sgs.TargetSpecified},
+    global = true,
+    on_trigger = function(self, event, player, data, room)
+        local use = data:toCardUse()
+        if (not use.card) or (not use.card:hasFlag('LuaZhanlieExtraDiscard')) then
+            return false
+        end
+        local jink_table = sgs.QList2Table(player:getTag('Jink_' .. use.card:toString()):toIntList())
+        local index = 1
+        for _, p in sgs.qlist(use.to) do
+            if not room:askForDiscard(p, self:objectName(), 1, 1, true, true, 'LuaZhanlie-Discard') then
+                if p:isAlive() then
+                    rinsan.sendLogMessage(room, '#NoJink', {
+                        ['from'] = p,
+                    })
+                end
+                jink_table[index] = 0
+                index = index + 1
+            end
+        end
+        local jink_data = sgs.QVariant()
+        jink_data:setValue(Table2IntList(jink_table))
+        player:setTag('Jink_' .. use.card:toString(), jink_data)
+        return false
+    end,
+    can_trigger = rinsan.globalTrigger,
+}
+
 LuaZhenfengCard = sgs.CreateSkillCard {
     name = 'LuaZhenfeng',
     target_fixed = true,
@@ -8611,7 +8790,13 @@ LuaZhenfeng = sgs.CreateTriggerSkill {
     end,
 }
 
+table.insert(hiddenSkills, LuaZhanlieGainMark)
+table.insert(hiddenSkills, LuaZhanlieTarget)
+table.insert(hiddenSkills, LuaZhanlieDamageDraw)
+table.insert(hiddenSkills, LuaZhanlieDiscard)
+
 ShiTaishici:addSkill(LuaHanzhan)
+ShiTaishici:addSkill(LuaZhanlie)
 ShiTaishici:addSkill(LuaZhenfeng)
 
 rinsan.addHiddenSkills(hiddenSkills)
