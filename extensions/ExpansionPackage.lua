@@ -8653,7 +8653,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         local times = math.floor(curr / 3)
         local choices = {'LuaZhanlieExtraTarget', 'LuaZhanlieExtraDamage', 'LuaZhanlieExtraDiscard', 'LuaZhanlieExtraDraw'}
         table.insert(choices, 'cancel')
-        for i = 1, times, 1 do
+        for _ = 1, times, 1 do
             local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
             if choice == 'cancel' then
                 break
@@ -8748,8 +8748,8 @@ LuaZhenfengCard = sgs.CreateSkillCard {
         if source:hasSkill('LuaHanzhan') or source:hasSkill('LuaZhanlie') then
             table.insert(choices, 'LuaZhenfengChangeValue')
         end
-        local choice = room:askForChoice(source, self:objectName(), table.concat(choices, '+'))
-        if choice == 'LuaZhenfengRecover' then
+        local mainChoice = room:askForChoice(source, self:objectName(), table.concat(choices, '+'))
+        if mainChoice == 'LuaZhenfengRecover' then
             -- 回复 2 点体力
             rinsan.recover(source, 2, source)
             return
