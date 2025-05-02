@@ -705,4 +705,37 @@ return {
     ['reject_letter'] = '本回合的手牌上限-2',
     ['LuaZhenxing'] = '镇行',
     [':LuaZhenxing'] = '结束阶段，或当你受到伤害后，你可以观看牌堆顶的三张牌，获得其中一张与其余牌花色均不相同的牌并将未获得的牌放回牌堆顶',
+    ['ShiTaishici'] = '势太史慈',
+    ['&ShiTaishici'] = '太史慈',
+    ['#ShiTaishici'] = '志踏天阶',
+    ['LuaHanzhan'] = '酣战',
+    [':LuaHanzhan'] = '出牌阶段限一次，你可以选择一名其他角色，你与其依次将手牌数摸至X张（X为各自的体力上限，每次至多摸3张），然后你视为对其使用一张【决斗】',
+    ['luahanzhan'] = '酣战',
+    ['LuaHanzhanDuel'] = '酣战',
+    ['LuaZhenfeng'] = '振锋',
+    [':LuaZhenfeng'] = '限定技，出牌阶段，你可以选择一项：1.回复2点体力；2.将“酣战”和“战烈”中的X分别固定为其中一个选项的数值（当前体力值/已损失体力值/存活角色数）',
+    ['LuaZhanlie'] = '战烈',
+    ['LuaZhanlieSlash'] = '战烈',
+    [':LuaZhanlie'] = '每名角色的回合开始时，你记录X（X为你此时的攻击范围）；本回合内的前X张【杀】进入弃牌堆后，你获得1枚“烈”标记（你至多拥有6枚“烈”标记）；\
+    出牌阶段结束时，你可以移除所有的“烈”标记，然后你视为使用一张无次数限制的【杀】并选择以下至多Y项（Y为你此次移去的“烈”标记数/3,向下取整）：\
+    1. 此【杀】的目标数+1；\
+    2. 此【杀】的基础伤害值+1；\
+    3. 此【杀】需额外弃置一张牌才能响应；\
+    4. 此【杀】结算完毕后，你摸两张牌',
+    ['@LuaZhanlieMark'] = '战烈',
+    ['LuaZhanlieExtraTarget'] = '令此【杀】的目标数+1',
+    ['LuaZhanlieExtraDamage'] = '令此【杀】的基础伤害值+1',
+    ['LuaZhanlieExtraDiscard'] = '令此【杀】需额外弃置一张牌才能响应',
+    ['LuaZhanlieExtraDraw'] = '令此【杀】结算完毕后，你摸两张牌',
+    ['LuaZhanlie-Discard'] = '请弃置一张牌，否则你将无法响应此【杀】',
+    ['LuaZhanlie-choose'] = '你可以发动“战烈”，移去 %arg 枚标记，视为对一名角色使用【杀】并执行一定的效果',
+    ['luazhenfeng'] = '振锋',
+    ['@LuaZhenfeng'] = '振锋',
+    ['LuaZhenfengRecover'] = '回复2点体力',
+    ['LuaZhenfengChangeValue'] = '修改“酣战”或“战烈”',
+    ['LuaZhenfeng-CurrentHP'] = '当前体力值',
+    ['LuaZhenfeng-LostHp'] = '已损失体力值',
+    ['LuaZhenfeng-CurrentAlivePlayers'] = '存活角色数',
+    ['LuaZhenfeng-Zhanlie'] = '振锋-修改战烈',
+    ['LuaZhenfeng-Hanzhan'] = '振锋-修改酣战',
 }
