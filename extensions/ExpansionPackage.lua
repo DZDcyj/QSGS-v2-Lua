@@ -8646,7 +8646,8 @@ LuaZhanlie = sgs.CreateTriggerSkill {
                 splayers:append(p)
             end
         end
-        local target = room:askForPlayerChosen(player, splayers, self:objectName(), 'LuaZhanlie-choose', true, true)
+        local prompt = 'LuaZhanlie-choose:::' .. curr
+        local target = room:askForPlayerChosen(player, splayers, self:objectName(), prompt, true, true)
         if not target then
             return false
         end

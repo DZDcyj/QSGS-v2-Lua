@@ -726,7 +726,7 @@ return {
     ['LuaZhanlieExtraDiscard'] = '令此【杀】需额外弃置一张牌才能响应',
     ['LuaZhanlieExtraDraw'] = '令此【杀】结算完毕后，你摸两张牌',
     ['LuaZhanlie-Discard'] = '请弃置一张牌，否则你将无法响应此【杀】',
-    ['LuaZhanlie-choose'] = '你可以发动“战烈”，视为对一名角色使用【杀】',
+    ['LuaZhanlie-choose'] = '你可以发动“战烈”，移去 %arg 枚标记，视为对一名角色使用【杀】并执行一定的效果',
     ['luazhenfeng'] = '振锋',
     ['@LuaZhenfeng'] = '振锋',
     ['LuaZhenfengRecover'] = '回复2点体力',
