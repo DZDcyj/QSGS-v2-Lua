@@ -8672,7 +8672,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
     end,
 }
 
--- 战烈：额外目标
+-- 战烈：额外目标、不限距离
 LuaZhanlieTarget = sgs.CreateTargetModSkill {
     name = '#LuaZhanlieTarget',
     pattern = 'Slash',
@@ -8681,6 +8681,13 @@ LuaZhanlieTarget = sgs.CreateTargetModSkill {
             return 1
         end
         return 0
+    end,
+    distance_limit_func = function(self, from, card)
+        if card and card:getSkillName() == 'LuaZhanlie' then
+            return 1000
+        else
+            return 0
+        end
     end,
 }
 
@@ -8727,8 +8734,8 @@ LuaZhanlieDiscard = sgs.CreateTriggerSkill {
                     })
                 end
                 jink_table[index] = 0
-                index = index + 1
             end
+            index = index + 1
         end
         local jink_data = sgs.QVariant()
         jink_data:setValue(Table2IntList(jink_table))
