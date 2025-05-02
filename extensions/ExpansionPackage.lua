@@ -8544,7 +8544,7 @@ LuaHanzhanCard = sgs.CreateSkillCard {
             target:drawCards(math.min(targetDraw, 3), self:objectName())
         end
         local duel = sgs.Sanguosha:cloneCard('duel', sgs.Card_NoSuit, 0)
-        duel:setSkillName(self:objectName())
+        duel:setSkillName('_LuaHanzhanDuel')
         room:useCard(sgs.CardUseStruct(duel, source, target))
     end,
 }
@@ -8571,6 +8571,9 @@ local function acquireZhanlieMark(player, amount)
     if diff <= 0 then
         return
     end
+    local room = player:getRoom()
+    room:sendCompulsoryTriggerLog(player, 'LuaZhanlie')
+    room:broadcastSkillInvoke('LuaZhanlie', 1)
     player:gainMark(LuaZhanlieMark, math.min(diff, amount))
 end
 
@@ -8639,7 +8642,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             return false
         end
         local zhanlieSlash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-        zhanlieSlash:setSkillName('_' .. self:objectName())
+        zhanlieSlash:setSkillName('_LuaZhanlieSlash')
         local splayers = sgs.SPlayerList()
         for _, p in sgs.qlist(room:getAlivePlayers()) do
             if player:canSlash(p, zhanlieSlash, false) then
@@ -8663,6 +8666,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             room:setCardFlag(zhanlieSlash, choice)
         end
         if target then
+            room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
             room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
             player:loseAllMarks(LuaZhanlieMark)
         end
@@ -8684,7 +8688,7 @@ LuaZhanlieTarget = sgs.CreateTargetModSkill {
         return 0
     end,
     distance_limit_func = function(self, from, card)
-        if card and card:getSkillName() == 'LuaZhanlie' then
+        if card and card:getSkillName() == 'LuaZhanlieSlash' then
             return 1000
         else
             return 0
@@ -8747,19 +8751,21 @@ LuaZhanlieDiscard = sgs.CreateTriggerSkill {
 }
 
 LuaZhenfengCard = sgs.CreateSkillCard {
-    name = 'LuaZhenfeng',
+    name = 'LuaZhenfengCard',
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
         source:loseMark('@LuaZhenfeng')
+        room:notifySkillInvoked(source, 'LuaZhenfeng')
         local choices = {'LuaZhenfengRecover'}
         if source:hasSkill('LuaHanzhan') or source:hasSkill('LuaZhanlie') then
             table.insert(choices, 'LuaZhenfengChangeValue')
         end
-        local mainChoice = room:askForChoice(source, self:objectName(), table.concat(choices, '+'))
+        local mainChoice = room:askForChoice(source, 'LuaZhenfeng', table.concat(choices, '+'))
         if mainChoice == 'LuaZhenfengRecover' then
             -- 回复 2 点体力
             rinsan.recover(source, 2, source)
+            room:broadcastSkillInvoke('LuaZhenfeng', 4)
             return
         end
         local changeValueChoices = {'LuaZhenfeng-CurrentHP', 'LuaZhenfeng-LostHp', 'LuaZhenfeng-CurrentAlivePlayers'}
@@ -8769,12 +8775,14 @@ LuaZhenfengCard = sgs.CreateSkillCard {
             -- 即使取消也是 4，不做额外判断
             local index = rinsan.getPos(changeValueChoices, choice)
             room:setPlayerMark(source, 'LuaZhenfeng-Hanzhan', index)
+            room:broadcastSkillInvoke('LuaZhenfeng', index)
         end
         if source:hasSkill('LuaZhanlie') then
             local choice = room:askForChoice(source, 'LuaZhenfeng-Zhanlie', table.concat(changeValueChoices, '+'))
             -- 即使取消也是 4，不做额外判断
             local index = rinsan.getPos(changeValueChoices, choice)
             room:setPlayerMark(source, 'LuaZhenfeng-Zhanlie', index)
+            room:broadcastSkillInvoke('LuaZhenfeng', index)
         end
     end,
 }
