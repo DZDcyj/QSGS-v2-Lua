@@ -1,4 +1,6 @@
 ﻿name: Auto Release
+permissions:
+  contents: write
 
 on:
   push:
@@ -10,16 +12,6 @@ jobs:
     name: "Publish Release"
     runs-on: ubuntu-latest
     steps:
-      # ${{ github.workspace }}为action运行时的工作目录
-      # 例如：/home/runner/work/QSGS-v2-Lua/QSGS-v2-Lua
-      - name: Echo Workspace of Action
-        run: echo ${{ github.workspace }}
-
-      # ${{ runner.temp }}为运行器临时目录的路径
-      # 例如：/home/runner/work/_temp
-      - name: Echo Temporary Directory on the Runner
-        run: echo ${{ runner.temp }}
-
       # 获取 Tag 名称
       - name: Get Tag Name
         run : |

@@ -1,4 +1,6 @@
 name: LuaCheck
+permissions:
+  contents: read
 
 on:
   push:
