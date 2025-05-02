@@ -8569,7 +8569,7 @@ local function acquireZhanlieMark(player, amount)
     local curr = player:getMark(LuaZhanlieMark)
     -- diff 代表与 6 相差多少
     local diff = 6 - curr
-    -- togain 代表实际获取的标记数    
+    -- togain 代表实际获取的标记数
     local togain = math.min(diff, amount)
     if togain <= 0 then
         return
