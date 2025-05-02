@@ -8561,20 +8561,23 @@ LuaHanzhan = sgs.CreateZeroCardViewAsSkill {
 
 local LuaZhanlieMark = '@LuaZhanlieMark'
 
+-- 获取战烈标记
 local function acquireZhanlieMark(player, amount)
     if amount <= 0 then
         return
     end
     local curr = player:getMark(LuaZhanlieMark)
-    local diff = 6 - curr
     -- diff 代表与 6 相差多少
-    if diff <= 0 then
+    local diff = 6 - curr
+    -- togain 代表实际获取的标记数    
+    local togain = math.min(diff, amount)
+    if togain <= 0 then
         return
     end
     local room = player:getRoom()
     room:sendCompulsoryTriggerLog(player, 'LuaZhanlie')
     room:broadcastSkillInvoke('LuaZhanlie', 1)
-    player:gainMark(LuaZhanlieMark, math.min(diff, amount))
+    player:gainMark(LuaZhanlieMark, togain)
 end
 
 -- 计算战烈对应数值
