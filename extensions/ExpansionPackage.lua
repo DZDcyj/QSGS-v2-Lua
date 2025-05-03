@@ -8535,6 +8535,7 @@ LuaHanzhanCard = sgs.CreateSkillCard {
         local source = effect.from
         local target = effect.to
         local room = source:getRoom()
+        room:notifySkillInvoked(source, self:objectName())
         local sourceDraw = getHanzhanNum(source, source) - source:getHandcardNum()
         local targetDraw = getHanzhanNum(source, target) - target:getHandcardNum()
         if sourceDraw > 0 then
@@ -8669,6 +8670,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             room:setCardFlag(zhanlieSlash, choice)
         end
         if target then
+            room:notifySkillInvoked(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
             room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
             player:loseAllMarks(LuaZhanlieMark)
