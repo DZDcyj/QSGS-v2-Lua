@@ -2221,7 +2221,7 @@ end
 sgs.ai_skill_discard['LuaZhanlieDiscard'] = function(self, discard_num, min_num, optional, method)
     local cards = self.player:getCards('he')
     cards = sgs.QList2Table(cards)
-    self:sortByKeepValue(cards, true)
+    self:sortByKeepValue(cards)
     local to_discard = {}
     local jink_num = self:getCardsNum('Jink')
     local chosen_card
