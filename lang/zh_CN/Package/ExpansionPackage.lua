@@ -738,4 +738,5 @@ return {
     ['LuaZhenfeng-CurrentAlivePlayers'] = '存活角色数',
     ['LuaZhenfeng-Zhanlie'] = '振锋-修改战烈',
     ['LuaZhenfeng-Hanzhan'] = '振锋-修改酣战',
+    ['#LuaZhenfengChoose'] = '%from 为 %arg 选择了 %arg2',
 }

@@ -8666,6 +8666,10 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             if choice == 'cancel' then
                 break
             end
+            rinsan.sendLogMessage(room, '#choose', {
+                ['from'] = target,
+                ['arg'] = choice,
+            })
             table.removeAll(choices, choice)
             room:setCardFlag(zhanlieSlash, choice)
         end
@@ -8767,9 +8771,15 @@ LuaZhenfengCard = sgs.CreateSkillCard {
             table.insert(choices, 'LuaZhenfengChangeValue')
         end
         local mainChoice = room:askForChoice(source, 'LuaZhenfeng', table.concat(choices, '+'))
+        rinsan.sendLogMessage(room, '#LuaZhenfengChoose', {
+            ['from'] = source,
+            ['arg'] = 'LuaZhenfeng',
+            ['arg2'] = mainChoice,
+        })
         if mainChoice == 'LuaZhenfengRecover' then
             -- 回复 2 点体力
             rinsan.recover(source, 2, source)
+            room:notifySkillInvoked(source, 'LuaZhenfeng')
             room:broadcastSkillInvoke('LuaZhenfeng', 4)
             return
         end
@@ -8779,14 +8789,30 @@ LuaZhenfengCard = sgs.CreateSkillCard {
             local choice = room:askForChoice(source, 'LuaZhenfeng-Hanzhan', table.concat(changeValueChoices, '+'))
             -- 即使取消也是 4，不做额外判断
             local index = rinsan.getPos(changeValueChoices, choice)
+            if choice ~= 'cancel' then
+                rinsan.sendLogMessage(room, '#LuaZhenfengChoose', {
+                    ['from'] = source,
+                    ['arg'] = 'LuaHanzhan',
+                    ['arg2'] = choice,
+                })
+            end
             room:setPlayerMark(source, 'LuaZhenfeng-Hanzhan', index)
+            room:notifySkillInvoked(source, 'LuaZhenfeng')
             room:broadcastSkillInvoke('LuaZhenfeng', index)
         end
         if source:hasSkill('LuaZhanlie') then
             local choice = room:askForChoice(source, 'LuaZhenfeng-Zhanlie', table.concat(changeValueChoices, '+'))
             -- 即使取消也是 4，不做额外判断
             local index = rinsan.getPos(changeValueChoices, choice)
+            if choice ~= 'cancel' then
+                rinsan.sendLogMessage(room, '#LuaZhenfengChoose', {
+                    ['from'] = source,
+                    ['arg'] = 'LuaZhanlie',
+                    ['arg2'] = choice,
+                })
+            end
             room:setPlayerMark(source, 'LuaZhenfeng-Zhanlie', index)
+            room:notifySkillInvoked(source, 'LuaZhenfeng')
             room:broadcastSkillInvoke('LuaZhenfeng', index)
         end
     end,
