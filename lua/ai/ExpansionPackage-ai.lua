@@ -1283,6 +1283,10 @@ end
 sgs.ai_skill_invoke.LuaShouye = function(self, data)
     local use = data:toCardUse()
     local card = use.card
+    -- 队友使用的先不发动
+    if self:isFriend(use.from) then
+        return false
+    end
     -- 判断牌是否为好牌，不是就发动
     if card:isKindOf('Peach') or card:isKindOf('AmazingGrace') or card:isKindOf('GodSalvation') or card:isKindOf('ExNihilo') then
         return false
@@ -2211,4 +2215,26 @@ sgs.ai_skill_choice['LuaQianxin'] = function(self, choices, data)
     end
     -- 随机
     return items[rinsan.random(1, 2)]
+end
+
+-- 战烈弃牌
+sgs.ai_skill_discard['LuaZhanlieDiscard'] = function(self, discard_num, min_num, optional, method)
+    local cards = self.player:getCards('he')
+    cards = sgs.QList2Table(cards)
+    self:sortByKeepValue(cards, true)
+    local to_discard = {}
+    local jink_num = self:getCardsNum('Jink')
+    local chosen_card
+    for i = 1, discard_num do
+        chosen_card = cards[i]
+        table.insert(to_discard, cards[i]:getEffectiveId())
+    end
+    -- 没有闪的情况下，不弃牌
+    if jink_num == 0 then
+        return {}
+    elseif jink_num == 1 then
+        -- 只有一张闪，若当前最差的牌为闪，则不弃牌
+        return (not chosen_card:isKindOf('Jink')) and to_discard or {}
+    end
+    return to_discard
 end
