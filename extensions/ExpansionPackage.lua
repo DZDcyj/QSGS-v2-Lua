@@ -8672,8 +8672,8 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         if target then
             room:notifySkillInvoked(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
-            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
             player:loseAllMarks(LuaZhanlieMark)
+            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
         end
         return false
     end,
