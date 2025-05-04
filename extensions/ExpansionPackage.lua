@@ -8667,7 +8667,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
                 break
             end
             rinsan.sendLogMessage(room, '#choose', {
-                ['from'] = target,
+                ['from'] = player,
                 ['arg'] = choice,
             })
             table.removeAll(choices, choice)
