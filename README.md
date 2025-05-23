@@ -15,6 +15,11 @@
 1. 在任意目录下执行 `git clone git@github.com:DZDcyj/QSGS-v2-Lua.git`
 2. 将 QSGS-v2-Lua 文件夹下的所有文件和子目录（包括隐藏文件和子目录）复制到日神杀目录下（即 QSanguosha-v2-20190208），当提示同名文件时，选择覆盖文件
 3. 在日神杀目录下打开 Git Bash，执行 git status，若出现以下内容则表明配置完成
+4. 将当前 Git 仓库配置为大小写敏感
+
+```bash
+git config core.ignorecase false
+```
 
 ```bash
 On branch master
