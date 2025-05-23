@@ -45,8 +45,7 @@ LuaFeiyangCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, 'LuaFeiyang')
         if source:getJudgingArea():length() > 0 then
-            room:throwCard(room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard),
-                source)
+            room:throwCard(room:askForCardChosen(source, source, 'j', 'LuaFeiyang', true, sgs.Card_MethodDiscard), source)
         end
     end,
 }
@@ -81,9 +80,8 @@ LuaFeiyang = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     view_as_skill = LuaFeiyangVS,
     on_trigger = function(self, event, player, data, room)
-        if player:getPhase() == sgs.Player_Start then
-            if player:getJudgingArea():length() > 0 and rinsan.canDiscard(player, player, 'h') and
-                player:getHandcardNum() >= 2 then
+        if player:getPhase() == sgs.Player_Start and player:getJudgingArea():length() > 0 then
+            if rinsan.canDiscard(player, player, 'h') and player:getHandcardNum() >= 2 then
                 room:askForUseCard(player, '@@LuaFeiyang', '@LuaFeiyang')
             end
         end
@@ -118,7 +116,8 @@ local function broadcastSeat(landlord)
     until curr:objectName() == landlord:objectName()
 end
 
-local available_call_option = {
+-- 最原始的叫分（对照）
+local orig_available_call_option = {
     [1] = '0x',
     [2] = '1x',
     [3] = '2x',
@@ -131,15 +130,33 @@ local function callLandholder(first)
     local curr = first
     local biggest = first
     local biggestNumber = 1
+
+    -- 可选项
+    local available_call_option = {
+        [1] = '0x',
+        [2] = '1x',
+        [3] = '2x',
+        [4] = '3x',
+    }
+
     repeat
         local call = room:askForChoice(curr, 'rob-landlord', table.concat(available_call_option, '+'))
         if call == '3x' then
             return curr
         end
-        -- 同样叫分先到者行
-        if rinsan.getPos(available_call_option, call) > biggestNumber then
+        -- 同样叫分先到者行，兼容性考虑不做修改（移除选项后不会有）
+        if rinsan.getPos(orig_available_call_option, call) > biggestNumber then
             biggest = curr
-            biggestNumber = rinsan.getPos(available_call_option, call)
+            biggestNumber = rinsan.getPos(orig_available_call_option, call)
+        end
+        -- 叫分后移除选项
+        -- 只用考虑 1 分 和 2 分
+        if call == '1x' then
+            table.removeAll(available_call_option, '1x')
+        elseif call == '2x' then
+            -- 同时移除 1 分
+            table.removeAll(available_call_option, '1x')
+            table.removeAll(available_call_option, '2x')
         end
         curr = curr:getNextAlive(1)
     until curr:objectName() == first:objectName()
