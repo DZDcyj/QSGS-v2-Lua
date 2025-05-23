@@ -1,6 +1,8 @@
 # QSGS-v2-Lua
 
 ![LuaCheck](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/lua-check.yml/badge.svg)
+[![CodeQL](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/DZDcyj/QSGS-v2-Lua/actions/workflows/github-code-scanning/codeql)
+![Latest Release](https://img.shields.io/github/v/release/DZDcyj/QSGS-v2-Lua.svg)
 
 ## 介绍
 
@@ -10,16 +12,21 @@
 
 如果您想一边配置一边直接在日神杀环境测试，可以采取如下方案:
 
-1. 在日神杀目录下（即 QSanguosha-v2-20190208）打开 Git Bash
-2. 执行命令 git init .
-3. git remote add origin <git@github.com>:DZDcyj/QSGS-v2-Lua.git
-4. git pull origin master
+1. 在任意目录下执行 `git clone git@github.com:DZDcyj/QSGS-v2-Lua.git`
+2. 将 QSGS-v2-Lua 文件夹下的所有文件和子目录（包括隐藏文件和子目录）复制到日神杀目录下（即 QSanguosha-v2-20190208），当提示同名文件时，选择覆盖文件
+3. 在日神杀目录下打开 Git Bash，执行 git status，若出现以下内容则表明配置完成
+4. 将当前 Git 仓库配置为大小写敏感
 
-或者直接使用 git clone 方式在对应目录下进行
+```bash
+git config core.ignorecase false
+```
 
-> 注意: 如果已经提前使用过 Release 包或者 Download Zip 方式进行过文件的操作，为避免造成大量的文件冲突，请先在一个新的空文件夹进行 git 操作，然后将已有的文件进行复制
+```bash
+On branch master
+Your branch is up to date with 'origin/master'.
 
-执行完毕后，将会拉取对应的 lua 文件到 extensions 目录下，便可在日神杀内使用了。
+nothing to commit, working tree clean
+```
 
 ## 开发建议与指南
 
