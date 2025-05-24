@@ -1,5 +1,7 @@
 -- 斗地主包 AI
 -- Created by DZDcyj at 2021/10/9
+-- 引入封装函数包
+local rinsan = require('QSanguoshaLuaFunction')
 
 -- 是否发动飞扬
 sgs.ai_skill_use['@@LuaFeiyang'] = function(self, prompt, method)
@@ -30,4 +32,23 @@ sgs.ai_skill_choice['LuaNongmin'] = function(self, choices)
     end
     -- 选倒数第二个摸牌
     return items[#items - 1]
+end
+
+-- 叫分
+sgs.ai_skill_choice['rob-landlord'] = function(self, choices)
+    local items = choices:split('+')
+    local random_num = rinsan.random(1, 100)
+    if table.contains(items, '1x') and random_num <= 40 then
+        -- AI 20% 概率叫 1 分
+        return '1x'
+    end
+    if table.contains(items, '2x') and random_num <= 20 then
+        -- AI 20% 概率叫 2 分
+        return '2x'
+    end
+    if table.contains(items, '3x') and random_num <= 10 then
+        -- AI 10% 概率叫 3 分
+        return '3x'
+    end
+    return '0x'
 end
