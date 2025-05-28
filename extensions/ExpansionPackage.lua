@@ -8684,9 +8684,7 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
             player:loseAllMarks(LuaZhanlieMark)
-            local card_use = sgs.CardUseStruct(zhanlieSlash, player, target)
-            card_use.m_isOwnerUse = false
-            room:useCard(card_use)
+            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target, false))
         end
         return false
     end,
