@@ -8645,7 +8645,14 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         if curr <= 0 then
             return false
         end
-        local zhanlieSlash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        local zhanlieType = 'slash'
+        if player:hasWeapon('fan') then
+            zhanlieType = room:askForChoice(player, self:objectName(), 'slash+fire_slash+cancel')
+        end
+        if zhanlieType == 'cancel' then
+            return false
+        end
+        local zhanlieSlash = sgs.Sanguosha:cloneCard(zhanlieType, sgs.Card_NoSuit, 0)
         zhanlieSlash:setSkillName('_LuaZhanlieSlash')
         local splayers = sgs.SPlayerList()
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -8677,7 +8684,9 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
             player:loseAllMarks(LuaZhanlieMark)
-            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
+            local card_use = sgs.CardUseStruct(zhanlieSlash, player, target)
+            card_use.m_isOwnerUse = false
+            room:useCard(card_use)
         end
         return false
     end,
