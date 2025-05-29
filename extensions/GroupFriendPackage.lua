@@ -1113,10 +1113,21 @@ LuaXunxin = sgs.CreateTriggerSkill {
                 winner = pindian.to
                 loser = pindian.from
             end
-            local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+            local type = 'slash'
+            local dummy_slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
+            local dummy_use = sgs.CardUseStruct(dummy_slash, winner, loser)
+            local _dummy_use_data = sgs.QVariant()
+            _dummy_use_data:setValue(dummy_use)
+            if winner:hasWeapon('fan') and room:askForSkillInvoke(winner, 'fan', _dummy_use_data) then
+                type = 'fire_slash'
+            end
+            local slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
             slash:setSkillName('_LuaXunxin')
             if winner:canSlash(loser, slash, false) then
-                room:useCard(sgs.CardUseStruct(slash, winner, loser))
+                if type == 'fire_slash' then
+                    room:setEmotion(winner, 'weapon/fan')
+                end
+                room:useCard(sgs.CardUseStruct(slash, winner, loser, false))
             end
             room:addPlayerMark(winner, 'LuaXunxinWon-Clear')
             return false
