@@ -8684,6 +8684,9 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             room:notifySkillInvoked(player, self:objectName())
             room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
             player:loseAllMarks(LuaZhanlieMark)
+            if zhanlieType == 'fire_slash' then
+                room:setEmotion(player, 'weapon/fan')
+            end
             room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target, false))
         end
         return false
