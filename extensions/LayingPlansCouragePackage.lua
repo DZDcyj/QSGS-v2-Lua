@@ -1052,8 +1052,12 @@ LuaJungongCard = sgs.CreateSkillCard {
         end
         local victim = targets[1]
         local type = 'slash'
-        if source:hasWeapon('fan') then
-            type = room:askForChoice(source, self:objectName(), 'slash+fire_slash+cancel')
+        local _data = sgs.QVariant()
+        local _slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
+        local dummy_use = sgs.CardUseStruct(_slash, source, victim, false)
+        _data:setValue(dummy_use)
+        if source:hasWeapon('fan') and room:askForSkillInvoke(source, 'fan', _data) then
+            type = 'fire_slash'
         end
         local slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
         slash:setSkillName(self:objectName())
