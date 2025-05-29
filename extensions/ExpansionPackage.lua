@@ -8080,8 +8080,9 @@ LuaChengzhaoMark = sgs.CreateTriggerSkill {
         local move = data:toMoveOneTime()
         if not room:getTag('FirstRound'):toBool() and move.to and move.to:objectName() == player:objectName() then
             for _, id in sgs.qlist(move.card_ids) do
-                if room:getCardOwner(id):objectName() == player:objectName() and room:getCardPlace(id) ==
-                    sgs.Player_PlaceHand then
+                local owner = room:getCardOwner(id)
+                local place = room:getCardPlace(id)
+                if owner and owner:objectName() == player:objectName() and place and place == sgs.Player_PlaceHand then
                     room:addPlayerMark(player, self:objectName() .. 'engine')
                     if player:getMark(self:objectName() .. 'engine') > 0 then
                         room:addPlayerMark(player, 'LuaChengzhao-Clear')
