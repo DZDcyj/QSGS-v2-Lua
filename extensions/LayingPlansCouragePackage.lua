@@ -1029,9 +1029,19 @@ LuaJungongCard = sgs.CreateSkillCard {
         if not card then
             return false
         end
+        local fire_slash_available = false
+        if sgs.Self:hasWeapon('fan') then
+            local fire_slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
+            fire_slash:addSubcards(self:getSubcards())
+            local canFireSlash = sgs.Self:canSlash(to_select, fire_slash, false)
+            local fireTargetFilter = fire_slash:targetFilter(targets_list, to_select, sgs.Self)
+            fire_slash_available = fireTargetFilter and canFireSlash
+        end
         card:addSubcards(self:getSubcards())
-        local total_num = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, sgs.Self, card) + 1
-        return sgs.Self:canSlash(to_select, card, false) and #targets < total_num
+        local canSlash = sgs.Self:canSlash(to_select, card, false)
+        local slashTargetFilter = card:targetFilter(targets_list, to_select, sgs.Self)
+        local slash_available = slashTargetFilter and canSlash
+        return slash_available or fire_slash_available
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
@@ -1041,9 +1051,13 @@ LuaJungongCard = sgs.CreateSkillCard {
             room:loseHp(source, source:usedTimes('#LuaJungong'))
         end
         local victim = targets[1]
-        local slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        local type = 'slash'
+        if source:hasWeapon('fan') then
+            type = room:askForChoice(source, self:objectName(), 'slash+fire_slash+cancel')
+        end
+        local slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
         slash:setSkillName(self:objectName())
-        room:useCard(sgs.CardUseStruct(slash, source, victim))
+        room:useCard(sgs.CardUseStruct(slash, source, victim, false))
     end,
 }
 
