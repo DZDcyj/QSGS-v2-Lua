@@ -1930,6 +1930,22 @@ function validateAllPlayersVisibleSkills(room)
     end
 end
 
+-- 手动确认发动【朱雀羽扇】技能，适用于视为使用【杀】
+function askForUseFanSkill(source, target, distance_limit)
+    if not source:hasWeapon('fan') then
+        return false
+    end
+    local _data = sgs.QVariant()
+    local _slash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+    local _fire_slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
+    local dummy_use = sgs.CardUseStruct(_slash, source, target, false)
+    _data:setValue(dummy_use)
+    if source:canSlash(target, _fire_slash, false) then
+        return source:getRoom():askForSkillInvoke(source, 'fan', _data)
+    end
+    return false
+end
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_CHANGE_HP'] = 32,

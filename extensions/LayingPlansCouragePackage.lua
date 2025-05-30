@@ -1029,19 +1029,11 @@ LuaJungongCard = sgs.CreateSkillCard {
         if not card then
             return false
         end
-        local fire_slash_available = false
-        if sgs.Self:hasWeapon('fan') then
-            local fire_slash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
-            fire_slash:addSubcards(self:getSubcards())
-            local canFireSlash = sgs.Self:canSlash(to_select, fire_slash, false)
-            local fireTargetFilter = fire_slash:targetFilter(targets_list, to_select, sgs.Self)
-            fire_slash_available = fireTargetFilter and canFireSlash
-        end
         card:addSubcards(self:getSubcards())
         local canSlash = sgs.Self:canSlash(to_select, card, false)
         local slashTargetFilter = card:targetFilter(targets_list, to_select, sgs.Self)
         local slash_available = slashTargetFilter and canSlash
-        return slash_available or fire_slash_available
+        return slash_available
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
@@ -1052,11 +1044,7 @@ LuaJungongCard = sgs.CreateSkillCard {
         end
         local victim = targets[1]
         local type = 'slash'
-        local _data = sgs.QVariant()
-        local _slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
-        local dummy_use = sgs.CardUseStruct(_slash, source, victim, false)
-        _data:setValue(dummy_use)
-        if source:hasWeapon('fan') and room:askForSkillInvoke(source, 'fan', _data) then
+        if rinsan.askForUseFanSkill(source, victim, false) then
             type = 'fire_slash'
         end
         local slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)

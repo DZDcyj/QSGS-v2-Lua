@@ -8646,7 +8646,8 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         if curr <= 0 then
             return false
         end
-        local zhanlieSlash = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+        local zhanlieType = 'slash'
+        local zhanlieSlash = sgs.Sanguosha:cloneCard(zhanlieType, sgs.Card_NoSuit, 0)
         zhanlieSlash:setSkillName('_LuaZhanlieSlash')
         local splayers = sgs.SPlayerList()
         for _, p in sgs.qlist(room:getAlivePlayers()) do
@@ -8658,6 +8659,11 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         local target = room:askForPlayerChosen(player, splayers, self:objectName(), prompt, true, true)
         if not target then
             return false
+        end
+        if rinsan.askForUseFanSkill(player, target) then
+            zhanlieType = 'fire_slash'
+            zhanlieSlash = sgs.Sanguosha:cloneCard(zhanlieType, sgs.Card_NoSuit, 0)
+            zhanlieSlash:setSkillName('_LuaZhanlieSlash')
         end
         local times = math.floor(curr / 3)
         local choices = {'LuaZhanlieExtraTarget', 'LuaZhanlieExtraDamage', 'LuaZhanlieExtraDiscard', 'LuaZhanlieExtraDraw'}
@@ -8674,12 +8680,13 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             table.removeAll(choices, choice)
             room:setCardFlag(zhanlieSlash, choice)
         end
-        if target then
-            room:notifySkillInvoked(player, self:objectName())
-            room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
-            player:loseAllMarks(LuaZhanlieMark)
-            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target))
+        room:notifySkillInvoked(player, self:objectName())
+        room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
+        player:loseAllMarks(LuaZhanlieMark)
+        if zhanlieType == 'fire_slash' then
+            room:setEmotion(player, 'weapon/fan')
         end
+        room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target, false))
         return false
     end,
     can_trigger = function(self, target)
