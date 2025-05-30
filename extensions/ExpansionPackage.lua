@@ -8660,14 +8660,10 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         if not target then
             return false
         end
-        local _use_data = sgs.QVariant()
-        local zhanlieFireSlash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
-        zhanlieFireSlash:setSkillName('_LuaZhanlieSlash')
-        local dummy_use = sgs.CardUseStruct(zhanlieSlash, player, target)
-        _use_data:setValue(dummy_use)
-        if player:canSlash(target, zhanlieFireSlash, false) and player:hasWeapon('fan') and room:askForSkillInvoke(player, 'fan', _use_data) then
+        if rinsan.askForUseFanSkill(player, target) then
             zhanlieType = 'fire_slash'
-            zhanlieSlash = zhanlieFireSlash
+            zhanlieSlash = sgs.Sanguosha:cloneCard(zhanlieType, sgs.Card_NoSuit, 0)
+            zhanlieSlash:setSkillName('_LuaZhanlieSlash')
         end
         local times = math.floor(curr / 3)
         local choices = {'LuaZhanlieExtraTarget', 'LuaZhanlieExtraDamage', 'LuaZhanlieExtraDiscard', 'LuaZhanlieExtraDraw'}

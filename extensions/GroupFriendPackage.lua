@@ -1114,11 +1114,7 @@ LuaXunxin = sgs.CreateTriggerSkill {
                 loser = pindian.from
             end
             local type = 'slash'
-            local dummy_slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
-            local dummy_use = sgs.CardUseStruct(dummy_slash, winner, loser)
-            local _dummy_use_data = sgs.QVariant()
-            _dummy_use_data:setValue(dummy_use)
-            if winner:hasWeapon('fan') and room:askForSkillInvoke(winner, 'fan', _dummy_use_data) then
+            if rinsan.askForUseFanSkill(winner, loser, false) then
                 type = 'fire_slash'
             end
             local slash = sgs.Sanguosha:cloneCard(type, sgs.Card_NoSuit, 0)
