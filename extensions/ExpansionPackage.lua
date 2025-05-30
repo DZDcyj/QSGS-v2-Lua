@@ -8647,12 +8647,6 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             return false
         end
         local zhanlieType = 'slash'
-        if player:hasWeapon('fan') then
-            zhanlieType = room:askForChoice(player, self:objectName(), 'slash+fire_slash+cancel')
-        end
-        if zhanlieType == 'cancel' then
-            return false
-        end
         local zhanlieSlash = sgs.Sanguosha:cloneCard(zhanlieType, sgs.Card_NoSuit, 0)
         zhanlieSlash:setSkillName('_LuaZhanlieSlash')
         local splayers = sgs.SPlayerList()
@@ -8665,6 +8659,15 @@ LuaZhanlie = sgs.CreateTriggerSkill {
         local target = room:askForPlayerChosen(player, splayers, self:objectName(), prompt, true, true)
         if not target then
             return false
+        end
+        local _use_data = sgs.QVariant()
+        local zhanlieFireSlash = sgs.Sanguosha:cloneCard('fire_slash', sgs.Card_NoSuit, 0)
+        zhanlieFireSlash:setSkillName('_LuaZhanlieSlash')
+        local dummy_use = sgs.CardUseStruct(zhanlieSlash, player, target)
+        _use_data:setValue(dummy_use)
+        if player:canSlash(target, zhanlieFireSlash, false) and player:hasWeapon('fan') and room:askForSkillInvoke(player, 'fan', _use_data) then
+            zhanlieType = 'fire_slash'
+            zhanlieSlash = zhanlieFireSlash
         end
         local times = math.floor(curr / 3)
         local choices = {'LuaZhanlieExtraTarget', 'LuaZhanlieExtraDamage', 'LuaZhanlieExtraDiscard', 'LuaZhanlieExtraDraw'}
@@ -8681,15 +8684,13 @@ LuaZhanlie = sgs.CreateTriggerSkill {
             table.removeAll(choices, choice)
             room:setCardFlag(zhanlieSlash, choice)
         end
-        if target then
-            room:notifySkillInvoked(player, self:objectName())
-            room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
-            player:loseAllMarks(LuaZhanlieMark)
-            if zhanlieType == 'fire_slash' then
-                room:setEmotion(player, 'weapon/fan')
-            end
-            room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target, false))
+        room:notifySkillInvoked(player, self:objectName())
+        room:broadcastSkillInvoke(self:objectName(), rinsan.random(2, 3))
+        player:loseAllMarks(LuaZhanlieMark)
+        if zhanlieType == 'fire_slash' then
+            room:setEmotion(player, 'weapon/fan')
         end
+        room:useCard(sgs.CardUseStruct(zhanlieSlash, player, target, false))
         return false
     end,
     can_trigger = function(self, target)
