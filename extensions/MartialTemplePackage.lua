@@ -477,7 +477,7 @@ LuaZhizhe = sgs.CreateTriggerSkill {
         if not (isUse or isResponse) then
             return false
         end
-        if move.to_place == sgs.Player_DiscardPile then
+        if move.from and move.from:objectName() == player:objectName() and move.to_place == sgs.Player_DiscardPile then
             for _, id in sgs.qlist(move.card_ids) do
                 if player:getMark('LuaZhizhe-' .. id) > 0 then
                     room:sendCompulsoryTriggerLog(player, self:objectName())
