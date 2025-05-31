@@ -407,6 +407,7 @@ LuaQingshi = sgs.CreateTriggerSkill {
         elseif choice == 'LuaQingshi-OtherDraw' then
             room:askForUseCard(player, '@@LuaQingshi', '@LuaQingshi-OtherDraw')
         end
+        room:broadcastSkillInvoke(self:objectName())
         room:addPlayerMark(player, mark)
         return false
     end,
