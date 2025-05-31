@@ -540,6 +540,56 @@ function getGainableSkillTable(player, skills)
     return gainableSkillTable
 end
 
+-- 将 element 插入到 qlist 的 index 位置
+function insertQList(qlist, index, element)
+    local size = qlist:length()
+    -- 允许 index == size（即末尾插入）
+    if index < 0 or index > size then
+        error("index out of range")
+    end
+
+    if index <= size / 2 then
+        -- 前半段：用 prepend，然后把新元素向后 swap 到 index
+        qlist:prepend(element)
+        for i = 0, index - 1 do
+            qlist:swap(i, i + 1)
+        end
+    else
+        -- 后半段：用 append，然后把新元素向前 swap 到 index
+        qlist:append(element)
+        for i = size, index + 1, -1 do
+            qlist:swap(i, i - 1)
+        end
+    end
+end
+
+-- 从牌堆获取复数张指定类型的牌
+function obtainSpecifiedCards(room, cardChecker, count, findDiscardPile)
+    local availableCards = {}
+    for _, id in sgs.qlist(room:getDrawPile()) do
+        local card = sgs.Sanguosha:getCard(id)
+        if cardChecker(card) then
+            table.insert(availableCards, id)
+        end
+    end
+    if findDiscardPile then
+        for _, id in sgs.qlist(room:getDiscardPile()) do
+            local card = sgs.Sanguosha:getCard(id)
+            if cardChecker(card) then
+                table.insert(availableCards, id)
+            end
+        end
+    end
+    shuffleTable(availableCards)
+    local subcards = Table2IntList(availableCards)
+    local subLength = math.min(subcards:length(), count)
+    local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+    for i = 1, subLength, 1 do
+        dummy:addSubcard(availableCards[i])
+    end
+    return dummy
+end
+
 -- 从牌堆获取特定的牌
 -- cardChecker 卡牌判断函数
 -- findDiscardPile 是否在弃牌堆寻找
@@ -1030,8 +1080,8 @@ end
 
 -- 是否存在可以发动【佐幸】的神郭嘉
 function availableShenGuojiaExists(player)
-    return (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and
-               player:getMaxHp() > 1
+    local general_names = {player:getGeneralName(), player:getGeneral2Name()}
+    return table.contains(general_names, 'ExShenGuojia') and player:getMaxHp() > 1
 end
 
 -- 是否可以在对应阶段觉醒
