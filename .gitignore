@@ -37,9 +37,10 @@ image/mark/**/复件*.png
 image/mark/**/@[a-z0-9A-Z]*.[jJ][pP][gG]
 image/mark/**/@[a-z0-9A-Z]*.[pP][nN][gG]
 image/small-equips/**
-image/system
+image/system/*
 image/**/[a-z0-9]*.[jJ][pP][gG]
 image/**/[a-z0-9]*.[pP][nN][gG]
+!image/system/guanxing-box.png
 !adjust_salt_plum*
 !indirect_combination*
 !city_under_siege*
