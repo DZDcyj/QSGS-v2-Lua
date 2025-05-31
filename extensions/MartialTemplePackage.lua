@@ -128,7 +128,6 @@ LuaXiongmuDiscard = sgs.CreateTriggerSkill {
             if move.reason and move.reason.m_skillName == 'LuaXiongmu' then
                 if move.to and move.to:objectName() == player:objectName() and move.to_place == sgs.Player_PlaceHand and
                     not move.card_ids:isEmpty() then
-                    player:speak(move.reason.m_skillName)
                     for _, id in sgs.qlist(move.card_ids) do
                         room:addPlayerMark(player, getXiongmuMark(id))
                     end
@@ -216,8 +215,9 @@ LuaRuxianCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         source:loseMark('@' .. self:objectName())
-        source:gainMark('@' .. self:objectName() .. '-Invoked')
+        room:addPlayerMark(source ,'@' .. self:objectName() .. '-Invoked')
     end,
 }
 
