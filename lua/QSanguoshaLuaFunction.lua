@@ -584,7 +584,7 @@ function obtainSpecifiedCards(room, cardChecker, count, findDiscardPile)
     local subcards = Table2IntList(availableCards)
     local subLength = math.min(subcards:length(), count)
     local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
-    for i = 1, count, 1 do
+    for i = 1, subLength, 1 do
         dummy:addSubcard(availableCards[i])
     end
     return dummy

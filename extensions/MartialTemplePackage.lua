@@ -64,8 +64,8 @@ LuaXiongmuCard = sgs.CreateSkillCard {
         room:notifyMoveCards(false, moves, false, tmpList)
 
         local times = ids:length() + equip_ids:length()
-        local checker = function(_card)
-            return _card:getNumber() == 8
+        local checker = function(cd)
+            return cd:getNumber() == 8
         end
         local reason2 = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_DRAW, source:objectName(), self:objectName(), '')
         local dummy = rinsan.obtainSpecifiedCards(room, checker, times, true)
