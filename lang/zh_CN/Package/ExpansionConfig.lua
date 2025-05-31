@@ -17,6 +17,7 @@ return {
     ['plpphskill'] = '出牌阶段每名角色各限一次',
     ['opprndskill'] = '每轮限一次，',
     ['oppplskill'] = '每名角色限一次',
+    ['cdptrnskill2'] = '每种牌名每回合限一次',
 
     ['choose_kingdom'] = '请选择一个势力',
     ['#BroadcastSeat'] = '%arg 的座次为：%arg2',

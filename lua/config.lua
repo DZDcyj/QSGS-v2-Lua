@@ -58,6 +58,7 @@ config = {
 		chptrnskill = '#008000',
 		-- card per turn skill
 		cdptrnskill = '#008000',
+        cdptrnskill2 = '#008000',
 		-- player per phase skill
 		plpphskill = '#008000',
 		-- opportunity per player skill
