@@ -22,14 +22,25 @@ LuaXiongmuCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         local ids = sgs.IntList()
+        local equip_ids = sgs.IntList()
         for _, cid in sgs.qlist(self:getSubcards()) do
             to_goback:addSubcard(cid)
-            ids:append(cid)
+            if room:getCardPlace(cid) == sgs.Player_PlaceEquip then
+                equip_ids:append(cid)
+            else
+                ids:append(cid)
+            end
         end
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, source:objectName(), self:objectName(), '')
         local moves = sgs.CardsMoveList()
         local move = sgs.CardsMoveStruct(ids, source, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile, reason)
-        moves:append(move)
+        local equip_move = sgs.CardsMoveStruct(equip_ids, source, nil, sgs.Player_PlaceEquip, sgs.Player_DrawPile, reason)
+        if not ids:isEmpty() then
+            moves:append(move)
+        end
+        if not equip_ids:isEmpty() then
+            moves:append(equip_move)
+        end
         local tmpList = sgs.SPlayerList()
         tmpList:append(source)
         room:notifyMoveCards(true, moves, false, tmpList)
@@ -42,9 +53,17 @@ LuaXiongmuCard = sgs.CreateSkillCard {
             rinsan.insertQList(drawPile, rinsan.random(0, len - 1), id)
             room:setCardMapping(id, nil, sgs.Player_DrawPile)
         end
+
+        for _, id in sgs.qlist(equip_move.card_ids) do
+            local card = sgs.Sanguosha:getCard(id)
+            source:removeCard(card, sgs.Player_PlaceEquip)
+            rinsan.insertQList(drawPile, rinsan.random(0, len - 1), id)
+            room:setCardMapping(id, nil, sgs.Player_DrawPile)
+        end
+
         room:notifyMoveCards(false, moves, false, tmpList)
 
-        local times = ids:length()
+        local times = ids:length() + equip_ids:length()
         local checker = function(_card)
             return _card:getNumber() == 8
         end
@@ -217,7 +236,7 @@ LuaRuxianCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
         source:loseMark('@' .. self:objectName())
-        room:addPlayerMark(source ,'@' .. self:objectName() .. '-Invoked')
+        room:addPlayerMark(source, '@' .. self:objectName() .. '-Invoked')
     end,
 }
 
