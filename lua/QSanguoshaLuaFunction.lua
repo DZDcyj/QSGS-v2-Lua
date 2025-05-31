@@ -540,6 +540,56 @@ function getGainableSkillTable(player, skills)
     return gainableSkillTable
 end
 
+-- 将 element 插入到 qlist 的 index 位置
+function insertQList(qlist, index, element)
+    local size = qlist:length()
+    -- 允许 index == size（即末尾插入）
+    if index < 0 or index > size then
+        error("index out of range")
+    end
+
+    if index <= size / 2 then
+        -- 前半段：用 prepend，然后把新元素向后 swap 到 index
+        qlist:prepend(element)
+        for i = 0, index - 1 do
+            qlist:swap(i, i + 1)
+        end
+    else
+        -- 后半段：用 append，然后把新元素向前 swap 到 index
+        qlist:append(element)
+        for i = size, index + 1, -1 do
+            qlist:swap(i, i - 1)
+        end
+    end
+end
+
+-- 从牌堆获取复数张指定类型的牌
+function obtainSpecifiedCards(room, cardChecker, count, findDiscardPile)
+    local availableCards = {}
+    for _, id in sgs.qlist(room:getDrawPile()) do
+        local card = sgs.Sanguosha:getCard(id)
+        if cardChecker(card) then
+            table.insert(availableCards, id)
+        end
+    end
+    if findDiscardPile then
+        for _, id in sgs.qlist(room:getDiscardPile()) do
+            local card = sgs.Sanguosha:getCard(id)
+            if cardChecker(card) then
+                table.insert(availableCards, id)
+            end
+        end
+    end
+    shuffleTable(availableCards)
+    local subcards = Table2IntList(availableCards)
+    local subLength = math.min(subcards:length(), count)
+    local dummy = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
+    for i = 1, count, 1 do
+        dummy:addSubcard(availableCards[i])
+    end
+    return dummy
+end
+
 -- 从牌堆获取特定的牌
 -- cardChecker 卡牌判断函数
 -- findDiscardPile 是否在弃牌堆寻找
@@ -762,12 +812,7 @@ end
 
 function askForKingdom(player)
     -- 合法选项：魏蜀吴群
-    local validChoices = {
-        'wei',
-        'shu',
-        'wu',
-        'qun',
-    }
+    local validChoices = {'wei', 'shu', 'wu', 'qun'}
     return player:getRoom():askForChoice(player, 'choose_kingdom', table.concat(validChoices, '+'))
 end
 
@@ -1030,8 +1075,8 @@ end
 
 -- 是否存在可以发动【佐幸】的神郭嘉
 function availableShenGuojiaExists(player)
-    return (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and
-               player:getMaxHp() > 1
+    return (player:getGeneralName() == 'ExShenGuojia' or player:getGeneral2Name() == 'ExShenGuojia') and player:getMaxHp() >
+               1
 end
 
 -- 是否可以在对应阶段觉醒
@@ -1435,12 +1480,7 @@ local suitNumFuncs = {
     end,
 }
 
-local suits = {
-    sgs.Card_Spade,
-    sgs.Card_Club,
-    sgs.Card_Heart,
-    sgs.Card_Diamond,
-}
+local suits = {sgs.Card_Spade, sgs.Card_Club, sgs.Card_Heart, sgs.Card_Diamond}
 
 -- 花色转数字
 function Suit2Num(suit, no_suit_as_positive)
@@ -1712,27 +1752,19 @@ function obtainCardFromOutsideOrPile(player, cardChecker, onlyDrawPile)
 end
 
 -- 扩展智囊牌名
-EXPANSION_ZHINANG_CARDS = {
-    'indirect_combination', -- 奇正相生
-    'adjust_salt_plum', -- 调剂盐梅
-    'city_under_siege', -- 兵临城下
+EXPANSION_ZHINANG_CARDS = {'indirect_combination', -- 奇正相生
+'adjust_salt_plum', -- 调剂盐梅
+'city_under_siege' -- 兵临城下
 }
 
 -- 基本智囊牌名（仅三种）
-ZHINANG_CARDS = {
-    'ex_nihilo', -- 无中生有
-    'dismantlement', -- 过河拆桥
-    'nullification', -- 无懈可击
+ZHINANG_CARDS = {'ex_nihilo', -- 无中生有
+'dismantlement', -- 过河拆桥
+'nullification' -- 无懈可击
 }
 
 -- 蒲元装备
-local PUYUAN_EQUIPS = {
-    'poison_knife',
-    'thunder_blade',
-    'ripple_sword',
-    'red_satin_spear',
-    'quench_blade',
-}
+local PUYUAN_EQUIPS = {'poison_knife', 'thunder_blade', 'ripple_sword', 'red_satin_spear', 'quench_blade'}
 
 -- 锻造装备花色
 local PUYUAN_EQUIPS_SUIT_MAP = {
@@ -1772,14 +1804,12 @@ end
 -- 装备技能
 local ARMOR_SKILLS = {
     -- 八卦
-    ['eight_diagram'] = {
-        'bazhen', -- 卧龙诸葛：八阵
-        'linglong', -- SP 黄月英：玲珑
-        'LuaBazhen', -- 界卧龙诸葛：八阵
+    ['eight_diagram'] = {'bazhen', -- 卧龙诸葛：八阵
+    'linglong', -- SP 黄月英：玲珑
+    'LuaBazhen' -- 界卧龙诸葛：八阵
     },
     -- 藤甲
-    ['vine'] = {
-        'bossmanjia', -- 牛头：蛮甲
+    ['vine'] = {'bossmanjia' -- 牛头：蛮甲
     },
 }
 
