@@ -20,6 +20,7 @@ LuaXiongmuCard = sgs.CreateSkillCard {
     target_fixed = true,
     will_throw = false,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, self:objectName())
         local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         local ids = sgs.IntList()
         local equip_ids = sgs.IntList()
