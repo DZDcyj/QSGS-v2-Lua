@@ -22,11 +22,9 @@ LuaXiongmuCard = sgs.CreateSkillCard {
     will_throw = false,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
-        local to_goback = sgs.Sanguosha:cloneCard('slash', sgs.Card_NoSuit, 0)
         local ids = sgs.IntList()
         local equip_ids = sgs.IntList()
         for _, cid in sgs.qlist(self:getSubcards()) do
-            to_goback:addSubcard(cid)
             if room:getCardPlace(cid) == sgs.Player_PlaceEquip then
                 equip_ids:append(cid)
             else
@@ -34,9 +32,10 @@ LuaXiongmuCard = sgs.CreateSkillCard {
             end
         end
         local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, source:objectName(), self:objectName(), '')
+        local equip_reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_PUT, source:objectName(), self:objectName(), '')
         local moves = sgs.CardsMoveList()
         local move = sgs.CardsMoveStruct(ids, source, nil, sgs.Player_PlaceHand, sgs.Player_DrawPile, reason)
-        local equip_move = sgs.CardsMoveStruct(equip_ids, source, nil, sgs.Player_PlaceEquip, sgs.Player_DrawPile, reason)
+        local equip_move = sgs.CardsMoveStruct(equip_ids, source, nil, sgs.Player_PlaceEquip, sgs.Player_DrawPile, equip_reason)
         if not ids:isEmpty() then
             moves:append(move)
         end
@@ -56,14 +55,27 @@ LuaXiongmuCard = sgs.CreateSkillCard {
             room:setCardMapping(id, nil, sgs.Player_DrawPile)
         end
 
+        local silverLion
+
         for _, id in sgs.qlist(equip_move.card_ids) do
             local card = sgs.Sanguosha:getCard(id)
+            if card:objectName() == 'silver_lion' then
+                silverLion = card
+            end
             source:removeCard(card, sgs.Player_PlaceEquip)
             rinsan.insertQList(drawPile, rinsan.random(0, len - 1), id)
             room:setCardMapping(id, nil, sgs.Player_DrawPile)
         end
 
         room:notifyMoveCards(false, moves, false, tmpList)
+
+        if silverLion and source:hasFlag('SilverLionRecover') then
+            source:setFlags("-SilverLionRecover")
+            if (source:isWounded()) then
+                room:setEmotion(source, "armor/silver_lion")
+                room:recover(source, sgs.RecoverStruct(nil, silverLion))
+            end
+        end
 
         local times = ids:length() + equip_ids:length()
         local checker = function(cd)
