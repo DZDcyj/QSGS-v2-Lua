@@ -303,13 +303,13 @@ local function filterXuanjianCards(source, selected, to_select)
         return #selected < 1 and not to_select:isEquipped()
     end
     -- 需要的花色数
-    local requiredSuitCount = 1 
+    local requiredSuitCount = 1
     -- 判断已选择卡牌是否满足花色数
-    local suits = {}
+    local xuanjian_suits = {}
     for _, cd in ipairs(selected) do
         local suit = cd:getSuitString()
-        if not table.contains(suits, suit) then
-            table.insert(suits, suit)
+        if not table.contains(xuanjian_suits, suit) then
+            table.insert(xuanjian_suits, suit)
         end
     end
 
@@ -319,7 +319,7 @@ local function filterXuanjianCards(source, selected, to_select)
     end
 
     -- 要么是已选中花色，要么是不够花色
-    return table.contains(suits, to_select:getSuitString()) or #suits < requiredSuitCount
+    return table.contains(xuanjian_suits, to_select:getSuitString()) or #xuanjian_suits < requiredSuitCount
 end
 
 -- 判断玄剑选牌合法性
@@ -328,14 +328,14 @@ local function checkXuanjianCards(source, cards)
     local requiredSuitCount = 1
 
     -- 判断已选择卡牌是否满足花色数
-    local suits = {}
+    local xuanjian_suits = {}
     for _, cd in ipairs(cards) do
         local suit = cd:getSuitString()
-        if not table.contains(suits, suit) then
-            table.insert(suits, suit)
+        if not table.contains(xuanjian_suits, suit) then
+            table.insert(xuanjian_suits, suit)
         end
     end
-    if #suits < requiredSuitCount then
+    if #xuanjian_suits < requiredSuitCount then
         return false
     end
 
@@ -347,7 +347,7 @@ local function checkXuanjianCards(source, cards)
     -- 判断所有手牌是否已被选中
     for _, cd in sgs.qlist(source:getHandcards()) do
         local suit = cd:getSuitString()
-        if table.contains(suits, suit) and not table.contains(ids, cd:getEffectiveId()) then
+        if table.contains(xuanjian_suits, suit) and not table.contains(ids, cd:getEffectiveId()) then
             return false
         end
     end
