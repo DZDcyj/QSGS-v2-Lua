@@ -111,6 +111,7 @@ lang/zh_CN/Package/*.lua
 !xiantian_eightdiagram*
 !yuanrong_crossbow*
 !zhaoyue_silver_lion*
+!xuanjian_sword*
 listserver/
 lua/ai/[a-z0-9]*.lua
 lua/lib
