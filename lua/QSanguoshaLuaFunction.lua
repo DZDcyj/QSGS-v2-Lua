@@ -1997,6 +1997,34 @@ function askForUseFanSkill(source, target, distance_limit)
     return false
 end
 
+function getOtherPlayersWithGivenGeneralName(source, generalName)
+    local players = sgs.PlayerList()
+    for _, p in sgs.qlist(source:getAliveSiblings()) do
+        if p:getGeneralName() == generalName or p:getGeneral2Name() == generalName then
+            players:append(p)
+        end
+    end
+    return players
+end
+
+-- 角色映射
+-- 主忠同阵营
+local roleMap = {
+    ['lord'] = 1,
+    ['loyalist'] = 1,
+    ['rebel'] = 3,
+    ['renegade'] = 4,
+}
+
+-- 判断同阵营
+function isSameCamp(player1, player2)
+    -- 内奸始终不同阵营
+    if player1:getRole() == 'renegade' or player2:getRole() == 'renegade' then
+        return false
+    end
+    return roleMap[player1:getRole()] == roleMap[player2:getRole()]
+end
+
 -- 手动修正
 FixedCommandType = {
     ['S_COMMAND_CHANGE_HP'] = 32,
