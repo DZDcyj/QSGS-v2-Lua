@@ -118,15 +118,15 @@ LuaQihui = sgs.CreateTriggerSkill {
     events = {sgs.CardUsed, sgs.CardResponded},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data, room)
-        local card
+        local use_card
         if event == sgs.CardUsed then
-            card = data:toCardUse().card
+            use_card = data:toCardUse().card
         else
             if data:toCardResponse().m_isUse then
-                card = data:toCardResponse().m_card
+                use_card = data:toCardResponse().m_card
             end
         end
-        if (not card) or (card:isKindOf('SkillCard')) then
+        if (not use_card) or (use_card:isKindOf('SkillCard')) then
             return false
         end
         if player:getMark('LuaQihui-NoLimit') > 0 then
@@ -137,7 +137,7 @@ LuaQihui = sgs.CreateTriggerSkill {
             end
         end
         room:setPlayerMark(player, 'LuaQihui-NoLimit', 0)
-        local type = card:getType()
+        local type = use_card:getType()
         if player:getMark('LuaQihui-' .. type) > 0 then
             return false
         end
