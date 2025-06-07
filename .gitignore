@@ -96,6 +96,7 @@ lang/zh_CN/Package/*.lua
 !LayingPlans*.lua
 !MartialTemplePackage*.lua
 !Mobile*.lua
+!OldFriend*
 !poison_knife*
 !PuyuanEquipCardPackage.lua
 !quench_blade*
