@@ -3,7 +3,13 @@
 module('extensions.OldFriendCardPackage', package.seeall)
 extension = sgs.Package('OldFriendCardPackage', sgs.Package_CardPack)
 
+local rinsan = require('QSanguoshaLuaFunction')
+
 local skillList = sgs.SkillList()
+
+-- 友诸葛亮、友庞统名称
+local YouZhugeliang_Name = 'YouZhugeliang'
+local YouPangtong_Name = 'YouPangtong'
 
 -- 玄剑
 xuanjian_sword = sgs.CreateWeapon {
@@ -16,16 +22,33 @@ xuanjian_sword = sgs.CreateWeapon {
 
 xuanjian_sword:setParent(extension)
 
+-- 判断本人是否是对应武将
+local function isGeneral(source, generalName)
+    return source:getGeneralName() == generalName or source:getGeneral2Name() == generalName
+end
+
 -- 共砺接口
-local function gongliZhugeAvailable(youxushu)
-    -- TODO：后续友诸葛亮上线时增加判断
+-- 判断是否有其他同阵营友武将
+-- source: 友武将，技能发动方
+-- you_general_name_to_check: 需要检查的友武将名称
+-- 返回值：如果有同阵营友武将，则返回 true，否则返回 false
+
+local function gongliGeneralAvailable(source, you_general_name_to_check)
+    if isGeneral(source, you_general_name_to_check) then
+        return true
+    end
+    for _, you_general in sgs.qlist(rinsan.getOtherPlayersWithGivenGeneralName(source, you_general_name_to_check)) do
+        if rinsan.isSameCamp(source, you_general) then
+            return true
+        end
+    end
     return false
 end
 
 -- 玄剑选牌
 local function filterXuanjianCards(source, selected, to_select)
-    if gongliZhugeAvailable(source) then
-        -- 共砺生效：一张牌即可
+    if gongliGeneralAvailable(source, YouZhugeliang_Name) then
+        -- 共砺友诸葛亮生效：一张牌即可
         return #selected < 1 and not to_select:isEquipped()
     end
     -- 需要的花色数
@@ -50,8 +73,8 @@ end
 
 -- 判断玄剑选牌合法性
 local function checkXuanjianCards(source, cards)
-    if gongliZhugeAvailable(source) then
-        -- 共砺生效：一张牌即可
+    if gongliGeneralAvailable(source, YouZhugeliang_Name) then
+        -- 共砺友诸葛亮生效：一张牌即可
         return #cards == 1 and not cards[1]:isEquipped()
     end
 
@@ -113,6 +136,24 @@ xuanjian_sword_skill = sgs.CreateViewAsSkill {
 
 if not sgs.Sanguosha:getSkill('xuanjian_sword') then
     skillList:append(xuanjian_sword_skill)
+end
+
+xuanjian_sword_limit_skill = sgs.CreateTargetModSkill {
+    name = 'xuanjian_sword_limit',
+    pattern = 'Slash',
+    distance_limit_func = function(self, player, card)
+        if card:getSkillName() == 'xuanjian_sword' then
+            if gongliGeneralAvailable(player, YouPangtong_Name) then
+                -- 共砺友庞统生效：无距离限制
+                return 1000
+            end
+        end
+        return 0
+    end,
+}
+
+if not sgs.Sanguosha:getSkill('xuanjian_sword_limit') then
+    skillList:append(xuanjian_sword_limit_skill)
 end
 
 sgs.Sanguosha:addSkills(skillList)
