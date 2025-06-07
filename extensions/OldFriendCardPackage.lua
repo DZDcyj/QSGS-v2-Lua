@@ -13,7 +13,7 @@ local YouZhugeliang_Name = 'YouZhugeliang'
 local YouPangtong_Name = 'YouPangtong'
 
 -- 友徐庶技能名称
-local YouXushu_Gongli_SkillName = 'YouXushu_Gongli'
+local YouXushu_Gongli_SkillName = 'LuaYouXushu_Gongli'
 
 -- 玄剑
 xuanjian_sword = sgs.CreateWeapon {
