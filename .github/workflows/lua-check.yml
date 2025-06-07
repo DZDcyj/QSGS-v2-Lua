@@ -28,4 +28,4 @@ jobs:
         with:
           report_paths: "**/junit.xml"
           fail_on_failure: true
-          check_name: LuaCheck JUnit Report
+          check_name: LuaCheck / JUnit Report
