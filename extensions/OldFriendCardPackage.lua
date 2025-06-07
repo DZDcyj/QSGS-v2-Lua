@@ -4,7 +4,7 @@ module('extensions.OldFriendCardPackage', package.seeall)
 extension = sgs.Package('OldFriendCardPackage', sgs.Package_CardPack)
 
 -- 引入封装函数包
-local gongli = require('GongliCommonMethod') 
+local gongli = require('GongliCommonMethod')
 
 local skillList = sgs.SkillList()
 
