@@ -3,9 +3,6 @@
 module('extensions.OldFriendCardPackage', package.seeall)
 extension = sgs.Package('OldFriendCardPackage', sgs.Package_CardPack)
 
--- 引入封装函数包
-local rinsan = require('QSanguoshaLuaFunction')
-
 local skillList = sgs.SkillList()
 
 -- 玄剑
