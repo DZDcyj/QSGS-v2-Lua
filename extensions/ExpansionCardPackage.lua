@@ -324,6 +324,11 @@ end
 
 -- 判断玄剑选牌合法性
 local function checkXuanjianCards(source, cards)
+    if gongliZhugeAvailable(source) then
+        -- 共砺生效：一张牌即可
+        return #cards == 1 and not cards[1]:isEquipped()
+    end
+
     -- 需要的花色数
     local requiredSuitCount = 1
 
