@@ -6,8 +6,6 @@ extension = sgs.Package('ExpansionCardPackage', sgs.Package_CardPack)
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
 
-local skillList = sgs.SkillList()
-
 -- 奇正相生
 indirect_combination = sgs.CreateTrickCard {
     name = 'indirect_combination',
@@ -278,5 +276,3 @@ for i = 1, 3, 1 do
     card:setNumber(i == 3 and 13 or 7)
     card:setParent(extension)
 end
-
-sgs.Sanguosha:addSkills(skillList)
