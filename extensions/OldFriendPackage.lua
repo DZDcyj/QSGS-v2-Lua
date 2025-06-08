@@ -55,6 +55,13 @@ local function loseMultiQihuiMark(youxushu, lose_num)
     if lose_num > #marks then
         return
     end
+    if lose_num == #marks then
+        for _, card_type in ipairs(card_types) do
+            loseQihuiMark(youxushu, card_type)
+        end
+        sendQihuiMarkChangeLog(youxushu, -lose_num)
+        return
+    end
     for _ = 1, lose_num, 1 do
         local choice = room:askForChoice(youxushu, 'LuaQihui', table.concat(marks, '+'))
         table.removeAll(marks, choice)
