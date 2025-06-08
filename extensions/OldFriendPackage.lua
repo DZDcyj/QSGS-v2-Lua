@@ -106,6 +106,7 @@ LuaXiaxing = sgs.CreateTriggerSkill {
             return false
         end
         if room:askForSkillInvoke(player, self:objectName(), data) then
+            room:broadcastSkillInvoke(self:objectName())
             loseMultiQihuiMark(player, 2)
             player:obtainCard(xuanjian, false)
         end
@@ -141,10 +142,10 @@ LuaQihui = sgs.CreateTriggerSkill {
         if player:getMark('LuaQihui-' .. type) > 0 then
             return false
         end
-        room:sendCompulsoryTriggerLog(player, self:objectName())
-        room:broadcastSkillInvoke(self:objectName())
         gainQihuiMark(player, type)
         if getQihuiMarkNum(player) == 3 then
+            room:notifySkillInvoked(player, self:objectName())
+            room:broadcastSkillInvoke(self:objectName())
             loseMultiQihuiMark(player, 2)
             local qihui_choices = {'LuaQihui-choice1', 'LuaQihui-choice2', 'LuaQihui-choice3'}
             local qihui_choice = room:askForChoice(player, self:objectName(), table.concat(qihui_choices, '+'))
@@ -152,8 +153,6 @@ LuaQihui = sgs.CreateTriggerSkill {
                 rinsan.recover(player, 1)
                 room:filterCards(player, player:getCards('he'), true)
                 local card = room:askForCard(player, '.', 'LuaQihui-Recast', data, sgs.Card_MethodRecast)
-                room:notifySkillInvoked(player, self:objectName())
-                room:broadcastSkillInvoke(self:objectName())
                 local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_RECAST, player:objectName(), card:objectName(), '')
                 if card then
                     room:moveCardTo(card, player, nil, sgs.Player_DiscardPile, reason)
@@ -165,12 +164,8 @@ LuaQihui = sgs.CreateTriggerSkill {
                     player:drawCards(1, 'recast')
                 end
             elseif qihui_choice == qihui_choices[2] then
-                room:notifySkillInvoked(player, self:objectName())
-                room:broadcastSkillInvoke(self:objectName())
                 player:drawCards(2, self:objectName())
             elseif qihui_choice == qihui_choices[3] then
-                room:notifySkillInvoked(player, self:objectName())
-                room:broadcastSkillInvoke(self:objectName())
                 room:addPlayerMark(player, 'LuaQihui-NoLimit')
             end
         end
@@ -212,7 +207,7 @@ LuaYouXushu_Gongli = sgs.CreateTriggerSkill {
             end
         end
         return false
-    end
+    end,
 }
 
 table.insert(hiddenSkills, LuaQihuiTargetMod)
