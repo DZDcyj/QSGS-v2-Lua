@@ -14,6 +14,8 @@ return {
     ['LuaQihui-choice1'] = '回复一点体力并重铸一张牌',
     ['LuaQihui-choice2'] = '摸两张牌',
     ['LuaQihui-choice3'] = '令使用的下一张牌无视次数',
+    ['#GainQihuiMark'] = '%from 得到了 %arg 枚 %arg2 标记',
+    ['#LoseQihuiMark'] = '%from 失去了 %arg 枚 %arg2 标记',
     ['@LuaQihui'] = '启诲',
     ['LuaYouXushu_Gongli'] = '共砺',
     [':LuaYouXushu_Gongli'] = '锁定技，若友诸葛亮在场且与你阵营一致，你发动“玄剑”改为将一张手牌当作普通【杀】使用；若友庞统在场且与你阵营一致，你发动“玄剑”使用的【杀】无距离限制（该技能仅在特殊场景生效）',

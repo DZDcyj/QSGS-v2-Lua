@@ -17,17 +17,28 @@ local hiddenSkills = {}
 -- 友徐庶
 YouXushu = sgs.General(extension, 'YouXushu', 'qun', 3, true, true)
 
+-- 获取/失去启诲标记提示
+local function sendQihuiMarkChangeLog(youxushu, change_num)
+    local log_type = change_num > 0 and '#GainQihuiMark' or '#LoseQihuiMark'
+    change_num = math.abs(change_num)
+    rinsan.sendLogMessage(youxushu:getRoom(), log_type, {
+        ['from'] = youxushu,
+        ['arg'] = change_num,
+        ['arg2'] = 'LuaQihui',
+    })
+end
+
 -- 失去对应类型的启诲标记
 local function loseQihuiMark(youxushu, qihui_type)
     local room = youxushu:getRoom()
-    room:removePlayerMark(youxushu, 'LuaQihui-' .. qihui_type)
+    room:removePlayerMark(youxushu, '@LuaQihui-' .. qihui_type)
 end
 
 -- 获得对应类型的启诲标记
 local function gainQihuiMark(youxushu, qihui_type)
     local room = youxushu:getRoom()
-    room:addPlayerMark(youxushu, 'LuaQihui-' .. qihui_type)
-    youxushu:gainMark('@LuaQihui')
+    room:addPlayerMark(youxushu, '@LuaQihui-' .. qihui_type)
+    sendQihuiMarkChangeLog(youxushu, 1)
 end
 
 -- 获取启诲标记数
@@ -35,7 +46,7 @@ local function getQihuiMarkNum(youxushu)
     local card_types = {'basic', 'trick', 'equip'}
     local mark_num = 0
     for _, card_type in ipairs(card_types) do
-        local mark = youxushu:getMark('LuaQihui-' .. card_type)
+        local mark = youxushu:getMark('@LuaQihui-' .. card_type)
         mark_num = mark_num + mark
     end
     return mark_num
@@ -47,7 +58,7 @@ local function loseMultiQihuiMark(youxushu, lose_num)
     local card_types = {'basic', 'trick', 'equip'}
     local marks = {}
     for _, card_type in ipairs(card_types) do
-        local mark = youxushu:getMark('LuaQihui-' .. card_type)
+        local mark = youxushu:getMark('@LuaQihui-' .. card_type)
         if mark > 0 then
             table.insert(marks, card_type)
         end
@@ -67,7 +78,7 @@ local function loseMultiQihuiMark(youxushu, lose_num)
         table.removeAll(marks, choice)
         loseQihuiMark(youxushu, choice)
     end
-    youxushu:loseMark('@LuaQihui', lose_num)
+    sendQihuiMarkChangeLog(youxushu, -lose_num)
 end
 
 LuaXiaxing = sgs.CreateTriggerSkill {
@@ -146,7 +157,7 @@ LuaQihui = sgs.CreateTriggerSkill {
         end
         room:setPlayerMark(player, 'LuaQihui-NoLimit', 0)
         local type = use_card:getType()
-        if player:getMark('LuaQihui-' .. type) > 0 then
+        if player:getMark('@LuaQihui-' .. type) > 0 then
             return false
         end
         gainQihuiMark(player, type)
