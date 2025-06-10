@@ -113,6 +113,12 @@ xuanjian_sword_skill = sgs.CreateViewAsSkill {
     enabled_at_play = function(self, player)
         return sgs.Slash_IsAvailable(player) and player:getMark('Equips_Nullified_to_Yourself') == 0
     end,
+    enabled_at_response = function(self, player, pattern)
+        if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+            return pattern == 'slash' and player:getMark('Equips_Nullified_to_Yourself') == 0
+        end
+        return false
+    end,
 }
 
 if not sgs.Sanguosha:getSkill('xuanjian_sword') then
