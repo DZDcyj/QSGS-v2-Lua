@@ -100,16 +100,21 @@ LuaXiaxing = sgs.CreateTriggerSkill {
                 end
             end
             if not xuanjian then
-                return
+                return false
             end
             -- 获取【玄剑】
             local xuanjian_id = xuanjian:getEffectiveId()
             local newIds = sgs.IntList()
+            local drawPile = room:getDrawPile()
             newIds:append(xuanjian_id)
-            rinsan.obtainCard(newIds, player)
-            player:addCard(xuanjian, sgs.Player_PlaceHand)
-            room:getDrawPile():removeOne(xuanjian_id)
-            room:setCardMapping(xuanjian_id, player, sgs.Player_PlaceHand)
+            -- 若牌堆中不存在【玄剑】，此处不考虑场上已有的情况
+            -- 则将【玄剑】添加至牌堆中
+            if room:getCardPlace(xuanjian_id) ~= sgs.Player_DrawPile then
+                drawPile:prepend(xuanjian_id)
+                room:setCardMapping(xuanjian_id, nil, sgs.Player_DrawPile)
+            end
+            room:doBroadcastNotify(rinsan.FixedCommandType['S_COMMAND_UPDATE_PILE'], tostring(drawPile:length()))
+            room:obtainCard(player, xuanjian, false)
             -- 使用【玄剑】
             room:useCard(sgs.CardUseStruct(xuanjian, player, player))
         end
