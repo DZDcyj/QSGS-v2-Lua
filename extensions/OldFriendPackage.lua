@@ -107,9 +107,34 @@ LuaXiaxing = sgs.CreateTriggerSkill {
             local newIds = sgs.IntList()
             local drawPile = room:getDrawPile()
             newIds:append(xuanjian_id)
-            -- 若牌堆中不存在【玄剑】，此处不考虑场上已有的情况
+
+            -- 若牌堆、弃牌堆、场上均不存在【玄剑】，此处不考虑场上已有的情况
+            -- 通常情况下此时不会有私家牌堆
+            local xuanjian_exists = false
+            for _, id in sgs.qlist(drawPile) do
+                local cd = sgs.Sanguosha:getCard(id)
+                if cd:objectName() == 'xuanjian_sword' then
+                    xuanjian_exists = true
+                    break
+                end
+            end
+            for _, id in sgs.qlist(room:getDiscardPile()) do
+                local cd = sgs.Sanguosha:getCard(id)
+                if cd:objectName() == 'xuanjian_sword' then
+                    xuanjian_exists = true
+                    break
+                end
+            end
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
+                for _, cd in sgs.qlist(p:getCards('hej')) do
+                    if cd:objectName() == 'xuanjian_sword' then
+                        xuanjian_exists = true
+                        break
+                    end
+                end
+            end
             -- 则将【玄剑】添加至牌堆中
-            if room:getCardPlace(xuanjian_id) ~= sgs.Player_DrawPile then
+            if not xuanjian_exists then
                 drawPile:prepend(xuanjian_id)
                 room:setCardMapping(xuanjian_id, nil, sgs.Player_DrawPile)
             end
