@@ -103,9 +103,13 @@ LuaXiaxing = sgs.CreateTriggerSkill {
                 return
             end
             -- 获取【玄剑】
+            local xuanjian_id = xuanjian:getEffectiveId()
             local newIds = sgs.IntList()
-            newIds:append(xuanjian:getEffectiveId())
+            newIds:append(xuanjian_id)
             rinsan.obtainCard(newIds, player)
+            player:addCard(xuanjian, sgs.Player_PlaceHand)
+            room:getDrawPile():removeOne(xuanjian_id)
+            room:setCardMapping(xuanjian_id, player, sgs.Player_PlaceHand)
             -- 使用【玄剑】
             room:useCard(sgs.CardUseStruct(xuanjian, player, player))
         end
