@@ -36,4 +36,27 @@ function gongliSkillInvokable(source, gongli_skill, gongli_friend)
     return false
 end
 
+-- 共砺支持的模式
+local GONGLI_SUPPORT_MODES = {
+    ['06_3v3'] = true, -- 3v3 模式
+    ['04_1v3'] = true, -- 虎牢关
+    ['04_boss'] = true, -- 闯关模式
+    ['05_ol'] = true, -- 神武在世
+    ['08_defense'] = true, -- 守卫剑阁
+}
+
+-- 对外接口，是否为可以发动共砺技能的模式
+function checkModeWhetherGongliAvailable(room)
+    local mode = room:getMode()
+    if GONGLI_SUPPORT_MODES[mode] then
+        return true
+    end
+    -- 如果不是支持模式，则可能是小型场景下的斗地主/绝境之战
+    local lord = room:getLord()
+    -- 地主拥有 LuaDizhu 标记
+    local isLandLordMode = lord and lord:getMark('LuaDizhu') > 0
+    local isImpassableMode = lord and lord:getMark('LuaBoss') > 0
+    return isLandLordMode or isImpassableMode
+end
+
 -- luacheck: pop
