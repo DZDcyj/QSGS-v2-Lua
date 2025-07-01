@@ -168,6 +168,9 @@ LuaXiaxing = sgs.CreateTriggerSkill {
                 end
             end
         end
+        -- 防止被再次弃置
+        move.card_ids:removeAll(xuanjian:getEffectiveId())
+        data:setValue(move)
         if not xuanjian or getQihuiMarkNum(player) < 2 then
             return false
         end
