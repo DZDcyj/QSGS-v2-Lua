@@ -154,6 +154,7 @@ unresponsible = sgs.CreateTriggerSkill {
                 room:removePlayerMark(player, mark)
             end
             local skillName = room:getTag('current_unresponsible_skill'):toString()
+            local skillMark = room:getTag('current_unresponsible_skill_mark'):toString()
             if not skillName then
                 return false
             end
