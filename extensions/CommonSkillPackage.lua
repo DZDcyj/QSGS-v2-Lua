@@ -72,7 +72,6 @@ end
 unresponsible = sgs.CreateTriggerSkill {
     name = 'unresponsible',
     global = true,
-    priority = 10000,
     frequency = sgs.Skill_Compulsory,
     events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling, sgs.CardAsked, sgs.TurnStart, sgs.CardFinished},
     on_trigger = function(self, event, player, data, room)
@@ -181,6 +180,7 @@ unresponsible = sgs.CreateTriggerSkill {
 
 no_distance_limit = sgs.CreateTargetModSkill {
     name = 'no_distance_limit',
+    pattern = '.',
     distance_limit_func = function(self, from, card)
         if from:getMark('no_distance_limit') > 0 then
             return 1000
@@ -189,7 +189,7 @@ no_distance_limit = sgs.CreateTargetModSkill {
     end,
 }
 
-more_slash_tiime = sgs.CreateTargetModSkill {
+more_slash_time = sgs.CreateTargetModSkill {
     name = 'more_slash_time',
     pattern = 'Slash',
     residue_func = function(self, from, card)
@@ -203,6 +203,6 @@ more_slash_tiime = sgs.CreateTargetModSkill {
 table.insert(hiddenSkills, non_use_time)
 table.insert(hiddenSkills, unresponsible)
 table.insert(hiddenSkills, no_distance_limit)
-table.insert(hiddenSkills, more_slash_tiime)
+table.insert(hiddenSkills, more_slash_time)
 
 rinsan.addHiddenSkills(hiddenSkills)

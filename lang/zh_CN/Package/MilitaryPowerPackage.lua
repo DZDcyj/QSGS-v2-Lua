@@ -33,4 +33,5 @@ return {
     [':LuaShiKunfen'] = '锁定技，结束阶段，你失去1点体力，然后摸两张牌',
     ['kunaggu3_behind_water'] = '背水',
     [':kunaggu3_behind_water'] = '弃置一张牌，然后你此阶段内使用【杀】的次数+1',
+    ['@LuaKuanggu3Discard'] = '你需发动“背水”弃置一张牌，然后本阶段使用【杀】的次数+1',
 }
