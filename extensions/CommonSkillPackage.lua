@@ -60,7 +60,7 @@ local function get_skill_marks_and_skills(splayer)
 end
 
 local function get_skill_name(splayer)
-    local unresponsible_marks, unresponsible_skills = get_skill_marks_and_skills(splayer)
+    local _, unresponsible_skills = get_skill_marks_and_skills(splayer)
     if #unresponsible_skills == 0 then
         return nil, nil
     end
@@ -102,7 +102,6 @@ unresponsible = sgs.CreateTriggerSkill {
                 end
             end
         elseif event == sgs.CardAsked then
-            local use = data:toCardUse()
             local skillMark = room:getTag('current_unresponsible_skill_mark'):toString()
             if not skillMark then
                 return false
