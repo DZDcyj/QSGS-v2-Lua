@@ -289,9 +289,9 @@ LuaShiKuanggu = sgs.CreateTriggerSkill {
                 player:drawCards(1)
                 rinsan.recover(player)
                 if rinsan.canDiscard(player, player, 'he') then
-                    local card_id = room:askForCardChosen(player, player, 'he', self:objectName(), false, sgs.Card_MethodDiscard)
-                    room:throwCard(card_id, player, player)
-                    room:addPlayerMark(player, 'more_slash_time')
+                    if room:askForDiscard(player, self:objectName(), 1, 1, false, true, '@LuaKuanggu3Discard') then
+                        room:addPlayerMark(player, 'more_slash_time')
+                    end
                 end
             end
             room:removePlayerMark(player, self:objectName() .. 'engine')
