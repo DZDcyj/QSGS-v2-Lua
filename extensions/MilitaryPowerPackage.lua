@@ -149,16 +149,18 @@ LuaShiYinzhanFinish = sgs.CreateTriggerSkill {
         if use.card and use.card:isKindOf('Slash') then
             local card_id
             for _, p in sgs.qlist(use.to) do
-                if p:getMark('LuaShiYinzhan_discard_biu') > 0 then
-                    room:removePlayerMark(p, 'LuaShiYinzhan_discard_biu')
-                    room:sendCompulsoryTriggerLog(player, 'LuaShiYinzhan')
-                    card_id = room:askForCardChosen(player, p, 'he', 'LuaShiYinzhan', false, sgs.Card_MethodDiscard)
-                    room:throwCard(card_id, p, player)
-                end
-                if p:getMark('LuaShiYinzhan_discard_obtain_biu') > 0 then
-                    room:removePlayerMark(p, 'LuaShiYinzhan_discard_obtain_biu')
-                    rinsan.recover(player)
-                    room:obtainCard(player, card_id, false)
+                if p:isAlive() then
+                    if p:getMark('LuaShiYinzhan_discard_biu') > 0 then
+                        room:removePlayerMark(p, 'LuaShiYinzhan_discard_biu')
+                        room:sendCompulsoryTriggerLog(player, 'LuaShiYinzhan')
+                        card_id = room:askForCardChosen(player, p, 'he', 'LuaShiYinzhan', false, sgs.Card_MethodDiscard)
+                        room:throwCard(card_id, p, player)
+                    end
+                    if p:getMark('LuaShiYinzhan_discard_obtain_biu') > 0 then
+                        room:removePlayerMark(p, 'LuaShiYinzhan_discard_obtain_biu')
+                        rinsan.recover(player)
+                        room:obtainCard(player, card_id, false)
+                    end
                 end
             end
         end
@@ -287,9 +289,9 @@ LuaShiKuanggu = sgs.CreateTriggerSkill {
                 player:drawCards(1)
                 rinsan.recover(player)
                 if rinsan.canDiscard(player, player, 'he') then
-                    if room:askForDiscard(player, self:objectName(), 1, 1, false, true, '@LuaKuanggu3Discard') then
-                        room:addPlayerMark(player, 'more_slash_time')
-                    end
+                    local card_id = room:askForCardChosen(player, player, 'he', self:objectName(), false, sgs.Card_MethodDiscard)
+                    room:throwCard(card_id, player, player)
+                    room:addPlayerMark(player, 'more_slash_time')
                 end
             end
             room:removePlayerMark(player, self:objectName() .. 'engine')

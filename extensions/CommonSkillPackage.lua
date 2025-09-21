@@ -72,6 +72,7 @@ end
 unresponsible = sgs.CreateTriggerSkill {
     name = 'unresponsible',
     global = true,
+    priority = 10000,
     frequency = sgs.Skill_Compulsory,
     events = {sgs.CardUsed, sgs.TargetConfirmed, sgs.TrickCardCanceling, sgs.CardAsked, sgs.TurnStart, sgs.CardFinished},
     on_trigger = function(self, event, player, data, room)
