@@ -1,4 +1,5 @@
 -- lines for Military Power Package
+
 return {
     -- 兵势魏延
     -- 初始语音
