@@ -22,8 +22,8 @@ return {
     使用的牌数小于因“壮誓”弃置的牌数，你摸一张牌；\
     使用的牌数小于因“壮誓”失去的体力数，你回复1点体力（若你未受伤则改为摸一张牌）\
     失败：当你进入濒死状态，或者当你于出牌阶段开始时未执行“壮誓”，则你失去“壮誓”并获得“困奋”',
-    ['#LuaShiZhongaoSuccess'] = '%from 因 %arg2，%arg 使命成功',
-    ['#LuaShiZhongaoFailure'] = '%from 因 %arg2，%arg 使命失败',
+    ['#LuaShiZhongaoSuccess'] = '%from %arg2，%arg 使命成功',
+    ['#LuaShiZhongaoFailure'] = '%from %arg2，%arg 使命失败',
     ['LuaShiZhongaoKilledPlayer'] = '杀死了角色',
     ['LuaShiZhongaoNoZhuangshi'] = '未执行“壮誓”',
     ['LuaShiZhongaoDying'] = '进入濒死状态',
@@ -33,5 +33,5 @@ return {
     [':LuaShiKunfen'] = '锁定技，结束阶段，你失去1点体力，然后摸两张牌',
     ['kunaggu3_behind_water'] = '背水',
     [':kunaggu3_behind_water'] = '弃置一张牌，然后你此阶段内使用【杀】的次数+1',
-    ['@LuaKuanggu3Discard'] = '你需发动“背水”弃置一张牌，然后本阶段使用【杀】的次数+1',
+    ['@LuaKuanggu3Discard'] = '你需执行“背水”效果弃置一张牌，然后本阶段使用【杀】的次数+1',
 }
