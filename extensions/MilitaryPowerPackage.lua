@@ -154,13 +154,17 @@ LuaShiYinzhanFinish = sgs.CreateTriggerSkill {
                     if p:getMark('LuaShiYinzhan_discard_biu') > 0 then
                         room:removePlayerMark(p, 'LuaShiYinzhan_discard_biu')
                         room:sendCompulsoryTriggerLog(player, 'LuaShiYinzhan')
-                        card_id = room:askForCardChosen(player, p, 'he', 'LuaShiYinzhan', false, sgs.Card_MethodDiscard)
-                        room:throwCard(card_id, p, player)
+                        if rinsan.canDiscard(player, p, 'he') then
+                            card_id = room:askForCardChosen(player, p, 'he', 'LuaShiYinzhan', false, sgs.Card_MethodDiscard)
+                            room:throwCard(card_id, p, player)
+                        end
                     end
                     if p:getMark('LuaShiYinzhan_discard_obtain_biu') > 0 then
                         room:removePlayerMark(p, 'LuaShiYinzhan_discard_obtain_biu')
                         rinsan.recover(player)
-                        room:obtainCard(player, card_id, false)
+                        if card_id then
+                            room:obtainCard(player, card_id, false)
+                        end
                     end
                 end
             end
