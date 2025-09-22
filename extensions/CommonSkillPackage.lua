@@ -9,6 +9,36 @@ local rinsan = require('QSanguoshaLuaFunction')
 -- 隐藏技能添加
 local hiddenSkills = {}
 
+-- 要导入的包名列表
+local packages = {'MilitaryPowerPackage' -- 在这里添加更多包名
+}
+
+
+local all_voice_modules = {}
+local all_voice_funcs = {}
+
+for _, pkgName in ipairs(packages) do
+    local fullModuleName = 'extensions.' .. pkgName
+    local ok, module = pcall(require, fullModuleName)
+    if ok and module and module.VOICE_FUNCS then
+        all_voice_modules[pkgName] = module.VOICE_FUNCS
+    end
+end
+
+for _, funcs in pairs(all_voice_modules) do
+    for sn, fc in pairs(funcs) do
+        all_voice_funcs[sn] = fc
+    end
+end
+
+function getVoiceIndex(player, skillName)
+    local func = all_voice_funcs[skillName]
+    if func then
+        return func(player)
+    end
+    return -1
+end
+
 non_use_time = sgs.CreateTriggerSkill {
     name = 'non_use_time',
     frequency = sgs.Skill_Compulsory,
@@ -93,7 +123,7 @@ unresponsible = sgs.CreateTriggerSkill {
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 room:addPlayerMark(p, skillMark)
             end
-            room:broadcastSkillInvoke(skillName)
+            room:broadcastSkillInvoke(skillName, getVoiceIndex(use.from, skillName))
             room:sendCompulsoryTriggerLog(use.from, skillName)
             if (use.card:isKindOf('Slash') or use.card:isNDTrick()) then
                 room:addPlayerMark(use.from, self:objectName() .. 'engine')

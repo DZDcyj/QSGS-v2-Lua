@@ -5,6 +5,7 @@ extension = sgs.Package('MilitaryPowerPackage')
 
 -- 引入封装函数包
 local rinsan = require('QSanguoshaLuaFunction')
+local common = require('extensions.CommonSkillPackage')
 
 -- 隐藏技能添加
 local hiddenSkills = {}
@@ -16,11 +17,40 @@ local hiddenSkills = {}
 -- 势魏延
 ShiWeiyan = sgs.General(extension, 'ShiWeiyan', 'shu', 4, true, true, false)
 
+VOICE_FUNCS = {
+    ['LuaShiYinzhan'] = function(player)
+        if player:getMark('LuaShiZhongao_success') > 0 then
+            return rinsan.random(4, 6)
+        elseif player:getMark('LuaShiZhongao_failure') > 0 then
+            return rinsan.random(7, 9)
+        else
+            return rinsan.random(1, 3)
+        end
+    end,
+    ['LuaShiZhuangshi'] = function(player)
+        if player:getMark('LuaShiZhongao_success') > 0 then
+            return rinsan.random(3, 4)
+        end
+        return rinsan.random(1, 2)
+    end,
+    ['LuaShiKuanggu'] = function(player)
+        if player:getMark('LuaShiZhongao_success') > 0 then
+            return rinsan.random(3, 6)
+        elseif player:getMark('LuaShiZhongao_failure') > 0 then
+            return rinsan.random(7, 8)
+        end
+        return rinsan.random(1, 2)
+    end,
+}
+
+
 LuaShiZhuangshiCard = sgs.CreateSkillCard {
-    name = 'LuaShiZhuangshi',
+    name = 'LuaShiZhuangshiCard',
     target_fixed = true,
     will_throw = true,
     on_use = function(self, room, source, targets)
+        room:notifySkillInvoked(source, 'LuaShiZhuangshi')
+        room:broadcastSkillInvoke('LuaShiZhuangshi', common.getVoiceIndex(source, 'LuaShiZhuangshi'))
         room:addPlayerMark(source, 'LuaShiZhuangshi_unresponsible', self:subcardsLength())
         room:addPlayerMark(source, 'no_distance_limit', self:subcardsLength())
     end,
@@ -63,6 +93,8 @@ LuaShiZhuangshi = sgs.CreateTriggerSkill {
         table.insert(lose_num, 'cancel')
         local choice = room:askForChoice(player, self:objectName(), table.concat(lose_num, '+'))
         if choice ~= 'cancel' then
+            room:notifySkillInvoked(player, 'LuaShiZhuangshi')
+            room:broadcastSkillInvoke(self:objectName(), common.getVoiceIndex(player, self:objectName()))
             choice = tonumber(choice)
             room:loseHp(player, tonumber(choice))
             room:addPlayerMark(player, 'no_use_count', tonumber(choice))
@@ -73,6 +105,7 @@ LuaShiZhuangshi = sgs.CreateTriggerSkill {
                 ['arg'] = 'LuaShiZhongao',
                 ['arg2'] = 'LuaShiZhongaoNoZhuangshi',
             })
+            room:broadcastSkillInvoke('LuaShiZhongao', 4)
             room:addPlayerMark(player, 'LuaShiZhongao_failure')
         end
         return false
@@ -101,6 +134,7 @@ LuaShiZhongaoKilled = sgs.CreateTriggerSkill {
                 ['arg'] = 'LuaShiZhongao',
                 ['arg2'] = 'LuaShiZhongaoKilledPlayer',
             })
+            room:broadcastSkillInvoke('LuaShiZhongao', rinsan.random(2, 3))
             room:addPlayerMark(killer, 'LuaShiZhongao_success')
         end
         return false
@@ -121,7 +155,7 @@ LuaShiYinzhan = sgs.CreateTriggerSkill {
         local condition2 = player:getCardCount(true) <= damage.to:getCardCount(true)
         if damage.card and damage.card:isKindOf('Slash') then
             if condition1 or condition2 then
-                room:broadcastSkillInvoke(self:objectName())
+                room:broadcastSkillInvoke(self:objectName(), common.getVoiceIndex(player, self:objectName()))
                 room:sendCompulsoryTriggerLog(player, self:objectName())
             end
             if condition1 then
@@ -184,6 +218,7 @@ LuaShiZhongao = sgs.CreateTriggerSkill {
         local failure_mark = 'LuaShiZhongao_failure'
         local change_name = mark.name
         if change_name == success_mark then
+            room:notifySkillInvoked(player, 'LuaShiZhongao')
             -- 成功
             if room:changeMaxHpForAwakenSkill(player, 0) then
                 -- 如果还剩下标记，说明使用的牌没超过对应的项目
@@ -202,8 +237,10 @@ LuaShiZhongao = sgs.CreateTriggerSkill {
                 room:addPlayerMark(player, self:objectName())
             end
         elseif change_name == failure_mark then
+            room:notifySkillInvoked(player, 'LuaShiZhongao')
             -- 失败
             if room:changeMaxHpForAwakenSkill(player, 0) then
+                room:detachSkillFromPlayer(player, 'LuaShiZhuangshi')
                 room:acquireSkill(player, 'LuaShiKunfen')
                 room:addPlayerMark(player, self:objectName())
             end
@@ -226,6 +263,7 @@ LuaShiZhongaoStart = sgs.CreateTriggerSkill {
         local shiweiyans = room:findPlayersBySkillName('LuaShiZhongao')
         for _, p in sgs.qlist(shiweiyans) do
             if not p:hasSkill('LuaShiKuanggu') then
+                room:broadcastSkillInvoke('LuaShiZhongao', 1)
                 room:sendCompulsoryTriggerLog(p, 'LuaShiZhongao')
                 room:acquireSkill(p, 'LuaShiKuanggu')
             end
@@ -247,6 +285,7 @@ LuaShizhongaoDying = sgs.CreateTriggerSkill {
                 ['arg'] = 'LuaShiZhongao',
                 ['arg2'] = 'LuaShiZhongaoDying',
             })
+            room:broadcastSkillInvoke('LuaShiZhongao', 5)
             room:addPlayerMark(dying.who, 'LuaShiZhongao_failure')
         end
         return false
@@ -283,7 +322,7 @@ LuaShiKuanggu = sgs.CreateTriggerSkill {
             return false
         end
         room:sendCompulsoryTriggerLog(player, self:objectName())
-        room:broadcastSkillInvoke(self:objectName())
+        room:broadcastSkillInvoke(self:objectName(), common.getVoiceIndex(player, self:objectName()))
         room:addPlayerMark(player, self:objectName() .. 'engine')
         if player:getMark(self:objectName() .. 'engine') > 0 then
             if choice == 'kuanggu1' then

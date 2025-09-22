@@ -1,4 +1,5 @@
 -- translation for Military Power Package
+
 return {
     ['MilitaryPowerPackage'] = '兵势篇-势包',
     ['ShiWeiyan'] = '势魏延',
