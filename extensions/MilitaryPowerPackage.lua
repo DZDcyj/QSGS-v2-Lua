@@ -148,7 +148,8 @@ LuaShiYinzhanFinish = sgs.CreateTriggerSkill {
         local use = data:toCardUse()
         if use.card and use.card:isKindOf('Slash') then
             local card_id
-            for _, p in sgs.qlist(use.to) do
+            -- 处理铁索连环导致的伤害传导
+            for _, p in sgs.qlist(room:getAlivePlayers()) do
                 if p:isAlive() then
                     if p:getMark('LuaShiYinzhan_discard_biu') > 0 then
                         room:removePlayerMark(p, 'LuaShiYinzhan_discard_biu')
