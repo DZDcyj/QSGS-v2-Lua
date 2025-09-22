@@ -43,7 +43,6 @@ VOICE_FUNCS = {
     end,
 }
 
-
 LuaShiZhuangshiCard = sgs.CreateSkillCard {
     name = 'LuaShiZhuangshiCard',
     target_fixed = true,
@@ -374,3 +373,5 @@ table.insert(hiddenSkills, LuaShizhongaoDying)
 table.insert(hiddenSkills, LuaShiZhongaoKilled)
 
 rinsan.addHiddenSkills(hiddenSkills)
+
+package.loaded['extensions.MilitaryPowerPackage'].VOICE_FUNCS = VOICE_FUNCS
