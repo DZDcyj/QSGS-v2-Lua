@@ -58,9 +58,9 @@ non_use_time = sgs.CreateTriggerSkill {
         end
         -- 统一在此处清理标记
         -- 不计入次数
-        room:removePlayerMark(player, 'no_use_count')
+        room:removePlayerMark(player, 'no_use_count_biu')
         -- 不限制距离
-        room:removePlayerMark(player, 'no_distance_limit')
+        room:removePlayerMark(player, 'no_distance_limit_biu')
         if event == sgs.CardUsed then
             local use = data:toCardUse()
             if use.m_addHistory then
@@ -72,7 +72,7 @@ non_use_time = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:getMark('no_use_count') > 0
+        return target and target:isAlive() and target:getMark('no_use_count_biu') > 0
     end,
 }
 
@@ -213,7 +213,7 @@ no_distance_limit = sgs.CreateTargetModSkill {
     name = 'no_distance_limit',
     pattern = '.',
     distance_limit_func = function(self, from, card)
-        if from:getMark('no_distance_limit') > 0 then
+        if from:getMark('no_distance_limit_biu') > 0 then
             return 1000
         end
         return 0
@@ -224,8 +224,8 @@ no_use_count = sgs.CreateTargetModSkill {
     name = 'no_use_count',
     pattern = '.',
     residue_func = function(self, from, card)
-        if from:getMark('no_use_count') > 0 then
-            return from:getMark('no_use_count')
+        if from:getMark('no_use_count_biu') > 0 then
+            return from:getMark('no_use_count_biu')
         end
         return 0
     end,

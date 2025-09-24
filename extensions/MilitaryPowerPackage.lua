@@ -51,7 +51,7 @@ LuaShiZhuangshiCard = sgs.CreateSkillCard {
         room:notifySkillInvoked(source, 'LuaShiZhuangshi')
         room:broadcastSkillInvoke('LuaShiZhuangshi', common.getVoiceIndex(source, 'LuaShiZhuangshi'))
         room:addPlayerMark(source, 'LuaShiZhuangshi_unresponsible', self:subcardsLength())
-        room:addPlayerMark(source, 'no_distance_limit', self:subcardsLength())
+        room:addPlayerMark(source, 'no_distance_limit_biu', self:subcardsLength())
     end,
 }
 
@@ -96,7 +96,7 @@ LuaShiZhuangshi = sgs.CreateTriggerSkill {
             room:broadcastSkillInvoke(self:objectName(), common.getVoiceIndex(player, self:objectName()))
             choice = tonumber(choice)
             room:loseHp(player, tonumber(choice))
-            room:addPlayerMark(player, 'no_use_count', tonumber(choice))
+            room:addPlayerMark(player, 'no_use_count_biu', tonumber(choice))
         end
         if player:getMark('LuaShiZhongao') == 0 and not card and choice == 'cancel' then
             rinsan.sendLogMessage(room, '#LuaShiZhongaoFailure', {
@@ -222,11 +222,11 @@ LuaShiZhongao = sgs.CreateTriggerSkill {
             if room:changeMaxHpForAwakenSkill(player, 0) then
                 -- 如果还剩下标记，说明使用的牌没超过对应的项目
                 -- 使用的牌数小于因“壮誓”弃置的牌数，摸一张牌
-                if player:getMark('no_distance_limit') > 0 then
+                if player:getMark('no_distance_limit_biu') > 0 then
                     player:drawCards(1, self:objectName())
                 end
                 -- 使用的牌数小于因“壮誓”失去的体力数，你回复1点体力（若你未受伤则改为摸一张牌）
-                if player:getMark('no_use_count') > 0 then
+                if player:getMark('no_use_count_biu') > 0 then
                     if player:isWounded() then
                         rinsan.recover(player)
                     else
