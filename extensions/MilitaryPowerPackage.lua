@@ -333,7 +333,7 @@ LuaShiKuanggu = sgs.CreateTriggerSkill {
                 rinsan.recover(player)
                 if rinsan.canDiscard(player, player, 'he') then
                     if room:askForDiscard(player, self:objectName(), 1, 1, false, true, '@LuaKuanggu3Discard') then
-                        room:addPlayerMark(player, 'more_slash_time')
+                        room:addPlayerMark(player, 'more_slash_time_biu')
                     end
                 end
             end

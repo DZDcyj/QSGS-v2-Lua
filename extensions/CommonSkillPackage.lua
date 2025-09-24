@@ -13,7 +13,6 @@ local hiddenSkills = {}
 local packages = {'MilitaryPowerPackage' -- 在这里添加更多包名
 }
 
-
 local all_voice_modules = {}
 local all_voice_funcs = {}
 
@@ -231,9 +230,21 @@ no_use_count = sgs.CreateTargetModSkill {
     end,
 }
 
+more_slash_time = sgs.CreateTargetModSkill {
+    name = 'more_slash_time',
+    pattern = '.',
+    residue_func = function(self, from, card)
+        if from:getMark('more_slash_time_biu') > 0 then
+            return from:getMark('more_slash_time_biu')
+        end
+        return 0
+    end,
+}
+
 table.insert(hiddenSkills, non_use_time)
 table.insert(hiddenSkills, unresponsible)
 table.insert(hiddenSkills, no_distance_limit)
 table.insert(hiddenSkills, no_use_count)
+table.insert(hiddenSkills, more_slash_time)
 
 rinsan.addHiddenSkills(hiddenSkills)
