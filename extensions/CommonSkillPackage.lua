@@ -220,12 +220,12 @@ no_distance_limit = sgs.CreateTargetModSkill {
     end,
 }
 
-more_slash_time = sgs.CreateTargetModSkill {
-    name = 'more_slash_time',
-    pattern = 'Slash',
+no_use_count = sgs.CreateTargetModSkill {
+    name = 'no_use_count',
+    pattern = '.',
     residue_func = function(self, from, card)
-        if from:getMark('more_slash_time') > 0 then
-            return from:getMark('more_slash_time')
+        if from:getMark('no_use_count') > 0 then
+            return from:getMark('no_use_count')
         end
         return 0
     end,
@@ -234,6 +234,6 @@ more_slash_time = sgs.CreateTargetModSkill {
 table.insert(hiddenSkills, non_use_time)
 table.insert(hiddenSkills, unresponsible)
 table.insert(hiddenSkills, no_distance_limit)
-table.insert(hiddenSkills, more_slash_time)
+table.insert(hiddenSkills, no_use_count)
 
 rinsan.addHiddenSkills(hiddenSkills)
