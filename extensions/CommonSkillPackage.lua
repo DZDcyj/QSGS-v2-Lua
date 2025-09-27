@@ -232,7 +232,7 @@ no_use_count = sgs.CreateTargetModSkill {
 
 more_slash_time = sgs.CreateTargetModSkill {
     name = 'more_slash_time',
-    pattern = '.',
+    pattern = 'Slash',
     residue_func = function(self, from, card)
         if from:getMark('more_slash_time_biu') > 0 then
             return from:getMark('more_slash_time_biu')
