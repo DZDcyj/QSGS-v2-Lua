@@ -95,6 +95,7 @@ lang/zh_CN/Package/*.lua
 !LandlordsPackage.lua
 !LayingPlans*.lua
 !MartialTemplePackage*.lua
+!MilitaryPowerPackage*.lua
 !Mobile*.lua
 !OldFriend*
 !poison_knife*
