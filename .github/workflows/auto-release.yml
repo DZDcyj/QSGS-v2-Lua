@@ -20,12 +20,13 @@ jobs:
 
       # 发布 Release
       - name: Publish Release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "softprops/action-gh-release@v1"
         with:
-          title: "日神杀武将包 ${{ env.TAG_NAME }}"
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          name: "日神杀武将包 ${{ env.TAG_NAME }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           draft: false
+          generate_release_notes: true
 
       # 华为云认证
       - name: Authenticate to Huawei Cloud
