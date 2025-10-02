@@ -311,9 +311,9 @@ LuaShiKuanggu = sgs.CreateTriggerSkill {
         local choices = {'kuanggu1'}
         if player:isWounded() then
             table.insert(choices, 'kuanggu2')
-            if player:getMark('LuaShiZhongao_success') > 0 then
-                table.insert(choices, 'kunaggu3_behind_water')
-            end
+        end
+        if player:getMark('LuaShiZhongao_success') > 0 then
+            table.insert(choices, 'kunaggu3_behind_water')
         end
         table.insert(choices, 'cancel')
         local choice = room:askForChoice(player, self:objectName(), table.concat(choices, '+'))
