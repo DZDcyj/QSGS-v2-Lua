@@ -82,6 +82,9 @@ local function get_skill_marks_and_skills(splayer)
         if string.find(mark, '_unresponsible', 1, true) and splayer:getMark(mark) > 0 then
             table.insert(unresponsible_marks, mark)
             local skill_name = string.gsub(mark, '_unresponsible', '')
+            skill_name = string.gsub(skill_name, '_biu', '')
+            skill_name = string.gsub(skill_name, '-Clear', '')
+            skill_name = string.gsub(skill_name, '_lun', '')
             table.insert(unresponsible_skills, skill_name)
         end
     end

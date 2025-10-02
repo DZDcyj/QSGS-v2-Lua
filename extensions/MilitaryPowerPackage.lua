@@ -50,7 +50,7 @@ LuaShiZhuangshiCard = sgs.CreateSkillCard {
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, 'LuaShiZhuangshi')
         room:broadcastSkillInvoke('LuaShiZhuangshi', common.getVoiceIndex(source, 'LuaShiZhuangshi'))
-        room:addPlayerMark(source, 'LuaShiZhuangshi_unresponsible', self:subcardsLength())
+        room:addPlayerMark(source, 'LuaShiZhuangshi_unresponsible_biu', self:subcardsLength())
         room:addPlayerMark(source, 'no_distance_limit_biu', self:subcardsLength())
     end,
 }
