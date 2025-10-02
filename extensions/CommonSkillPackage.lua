@@ -38,6 +38,23 @@ function getVoiceIndex(player, skillName)
     return -1
 end
 
+local function removeStandardMarks(player, mark_prefix)
+    local suffix = {'', '_biu', '-Clear', '_lun'}
+    local room = player:getRoom()
+    for _, s in ipairs(suffix) do
+        room:removePlayerMark(player, mark_prefix .. s)
+    end
+end
+
+local function getStandardMarkCount(player, mark_prefix)
+    local count = 0
+    local suffix = {'', '_biu', '-Clear', '_lun'}
+    for _, s in ipairs(suffix) do
+        count = count + player:getMark(mark_prefix .. s)
+    end
+    return count
+end
+
 non_use_time = sgs.CreateTriggerSkill {
     name = 'non_use_time',
     frequency = sgs.Skill_Compulsory,
@@ -57,9 +74,9 @@ non_use_time = sgs.CreateTriggerSkill {
         end
         -- 统一在此处清理标记
         -- 不计入次数
-        room:removePlayerMark(player, 'no_use_count_biu')
+        removeStandardMarks(player, 'no_use_count')
         -- 不限制距离
-        room:removePlayerMark(player, 'no_distance_limit_biu')
+        removeStandardMarks(player, 'no_distance_limit')
         if event == sgs.CardUsed then
             local use = data:toCardUse()
             if use.m_addHistory then
@@ -71,7 +88,8 @@ non_use_time = sgs.CreateTriggerSkill {
         return false
     end,
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:getMark('no_use_count_biu') > 0
+        local count = getStandardMarkCount(target, 'no_use_count') + getStandardMarkCount(target, 'no_distance_limit')
+        return target and target:isAlive() and count > 0
     end,
 }
 
@@ -82,6 +100,9 @@ local function get_skill_marks_and_skills(splayer)
         if string.find(mark, '_unresponsible', 1, true) and splayer:getMark(mark) > 0 then
             table.insert(unresponsible_marks, mark)
             local skill_name = string.gsub(mark, '_unresponsible', '')
+            skill_name = string.gsub(skill_name, '_biu', '')
+            skill_name = string.gsub(skill_name, '-Clear', '')
+            skill_name = string.gsub(skill_name, '_lun', '')
             table.insert(unresponsible_skills, skill_name)
         end
     end
@@ -212,7 +233,7 @@ no_distance_limit = sgs.CreateTargetModSkill {
     name = 'no_distance_limit',
     pattern = '.',
     distance_limit_func = function(self, from, card)
-        if from:getMark('no_distance_limit_biu') > 0 then
+        if getStandardMarkCount(from, 'no_distance_limit') > 0 then
             return 1000
         end
         return 0
@@ -223,10 +244,7 @@ no_use_count = sgs.CreateTargetModSkill {
     name = 'no_use_count',
     pattern = '.',
     residue_func = function(self, from, card)
-        if from:getMark('no_use_count_biu') > 0 then
-            return from:getMark('no_use_count_biu')
-        end
-        return 0
+        return getStandardMarkCount(from, 'no_use_count')
     end,
 }
 
@@ -234,10 +252,7 @@ more_slash_time = sgs.CreateTargetModSkill {
     name = 'more_slash_time',
     pattern = 'Slash',
     residue_func = function(self, from, card)
-        if from:getMark('more_slash_time_biu') > 0 then
-            return from:getMark('more_slash_time_biu')
-        end
-        return 0
+        return getStandardMarkCount(from, 'more_slash_time')
     end,
 }
 
