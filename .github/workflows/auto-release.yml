@@ -26,6 +26,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           draft: false
+          generate_release_notes: true
 
       # 华为云认证
       - name: Authenticate to Huawei Cloud
