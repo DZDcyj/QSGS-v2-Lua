@@ -600,11 +600,11 @@ config = {
         'feiying:20',
         'nosqianxun:20',
         --少量收益、过牌（30~50）
-      --'wangzun:30',这玩意在这个模式并不能用
+        --'wangzun:30',这玩意在这个模式并不能用
         'yingzi:30',
         'shenwei:40',
         'hongde:40',
-      --'hongyuan:30',并没有人选这个
+        --'hongyuan:30',并没有人选这个
         'tuxi:30',
         'gongxin:40',
         'yongsi:50',
@@ -627,7 +627,7 @@ config = {
         'fuji:50',
         'wusheng:60',
         --防御（30~50）
-      --'kongcheng:30',几乎没用
+        --'kongcheng:30',几乎没用
         'weijing:40',
         'sheyan:40',
         'qianjie:30',
