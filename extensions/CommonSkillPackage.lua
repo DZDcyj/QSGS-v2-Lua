@@ -168,7 +168,7 @@ unresponsible = sgs.CreateTriggerSkill {
                 if not skillName then
                     return false
                 end
-                if rinsan.RIGHT(self, player, skillName) then
+                if rinsan.RIGHT(self, use.from, skillName) then
                     local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
                     local index = 1
                     for _, p in sgs.qlist(use.to) do
