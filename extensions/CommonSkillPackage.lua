@@ -134,7 +134,7 @@ unresponsible = sgs.CreateTriggerSkill {
             if (not use.card) or use.card:isKindOf('SkillCard') then
                 return false
             end
-            local skillName, skillMark = get_skill_name(use.from)
+            local skillName, _ = get_skill_name(use.from)
             if not skillName then
                 return false
             end
