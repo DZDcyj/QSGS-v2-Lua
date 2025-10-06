@@ -161,6 +161,15 @@ unresponsible = sgs.CreateTriggerSkill {
             if not skillMark then
                 return false
             end
+            local items = data:toStringList()[2]:split(':')
+            if #items > 1 then
+                local from = rinsan.findPlayerByName(room, items[2])
+                if not rinsan.RIGHT(self, from, skillName) then
+                    return false
+                end
+            else
+                return false
+            end
             if player:getMark(skillMark) > 0 then
                 room:provide(nil)
                 room:setPlayerMark(player, skillMark, 0)
