@@ -134,11 +134,12 @@ unresponsible = sgs.CreateTriggerSkill {
             if (not use.card) or use.card:isKindOf('SkillCard') then
                 return false
             end
-            local skillName, skillMark = get_skill_name(use.from)
+            local skillName, _ = get_skill_name(use.from)
             if not skillName then
                 return false
             end
             room:setTag('current_unresponsible_skill', sgs.QVariant(skillName))
+            local skillMark = string.format('%sTarget-%s', skillName, use.card:toString())
             room:setTag('current_unresponsible_skill_mark', sgs.QVariant(skillMark))
             for _, p in sgs.qlist(room:getAlivePlayers()) do
                 room:addPlayerMark(p, skillMark)
@@ -152,8 +153,21 @@ unresponsible = sgs.CreateTriggerSkill {
                 end
             end
         elseif event == sgs.CardAsked then
+            local skillName = room:getTag('current_unresponsible_skill'):toString()
+            if not skillName then
+                return false
+            end
             local skillMark = room:getTag('current_unresponsible_skill_mark'):toString()
             if not skillMark then
+                return false
+            end
+            local items = data:toStringList()[2]:split(':')
+            if #items > 1 then
+                local from = rinsan.findPlayerByName(room, items[2])
+                if not rinsan.RIGHT(self, from, skillName) then
+                    return false
+                end
+            else
                 return false
             end
             if player:getMark(skillMark) > 0 then
@@ -162,13 +176,17 @@ unresponsible = sgs.CreateTriggerSkill {
                 return true
             end
         elseif event == sgs.TargetConfirmed then
+            -- TargetConfirmed 事件由 room:getAlivePlayers() 触发，player 为任意一名存活角色
             local use = data:toCardUse()
+            if not use.from or use.from:objectName() ~= player:objectName() then
+                return false
+            end
             if use.card:isKindOf('Slash') then
                 local skillName = room:getTag('current_unresponsible_skill'):toString()
                 if not skillName then
                     return false
                 end
-                if rinsan.RIGHT(self, player, skillName) then
+                if rinsan.RIGHT(self, use.from, skillName) then
                     local jink_table = sgs.QList2Table(use.from:getTag('Jink_' .. use.card:toString()):toIntList())
                     local index = 1
                     for _, p in sgs.qlist(use.to) do
@@ -204,7 +222,7 @@ unresponsible = sgs.CreateTriggerSkill {
                 room:removePlayerMark(player, mark)
             end
             local skillName = room:getTag('current_unresponsible_skill'):toString()
-            local skillMark = room:getTag('current_unresponsible_skill_mark'):toString()
+            local skillMark = string.format('%sTarget-%s', skillName, use.card:toString())
             if not skillName then
                 return false
             end
