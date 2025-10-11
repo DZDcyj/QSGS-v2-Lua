@@ -233,8 +233,7 @@ LuaMouDuojing = sgs.CreateTriggerSkill {
                 room:doAnimate(rinsan.ANIMATE_INDICATE, player:objectName(), p:objectName())
                 room:addPlayerMark(player, self:objectName())
                 if not p:isNude() then
-                    local card_id =
-                        room:askForCardChosen(player, p, 'he', self:objectName(), false, sgs.Card_MethodNone)
+                    local card_id = room:askForCardChosen(player, p, 'he', self:objectName(), false, sgs.Card_MethodNone)
                     local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_EXTRACTION, player:objectName())
                     room:obtainCard(player, sgs.Sanguosha:getCard(card_id), reason, false)
                 end
@@ -515,8 +514,7 @@ LuaDismantlement = sgs.CreateTrickCard {
     subtype = 'single_target_trick',
     filter = function(self, targets, to_select, player)
         local total_num = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, player, self)
-        return
-            targets:length() < total_num and to_select ~= player:objectName() and to_select:getCards('hej'):length() > 0
+        return targets:length() < total_num and to_select ~= player:objectName() and to_select:getCards('hej'):length() > 0
     end,
     on_effect = function(self, effect)
         local source = effect.from
@@ -838,6 +836,15 @@ LuaMouZhaxiangBuff = sgs.CreateTriggerSkill {
                 end
             end
         elseif event == sgs.CardAsked then
+            local items = data:toStringList()[2]:split(':')
+            if #items > 1 then
+                local from = rinsan.findPlayerByName(room, items[2])
+                if not rinsan.RIGHT(self, from) then
+                    return false
+                end
+            else
+                return false
+            end
             if player:getMark('LuaMouZhaxiangTarget') > 0 then
                 room:provide(nil)
                 room:setPlayerMark(player, 'LuaMouZhaxiangTarget', 0)
