@@ -339,11 +339,11 @@ end
 -- 游戏开始、进入弃牌堆后移除装备牌
 LuaMoveOutPuyuanEquips = sgs.CreateTriggerSkill {
     name = 'LuaMoveOutPuyuanEquips',
-    events = {sgs.GameStart, sgs.BeforeCardsMove},
+    events = {sgs.GameStart, sgs.CardsMoveOneTime},
     global = true,
     priority = 10,
     on_trigger = function(self, event, player, data, room)
-        if event == sgs.BeforeCardsMove then
+        if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
             if move.to_place == sgs.Player_DiscardPile then
                 local ids = sgs.IntList()
