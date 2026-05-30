@@ -8343,10 +8343,13 @@ LuaQianxinCard = sgs.CreateSkillCard {
     will_throw = false,
     target_fixed = false,
     filter = function(self, targets, to_select)
+        if #targets >= 2 then
+            return false
+        end
         return rinsan.checkFilter(targets, to_select, rinsan.LESS, self:subcardsLength())
     end,
     feasible = function(self, targets)
-        return #targets > 0 and #targets == self:subcardsLength()
+        return #targets > 0 and #targets <= 2 and #targets == self:subcardsLength()
     end,
     on_use = function(self, room, source, targets)
         room:notifySkillInvoked(source, self:objectName())
@@ -8369,7 +8372,7 @@ LuaQianxinVS = sgs.CreateViewAsSkill {
     name = 'LuaQianxin',
     n = 999,
     view_filter = function(self, selected, to_select)
-        return not to_select:isEquipped()
+        return #selected < 2 and not to_select:isEquipped()
     end,
     view_as = function(self, cards)
         if #cards == 0 then
